@@ -23,9 +23,10 @@ import java.util.stream.Collectors;
 
 import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 
 /**
- * An RDF model, represented as a {@link java.util.Set} of {@link Statement}s
+ * An RDF Model, represented as a {@link java.util.Set} of {@link Statement}s
  * with predictable iteration order.
  * <p>
  * Additional utility functionality for working with Model objects is available
@@ -33,6 +34,7 @@ import org.openrdf.model.util.ModelException;
  * 
  * @since 2.7.0
  * @author James Leigh
+ * @author Jeen Broekstra
  * @see org.openrdf.model.util.Models the Models utility class
  */
 @SuppressWarnings("deprecation")
@@ -43,7 +45,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * "read-only" access to this model. Query operations on the returned model
 	 * "read through" to this model, and attempts to modify the returned model,
 	 * whether direct or via its iterator, result in an
-	 * <tt>UnsupportedOperationException</tt>.
+	 * {@link UnsupportedOperationException}.
 	 * <p>
 	 * 
 	 * @return an unmodifiable view of the specified set.
@@ -298,7 +300,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique subject.
 	 * @since 2.8.0
+	 * @deprecated since 4.0. Instead, use {@link Models#subject(Model)} to
+	 *             retrieve a subject Resource, and/or use the size of the set
+	 *             returned by {@link #subjects()} to verify if the subject is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<Resource> subjectResource()
 		throws ModelException
 	{
@@ -325,7 +332,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If such an exception is thrown by {@link #subjectResource()} or if
 	 *         its return value is not a IRI.
 	 * @since 2.8.0
+	 * @deprecated since 4.0. Instead, use {@link Models#subjectURI(Model)} to
+	 *             retrieve a subject URI, and/or use the size of the set
+	 *             returned by {@link #subjects()} to verify if the subject is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<IRI> subjectIRI()
 		throws ModelException
 	{
@@ -366,7 +378,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If such an exception is thrown by {@link #subjectResource()} or if
 	 *         its return value is not a BNode.
 	 * @since 2.8.0
+	 * @deprecated since 4.0. Instead, use {@link Models#subjectBNode(Model)} to
+	 *             retrieve a subject BNode, and/or use the size of the set
+	 *             returned by {@link #subjects()} to verify if the subject is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<BNode> subjectBNode()
 		throws ModelException
 	{
@@ -451,7 +468,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
+	 * @deprecated since 4.0. Instead, use {@link Models#object(Model)} to
+	 *             retrieve an object value, and/or use the size of the set
+	 *             returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<Value> objectValue()
 		throws ModelException
 	{
@@ -476,7 +498,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a Literal.
+	 * @deprecated since 4.0. Instead, use {@link Models#objectLiteral(Model)} to
+	 *             retrieve an object Literal value, and/or use the size of the
+	 *             set returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<Literal> objectLiteral()
 		throws ModelException
 	{
@@ -503,7 +530,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not a Resource.
+	 * @deprecated since 4.0. Instead, use {@link Models#objectResource(Model)}
+	 *             to retrieve an object Resource value, and/or use the size of
+	 *             the set returned by {@link #objects()} to verify if the object
+	 *             is unique.
 	 */
+	@Deprecated
 	public default Optional<Resource> objectResource()
 		throws ModelException
 	{
@@ -530,7 +562,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If such an exception is thrown by {@link #objectValue()} or if its
 	 *         return value is not an IRI.
+	 * @deprecated since 4.0. Instead, use {@link Models#objectURI(Model)} to
+	 *             retrieve an object URI value, and/or use the size of the set
+	 *             returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<IRI> objectIRI()
 		throws ModelException
 	{
@@ -569,98 +606,22 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @throws ModelException
 	 *         If the statements matched by the specified parameters have more
 	 *         than one unique object.
+	 * @deprecated since 4.0. Instead, use {@link Models#object(Model)} to
+	 *             retrieve an object value, and/or use the size of the set
+	 *             returned by {@link #objects()} to verify if the object is
+	 *             unique.
 	 */
+	@Deprecated
 	public default Optional<String> objectString()
 		throws ModelException
 	{
 		Optional<Value> objectValue = objectValue();
 		if (objectValue.isPresent()) {
-			return Optional.of(objectValue.get().toString());
+			return Optional.of(objectValue.get().stringValue());
 		}
 		else {
 			return Optional.empty();
 		}
 	}
 
-	/**
-	 * Utility method that finds a single literal object in the model and returns
-	 * it if it exists. If multiple literal objects exist in the model it throws
-	 * a ModelException.
-	 * 
-	 * @return A unique literal appearing as the object of the matched
-	 *         statement(s), or {@link Optional#empty()} if no matching
-	 *         statements were found.
-	 * @throws ModelException
-	 *         If there is more than one unique object literal in the model.
-	 */
-	public default Optional<Literal> anObjectLiteral()
-		throws ModelException
-	{
-		Set<Literal> result = stream().filter(st -> st.getObject() instanceof Literal).map(
-				st -> (Literal)st.getObject()).distinct().limit(2).collect(Collectors.toSet());
-		if (result.isEmpty()) {
-			return Optional.empty();
-		}
-		else if (result.size() > 1) {
-			throw new ModelException("Did not find a unique object literal");
-		}
-		else {
-			return Optional.of(result.iterator().next());
-		}
-	}
-
-	/**
-	 * Utility method that finds a single resource object, including both URI and
-	 * BNodes, in the model and returns it if it exists. If multiple resource
-	 * objects exist in the model it throws a ModelException.
-	 * 
-	 * @return A unique resource appearing as an object of the matched
-	 *         statement(s), or {@link Optional#empty()} if no matching
-	 *         statements were found.
-	 * @throws ModelException
-	 *         If there is more than one unique object resource in the model.
-	 */
-
-	public default Optional<Resource> anObjectResource()
-		throws ModelException
-	{
-		Set<Resource> result = stream().filter(st -> st.getObject() instanceof Resource).map(
-				st -> (Resource)st.getObject()).distinct().limit(2).collect(Collectors.toSet());
-		if (result.isEmpty()) {
-			return Optional.empty();
-		}
-		else if (result.size() > 1) {
-			throw new ModelException("Did not find a unique object resource");
-		}
-		else {
-			return Optional.of(result.iterator().next());
-		}
-	}
-
-	/**
-	 * Utility method that finds a single IRI object in the model and returns it
-	 * if it exists. If multiple IRI objects exist in the model it throws a
-	 * ModelException.
-	 * 
-	 * @return A unique IRI appearing as an object of the matched statement(s),
-	 *         or {@link Optional#empty()} if no matching statements were found.
-	 * @throws ModelException
-	 *         If there is more than one unique object URI in the model.
-	 */
-	public default Optional<IRI> anObjectURI()
-		throws ModelException
-	{
-		Set<IRI> result = stream().filter(st -> st.getObject() instanceof IRI).map(st -> (IRI)st.getObject()).distinct().limit(
-				2).collect(Collectors.toSet());
-
-		if (result.isEmpty()) {
-			return Optional.empty();
-		}
-		else if (result.size() > 1) {
-			throw new ModelException("Did not find a unique object URI");
-		}
-		else {
-			return Optional.of(result.iterator().next());
-		}
-	}
 }

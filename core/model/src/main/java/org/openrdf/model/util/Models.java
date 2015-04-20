@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.BNode;
@@ -48,218 +50,246 @@ public class Models {
 	}
 
 	/**
-	 * Retrieves any object value from the given model. If more than one possible
-	 * value exists, any one value is picked and returned.
+	 * Retrieves an object {@link Value} from the statements in the given model.
+	 * If more than one possible object value exists, any one value is picked and
+	 * returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve an object value.
-	 * @return an object value from the given model, or <code>null</code> if no
-	 *         such value exists.
-	 * @see Model#objectValue()
+	 * @return an object value from the given model, or {@link Optional#empty()}
+	 *         if no such value exists.
+	 * @since 4.0
 	 */
-	public static Value anyObject(Model m) {
-		Value result = null;
+	public static Optional<Value> object(Model m) {
 		final Set<Value> objects = m.objects();
 		if (objects != null && !objects.isEmpty()) {
-			result = objects.iterator().next();
+			return Optional.of(objects.iterator().next());
 		}
 
-		return result;
+		return Optional.empty();
 	}
 
 	/**
-	 * Retrieves any object Literal value from the given model. If more than one
-	 * possible value exists, any one value is picked and returned.
+	 * @deprecated since 4.0. Use {@link #object(Model)} instead.
+	 */
+	@Deprecated
+	public static Value anyObject(Model m) {
+		return object(m).orElse(null);
+	}
+
+	/**
+	 * Retrieves an object {@link Literal} value from the statements in the given
+	 * model. If more than one possible Literal value exists, any one Literal
+	 * value is picked and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve an object Literal value.
-	 * @return an object Literal value from the given model, or <code>null</code>
-	 *         if no such value exists.
-	 * @see Model#objectLiteral()
+	 * @return an object Literal value from the given model, or
+	 *         {@link Optional#empty()} if no such value exists.
+	 * @since 4.0
 	 */
-	public static Literal anyObjectLiteral(Model m) {
-		Literal result = null;
+	public static Optional<Literal> objectLiteral(Model m) {
 		final Set<Value> objects = m.objects();
 		if (objects != null && !objects.isEmpty()) {
 			for (Value v : objects) {
 				if (v instanceof Literal) {
-					result = (Literal)v;
-					break;
+					return Optional.of((Literal)v);
 				}
 			}
 		}
 
-		return result;
+		return Optional.empty();
 	}
 
 	/**
-	 * Retrieves any object Resource value from the given model. If more than one
-	 * possible value exists, any one value is picked and returned.
+	 * @deprecated since 4.0. Use {@link #objectLiteral(Model)} instead.
+	 */
+	@Deprecated
+	public static Literal anyObjectLiteral(Model m) {
+		return objectLiteral(m).orElse(null);
+	}
+
+	/**
+	 * Retrieves an object {@link Resource} value from the statements in the
+	 * given model. If more than one possible Resource value exists, any one
+	 * Resource value is picked and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve an object Resource value.
-	 * @return an object Resource value from the given model, or
-	 *         <code>null</code> if no such value exists.
-	 * @see Model#objectResource()
+	 * @return an {@link Optional} object Resource value from the given model,
+	 *         which will be {@link Optional#empty() empty} if no such value
+	 *         exists.
+	 * @since 4.0
 	 */
-	public static Resource anyObjectResource(Model m) {
-		Resource result = null;
+	public static Optional<Resource> objectResource(Model m) {
 		final Set<Value> objects = m.objects();
 		if (objects != null && !objects.isEmpty()) {
 			for (Value v : objects) {
 				if (v instanceof Resource) {
-					result = (Resource)v;
-					break;
+					return Optional.of((Resource)v);
 				}
 			}
 		}
 
-		return result;
+		return Optional.empty();
 	}
 
 	/**
-	 * Retrieves any object IRI value from the given model. If more than one
-	 * possible value exists, any one value is picked and returned.
+	 * @deprecated since 4.0. Use {@link #objectResource(Model)} instead.
+	 */
+	@Deprecated
+	public static Resource anyObjectResource(Model m) {
+		return objectResource(m).orElse(null);
+	}
+
+	/**
+	 * Retrieves an object {@link URI} value from the statements in the given
+	 * model. If more than one possible URI value exists, any one value is picked
+	 * and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve an object IRI value.
-	 * @return an object IRI value from the given model, or <code>null</code> if
-	 *         no such value exists.
-	 * @see Model#objectIRI()
+	 * @return an {@link Optional} object URI value from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @since 4.0
 	 */
-	public static IRI anyObjectIRI(Model m) {
-		IRI result = null;
+	public static Optional<URI> objectURI(Model m) {
 		final Set<Value> objects = m.objects();
 		if (objects != null && !objects.isEmpty()) {
 			for (Value v : objects) {
 				if (v instanceof IRI) {
-					result = (IRI)v;
-					break;
+					return Optional.of((URI)v);
 				}
 			}
 		}
 
-		return result;
+		return Optional.empty();
 	}
 
 	/**
-	 * Retrieves any object URI value from the given model. If more than one
-	 * possible value exists, any one value is picked and returned.
-	 * 
-	 * @param m
-	 *        the model from which to retrieve an object URI value.
-	 * @return an object URI value from the given model, or <code>null</code> if
-	 *         no such value exists.
-	 * @see Model#objectURI()
-	 * @deprecated use {@link #anyObjectIRI(Model)} instead.
+	 * @deprecated since 4.0. Use {@link #objectURI(Model)} instead.
 	 */
 	@Deprecated
 	public static URI anyObjectURI(Model m) {
-		return anyObjectIRI(m);
+		return objectURI(m).orElse(null);
 	}
 
 	/**
-	 * Retrieves any subject from the given model. If more than one possible
-	 * value exists, any one value is picked and returned.
+	 * Retrieves a subject {@link Resource} from the statements in the given
+	 * model. If more than one possible resource value exists, any one resource
+	 * value is picked and returned.
 	 * 
 	 * @param m
-	 *        the model from which to retrieve a subject value.
-	 * @return an subject value from the given model, or <code>null</code> if no
-	 *         such value exists.
-	 * @see Model#subjectResource()
+	 *        the model from which to retrieve a subject Resource.
+	 * @return an {@link Optional} subject resource from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @since 4.0
 	 */
-	public static Resource anySubject(Model m) {
-		Resource result = null;
+	public static Optional<Resource> subject(Model m) {
 		final Set<Resource> subjects = m.subjects();
 		if (subjects != null && !subjects.isEmpty()) {
-			result = subjects.iterator().next();
+			return Optional.of(subjects.iterator().next());
 		}
 
-		return result;
+		return Optional.empty();
 	}
 
 	/**
-	 * Retrieves any subject IRI from the given model. If more than one possible
-	 * value exists, any one value is picked and returned.
+	 * @deprecated since 4.0. Use {@link #subject(Model)} instead.
+	 */
+	@Deprecated
+	public static Resource anySubject(Model m) {
+		return subject(m).orElse(null);
+	}
+
+	/**
+	 * Retrieves a subject {@link URI} from the statements in the given model. If
+	 * more than one possible URI value exists, any one URI value is picked and
+	 * returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve a subject IRI value.
-	 * @return an subject IRI value from the given model, or <code>null</code> if
-	 *         no such value exists.
-	 * @see Model#subjectIRI()
+	 * @return an {@link Optional} subject URI value from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
 	 */
-	public static IRI anySubjectIRI(Model m) {
-		IRI result = null;
+	public static Optional<URI> subjectURI(Model m) {
 		final Set<Resource> objects = m.subjects();
 		if (objects != null && !objects.isEmpty()) {
 			for (Value v : objects) {
 				if (v instanceof IRI) {
-					result = (IRI)v;
-					break;
+					return Optional.of((URI)v);
 				}
 			}
 		}
 
-		return result;
+		return Optional.empty();
 	}
 
 	/**
-	 * Retrieves any subject URI value from the given model. If more than one
-	 * possible value exists, any one value is picked and returned.
-	 * 
-	 * @param m
-	 *        the model from which to retrieve a subject URI value.
-	 * @return a subject URI value from the given model, or <code>null</code> if
-	 *         no such value exists.
-	 * @see Model#objectURI()
-	 * @deprecated use {@link #anySubjectIRI(Model)} instead.
+	 * @deprecated since 4.0. Use {@link #subjectURI(Model)} instead.
 	 */
 	@Deprecated
 	public static URI anySubjectURI(Model m) {
-		return anySubjectIRI(m);
+		return subjectURI(m).orElse(null);
 	}
 
 	/**
-	 * Retrieves any subject BNode from the given model. If more than one
-	 * possible value exists, any one value is picked and returned.
+	 * Retrieves a subject {@link BNode} from the statements in the given model.
+	 * If more than one possible blank node value exists, any one blank node
+	 * value is picked and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve a subject BNode value.
-	 * @return a subject BNode value from the given model, or <code>null</code>
-	 *         if no such value exists.
-	 * @see Model#subjectBNode()
+	 * @return an {@link Optional} subject BNode value from the given model,
+	 *         which will be {@link Optional#empty() empty} if no such value
+	 *         exists.
+	 * @since 4.0
 	 */
-	public static BNode anySubjectBNode(Model m) {
-		BNode result = null;
+	public static Optional<BNode> subjectBNode(Model m) {
 		final Set<Resource> objects = m.subjects();
 		if (objects != null && !objects.isEmpty()) {
 			for (Value v : objects) {
 				if (v instanceof BNode) {
-					result = (BNode)v;
-					break;
+					return Optional.of((BNode)v);
 				}
 			}
 		}
 
-		return result;
+		return Optional.empty();
 	}
 
 	/**
-	 * Retrieves any predicate from the given model. If more than one possible
-	 * value exists, any one value is picked and returned.
+	 * @deprecated since 4.0. Use {@link #subjectBNode(Model)} instead.
+	 */
+	@Deprecated
+	public static BNode anySubjectBNode(Model m) {
+		return subjectBNode(m).orElse(null);
+	}
+
+	/**
+	 * Retrieves a predicate from the statements in the given model. If more than
+	 * one possible predicate value exists, any one value is picked and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve a predicate value.
-	 * @return a predicate value from the given model, or <code>null</code> if no
-	 *         such value exists.
+	 * @return an {@link Optional} predicate value from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @since 4.0
 	 */
-	public static IRI anyPredicate(Model m) {
-		IRI result = null;
+	public static Optional<URI> predicate(Model m) {
 		final Set<IRI> predicates = m.predicates();
 		if (predicates != null && !predicates.isEmpty()) {
-			result = predicates.iterator().next();
+			return Optional.of(predicates.iterator().next());
 		}
-		return result;
+		return Optional.empty();
+	}
+
+	/**
+	 * @deprecated since 4.0. Use {@link #predicate(Model)} instead.
+	 */
+	@Deprecated
+	public static URI anyPredicate(Model m) {
+		return predicate(m).orElse(null);
 	}
 
 	/**
@@ -286,21 +316,10 @@ public class Models {
 	 */
 	public static Model setProperty(Model m, Resource subject, IRI property, Value value, Resource... contexts)
 	{
-		if (m == null) {
-			throw new IllegalArgumentException("m may not be null");
-		}
-
-		if (subject == null) {
-			throw new IllegalArgumentException("subject may not be null");
-		}
-
-		if (property == null) {
-			throw new IllegalArgumentException("property may not be null");
-		}
-
-		if (value == null) {
-			throw new IllegalArgumentException("value may not be null");
-		}
+		Objects.requireNonNull(m, "model may not be null");
+		Objects.requireNonNull(subject, "subject may not be null");
+		Objects.requireNonNull(property, "property may not be null");
+		Objects.requireNonNull(value, "value may not be null");
 
 		if (m.contains(subject, property, null, contexts)) {
 			m.remove(subject, property, null, contexts);

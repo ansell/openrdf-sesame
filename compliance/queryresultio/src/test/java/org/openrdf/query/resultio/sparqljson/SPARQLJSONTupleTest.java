@@ -172,18 +172,18 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 
 				Literal name = (Literal)b.getValue("name");
 				assertEquals("Alice", name.stringValue());
-				assertNull(name.getLanguage());
+				assertFalse(name.getLanguage().isPresent());
 				assertEquals(XMLSchema.STRING, name.getDatatype());
 
 				Literal mbox = (Literal)b.getValue("mbox");
 				assertEquals("", mbox.stringValue());
-				assertNull(mbox.getLanguage());
+				assertFalse(mbox.getLanguage().isPresent());
 				assertEquals(XMLSchema.STRING, mbox.getDatatype());
 
 				Literal blurb = (Literal)b.getValue("blurb");
 				assertEquals("<p xmlns=\"http://www.w3.org/1999/xhtml\">My name is <b>alice</b></p>",
 						blurb.stringValue());
-				assertNull(blurb.getLanguage());
+				assertFalse(blurb.getLanguage().isPresent());
 				assertEquals(RDF.XMLLITERAL, blurb.getDatatype());
 			}
 			else if (value.getID().equals("r2")) {
@@ -195,7 +195,7 @@ public class SPARQLJSONTupleTest extends AbstractQueryResultIOTupleTest {
 
 				Literal name = (Literal)b.getValue("name");
 				assertEquals("Bob", name.stringValue());
-				assertEquals("en", name.getLanguage());
+				assertEquals("en", name.getLanguage().orElse(null));
 				assertEquals(RDF.LANGSTRING, name.getDatatype());
 
 				assertEquals("mailto:bob@work.example.org", b.getValue("mbox").stringValue());

@@ -310,7 +310,7 @@ public abstract class AbstractDatatypeHandlerTest {
 
 		assertNotNull(expectedResult.getDatatype());
 		assertNotNull(expectedResult.getLabel());
-		assertNull(expectedResult.getLanguage());
+		assertFalse(expectedResult.getLanguage().isPresent());
 
 		assertEquals(expectedResult.getDatatype(), result.getDatatype());
 		assertEquals(expectedResult.getLabel(), result.getLabel());

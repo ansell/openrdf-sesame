@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.function;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -95,7 +96,7 @@ public class TestDateTimeCast {
 			Literal result = dtCast.evaluate(f, dtLit);
 			assertNotNull(result);
 			assertEquals(XMLSchema.DATETIME, result.getDatatype());
-			assertNull(result.getLanguage());
+			assertFalse(result.getLanguage().isPresent());
 			assertEquals(lexVal, result.getLabel());
 		}
 		catch (ValueExprEvaluationException e) {

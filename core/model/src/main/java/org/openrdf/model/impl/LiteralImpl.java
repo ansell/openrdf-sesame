@@ -16,9 +16,11 @@
  */
 package org.openrdf.model.impl;
 
+import java.util.Objects;
 /**
  * @author Jeen Broekstra
  * @deprecated since 4.0. Use {@link SimpleLiteral} instead.
+		this.language = language;
  */
 @Deprecated
 public class LiteralImpl extends SimpleLiteral {

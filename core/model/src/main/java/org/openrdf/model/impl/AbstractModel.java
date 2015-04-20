@@ -23,18 +23,14 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.ModelException;
 import org.openrdf.model.util.Models;
 
 /**
@@ -197,85 +193,6 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements Mo
 	}
 
 	@Override
-	public Optional<Value> objectValue()
-		throws ModelException
-	{
-		Iterator<Value> iter = objects().iterator();
-		try {
-			if (iter.hasNext()) {
-				Value obj = iter.next();
-				if (iter.hasNext()) {
-					throw new ModelException(obj, iter.next());
-				}
-				return Optional.of(obj);
-			}
-			return Optional.empty();
-		}
-		finally {
-			closeIterator(iter);
-		}
-	}
-
-	@Override
-	public Optional<Literal> objectLiteral()
-		throws ModelException
-	{
-		Optional<Value> obj = objectValue();
-		if (obj.isPresent()) {
-			if (obj.get() instanceof Literal) {
-				return Optional.of((Literal)obj.get());
-			}
-			else {
-				throw new ModelException(obj.get());
-			}
-		}
-		return Optional.empty();
-	}
-
-	@Override
-	public Optional<Resource> objectResource()
-		throws ModelException
-	{
-		Optional<Value> obj = objectValue();
-		if (obj.isPresent()) {
-			if (obj.get() instanceof Resource) {
-				return Optional.of((Resource)obj.get());
-			}
-			else {
-				throw new ModelException(obj.get());
-			}
-		}
-		return Optional.empty();
-	}
-
-	@Override
-	public Optional<IRI> objectIRI()
-		throws ModelException
-	{
-		Optional<Value> obj = objectValue();
-		if (obj.isPresent()) {
-			if (obj.get() instanceof IRI) {
-				return Optional.of((IRI)obj.get());
-			}
-			else {
-				throw new ModelException(obj.get());
-			}
-		}
-		return Optional.empty();
-	}
-
-	@Override
-	public Optional<String> objectString()
-		throws ModelException
-	{
-		Optional<Value> obj = objectValue();
-		if (obj.isPresent()) {
-			return Optional.of(obj.get().stringValue());
-		}
-		return Optional.empty();
-	}
-
-	@Override
 	public int hashCode() {
 		return super.hashCode();
 	}
@@ -327,54 +244,6 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements Mo
 				AbstractModel.this.removeTermIteration(iter, subj, null, null);
 			}
 		};
-	}
-
-	@Override
-	public Optional<Resource> subjectResource()
-		throws ModelException
-	{
-		Iterator<Resource> iter = subjects().iterator();
-		try {
-			if (iter.hasNext()) {
-				Resource subj = iter.next();
-				if (iter.hasNext()) {
-					throw new ModelException(subj, iter.next());
-				}
-				return Optional.of(subj);
-			}
-			return Optional.empty();
-		}
-		finally {
-			closeIterator(iter);
-		}
-	}
-
-	@Override
-	public Optional<IRI> subjectIRI()
-		throws ModelException
-	{
-		Optional<Resource> subj = subjectResource();
-		if (!subj.isPresent()) {
-			return Optional.empty();
-		}
-		if (subj.get() instanceof IRI) {
-			return Optional.of((IRI)subj.get());
-		}
-		throw new ModelException(subj.get());
-	}
-
-	@Override
-	public Optional<BNode> subjectBNode()
-		throws ModelException
-	{
-		Optional<Resource> subj = subjectResource();
-		if (!subj.isPresent()) {
-			return Optional.empty();
-		}
-		if (subj.get() instanceof BNode) {
-			return Optional.of((BNode)subj.get());
-		}
-		throw new ModelException(subj.get());
 	}
 
 	@Override

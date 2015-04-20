@@ -16,9 +16,10 @@
  */
 package org.openrdf.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.Date;
 import java.util.Optional;
 
 import org.junit.After;
@@ -333,7 +334,7 @@ public abstract class AbstractModelPerformanceTest extends AbstractModelTest {
 		}
 
 		long start = System.nanoTime();
-		Optional<IRI> objectURI = model.anObjectURI();
+		Optional<URI> objectURI = model.objectURI();
 		System.out.println("testPerfAnObjectURISingle: " + (System.nanoTime() - start));
 		assertTrue(objectURI.isPresent());
 		assertEquals("urn:test:object:uri:single", objectURI.get().toString());
@@ -357,7 +358,7 @@ public abstract class AbstractModelPerformanceTest extends AbstractModelTest {
 		thrown.expect(ModelException.class);
 		long start = System.nanoTime();
 		try {
-			model.anObjectURI();
+			model.objectURI();
 		}
 		finally {
 			System.out.println("testPerfAnObjectURIMultipleAddedFirst: " + (System.nanoTime() - start));
@@ -382,7 +383,7 @@ public abstract class AbstractModelPerformanceTest extends AbstractModelTest {
 		thrown.expect(ModelException.class);
 		long start = System.nanoTime();
 		try {
-			model.anObjectURI();
+			model.objectURI();
 		}
 		finally {
 			System.out.println("testPerfAnObjectURIMultipleAddedLast: " + (System.nanoTime() - start));
