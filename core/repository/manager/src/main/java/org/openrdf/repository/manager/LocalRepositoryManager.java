@@ -57,7 +57,9 @@ import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryRegistry;
 import org.openrdf.repository.event.base.RepositoryConnectionListenerAdapter;
+import org.openrdf.repository.http.config.HTTPRepositoryFactory;
 import org.openrdf.repository.sail.config.RepositoryResolverClient;
+import org.openrdf.repository.sparql.config.SPARQLRepositoryFactory;
 
 /**
  * An implementation of the {@link RepositoryManager} interface that operates
@@ -176,6 +178,9 @@ public class LocalRepositoryManager extends RepositoryManager {
 		if (serviceResolver != null) {
 			serviceResolver.shutDown();
 			serviceResolver = null;
+		}
+		if (client != null) {
+			client.shutDown();
 			client = null;
 		}
 	}
@@ -252,6 +257,11 @@ public class LocalRepositoryManager extends RepositoryManager {
 		}
 		if (factory instanceof FederatedServiceResolverClient) {
 			((FederatedServiceResolverClient)factory).setFederatedServiceResolver(getFederatedServiceResolver());
+		}
+		if (factory instanceof HTTPRepositoryFactory) {
+			((HTTPRepositoryFactory)factory).setSesameClient(client);
+		} else if (factory instanceof SPARQLRepositoryFactory) {
+			((SPARQLRepositoryFactory)factory).setSesameClient(client);
 		}
 		Repository repository = factory.getRepository(config);
 		if (config instanceof DelegatingRepositoryImplConfig) {

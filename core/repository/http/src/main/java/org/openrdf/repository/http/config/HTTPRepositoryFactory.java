@@ -16,6 +16,7 @@
  */
 package org.openrdf.repository.http.config;
 
+import org.openrdf.http.client.SesameClient;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
@@ -37,6 +38,8 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 	 */
 	public static final String REPOSITORY_TYPE = "openrdf:HTTPRepository";
 
+	private SesameClient client;
+
 	/**
 	 * Returns the repository's type: <tt>openrdf:HTTPRepository</tt>.
 	 */
@@ -48,6 +51,14 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 		return new HTTPRepositoryConfig();
 	}
 
+	public SesameClient getSesameClient() {
+		return client;
+	}
+
+	public void setSesameClient(SesameClient client) {
+		this.client = client;
+	}
+
 	public Repository getRepository(RepositoryImplConfig config)
 		throws RepositoryConfigException
 	{
@@ -56,6 +67,7 @@ public class HTTPRepositoryFactory implements RepositoryFactory {
 		if (config instanceof HTTPRepositoryConfig) {
 			HTTPRepositoryConfig httpConfig = (HTTPRepositoryConfig)config;
 			result = new HTTPRepository(httpConfig.getURL());
+			result.setSesameClient(getSesameClient());
 //			result.setUsernameAndPassword(httpConfig.getUsername(), httpConfig.getPassword());
 		}
 		else {

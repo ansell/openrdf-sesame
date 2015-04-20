@@ -16,6 +16,7 @@
  */
 package org.openrdf.repository.sparql.config;
 
+import org.openrdf.http.client.SesameClient;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
@@ -30,12 +31,22 @@ public class SPARQLRepositoryFactory implements RepositoryFactory {
 
 	public static final String REPOSITORY_TYPE = "openrdf:SPARQLRepository";
 
+	private SesameClient client;
+
 	public String getRepositoryType() {
 		return REPOSITORY_TYPE;
 	}
 
 	public RepositoryImplConfig getConfig() {
 		return new SPARQLRepositoryConfig();
+	}
+
+	public SesameClient getSesameClient() {
+		return client;
+	}
+
+	public void setSesameClient(SesameClient client) {
+		this.client = client;
 	}
 
 	public SPARQLRepository getRepository(RepositoryImplConfig config)
@@ -51,6 +62,7 @@ public class SPARQLRepositoryFactory implements RepositoryFactory {
 			else {
 				result = new SPARQLRepository(httpConfig.getQueryEndpointUrl());
 			}
+			result.setSesameClient(client);
 		}
 		else {
 			throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());
