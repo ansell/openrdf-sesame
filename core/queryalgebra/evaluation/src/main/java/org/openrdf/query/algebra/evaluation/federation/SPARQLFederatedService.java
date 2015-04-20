@@ -119,16 +119,7 @@ public class SPARQLFederatedService implements FederatedService {
 	 */
 	public SPARQLFederatedService(String serviceUrl, SesameClient client) {
 		super();
-		this.rep = new SPARQLRepository(serviceUrl) {
-
-			@Override
-			protected void shutDownInternal()
-				throws RepositoryException
-			{
-				setSesameClient(null);
-				super.shutDownInternal();
-			}
-		};
+		this.rep = new SPARQLRepository(serviceUrl);
 		this.rep.setSesameClient(client);
 	}
 

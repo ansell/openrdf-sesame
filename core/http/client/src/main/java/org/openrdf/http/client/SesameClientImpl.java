@@ -21,8 +21,8 @@ import java.util.concurrent.Executors;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
-import org.apache.http.impl.client.SystemDefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * Uses {@link HttpClient} to manage HTTP connections.
@@ -32,6 +32,8 @@ import org.apache.http.impl.client.SystemDefaultHttpClient;
 public class SesameClientImpl implements SesameClient {
 
 	private HttpClient httpClient;
+
+	private CloseableHttpClient closeableClient;
 
 	private ExecutorService executor = null;
 
@@ -48,7 +50,7 @@ public class SesameClientImpl implements SesameClient {
 	 */
 	public synchronized HttpClient getHttpClient() {
 		if (httpClient == null) {
-			return httpClient = createHttpClient();
+			return httpClient = closeableClient = createHttpClient();
 		}
 		return httpClient;
 	}
@@ -60,10 +62,8 @@ public class SesameClientImpl implements SesameClient {
 		this.httpClient = httpClient;
 	}
 
-	private HttpClient createHttpClient() {
-		SystemDefaultHttpClient client = new SystemDefaultHttpClient();
-		client.setHttpRequestRetryHandler(new StandardHttpRequestRetryHandler(3, false));
-		return client;
+	private CloseableHttpClient createHttpClient() {
+		return HttpClients.createSystem();
 	}
 
 	public synchronized SparqlSession createSparqlSession(String queryEndpointUrl, String updateEndpointUrl) {
@@ -88,9 +88,9 @@ public class SesameClientImpl implements SesameClient {
 			executor.shutdown();
 			executor = null;
 		}
-		if (httpClient != null) {
-			HttpClientUtils.closeQuietly(httpClient);
-			httpClient = null;
+		if (closeableClient != null) {
+			HttpClientUtils.closeQuietly(closeableClient);
+			closeableClient = null;
 		}
 	}
 

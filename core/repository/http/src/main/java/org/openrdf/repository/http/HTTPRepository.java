@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.client.HttpClient;
+
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameSession;
@@ -60,6 +62,8 @@ public class HTTPRepository extends RepositoryBase {
 	 * The HTTP client that takes care of the client-server communication.
 	 */
 	private SesameClient client;
+
+	private SesameClientImpl clientImpl;
 
 	private String username;
 
@@ -120,13 +124,24 @@ public class HTTPRepository extends RepositoryBase {
 
 	public synchronized SesameClient getSesameClient() {
 		if (client == null) {
-			client = new SesameClientImpl();
+			client = clientImpl = new SesameClientImpl();
 		}
 		return client;
 	}
 
 	public synchronized void setSesameClient(SesameClient client) {
 		this.client = client;
+	}
+
+	public final HttpClient getHttpClient() {
+		return getSesameClient().getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		if (clientImpl == null) {
+			client = clientImpl = new SesameClientImpl();
+		}
+		clientImpl.setHttpClient(httpClient);
 	}
 
 	public ValueFactory getValueFactory() {
@@ -261,9 +276,9 @@ public class HTTPRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		if (client != null) {
-			client.shutDown();
-			client = null;
+		if (clientImpl != null) {
+			clientImpl.shutDown();
+			clientImpl = null;
 		}
 	}
 

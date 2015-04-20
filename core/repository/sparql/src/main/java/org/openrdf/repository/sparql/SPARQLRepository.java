@@ -20,6 +20,8 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.http.client.HttpClient;
+
 import info.aduna.io.MavenUtil;
 
 import org.openrdf.http.client.SparqlSession;
@@ -56,6 +58,8 @@ public class SPARQLRepository extends RepositoryBase {
 	 * The HTTP client that takes care of the client-server communication.
 	 */
 	private SesameClient client;
+
+	private SesameClientImpl clientImpl;
 
 	private String username;
 
@@ -99,13 +103,24 @@ public class SPARQLRepository extends RepositoryBase {
 
 	public synchronized SesameClient getSesameClient() {
 		if (client == null) {
-			client = new SesameClientImpl();
+			client = clientImpl = new SesameClientImpl();
 		}
 		return client;
 	}
 
 	public synchronized void setSesameClient(SesameClient client) {
 		this.client = client;
+	}
+
+	public final HttpClient getHttpClient() {
+		return getSesameClient().getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		if (clientImpl == null) {
+			client = clientImpl = new SesameClientImpl();
+		}
+		clientImpl.setHttpClient(httpClient);
 	}
 
 	/**
@@ -178,8 +193,9 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		if (client != null) {
-			client.shutDown();
+		if (clientImpl != null) {
+			clientImpl.shutDown();
+			clientImpl = null;
 		}
 	}
 
