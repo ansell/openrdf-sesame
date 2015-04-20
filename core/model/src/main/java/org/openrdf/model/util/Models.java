@@ -276,7 +276,7 @@ public class Models {
 	 *         will be {@link Optional#empty() empty} if no such value exists.
 	 * @since 4.0
 	 */
-	public static Optional<URI> predicate(Model m) {
+	public static Optional<IRI> predicate(Model m) {
 		final Set<IRI> predicates = m.predicates();
 		if (predicates != null && !predicates.isEmpty()) {
 			return Optional.of(predicates.iterator().next());

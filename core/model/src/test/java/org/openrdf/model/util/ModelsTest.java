@@ -191,7 +191,7 @@ public class ModelsTest extends TestCase {
 		model1.add(foo, bar, foo);
 		model1.add(foo, foo, foo);
 
-		URI result = Models.predicate(model1).orElse(null);
+		IRI result = Models.predicate(model1).orElse(null);
 		assertNotNull(result);
 		assertTrue(result.equals(bar) || result.equals(foo));
 	}

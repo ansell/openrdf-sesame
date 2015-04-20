@@ -324,26 +324,6 @@ public abstract class AbstractModelPerformanceTest extends AbstractModelTest {
 	 * Test method for {@link org.openrdf.model.Model#anObjectURI()}.
 	 */
 	@Test
-	public final void testPerfAnObjectURISingle() {
-		Model model = getNewEmptyModel();
-		for (int i = 0; i < COUNT; i++) {
-			// Add many statements with the same object URI
-			model.add(vf.createStatement(vf.createIRI("urn:test:uri:subject:" + i % 10000),
-					vf.createIRI("urn:test:uri:predicate:" + (i % 200)),
-					vf.createIRI("urn:test:object:uri:single")));
-		}
-
-		long start = System.nanoTime();
-		Optional<URI> objectURI = model.objectURI();
-		System.out.println("testPerfAnObjectURISingle: " + (System.nanoTime() - start));
-		assertTrue(objectURI.isPresent());
-		assertEquals("urn:test:object:uri:single", objectURI.get().toString());
-	}
-
-	/**
-	 * Test method for {@link org.openrdf.model.Model#anObjectURI()}.
-	 */
-	@Test
 	public final void testPerfAnObjectURIMultipleAddedFirst() {
 		Model model = getNewEmptyModel();
 		model.add(vf.createStatement(vf.createIRI("urn:test:uri:subject:1"),
