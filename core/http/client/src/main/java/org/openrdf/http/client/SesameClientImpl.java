@@ -21,8 +21,8 @@ import java.util.concurrent.Executors;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
-import org.apache.http.impl.client.SystemDefaultHttpClient;
 
 /**
  * Uses {@link HttpClient} to manage HTTP connections.
@@ -61,9 +61,10 @@ public class SesameClientImpl implements SesameClient {
 	}
 
 	private HttpClient createHttpClient() {
-		SystemDefaultHttpClient client = new SystemDefaultHttpClient();
-		client.setHttpRequestRetryHandler(new StandardHttpRequestRetryHandler(3, false));
-		return client;
+		return HttpClientBuilder.create()
+			.useSystemProperties()
+			.setRetryHandler(new StandardHttpRequestRetryHandler(3, false))
+		.build();
 	}
 
 	public synchronized SparqlSession createSparqlSession(String queryEndpointUrl, String updateEndpointUrl) {
