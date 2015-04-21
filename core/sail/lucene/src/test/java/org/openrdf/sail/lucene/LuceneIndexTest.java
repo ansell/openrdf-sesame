@@ -29,17 +29,18 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,7 +121,7 @@ public class LuceneIndexTest {
 		throws Exception
 	{
 		directory = new RAMDirectory();
-		analyzer = new StandardAnalyzer(Version.LUCENE_35);
+		analyzer = new StandardAnalyzer();
 		index = new LuceneIndex(directory, analyzer);
 	}
 
@@ -136,48 +137,50 @@ public class LuceneIndexTest {
 		throws IOException, ParseException
 	{
 		// add a statement to an index
+		index.begin();
 		index.addStatement(statement11);
+		index.commit();
 
 		// check that it arrived properly
-		IndexReader reader = IndexReader.open(directory);
+		DirectoryReader reader = DirectoryReader.open(directory);
 		assertEquals(1, reader.numDocs());
 
-		Term term = new Term(LuceneIndex.URI_FIELD_NAME, subject.toString());
-		TermDocs docs = reader.termDocs(term);
-		assertTrue(docs.next());
+		Term term = new Term(SearchFields.URI_FIELD_NAME, subject.toString());
+		DocsEnum docs = termDocs(reader, term);
+		assertTrue(next(docs));
 
-		int documentNr = docs.doc();
+		int documentNr = docs.docID();
 		Document document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), document.get(predicate1.toString()));
 
-		assertFalse(docs.next());
-		docs.close();
+		assertFalse(next(docs));
 		reader.close();
 
 		// add another statement
+		index.begin();
 		index.addStatement(statement12);
+		index.commit();
 
 		// See if everything remains consistent. We must create a new IndexReader
 		// in order to be able to see the updates
-		reader = IndexReader.open(directory);
+		reader = DirectoryReader.open(directory);
 		assertEquals(1, reader.numDocs()); // #docs should *not* have increased
 
-		docs = reader.termDocs(term);
-		assertTrue(docs.next());
+		docs = termDocs(reader, term);
+		assertTrue(next(docs));
 
-		documentNr = docs.doc();
+		documentNr = docs.docID();
 		document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), document.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), document.get(predicate2.toString()));
 
-		assertFalse(docs.next());
-		docs.close();
+		assertFalse(next(docs));
 
 		// see if we can query for these literals
 		IndexSearcher searcher = new IndexSearcher(reader);
-		QueryParser parser = new QueryParser(Version.LUCENE_35, LuceneIndex.TEXT_FIELD_NAME, analyzer);
+		QueryParser parser = new QueryParser(SearchFields.TEXT_FIELD_NAME, analyzer);
 
 		Query query = parser.parse(object1.getLabel());
 		System.out.println("query=" + query);
@@ -190,39 +193,56 @@ public class LuceneIndexTest {
 		searcher.search(query, results);
 		assertEquals(1, results.getTotalHits());
 
-		searcher.close();
 		reader.close();
 
 		// remove the first statement
+		index.begin();
 		index.removeStatement(statement11);
+		index.commit();
 
 		// check that that statement is actually removed and that the other still
 		// exists
-		reader = IndexReader.open(directory);
+		reader = DirectoryReader.open(directory);
 		assertEquals(1, reader.numDocs());
 
-		docs = reader.termDocs(term);
-		assertTrue(docs.next());
+		docs = termDocs(reader, term);
+		assertTrue(next(docs));
 
-		documentNr = docs.doc();
+		documentNr = docs.docID();
 		document = reader.document(documentNr);
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertNull(document.get(predicate1.toString()));
 		assertEquals(object2.getLabel(), document.get(predicate2.toString()));
 
-		assertFalse(docs.next());
-		docs.close();
+		assertFalse(next(docs));
 
 		reader.close();
 
 		// remove the other statement
+		index.begin();
 		index.removeStatement(statement12);
+		index.commit();
 
 		// check that there are no documents left (i.e. the last Document was
 		// removed completely, rather than its remaining triple removed)
-		reader = IndexReader.open(directory);
+		reader = DirectoryReader.open(directory);
 		assertEquals(0, reader.numDocs());
 		reader.close();
+	}
+
+	/**
+	 * NB: this is a convenient but very slow way of getting termDocs.
+	 * It is sufficient for testing purposes.
+	 * @throws IOException 
+	 */
+	private static DocsEnum termDocs(IndexReader reader, Term term) throws IOException
+	{
+		return MultiFields.getTermDocsEnum(reader, MultiFields.getLiveDocs(reader), term.field(), term.bytes());
+	}
+
+	private static boolean next(DocsEnum docs) throws IOException
+	{
+		return (docs.nextDoc() != DocsEnum.NO_MORE_DOCS);
 	}
 
 	@Test
@@ -236,21 +256,23 @@ public class LuceneIndexTest {
 		added.add(statement12);
 		added.add(statement21);
 		added.add(statement22);
+		index.begin();
 		index.addRemoveStatements(added, removed);
+		index.commit();
 
 		// check that it arrived properly
-		IndexReader reader = IndexReader.open(directory);
+		DirectoryReader reader = DirectoryReader.open(directory);
 		assertEquals(2, reader.numDocs());
 		reader.close();
 
 		// check the documents
 		Document document = index.getDocuments(subject).iterator().next();
-		assertEquals(subject.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertStatement(statement11, document);
 		assertStatement(statement12, document);
 
 		document = index.getDocuments(subject2).iterator().next();
-		assertEquals(subject2.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject2.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertStatement(statement21, document);
 		assertStatement(statement22, document);
 
@@ -266,11 +288,13 @@ public class LuceneIndexTest {
 		removed.clear();
 		added.add(statement23);
 		removed.add(statement22);
+		index.begin();
 		index.addRemoveStatements(added, removed);
+		index.commit();
 
 		// check doc 2
 		document = index.getDocuments(subject2).iterator().next();
-		assertEquals(subject2.toString(), document.get(LuceneIndex.URI_FIELD_NAME));
+		assertEquals(subject2.toString(), document.get(SearchFields.URI_FIELD_NAME));
 		assertStatement(statement21, document);
 		assertStatement(statement23, document);
 		assertNoStatement(statement22, document);
@@ -311,7 +335,7 @@ public class LuceneIndexTest {
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());
 			connection.add(statementContext211, statementContext211.getContext());
@@ -327,6 +351,7 @@ public class LuceneIndexTest {
 			assertStatement(statementContext232);
 
 			// delete context 1
+			connection.begin();
 			connection.clear(new Resource[] { CONTEXT_1 });
 			connection.commit();
 			assertNoStatement(statementContext111);
@@ -368,7 +393,7 @@ public class LuceneIndexTest {
 		// add statements with context
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
-			connection.setAutoCommit(false);
+			connection.begin();
 			connection.add(statementContext111, statementContext111.getContext());
 			connection.add(statementContext121, statementContext121.getContext());
 			connection.add(statementContext211, statementContext211.getContext());
@@ -384,6 +409,7 @@ public class LuceneIndexTest {
 			assertStatement(statementContext232);
 
 			// delete context 2
+			connection.begin();
 			connection.clear(new Resource[] { CONTEXT_2 });
 			connection.commit();
 			assertStatement(statementContext111);
@@ -436,9 +462,9 @@ public class LuceneIndexTest {
 	 * @param document
 	 */
 	private void assertStatement(Statement statement, Document document) {
-		Field[] fields = document.getFields(statement.getPredicate().toString());
+		IndexableField[] fields = document.getFields(statement.getPredicate().toString());
 		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
-		for (Field f : fields) {
+		for (IndexableField f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
 				return;
 		}
@@ -450,10 +476,10 @@ public class LuceneIndexTest {
 	 * @param document
 	 */
 	private void assertNoStatement(Statement statement, Document document) {
-		Field[] fields = document.getFields(statement.getPredicate().toString());
+		IndexableField[] fields = document.getFields(statement.getPredicate().toString());
 		if (fields == null)
 			return;
-		for (Field f : fields) {
+		for (IndexableField f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
 				fail("Statement should not be found in document " + statement);
 		}
