@@ -503,7 +503,7 @@ public class SPARQLFederatedService implements FederatedService {
 
 		if (Literals.isLanguageLiteral(lit)) {
 			sb.append('@');
-			sb.append(lit.getLanguage());
+			sb.append(lit.getLanguage().get());
 		}
 		else {
 			sb.append("^^<");
