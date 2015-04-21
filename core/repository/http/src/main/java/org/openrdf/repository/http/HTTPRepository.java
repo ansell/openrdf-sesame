@@ -63,7 +63,7 @@ public class HTTPRepository extends RepositoryBase {
 	 */
 	private SesameClient client;
 
-	private SesameClientImpl clientImpl;
+	private SesameClientImpl dependentClient;
 
 	private String username;
 
@@ -124,7 +124,7 @@ public class HTTPRepository extends RepositoryBase {
 
 	public synchronized SesameClient getSesameClient() {
 		if (client == null) {
-			client = clientImpl = new SesameClientImpl();
+			client = dependentClient = new SesameClientImpl();
 		}
 		return client;
 	}
@@ -138,10 +138,10 @@ public class HTTPRepository extends RepositoryBase {
 	}
 
 	public void setHttpClient(HttpClient httpClient) {
-		if (clientImpl == null) {
-			client = clientImpl = new SesameClientImpl();
+		if (dependentClient == null) {
+			client = dependentClient = new SesameClientImpl();
 		}
-		clientImpl.setHttpClient(httpClient);
+		dependentClient.setHttpClient(httpClient);
 	}
 
 	public ValueFactory getValueFactory() {
@@ -276,9 +276,9 @@ public class HTTPRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		if (clientImpl != null) {
-			clientImpl.shutDown();
-			clientImpl = null;
+		if (dependentClient != null) {
+			dependentClient.shutDown();
+			dependentClient = null;
 		}
 	}
 

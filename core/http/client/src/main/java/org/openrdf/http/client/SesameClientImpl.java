@@ -33,7 +33,7 @@ public class SesameClientImpl implements SesameClient {
 
 	private HttpClient httpClient;
 
-	private CloseableHttpClient closeableClient;
+	private CloseableHttpClient dependentClient;
 
 	private ExecutorService executor = null;
 
@@ -50,7 +50,7 @@ public class SesameClientImpl implements SesameClient {
 	 */
 	public synchronized HttpClient getHttpClient() {
 		if (httpClient == null) {
-			return httpClient = closeableClient = createHttpClient();
+			httpClient = dependentClient = createHttpClient();
 		}
 		return httpClient;
 	}
@@ -88,9 +88,9 @@ public class SesameClientImpl implements SesameClient {
 			executor.shutdown();
 			executor = null;
 		}
-		if (closeableClient != null) {
-			HttpClientUtils.closeQuietly(closeableClient);
-			closeableClient = null;
+		if (dependentClient != null) {
+			HttpClientUtils.closeQuietly(dependentClient);
+			dependentClient = null;
 		}
 	}
 

@@ -22,11 +22,9 @@ import java.util.Map;
 
 import org.apache.http.client.HttpClient;
 
-import info.aduna.io.MavenUtil;
-
-import org.openrdf.http.client.SparqlSession;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
+import org.openrdf.http.client.SparqlSession;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -41,11 +39,6 @@ import org.openrdf.repository.base.RepositoryBase;
  * @author James Leigh
  */
 public class SPARQLRepository extends RepositoryBase {
-
-	private static final String APP_NAME = "OpenRDF.org SPARQLConnection";
-
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame",
-			"sesame-repository-sparql", "devel");
 	
 	/**
 	 * Flag indicating if quad mode is enabled in newly created
@@ -59,7 +52,7 @@ public class SPARQLRepository extends RepositoryBase {
 	 */
 	private SesameClient client;
 
-	private SesameClientImpl clientImpl;
+	private SesameClientImpl dependentClient;
 
 	private String username;
 
@@ -103,7 +96,7 @@ public class SPARQLRepository extends RepositoryBase {
 
 	public synchronized SesameClient getSesameClient() {
 		if (client == null) {
-			client = clientImpl = new SesameClientImpl();
+			client = dependentClient = new SesameClientImpl();
 		}
 		return client;
 	}
@@ -117,10 +110,10 @@ public class SPARQLRepository extends RepositoryBase {
 	}
 
 	public void setHttpClient(HttpClient httpClient) {
-		if (clientImpl == null) {
-			client = clientImpl = new SesameClientImpl();
+		if (dependentClient == null) {
+			client = dependentClient = new SesameClientImpl();
 		}
-		clientImpl.setHttpClient(httpClient);
+		dependentClient.setHttpClient(httpClient);
 	}
 
 	/**
@@ -193,9 +186,9 @@ public class SPARQLRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		if (clientImpl != null) {
-			clientImpl.shutDown();
-			clientImpl = null;
+		if (dependentClient != null) {
+			dependentClient.shutDown();
+			dependentClient = null;
 		}
 	}
 

@@ -49,11 +49,11 @@ public class FederatedServiceResolverImpl implements FederatedServiceResolver {
 
 	private SesameClient client;
 
-	private SesameClientImpl clientImpl;
+	private SesameClientImpl dependentClient;
 
 	public synchronized SesameClient getSesameClient() {
 		if (client == null) {
-			client = clientImpl = new SesameClientImpl();
+			client = dependentClient = new SesameClientImpl();
 		}
 		return client;
 	}
@@ -136,9 +136,9 @@ public class FederatedServiceResolverImpl implements FederatedServiceResolver {
 
 	public void shutDown() {
 		unregisterAll();
-		if (clientImpl != null) {
-			clientImpl.shutDown();
-			clientImpl = null;
+		if (dependentClient != null) {
+			dependentClient.shutDown();
+			dependentClient = null;
 		}
 	}
 
