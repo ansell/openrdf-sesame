@@ -30,8 +30,11 @@ import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import info.aduna.io.FileUtil;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Statement;
@@ -50,9 +53,25 @@ public class TestNativeStoreUpgrade {
 	private static final String ZIP_2_7_15 = "/nativerdf-2.7.15.zip";
 	private static final String ZIP_2_7_15_INCONSISTENT = "/nativerdf-inconsistent-2.7.15.zip";
 
+	private File dataDir;
+
+	@Before
+	public void setUp()
+		throws Exception
+	{
+		dataDir = FileUtil.createTempDir("nativestore");
+	}
+
+	@After
+	public void tearDown()
+		throws Exception
+	{
+		FileUtil.deleteDir(dataDir);
+		dataDir = null;
+	}
+
 	@Test
 	public void testDevel() throws IOException, SailException {
-		File dataDir = createTempDir("native-devel");
 		NativeStore store = new NativeStore(dataDir);
 		try {
 			store.initialize();
@@ -75,7 +94,7 @@ public class TestNativeStoreUpgrade {
 
 	@Test
 	public void test2715() throws IOException, SailException {
-		File dataDir = extractZipResource(ZIP_2_7_15, "native-2.7.15");
+		extractZipResource(ZIP_2_7_15, dataDir);
 		assertFalse(new File(dataDir, "nativerdf.ver").exists());
 		assertValue(dataDir);
 		assertTrue(new File(dataDir, "nativerdf.ver").exists());
@@ -83,7 +102,7 @@ public class TestNativeStoreUpgrade {
 
 	@Test
 	public void test2715Inconsistent() throws IOException, SailException {
-		File dataDir = extractZipResource(ZIP_2_7_15_INCONSISTENT, "native-2.7.15");
+		extractZipResource(ZIP_2_7_15_INCONSISTENT, dataDir);
 		assertFalse(new File(dataDir, "nativerdf.ver").exists());
 		try {
 			NativeStore store = new NativeStore(dataDir);
@@ -122,10 +141,9 @@ public class TestNativeStoreUpgrade {
 		}
 	}
 
-	public File extractZipResource(String resource, String prefix)
+	public void extractZipResource(String resource, File dir)
 		throws IOException
 	{
-		File dir = createTempDir(prefix);
 		InputStream in = TestNativeStoreUpgrade.class.getResourceAsStream(resource);
 		try {
 			ZipInputStream zip = new ZipInputStream(in);
@@ -137,19 +155,9 @@ public class TestNativeStoreUpgrade {
 				ch.transferFrom(Channels.newChannel(zip), 0, entry.getSize());
 				zip.closeEntry();
 			}
-			return dir;
 		} finally {
 			in.close();
 		}
-	}
-
-	public File createTempDir(String prefix)
-		throws IOException
-	{
-		File dir = File.createTempFile(prefix, null);
-		dir.delete();
-		dir.mkdirs();
-		return dir;
 	}
 
 }
