@@ -120,11 +120,16 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				// the empty bindingset should be merged with all bindingset in the
 				// hash table
 				hashTableValues = new UnionIterator<BindingSet>(hashTable.values());
+				if(!hashTableValues.hasNext()) {
+					currentScanElem = null;
+					closeHashValue(hashTableValues);
+					hashTableValues = null;
+				}
 			}
 			else {
 				BindingSetHashKey key = BindingSetHashKey.create(joinAttributes, currentScanElem);
 				List<BindingSet> hashValue = hashTable.get(key);
-				if (hashValue != null) {
+				if (hashValue != null && !hashValue.isEmpty()) {
 					hashTableValues = hashValue.iterator();
 				}
 				else if(leftJoin) {
@@ -287,7 +292,8 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 		}
 		else
 		{
-			hashTable = Collections.<BindingSetHashKey,List<BindingSet>>singletonMap(BindingSetHashKey.EMPTY, new ArrayList<BindingSet>(initialSize));
+			List<BindingSet> l = (initialSize > 0) ? new ArrayList<BindingSet>(initialSize) : null;
+			hashTable = Collections.<BindingSetHashKey,List<BindingSet>>singletonMap(BindingSetHashKey.EMPTY, l);
 		}
 		return hashTable;
 	}
