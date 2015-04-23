@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.apache.http.client.HttpClient;
 
-import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameSession;
