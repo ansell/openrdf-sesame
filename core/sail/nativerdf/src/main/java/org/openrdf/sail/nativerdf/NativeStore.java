@@ -549,6 +549,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		throws IOException, SailException
 	{
 		if (version == null) {
+			// either a new store or a pre-2.8.2 store
 			ValueStore valueStore = new ValueStore(dataDir);
 			try {
 				valueStore.checkConsistency();
