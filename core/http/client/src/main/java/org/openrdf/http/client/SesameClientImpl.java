@@ -48,6 +48,11 @@ public class SesameClientImpl implements SesameClient, HttpClientDependent {
 		initialize();
 	}
 
+	public SesameClientImpl(CloseableHttpClient dependentClient, ExecutorService  dependentExecutorService) {
+		this.httpClient = this.dependentClient = dependentClient;
+		this.executor = dependentExecutorService;
+	}
+
 	/**
 	 * @return Returns the httpClient.
 	 */
