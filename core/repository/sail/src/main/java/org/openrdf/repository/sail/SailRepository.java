@@ -35,6 +35,7 @@ import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailLockedException;
+import org.openrdf.sail.StackableSail;
 
 /**
  * An implementation of the {@link Repository} interface that operates on a
@@ -102,47 +103,55 @@ public class SailRepository extends RepositoryBase implements FederatedServiceRe
 
 	@Override
 	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
-		if (sail instanceof FederatedServiceResolverClient) {
-			((FederatedServiceResolverClient)sail).setFederatedServiceResolver(resolver);
+		FederatedServiceResolverClient stack = findSailOf(sail, FederatedServiceResolverClient.class);
+		if (stack != null) {
+			stack.setFederatedServiceResolver(resolver);
 		}
 	}
 
 	@Override
 	public void setRepositoryResolver(RepositoryResolver resolver) {
-		if (sail instanceof RepositoryResolverClient) {
-			((RepositoryResolverClient)sail).setRepositoryResolver(resolver);
+		RepositoryResolverClient stack = findSailOf(sail, RepositoryResolverClient.class);
+		if (stack != null) {
+			stack.setRepositoryResolver(resolver);
 		}
 	}
 
 	@Override
 	public SesameClient getSesameClient() {
-		if (sail instanceof SesameClientDependent) {
-			return ((SesameClientDependent)sail).getSesameClient();
-		} else {
+		SesameClientDependent stack = findSailOf(sail, SesameClientDependent.class);
+		if (stack != null) {
+			return stack.getSesameClient();
+		}
+		else {
 			return null;
 		}
 	}
 
 	@Override
 	public void setSesameClient(SesameClient client) {
-		if (sail instanceof SesameClientDependent) {
-			((SesameClientDependent)sail).setSesameClient(client);
+		SesameClientDependent stack = findSailOf(sail, SesameClientDependent.class);
+		if (stack != null) {
+			stack.setSesameClient(client);
 		}
 	}
 
 	@Override
 	public HttpClient getHttpClient() {
-		if (sail instanceof HttpClientDependent) {
-			return ((HttpClientDependent)sail).getHttpClient();
-		} else {
+		HttpClientDependent stack = findSailOf(sail, HttpClientDependent.class);
+		if (stack != null) {
+			return stack.getHttpClient();
+		}
+		else {
 			return null;
 		}
 	}
 
 	@Override
 	public void setHttpClient(HttpClient client) {
-		if (sail instanceof HttpClientDependent) {
-			((HttpClientDependent)sail).setHttpClient(client);
+		HttpClientDependent stack = findSailOf(sail, HttpClientDependent.class);
+		if (stack != null) {
+			stack.setHttpClient(client);
 		}
 	}
 
@@ -214,5 +223,17 @@ public class SailRepository extends RepositoryBase implements FederatedServiceRe
 
 	public String toString() {
 		return sail.toString();
+	}
+
+	private <T> T findSailOf(Sail sail, Class<T> type) {
+		if (type.isInstance(sail)) {
+			return type.cast(sail);
+		}
+		else if (sail instanceof StackableSail) {
+			return findSailOf(((StackableSail)sail).getBaseSail(), type);
+		}
+		else {
+			return null;
+		}
 	}
 }
