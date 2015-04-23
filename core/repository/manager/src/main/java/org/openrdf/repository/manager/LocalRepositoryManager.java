@@ -34,6 +34,8 @@ import org.apache.http.client.HttpClient;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.http.client.HttpClientDependent;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -41,8 +43,8 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.repository.DelegatingRepository;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -57,9 +59,7 @@ import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryRegistry;
 import org.openrdf.repository.event.base.RepositoryConnectionListenerAdapter;
-import org.openrdf.repository.http.config.HTTPRepositoryFactory;
 import org.openrdf.repository.sail.config.RepositoryResolverClient;
-import org.openrdf.repository.sparql.config.SPARQLRepositoryFactory;
 
 /**
  * An implementation of the {@link RepositoryManager} interface that operates
@@ -84,8 +84,10 @@ public class LocalRepositoryManager extends RepositoryManager {
 	 */
 	private final File baseDir;
 
+	/** dependent life cycle */
 	private SesameClientImpl client;
 
+	/** dependent life cycle */
 	private FederatedServiceResolverImpl serviceResolver;
 
 	/*--------------*
@@ -252,18 +254,19 @@ public class LocalRepositoryManager extends RepositoryManager {
 		if (factory == null) {
 			throw new RepositoryConfigException("Unsupported repository type: " + config.getType());
 		}
-		if (factory instanceof RepositoryResolverClient) {
-			((RepositoryResolverClient)factory).setRepositoryResolver(this);
-		}
-		if (factory instanceof FederatedServiceResolverClient) {
-			((FederatedServiceResolverClient)factory).setFederatedServiceResolver(getFederatedServiceResolver());
-		}
-		if (factory instanceof HTTPRepositoryFactory) {
-			((HTTPRepositoryFactory)factory).setSesameClient(client);
-		} else if (factory instanceof SPARQLRepositoryFactory) {
-			((SPARQLRepositoryFactory)factory).setSesameClient(client);
-		}
 		Repository repository = factory.getRepository(config);
+		if (repository instanceof RepositoryResolverClient) {
+			((RepositoryResolverClient)repository).setRepositoryResolver(this);
+		}
+		if (repository instanceof FederatedServiceResolverClient) {
+			((FederatedServiceResolverClient)repository).setFederatedServiceResolver(getFederatedServiceResolver());
+		}
+		if (repository instanceof SesameClientDependent) {
+			((SesameClientDependent)repository).setSesameClient(client);
+		}
+		else if (repository instanceof HttpClientDependent) {
+			((HttpClientDependent)repository).setHttpClient(getHttpClient());
+		}
 		if (config instanceof DelegatingRepositoryImplConfig) {
 			RepositoryImplConfig delegateConfig = ((DelegatingRepositoryImplConfig)config).getDelegate();
 			Repository delegate = createRepositoryStack(delegateConfig);

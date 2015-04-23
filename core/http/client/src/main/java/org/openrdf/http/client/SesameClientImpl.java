@@ -24,15 +24,18 @@ import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+
 /**
  * Uses {@link HttpClient} to manage HTTP connections.
  * 
  * @author James Leigh
  */
-public class SesameClientImpl implements SesameClient {
+public class SesameClientImpl implements SesameClient, HttpClientDependent {
 
+	/** independent life cycle */
 	private HttpClient httpClient;
 
+	/** dependent life cycle */
 	private CloseableHttpClient dependentClient;
 
 	private ExecutorService executor = null;

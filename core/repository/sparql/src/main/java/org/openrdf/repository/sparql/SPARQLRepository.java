@@ -22,7 +22,9 @@ import java.util.Map;
 
 import org.apache.http.client.HttpClient;
 
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.model.ValueFactory;
@@ -38,7 +40,7 @@ import org.openrdf.repository.base.RepositoryBase;
  * 
  * @author James Leigh
  */
-public class SPARQLRepository extends RepositoryBase {
+public class SPARQLRepository extends RepositoryBase implements HttpClientDependent, SesameClientDependent {
 	
 	/**
 	 * Flag indicating if quad mode is enabled in newly created
@@ -52,6 +54,7 @@ public class SPARQLRepository extends RepositoryBase {
 	 */
 	private SesameClient client;
 
+	/** dependent life cycle */
 	private SesameClientImpl dependentClient;
 
 	private String username;

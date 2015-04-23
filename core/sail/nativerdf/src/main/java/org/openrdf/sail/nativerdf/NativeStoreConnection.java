@@ -47,6 +47,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -73,7 +74,9 @@ import org.openrdf.sail.nativerdf.model.NativeValue;
 /**
  * @author Arjohn Kampman
  */
-public class NativeStoreConnection extends NotifyingSailConnectionBase implements InferencerConnection {
+public class NativeStoreConnection extends NotifyingSailConnectionBase implements InferencerConnection,
+		FederatedServiceResolverClient
+{
 
 	/*-----------*
 	 * Constants *

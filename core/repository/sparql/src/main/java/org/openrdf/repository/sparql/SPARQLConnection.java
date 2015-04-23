@@ -36,6 +36,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -85,7 +86,7 @@ import org.openrdf.rio.helpers.StatementCollector;
  * 
  * @author James Leigh
  */
-public class SPARQLConnection extends RepositoryConnectionBase {
+public class SPARQLConnection extends RepositoryConnectionBase implements HttpClientDependent {
 
 	private static final String EVERYTHING = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }";
 	

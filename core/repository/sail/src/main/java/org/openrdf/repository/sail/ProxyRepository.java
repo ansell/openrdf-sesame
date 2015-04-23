@@ -56,10 +56,22 @@ public class ProxyRepository extends RepositoryBase implements RepositoryResolve
 
 	private String proxiedID;
 
+	/** independent life cycle */
 	private RepositoryResolver resolver;
 
 	public ProxyRepository() {
 		super();
+	}
+
+	/**
+	 * Creates a repository instance that proxies to a repository of the give ID.
+	 * 
+	 * @param proxiedIdentity
+	 *        id of the proxied repository
+	 */
+	public ProxyRepository(String proxiedIdentity) {
+		super();
+		this.setProxiedIdentity(proxiedIdentity);
 	}
 
 	/**
@@ -142,6 +154,9 @@ public class ProxyRepository extends RepositoryBase implements RepositoryResolve
 	protected void initializeInternal()
 		throws RepositoryException
 	{
+		if (resolver == null) {
+			throw new RepositoryException("Expected RepositoryResolver to be set.");
+		}
 		getProxiedRepository().initialize();
 	}
 

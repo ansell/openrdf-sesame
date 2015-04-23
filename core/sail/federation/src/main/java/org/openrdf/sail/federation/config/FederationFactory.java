@@ -16,14 +16,10 @@
  */
 package org.openrdf.sail.federation.config;
 
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryRegistry;
-import org.openrdf.repository.sail.config.RepositoryResolver;
-import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
@@ -36,9 +32,7 @@ import org.openrdf.sail.federation.Federation;
  * @see FederationConfig
  * @author James Leigh
  */
-public class FederationFactory implements SailFactory, RepositoryResolverClient,
-		FederatedServiceResolverClient
-{
+public class FederationFactory implements SailFactory {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -46,10 +40,6 @@ public class FederationFactory implements SailFactory, RepositoryResolverClient,
 	 * @see SailFactory#getSailType()
 	 */
 	public static final String SAIL_TYPE = "openrdf:Federation";
-
-	private RepositoryResolver resolver;
-
-	private FederatedServiceResolver serviceResolver;
 
 	/**
 	 * Returns the Sail's type: <tt>openrdf:Federation</tt>.
@@ -60,15 +50,6 @@ public class FederationFactory implements SailFactory, RepositoryResolverClient,
 
 	public SailImplConfig getConfig() {
 		return new FederationConfig();
-	}
-
-	public FederatedServiceResolver getFederatedServiceResolver() {
-		return serviceResolver;
-	}
-
-	@Override
-	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
-		this.serviceResolver = resolver;
 	}
 
 	public Sail getSail(SailImplConfig config)
@@ -85,9 +66,6 @@ public class FederationFactory implements SailFactory, RepositoryResolverClient,
 			if (factory == null) {
 				throw new SailConfigException("Unsupported repository type: " + config.getType());
 			}
-			if (factory instanceof RepositoryResolverClient) {
-				((RepositoryResolverClient)factory).setRepositoryResolver(resolver);
-			}
 			try {
 				sail.addMember(factory.getRepository(member));
 			}
@@ -98,12 +76,6 @@ public class FederationFactory implements SailFactory, RepositoryResolverClient,
 		sail.setLocalPropertySpace(cfg.getLocalPropertySpace());
 		sail.setDistinct(cfg.isDistinct());
 		sail.setReadOnly(cfg.isReadOnly());
-		sail.setFederatedServiceResolver(getFederatedServiceResolver());
 		return sail;
-	}
-
-	@Override
-	public void setRepositoryResolver(RepositoryResolver resolver) {
-		this.resolver = resolver;
 	}
 }

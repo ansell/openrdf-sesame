@@ -25,12 +25,15 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.openrdf.IsolationLevel;
-import org.openrdf.IsolationLevels;
-
+import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
+import org.openrdf.http.client.HttpClientDependent;
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
@@ -39,6 +42,8 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverI
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sail.config.RepositoryResolver;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -49,7 +54,9 @@ import org.openrdf.sail.SailException;
  * @author James Leigh
  * @author Arjohn Kampman
  */
-public class Federation implements Sail, Executor, FederatedServiceResolverClient {
+public class Federation implements Sail, Executor, FederatedServiceResolverClient, RepositoryResolverClient,
+		HttpClientDependent, SesameClientDependent
+{
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Federation.class);
 
@@ -65,9 +72,11 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 
 	private File dataDir;
 
+	/** independent life cycle */
 	private FederatedServiceResolver serviceResolver;
 
-	private FederatedServiceResolverImpl serviceResolverImpl;
+	/** dependent life cycle */
+	private FederatedServiceResolverImpl dependentServiceResolver;
 
 	public File getDataDir() {
 		return dataDir;
@@ -128,10 +137,10 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 	 */
 	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
 		if (serviceResolver == null) {
-			if (serviceResolverImpl == null) {
-				serviceResolverImpl = new FederatedServiceResolverImpl();
+			if (dependentServiceResolver == null) {
+				dependentServiceResolver = new FederatedServiceResolverImpl();
 			}
-			return serviceResolver = serviceResolverImpl;
+			return serviceResolver = dependentServiceResolver;
 		}
 		return serviceResolver;
 	}
@@ -143,8 +152,66 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 	 * @param reslover
 	 *        The SERVICE resolver to set.
 	 */
-	public synchronized void setFederatedServiceResolver(FederatedServiceResolver reslover) {
-		this.serviceResolver = reslover;
+	public synchronized void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.serviceResolver = resolver;
+		for (Repository member : members) {
+			if (member instanceof FederatedServiceResolverClient) {
+				((FederatedServiceResolverClient) member).setFederatedServiceResolver(resolver);
+			}
+		}
+	}
+
+	@Override
+	public void setRepositoryResolver(RepositoryResolver resolver) {
+		for (Repository member : members) {
+			if (member instanceof RepositoryResolverClient) {
+				((RepositoryResolverClient) member).setRepositoryResolver(resolver);
+			}
+		}
+	}
+
+	@Override
+	public SesameClient getSesameClient() {
+		for (Repository member : members) {
+			if (member instanceof SesameClientDependent) {
+				SesameClient client = ((SesameClientDependent) member).getSesameClient();
+				if (client != null) {
+					return client;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void setSesameClient(SesameClient client) {
+		for (Repository member : members) {
+			if (member instanceof SesameClientDependent) {
+				((SesameClientDependent) member).setSesameClient(client);
+			}
+		}
+	}
+
+	@Override
+	public HttpClient getHttpClient() {
+		for (Repository member : members) {
+			if (member instanceof HttpClientDependent) {
+				HttpClient client = ((HttpClientDependent) member).getHttpClient();
+				if (client != null) {
+					return client;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void setHttpClient(HttpClient client) {
+		for (Repository member : members) {
+			if (member instanceof HttpClientDependent) {
+				((HttpClientDependent) member).setHttpClient(client);
+			}
+		}
 	}
 
 	@Override
@@ -173,8 +240,8 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 			}
 		}
 		executor.shutdown();
-		if (serviceResolverImpl != null) {
-			serviceResolverImpl.shutDown();
+		if (dependentServiceResolver != null) {
+			dependentServiceResolver.shutDown();
 		}
 	}
 

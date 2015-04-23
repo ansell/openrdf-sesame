@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,9 @@ import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
+import org.openrdf.http.client.HttpClientDependent;
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -61,6 +65,8 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.openrdf.repository.sail.config.RepositoryResolver;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.federation.evaluation.FederationStrategy;
@@ -80,7 +86,9 @@ import org.openrdf.sail.helpers.SailConnectionBase;
  * @author James Leigh
  * @author Arjohn Kampman
  */
-abstract class AbstractFederationConnection extends SailConnectionBase implements FederatedServiceResolverClient {
+abstract class AbstractFederationConnection extends SailConnectionBase implements
+		FederatedServiceResolverClient, RepositoryResolverClient, HttpClientDependent, SesameClientDependent
+{
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFederationConnection.class);
 
@@ -191,6 +199,64 @@ abstract class AbstractFederationConnection extends SailConnectionBase implement
 
 	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
 		this.federatedServiceResolver = resolver;
+		for (RepositoryConnection member : members) {
+			if (member instanceof FederatedServiceResolverClient) {
+				((FederatedServiceResolverClient) member).setFederatedServiceResolver(resolver);
+			}
+		}
+	}
+
+	@Override
+	public void setRepositoryResolver(RepositoryResolver resolver) {
+		for (RepositoryConnection member : members) {
+			if (member instanceof RepositoryResolverClient) {
+				((RepositoryResolverClient) member).setRepositoryResolver(resolver);
+			}
+		}
+	}
+
+	@Override
+	public SesameClient getSesameClient() {
+		for (RepositoryConnection member : members) {
+			if (member instanceof SesameClientDependent) {
+				SesameClient client = ((SesameClientDependent) member).getSesameClient();
+				if (client != null) {
+					return client;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void setSesameClient(SesameClient client) {
+		for (RepositoryConnection member : members) {
+			if (member instanceof SesameClientDependent) {
+				((SesameClientDependent) member).setSesameClient(client);
+			}
+		}
+	}
+
+	@Override
+	public HttpClient getHttpClient() {
+		for (RepositoryConnection member : members) {
+			if (member instanceof HttpClientDependent) {
+				HttpClient client = ((HttpClientDependent) member).getHttpClient();
+				if (client != null) {
+					return client;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void setHttpClient(HttpClient client) {
+		for (RepositoryConnection member : members) {
+			if (member instanceof HttpClientDependent) {
+				((HttpClientDependent) member).setHttpClient(client);
+			}
+		}
 	}
 
 	@Override

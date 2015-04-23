@@ -122,7 +122,7 @@ import org.openrdf.rio.helpers.ParseErrorLogger;
  * @author Andreas Schwarte
  * @see SesameSession
  */
-public class SparqlSession {
+public class SparqlSession implements HttpClientDependent {
 
 	/*-----------*
 	 * Constants *

@@ -23,7 +23,9 @@ import java.util.regex.Pattern;
 
 import org.apache.http.client.HttpClient;
 
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.client.SparqlSession;
@@ -52,7 +54,7 @@ import org.openrdf.rio.RDFFormat;
  * @author Jeen Broekstra
  * @author Herko ter Horst
  */
-public class HTTPRepository extends RepositoryBase {
+public class HTTPRepository extends RepositoryBase implements HttpClientDependent, SesameClientDependent {
 
 	/*-----------*
 	 * Variables *
@@ -63,6 +65,7 @@ public class HTTPRepository extends RepositoryBase {
 	 */
 	private SesameClient client;
 
+	/** dependent life cycle */
 	private SesameClientImpl dependentClient;
 
 	private String username;

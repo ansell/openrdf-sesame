@@ -18,11 +18,20 @@ package org.openrdf.repository.sail;
 
 import java.io.File;
 
+import org.apache.http.client.HttpClient;
+
+import org.openrdf.http.client.HttpClientDependent;
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryLockedException;
 import org.openrdf.repository.base.RepositoryBase;
+import org.openrdf.repository.sail.config.RepositoryResolver;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailLockedException;
@@ -55,7 +64,9 @@ import org.openrdf.sail.SailLockedException;
  * 
  * @author Arjohn Kampman
  */
-public class SailRepository extends RepositoryBase {
+public class SailRepository extends RepositoryBase implements FederatedServiceResolverClient,
+		RepositoryResolverClient, HttpClientDependent, SesameClientDependent
+{
 
 	/*-----------*
 	 * Constants *
@@ -87,6 +98,52 @@ public class SailRepository extends RepositoryBase {
 
 	public void setDataDir(File dataDir) {
 		sail.setDataDir(dataDir);
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		if (sail instanceof FederatedServiceResolverClient) {
+			((FederatedServiceResolverClient)sail).setFederatedServiceResolver(resolver);
+		}
+	}
+
+	@Override
+	public void setRepositoryResolver(RepositoryResolver resolver) {
+		if (sail instanceof RepositoryResolverClient) {
+			((RepositoryResolverClient)sail).setRepositoryResolver(resolver);
+		}
+	}
+
+	@Override
+	public SesameClient getSesameClient() {
+		if (sail instanceof SesameClientDependent) {
+			return ((SesameClientDependent)sail).getSesameClient();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public void setSesameClient(SesameClient client) {
+		if (sail instanceof SesameClientDependent) {
+			((SesameClientDependent)sail).setSesameClient(client);
+		}
+	}
+
+	@Override
+	public HttpClient getHttpClient() {
+		if (sail instanceof HttpClientDependent) {
+			return ((HttpClientDependent)sail).getHttpClient();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public void setHttpClient(HttpClient client) {
+		if (sail instanceof HttpClientDependent) {
+			((HttpClientDependent)sail).setHttpClient(client);
+		}
 	}
 
 	@Override
