@@ -21,30 +21,21 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import org.junit.Test;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Model;
-import org.openrdf.model.impl.TreeModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.sail.ProxyRepository;
-import org.openrdf.repository.sail.config.RepositoryResolver;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
-import org.openrdf.rio.helpers.StatementCollector;
 
 public class TestProxyRepositoryFactory {
 
@@ -84,8 +75,8 @@ public class TestProxyRepositoryFactory {
 		// It doesn't actually invoke the resolver until the repository is
 		// accessed. Normally LocalRepositoryManager is the caller of
 		// getRepository(), and will have called this setter itself.
-		factory.setRepositoryResolver(mock(RepositoryResolver.class));
-		Repository repository = factory.getRepository(implConfig);
+		ProxyRepository repository = (ProxyRepository)factory.getRepository(implConfig);
+		repository.setRepositoryResolver(mock(RepositoryResolver.class));
 		assertThat(repository, instanceOf(ProxyRepository.class));
 	}
 }
