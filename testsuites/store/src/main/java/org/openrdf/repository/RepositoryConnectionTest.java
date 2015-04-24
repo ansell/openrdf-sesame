@@ -80,6 +80,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
+import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -111,8 +112,8 @@ public abstract class RepositoryConnectionTest {
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */
-//	@Rule
-//	public Timeout to = new Timeout(60000);
+	// @Rule
+	// public Timeout to = new Timeout(60000);
 
 	private static final String URN_TEST_OTHER = "urn:test:other";
 
@@ -1497,7 +1498,7 @@ public abstract class RepositoryConnectionTest {
 		testCon.add(alice, name, nameAlice);
 
 		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
-		Model	graph = Iterations.addAll(statements, new LinkedHashModel());
+		Model graph = Iterations.addAll(statements, new LinkedHashModel());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(baos);
@@ -1510,7 +1511,7 @@ public abstract class RepositoryConnectionTest {
 		in.close();
 
 		assertThat(deserializedGraph.isEmpty(), is(equalTo(false)));
-		
+
 		for (Statement st : deserializedGraph) {
 			assertThat(graph, hasItem(st));
 			System.out.println(st);
@@ -1618,6 +1619,25 @@ public abstract class RepositoryConnectionTest {
 				assertThat(st, is(not(equalTo(stmt))));
 			}
 		});
+	}
+
+	@Test
+	public void testQueryInTransaction()
+		throws Exception
+	{
+		testCon.add(bob, RDF.TYPE, FOAF.PERSON);
+
+		testCon.begin();
+		String query = "SELECT * where {?x a ?y }";
+		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		while (result.hasNext()) {
+			BindingSet bs = result.next();
+			assertEquals(bob, bs.getValue("x"));
+			assertEquals(FOAF.PERSON, bs.getValue("y"));
+		}
+		testCon.commit();
 	}
 
 	@Test
@@ -1758,30 +1778,31 @@ public abstract class RepositoryConnectionTest {
 			tqr.close();
 		}
 	}
-	
+
 	@Test
-	public void testSES2172ChineseChars() throws Exception
+	public void testSES2172ChineseChars()
+		throws Exception
 	{
 		String updateString = "INSERT DATA { <urn:subject1> rdfs:label \"\\u8BBE\\u5907\". }";
-		
+
 		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, updateString);
 		update.execute();
-		
+
 		assertFalse(testCon.isEmpty());
-		
+
 		String queryString = "SELECT ?o WHERE { <urn:subject1> rdfs:label ?o . }";
-		
+
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = query.evaluate();
-		
+
 		assertNotNull(result);
-		
+
 		final String expected = "设备";
 		while (result.hasNext()) {
 			Value o = result.next().getValue("o");
 
 			System.out.println("o = " + o);
-			
+
 			assertEquals(expected, o.stringValue());
 		}
 	}
