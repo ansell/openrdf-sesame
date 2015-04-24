@@ -46,7 +46,6 @@ public class CacheFilter implements Filter {
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 		throws IOException, ServletException
 	{
-
 		if (lifetimeSeconds != null) {
 			final long seconds = Long.parseLong(lifetimeSeconds);
 			final HttpServletResponse hres = (HttpServletResponse)res;
