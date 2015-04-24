@@ -1630,13 +1630,10 @@ public abstract class RepositoryConnectionTest {
 		testCon.begin();
 		String query = "SELECT * where {?x a ?y }";
 		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
+		
+		// test verifies that query as part of transaction executes and returns a result
 		assertNotNull(result);
 		assertTrue(result.hasNext());
-		while (result.hasNext()) {
-			BindingSet bs = result.next();
-			assertEquals(bob, bs.getValue("x"));
-			assertEquals(FOAF.PERSON, bs.getValue("y"));
-		}
 		testCon.commit();
 	}
 
