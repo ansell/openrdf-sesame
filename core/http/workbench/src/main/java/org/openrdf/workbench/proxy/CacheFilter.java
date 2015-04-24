@@ -26,43 +26,84 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Resource cache expiry filter for Tomcat 6, slightly modifed from version
- * posted at the following page: {@link http://bit.ly/tomcat-6-caching}
+ * Resource cache expiry filter for Tomcat 6, based on code authored by Saket
+ * Kumar.
  * 
- * @author Saket Kumar
+ * @see <a href="http://bit.ly/tomcat-6-caching">Enable Caching in Tomcat 6</a>
  * @author Dale Visser
  */
 public class CacheFilter implements Filter {
 
-	private final static String KEY = "Cache-Control";
+	private static final Logger LOGGER = LoggerFactory.getLogger(CacheFilter.class);
 
-	private final static String PRAGMA = "Pragma";
+	/**
+	 * HTTP header key for controlling caching of resources.
+	 */
+	private final static String CACHE_CONTROL = "Cache-Control";
 
-	private final static String EXPIRES = "Expires";
+	/**
+	 * Maximum allowed expiry lifetime in seconds, set to one year according to
+	 * the advice in RFC 2616.
+	 * 
+	 * @see <a href="https://www.ietf.org/rfc/rfc2616.txt">RFC 2616: HTTP/1.1</a>
+	 */
+	public final static long MAX_EXPIRY = (365 * 24 + 6) * 60 * 60;
 
-	private String lifetimeSeconds = null;
+	/**
+	 * Minimum allowed expiry lifetime, zero, which corresponds to not caching at
+	 * all.
+	 */
+	public final static long MIN_EXPIRY = 0;
 
+	private Long expiry = null;
+
+	/**
+	 * Set a maximum expiry Cache-Control header applicable to the client and to
+	 * intermediate caching servers.
+	 */
+	@Override
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 		throws IOException, ServletException
 	{
-		if (lifetimeSeconds != null) {
-			final long seconds = Long.parseLong(lifetimeSeconds);
-			final HttpServletResponse hres = (HttpServletResponse)res;
-			hres.setHeader(KEY, "max-age=" + seconds + ", public");
-			hres.setHeader(PRAGMA, null);
-			hres.setDateHeader(EXPIRES, System.currentTimeMillis() + seconds * 1000);
+		if (null != expiry) {
+			((HttpServletResponse)res).setHeader(CACHE_CONTROL, "max-age=" + expiry + ", public");
 		}
 		chain.doFilter(req, res);
 	}
 
+	/**
+	 * Parse the Cache-Control configuration parameter as a long integer, and set
+	 * the filter expiry value, modulo the minimum and maximum expiry
+	 * constraints.
+	 * 
+	 * @see #MIN_EXPIRY
+	 * @see #MAX_EXPIRY
+	 */
+	@Override
 	public void init(FilterConfig config)
 		throws ServletException
 	{
-		lifetimeSeconds = config.getInitParameter(KEY);
+		try {
+			long value = Long.parseLong(config.getInitParameter(CACHE_CONTROL));
+			value = Math.max(MIN_EXPIRY, value);
+			value = Math.min(value, MAX_EXPIRY);
+			expiry = value; // create object here
+		}
+		catch (NumberFormatException nfe) {
+			LOGGER.warn("Failed to parse " + CACHE_CONTROL + " value.", nfe);
+			expiry = null;
+		}
 	}
 
+	/**
+	 * Make stored references available for garbage collection.
+	 */
+	@Override
 	public void destroy() {
-		lifetimeSeconds = null;
+		expiry = null;
 	}
 }
