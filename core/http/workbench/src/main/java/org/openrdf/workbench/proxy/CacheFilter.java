@@ -78,7 +78,9 @@ public class CacheFilter implements Filter {
 	/**
 	 * Parse the Cache-Control configuration parameter as a long integer, and set
 	 * the filter expiry value, modulo the minimum and maximum expiry
-	 * constraints.
+	 * constraints. If the configuration parameter is not present, or not a valid
+	 * long integer value, then no Cache-Control headers will be applied by the
+	 * filter.
 	 * 
 	 * @see #MIN_EXPIRY
 	 * @see #MAX_EXPIRY
