@@ -90,10 +90,8 @@ public class CacheFilter implements Filter {
 		throws ServletException
 	{
 		try {
-			long value = Long.parseLong(config.getInitParameter(CACHE_CONTROL));
-			value = Math.max(MIN_EXPIRY, value);
-			value = Math.min(value, MAX_EXPIRY);
-			expiry = value; // create object here
+			expiry = Math.min(Math.max(MIN_EXPIRY, Long.parseLong(config.getInitParameter(CACHE_CONTROL))),
+					MAX_EXPIRY);
 		}
 		catch (NumberFormatException nfe) {
 			LOGGER.warn("Failed to parse " + CACHE_CONTROL + " value.", nfe);
