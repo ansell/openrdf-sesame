@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.openrdf.query.algebra.ArbitraryLengthPath;
@@ -25,7 +26,6 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
-import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
@@ -65,6 +65,9 @@ public class EvaluationStatistics {
 
 	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
 
+		protected static double VAR_CARDINALITY = 10;
+		protected static double SERVICE_CARDINALITY = 100000;
+
 		protected double cardinality;
 
 		public double getCardinality() {
@@ -89,7 +92,7 @@ public class EvaluationStatistics {
 		@Override
 		public void meet(ZeroLengthPath node) {
 			// cardinality is the same as that of a statement pattern with three unbound vars. 
-			cardinality = 1000.0;
+			cardinality = VAR_CARDINALITY*VAR_CARDINALITY*VAR_CARDINALITY;
 		}
 
 		@Override
@@ -112,7 +115,7 @@ public class EvaluationStatistics {
 				// the URI is not available, may be computed in the course of the
 				// query
 				// => use high cost to order the SERVICE node late in the query plan
-				cardinality = 100000;
+				cardinality = SERVICE_CARDINALITY;
 			}
 			else {
 				ServiceNodeAnalyzer serviceAnalyzer = new ServiceNodeAnalyzer();
@@ -141,10 +144,13 @@ public class EvaluationStatistics {
 		}
 
 		protected double getCardinality(StatementPattern sp) {
-			List<Var> vars = sp.getVarList();
+			return getCardinality(VAR_CARDINALITY, sp.getVarList());
+		}
+
+		protected double getCardinality(double varCardinality, Collection<Var> vars) {
 			int constantVarCount = countConstantVars(vars);
-			double unboundVarFactor = (double)(vars.size() - constantVarCount) / vars.size();
-			return Math.pow(1000.0, unboundVarFactor);
+			double unboundVarFactor = vars.size() - constantVarCount;
+			return Math.pow(varCardinality, unboundVarFactor);
 		}
 
 		protected int countConstantVars(Iterable<Var> vars) {
