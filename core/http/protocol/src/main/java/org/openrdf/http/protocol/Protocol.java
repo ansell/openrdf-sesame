@@ -212,6 +212,16 @@ public abstract class Protocol {
 	 * MIME type for www forms: <tt>application/x-www-form-urlencoded</tt>.
 	 */
 	public static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
+	
+	/**
+	 * MIME type for SPARQL update: <tt>application/sparql-query</tt>.
+	 */
+	public static final String SPARQL_QUERY_MIME_TYPE = "application/sparql-query";
+	
+	/**
+	 * MIME type for SPARQL update: <tt>application/sparql-update</tt>.
+	 */
+	public static final String SPARQL_UPDATE_MIME_TYPE = "application/sparql-update";
 
 	/**
 	 * Parameter for server instruction to preserve blank node ids when parsing

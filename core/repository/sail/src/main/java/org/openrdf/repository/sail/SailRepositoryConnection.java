@@ -35,6 +35,7 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryConnectionOptimizations;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
@@ -42,7 +43,9 @@ import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.base.RepositoryConnectionBase;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.sail.AdvancedSailConnection;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailConnectionOptimizations;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 
@@ -53,7 +56,7 @@ import org.openrdf.sail.SailReadOnlyException;
  * @author Jeen Broekstra
  * @author Arjohn Kampman
  */
-public class SailRepositoryConnection extends RepositoryConnectionBase {
+public class SailRepositoryConnection extends RepositoryConnectionBase implements RepositoryConnectionOptimizations {
 
 	/*-----------*
 	 * Variables *
@@ -215,6 +218,23 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		ParsedUpdate parsedUpdate = QueryParserUtil.parseUpdate(ql, update, baseURI);
 
 		return new SailUpdate(parsedUpdate, this);
+	}
+
+	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws RepositoryException
+	{
+		if(sailConnection instanceof AdvancedSailConnection) {
+			try {
+				return ((AdvancedSailConnection)sailConnection).hasStatement(subj, pred, obj, includeInferred, contexts);
+			}
+			catch(SailException e) {
+				throw new RepositoryException("Unable to find statement in Sail", e);
+			}
+		}
+		else {
+			return super.hasStatement(subj, pred, obj, includeInferred, contexts);
+		}
 	}
 
 	@Override
@@ -446,4 +466,14 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	public boolean isHasStatementOptimized()
+	{
+		return (sailConnection instanceof SailConnectionOptimizations) ? ((SailConnectionOptimizations)sailConnection).isHasStatementOptimized() : true;
+	}
+
+	@Override
+	public String toString()
+	{
+		return getSailConnection().toString();
+	}
 }

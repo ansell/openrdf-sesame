@@ -50,6 +50,14 @@ public class RDFLangStringDatatypeHandlerTest extends AbstractDatatypeHandlerTes
 	{
 	}
 
+	@Ignore("This test relies on a null language, which is not allowed for RDF.LANGSTRING")
+	@Test
+	@Override
+	public void testNormalizeDatatypeValidValue()
+		throws Exception
+	{
+	}
+
 	// -------------------------------------
 	// RDF LangString specific methods
 	// -------------------------------------
