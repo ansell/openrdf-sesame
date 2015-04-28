@@ -44,11 +44,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.DeleteData;
-import org.openrdf.query.algebra.InsertData;
-import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -894,7 +890,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	private void flushPendingUpdates()
 		throws SailException
 	{
-		if (!isActiveOperation()) {
+		if (!isActiveOperation() || isActive()
+				&& !getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+		{
 			flush();
 		}
 	}
