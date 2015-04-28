@@ -109,16 +109,30 @@ public class RepositoryFederatedService implements FederatedService {
 	}
 
 	protected final Repository rep;
+	
+	// flag indicating whether the repository shall be closed in #shutdown()
+	protected boolean shutDown = true;
 
 	protected RepositoryConnection conn = null;
 
 	/**
-	 * @param serviceUrl
-	 *        the serviceUrl use to initialize the inner {@link Repository}
+	 * @param repo
+	 * 			the repository to be used
 	 */
 	public RepositoryFederatedService(Repository repo) {
+		this(repo, true);
+	}
+	
+	/**
+	 * @param repo
+	 * 			the repository to be used
+	 * @param shutDown
+	 * 			a flag indicating whether the repository shall be closed in {@link #shutdown()}
+	 */
+	public RepositoryFederatedService(Repository repo, boolean shutDown) {
 		super();
 		this.rep = repo;
+		this.shutDown = shutDown;
 	}
 
 	/**
@@ -365,7 +379,11 @@ public class RepositoryFederatedService implements FederatedService {
 		}
 		finally {
 			try {
-				rep.shutDown();
+				// shutdown only if desired, e.g. do not 
+				// invoke shutDown for managed repositories
+				if (shutDown) {
+					rep.shutDown();
+				}
 			}
 			catch (RepositoryException e) {
 				// Try not to clobber the initial exception that may be more useful
