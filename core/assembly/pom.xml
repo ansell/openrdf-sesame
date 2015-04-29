@@ -243,12 +243,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-sail-lucene</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-sail-lucene3</artifactId>
+			<artifactId>sesame-sail-lucenesail</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
