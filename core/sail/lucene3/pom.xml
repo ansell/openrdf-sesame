@@ -8,7 +8,7 @@
 		<version>2.8.2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-sail-lucenesail3</artifactId>
+	<artifactId>sesame-sail-lucene3</artifactId>
 
 	<name>OpenRDF Lucene 3 Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Apache Lucene.</description>
