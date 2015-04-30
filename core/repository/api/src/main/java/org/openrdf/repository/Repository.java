@@ -31,6 +31,9 @@ import org.openrdf.model.ValueFactory;
  * and that it should be shut down before it is discarded/garbage collected.
  * Forgetting the latter can result in loss of data (depending on the Repository
  * implementation)!
+ * <p>
+ * Repository implementations are thread-safe unless specificially documentated
+ * otherwise.
  * 
  * @author Arjohn Kampman
  */
@@ -101,6 +104,11 @@ public interface Repository {
 	 * 	con.close();
 	 * }
 	 * </pre>
+	 * 
+	 * Note that {@link RepositoryConnection} is not guaranteed thread-safe! The
+	 * recommended pattern for repository access in a multithreaded application
+	 * is to share the Repository object between threads, but have each thread
+	 * create and use its own {@link RepositoryConnection}s.
 	 * 
 	 * @return A connection that allows operations on this repository.
 	 * @throws RepositoryException
