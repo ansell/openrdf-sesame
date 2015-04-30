@@ -16,9 +16,6 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.http.client.HttpClient;
 
 import org.openrdf.http.client.HttpClientDependent;
@@ -26,7 +23,6 @@ import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryException;
 
 /**
  * The {@link FederatedServiceResolverImpl} is used to manage a set of
@@ -40,16 +36,11 @@ import org.openrdf.repository.RepositoryException;
  * @author Andreas Schwarte
  * @author James Leigh
  */
-public class FederatedServiceResolverImpl implements FederatedServiceResolver, HttpClientDependent, SesameClientDependent {
+public class FederatedServiceResolverImpl extends FederatedServiceResolverBase implements FederatedServiceResolver, HttpClientDependent, SesameClientDependent {
 
 	public FederatedServiceResolverImpl() {
 		super();
 	}
-
-	/**
-	 * Map service URL to the corresponding initialized {@link FederatedService}
-	 */
-	private Map<String, FederatedService> endpointToService = new HashMap<String, FederatedService>();
 
 	/** independent life cycle */
 	private SesameClient client;
@@ -78,85 +69,19 @@ public class FederatedServiceResolverImpl implements FederatedServiceResolver, H
 		}
 		dependentClient.setHttpClient(httpClient);
 	}
-
-	/**
-	 * Register the specified service to evaluate SERVICE expressions for the
-	 * given url.
-	 * 
-	 * @param serviceUrl
-	 * @param service
-	 */
-	public synchronized void registerService(String serviceUrl, FederatedService service) {
-		endpointToService.put(serviceUrl, service);
+	
+	@Override
+	protected FederatedService createService(String serviceUrl)
+			throws QueryEvaluationException {
+		return new SPARQLFederatedService(serviceUrl, getSesameClient());
 	}
 
-	/**
-	 * Unregister a service registered to serviceURl
-	 * 
-	 * @param serviceUrl
-	 */
-	public void unregisterService(String serviceUrl) {
-		FederatedService service;
-		synchronized (endpointToService) {
-			service = endpointToService.remove(serviceUrl);
-		}
-		if (service != null && service.isInitialized()) {
-			try {
-				service.shutdown();
-			}
-			catch (QueryEvaluationException e) {
-				// TODO issue a warning, otherwise ignore
-			}
-		}
-	}
-
-	/**
-	 * Retrieve the {@link FederatedService} registered for serviceUrl. If there
-	 * is no service registered for serviceUrl, a new
-	 * {@link SPARQLFederatedService} is created and registered.
-	 * 
-	 * @param serviceUrl
-	 *        locator for the federation service
-	 * @return the {@link FederatedService}, created fresh if necessary
-	 * @throws RepositoryException
-	 */
-	public FederatedService getService(String serviceUrl)
-		throws QueryEvaluationException
-	{
-		FederatedService service;
-		synchronized (endpointToService) {
-			service = endpointToService.get(serviceUrl);
-			if (service == null) {
-				service = new SPARQLFederatedService(serviceUrl, getSesameClient());
-				endpointToService.put(serviceUrl, service);
-			}
-		}
-		if (!service.isInitialized()) {
-			service.initialize();
-		}
-		return service;
-	}
-
-	public void unregisterAll() {
-		synchronized (endpointToService) {
-			for (FederatedService service : endpointToService.values()) {
-				try {
-					service.shutdown();
-				}
-				catch (QueryEvaluationException e) {
-					// TODO issue a warning, otherwise ignore
-				}
-			}
-			endpointToService.clear();
-		}
-	}
-
+	@Override
 	public void shutDown() {
-		unregisterAll();
+		super.shutDown();
 		if (dependentClient != null) {
 			dependentClient.shutDown();
 			dependentClient = null;
 		}
 	}
-
 }
