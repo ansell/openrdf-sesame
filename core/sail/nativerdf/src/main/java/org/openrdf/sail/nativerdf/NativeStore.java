@@ -23,8 +23,11 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+
 import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.io.MavenUtil;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DistinctIteration;
@@ -61,6 +64,8 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-sail-nativerdf", "devel");
 
 	/**
 	 * Specifies which triple indexes this native store must use.
@@ -238,12 +243,17 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		logger.debug("Data dir is " + dataDir);
 
 		try {
+			File versionFile = new File(dataDir, "nativerdf.ver");
+			String version = versionFile.exists() ? FileUtils.readFileToString(versionFile) : null;
+			if (!VERSION.equals(version) && upgradeStore(dataDir, version)) {
+				FileUtils.writeStringToFile(versionFile, VERSION);
+			}
 			namespaceStore = new NamespaceStore(dataDir);
 			valueStore = new ValueStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
 					namespaceCacheSize, namespaceIDCacheSize);
 			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
 		}
-		catch (IOException e) {
+		catch (Throwable e) {
 			// NativeStore initialization failed, release any allocated files
 			if (valueStore != null) {
 				try {
@@ -533,5 +543,24 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		}
 
 		return tripleStore.cardinality(subjID, predID, objID, contextID);
+	}
+
+	private boolean upgradeStore(File dataDir, String version)
+		throws IOException, SailException
+	{
+		if (version == null) {
+			// either a new store or a pre-2.8.2 store
+			ValueStore valueStore = new ValueStore(dataDir);
+			try {
+				valueStore.checkConsistency();
+				return true; // good enough
+			}
+			finally {
+				valueStore.close();
+			}
+		}
+		else {
+			return false; // no upgrade needed
+		}
 	}
 }
