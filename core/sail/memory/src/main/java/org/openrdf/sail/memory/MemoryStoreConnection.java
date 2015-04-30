@@ -24,6 +24,7 @@ import java.util.List;
 import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.iteration.CloseableIteration;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -271,7 +272,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
 		assert datasource == null;
-		datasource = store.fork();
+		datasource = store.fork(getTransactionIsolation());
 	}
 
 	@Override
@@ -571,7 +572,8 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			return datasource.snapshot(getTransactionIsolation());
 		}
 		else {
-			return store.fork().snapshot(store.getDefaultIsolationLevel());
+			IsolationLevel level = store.getDefaultIsolationLevel();
+			return store.fork(level).snapshot(level);
 		}
 	}
 

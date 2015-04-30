@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -1127,7 +1128,8 @@ public class MemTripleSourceTest {
 	 * @throws SailException 
 	 */
 	private MemTripleSource getTripleSourceCommitted() throws SailException {
-		snapshot = store.fork().snapshot(store.getDefaultIsolationLevel());
+		IsolationLevel level = store.getDefaultIsolationLevel();
+		snapshot = store.fork(level).snapshot(level);
 		return new MemTripleSource(store.getValueFactory(), snapshot, true);
 	}
 

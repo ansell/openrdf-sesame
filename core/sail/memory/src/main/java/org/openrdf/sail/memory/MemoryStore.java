@@ -23,6 +23,7 @@ import java.util.TimerTask;
 
 import info.aduna.concurrent.locks.Lock;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
@@ -30,6 +31,7 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverI
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailChangedEvent;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.derived.DelegatingRdfSource;
 import org.openrdf.sail.derived.RdfDataset;
 import org.openrdf.sail.derived.RdfSink;
 import org.openrdf.sail.derived.RdfSource;
@@ -135,8 +137,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 * Creates a new MemoryStore.
 	 */
 	public MemoryStore() {
-		setSupportedIsolationLevels(IsolationLevels.READ_COMMITTED, IsolationLevels.SNAPSHOT_READ,
-				IsolationLevels.SNAPSHOT, IsolationLevels.SERIALIZABLE);
+		setSupportedIsolationLevels(IsolationLevels.NONE, IsolationLevels.READ_COMMITTED,
+				IsolationLevels.SNAPSHOT_READ, IsolationLevels.SNAPSHOT, IsolationLevels.SERIALIZABLE);
 	}
 
 	/**
@@ -268,7 +270,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					logger.warn("Ignoring empty data file: {}", dataFile);
 				}
 				else {
-					RdfSink sink = source.sink(IsolationLevels.SERIALIZABLE);
+					RdfSink sink = source.sink(IsolationLevels.NONE);
 					try {
 						new FileIO(valueFactory).read(dataFile, sink);
 						logger.debug("Data file read successfully");
@@ -461,7 +463,11 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 		}
 	}
 
-	protected RdfSource fork() throws SailException {
-		return datasource.fork();
+	protected RdfSource fork(IsolationLevel level) throws SailException {
+		if (level.isCompatibleWith(IsolationLevels.READ_UNCOMMITTED)) {
+			return datasource.fork();
+		} else {
+			return new DelegatingRdfSource(datasource, false);
+		}
 	}
 }

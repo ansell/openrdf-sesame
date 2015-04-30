@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
@@ -37,6 +38,10 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	private URI woman;
 
 	private URI man;
+
+	public RDFSchemaRepositoryConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	public void setUp()

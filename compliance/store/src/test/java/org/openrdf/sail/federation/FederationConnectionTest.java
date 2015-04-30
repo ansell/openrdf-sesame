@@ -18,12 +18,17 @@ package org.openrdf.sail.federation;
 
 import java.io.IOException;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class FederationConnectionTest extends RepositoryConnectionTest {
+
+	public FederationConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	protected Repository createRepository()

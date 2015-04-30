@@ -16,6 +16,7 @@
  */
 package org.openrdf.repository.sail.memory;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.repository.RDFSchemaRepositoryConnectionTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
@@ -23,6 +24,10 @@ import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class RDFSchemaMemoryRepositoryConnectionTest extends RDFSchemaRepositoryConnectionTest {
+
+	public RDFSchemaMemoryRepositoryConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	protected Repository createRepository() {

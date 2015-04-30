@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -52,6 +53,10 @@ import org.openrdf.repository.http.HTTPMemServer;
 public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 
 	private static HTTPMemServer server;
+
+	public SPARQLStoreConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@BeforeClass
 	public static void startServer()
