@@ -904,7 +904,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	private void flushPendingUpdates()
 		throws SailException
 	{
-		if (!isActiveOperation()) {
+		if (!isActiveOperation() || isActive()
+				&& !getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+		{
 			flush();
 		}
 	}

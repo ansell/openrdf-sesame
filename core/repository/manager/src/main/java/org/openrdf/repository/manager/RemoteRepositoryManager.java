@@ -83,6 +83,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	 * Variables *
 	 *-----------*/
 
+	/** dependent life cycle */
 	private SesameClientImpl client;
 
 	/**
@@ -174,16 +175,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 	protected Repository createSystemRepository()
 		throws RepositoryException
 	{
-		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID) {
-
-			@Override
-			protected void shutDownInternal()
-				throws RepositoryException
-			{
-				setSesameClient(null);
-				super.shutDownInternal();
-			}
-		};
+		HTTPRepository systemRepository = new HTTPRepository(serverURL, SystemRepository.ID);
 		systemRepository.setSesameClient(getSesameClient());
 		systemRepository.setUsernameAndPassword(username, password);
 		systemRepository.initialize();
@@ -229,16 +221,7 @@ public class RemoteRepositoryManager extends RepositoryManager {
 		HTTPRepository result = null;
 
 		if (RepositoryConfigUtil.hasRepositoryConfig(getSystemRepository(), id)) {
-			result = new HTTPRepository(serverURL, id) {
-
-				@Override
-				protected void shutDownInternal()
-					throws RepositoryException
-				{
-					setSesameClient(null);
-					super.shutDownInternal();
-				}
-			};
+			result = new HTTPRepository(serverURL, id);
 			result.setSesameClient(getSesameClient());
 			result.setUsernameAndPassword(username, password);
 			result.initialize();

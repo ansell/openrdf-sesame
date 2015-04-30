@@ -67,9 +67,11 @@ public class RdbmsStore extends SailBase implements FederatedServiceResolverClie
 
 	private BasicDataSource ds;
 
+	/** independent life cycle */
 	private FederatedServiceResolver serviceResolver;
 
-	private FederatedServiceResolverImpl serviceResolverImpl;
+	/** dependent life cycle */
+	private FederatedServiceResolverImpl dependentServiceResolver;
 
 	public RdbmsStore() {
 		super();
@@ -159,10 +161,10 @@ public class RdbmsStore extends SailBase implements FederatedServiceResolverClie
 	 */
 	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
 		if (serviceResolver == null) {
-			if (serviceResolverImpl == null) {
-				serviceResolverImpl = new FederatedServiceResolverImpl();
+			if (dependentServiceResolver == null) {
+				dependentServiceResolver = new FederatedServiceResolverImpl();
 			}
-			return serviceResolver = serviceResolverImpl;
+			return serviceResolver = dependentServiceResolver;
 		}
 		return serviceResolver;
 	}
@@ -228,8 +230,8 @@ public class RdbmsStore extends SailBase implements FederatedServiceResolverClie
 		catch (SQLException e) {
 			throw new RdbmsException(e);
 		} finally {
-			if (serviceResolverImpl != null) {
-				serviceResolverImpl.shutDown();
+			if (dependentServiceResolver != null) {
+				dependentServiceResolver.shutDown();
 			}
 		}
 	}

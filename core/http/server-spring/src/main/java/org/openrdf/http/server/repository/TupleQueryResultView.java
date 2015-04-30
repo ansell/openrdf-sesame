@@ -80,9 +80,8 @@ public class TupleQueryResultView extends QueryResultView {
 		setContentType(response, qrFormat);
 		setContentDisposition(model, response, qrFormat);
 
-		boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
-
-		if (!headersOnly) {
+		final Boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
+		if (headersOnly == null || !headersOnly.booleanValue()) {
 			OutputStream out = response.getOutputStream();
 			try {
 				TupleQueryResultWriter qrWriter = qrWriterFactory.getWriter(out);

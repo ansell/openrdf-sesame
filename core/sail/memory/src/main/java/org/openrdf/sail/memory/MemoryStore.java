@@ -121,9 +121,11 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 */
 	private final Object syncTimerSemaphore = new Object();
 
+	/** independent life cycle */
 	private FederatedServiceResolver serviceResolver;
 
-	private FederatedServiceResolverImpl serviceResolverImpl;
+	/** dependent life cycle */
+	private FederatedServiceResolverImpl dependentServiceResolver;
 
 	/*--------------*
 	 * Constructors *
@@ -207,10 +209,10 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 */
 	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
 		if (serviceResolver == null) {
-			if (serviceResolverImpl == null) {
-				serviceResolverImpl = new FederatedServiceResolverImpl();
+			if (dependentServiceResolver == null) {
+				dependentServiceResolver = new FederatedServiceResolverImpl();
 			}
-			return serviceResolver = serviceResolverImpl;
+			return serviceResolver = dependentServiceResolver;
 		}
 		return serviceResolver;
 	}
@@ -334,8 +336,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 			if (dirLock != null) {
 				dirLock.release();
 			}
-			if (serviceResolverImpl != null) {
-				serviceResolverImpl.shutDown();
+			if (dependentServiceResolver != null) {
+				dependentServiceResolver.shutDown();
 			}
 		}
 	}
