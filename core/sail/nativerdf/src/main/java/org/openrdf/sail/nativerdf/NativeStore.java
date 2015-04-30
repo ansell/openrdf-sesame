@@ -103,9 +103,11 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 */
 	private volatile Lock dirLock;
 
+	/** independent life cycle */
 	private FederatedServiceResolver serviceResolver;
 
-	private FederatedServiceResolverImpl serviceResolverImpl;
+	/** dependent life cycle */
+	private FederatedServiceResolverImpl dependentServiceResolver;
 
 	/*--------------*
 	 * Constructors *
@@ -187,10 +189,10 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 */
 	public synchronized FederatedServiceResolver getFederatedServiceResolver() {
 		if (serviceResolver == null) {
-			if (serviceResolverImpl == null) {
-				serviceResolverImpl = new FederatedServiceResolverImpl();
+			if (dependentServiceResolver == null) {
+				dependentServiceResolver = new FederatedServiceResolverImpl();
 			}
-			return serviceResolver = serviceResolverImpl;
+			return serviceResolver = dependentServiceResolver;
 		}
 		return serviceResolver;
 	}
@@ -295,8 +297,8 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		}
 		finally {
 			dirLock.release();
-			if (serviceResolverImpl != null) {
-				serviceResolverImpl.shutDown();
+			if (dependentServiceResolver != null) {
+				dependentServiceResolver.shutDown();
 			}
 			logger.debug("NativeStore shut down");
 		}

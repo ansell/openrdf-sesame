@@ -16,7 +16,11 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
+import org.apache.http.client.HttpClient;
+
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.query.QueryEvaluationException;
 
@@ -32,23 +36,38 @@ import org.openrdf.query.QueryEvaluationException;
  * @author Andreas Schwarte
  * @author James Leigh
  */
-public class FederatedServiceResolverImpl extends FederatedServiceResolverBase implements FederatedServiceResolver {
+public class FederatedServiceResolverImpl extends FederatedServiceResolverBase implements FederatedServiceResolver, HttpClientDependent, SesameClientDependent {
 
 	public FederatedServiceResolverImpl() {
 		super();
 	}
 
+	/** independent life cycle */
 	private SesameClient client;
+
+	/** dependent life cycle */
+	private SesameClientImpl dependentClient;
 
 	public synchronized SesameClient getSesameClient() {
 		if (client == null) {
-			client = new SesameClientImpl();
+			client = dependentClient = new SesameClientImpl();
 		}
 		return client;
 	}
 
 	public synchronized void setSesameClient(SesameClient client) {
 		this.client = client;
+	}
+
+	public HttpClient getHttpClient() {
+		return getSesameClient().getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		if (dependentClient == null) {
+			client = dependentClient = new SesameClientImpl();
+		}
+		dependentClient.setHttpClient(httpClient);
 	}
 	
 	@Override
@@ -60,9 +79,9 @@ public class FederatedServiceResolverImpl extends FederatedServiceResolverBase i
 	@Override
 	public void shutDown() {
 		super.shutDown();
-		if (client != null) {
-			client.shutDown();
-			client = null;
+		if (dependentClient != null) {
+			dependentClient.shutDown();
+			dependentClient = null;
 		}
 	}
 }
