@@ -41,15 +41,17 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.derived.RdfDataset;
+import org.openrdf.sail.derived.RdfSink;
 import org.openrdf.sail.memory.model.MemResource;
-import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
-import org.openrdf.sail.memory.model.ReadMode;
 
 /**
  * Functionality to read and write MemoryStore to/from a file.
@@ -98,7 +100,7 @@ class FileIO {
 	 * Variables *
 	 *-----------*/
 
-	private final MemoryStore store;
+	private final ValueFactory vf;
 
 	private final CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
 
@@ -110,18 +112,18 @@ class FileIO {
 	 * Constructors *
 	 *--------------*/
 
-	public FileIO(MemoryStore store) {
-		this.store = store;
+	public FileIO(ValueFactory vf) {
+		this.vf = vf;
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
-	public synchronized void write(File syncFile, File dataFile)
+	public synchronized void write(RdfDataset store, File syncFile, File dataFile)
 		throws IOException, SailException
 	{
-		write(syncFile);
+		write(store, syncFile);
 
 		// prefer atomic renameTo operations
 		boolean renamed = syncFile.renameTo(dataFile);
@@ -141,7 +143,7 @@ class FileIO {
 		}
 	}
 
-	private void write(File dataFile)
+	private void write(RdfDataset store, File dataFile)
 		throws IOException, SailException
 	{
 		OutputStream out = new FileOutputStream(dataFile);
@@ -154,9 +156,9 @@ class FileIO {
 			DataOutputStream dataOut = new DataOutputStream(new GZIPOutputStream(out));
 			out = dataOut;
 
-			writeNamespaces(dataOut);
+			writeNamespaces(store, dataOut);
 
-			writeStatements(dataOut);
+			writeStatements(store, dataOut);
 
 			dataOut.writeByte(EOF_MARKER);
 		}
@@ -165,8 +167,8 @@ class FileIO {
 		}
 	}
 
-	public synchronized void read(File dataFile)
-		throws IOException
+	public synchronized void read(File dataFile, RdfSink store)
+		throws IOException, SailException
 	{
 		InputStream in = new FileInputStream(dataFile);
 		try {
@@ -188,19 +190,19 @@ class FileIO {
 			while ((recordTypeMarker = dataIn.readByte()) != EOF_MARKER) {
 				switch (recordTypeMarker) {
 					case NAMESPACE_MARKER:
-						readNamespace(dataIn);
+						readNamespace(dataIn, store);
 						break;
 					case EXPL_TRIPLE_MARKER:
-						readStatement(false, true, dataIn);
+						readStatement(false, true, dataIn, store);
 						break;
 					case EXPL_QUAD_MARKER:
-						readStatement(true, true, dataIn);
+						readStatement(true, true, dataIn, store);
 						break;
 					case INF_TRIPLE_MARKER:
-						readStatement(false, false, dataIn);
+						readStatement(false, false, dataIn, store);
 						break;
 					case INF_QUAD_MARKER:
-						readStatement(true, false, dataIn);
+						readStatement(true, false, dataIn, store);
 						break;
 					default:
 						throw new IOException("Invalid record type marker: " + recordTypeMarker);
@@ -212,18 +214,25 @@ class FileIO {
 		}
 	}
 
-	private void writeNamespaces(DataOutputStream dataOut)
-		throws IOException
+	private void writeNamespaces(RdfDataset store, DataOutputStream dataOut)
+		throws IOException, SailException
 	{
-		for (Namespace ns : store.getNamespaceStore()) {
-			dataOut.writeByte(NAMESPACE_MARKER);
-			writeString(ns.getPrefix(), dataOut);
-			writeString(ns.getName(), dataOut);
+		CloseableIteration<? extends Namespace, SailException> iter;
+		iter = store.getNamespaces();
+		try {
+			while (iter.hasNext()) {
+				Namespace ns = iter.next();
+				dataOut.writeByte(NAMESPACE_MARKER);
+				writeString(ns.getPrefix(), dataOut);
+				writeString(ns.getName(), dataOut);
+			}
+		} finally {
+			iter.close();
 		}
 	}
 
-	private void readNamespace(DataInputStream dataIn)
-		throws IOException
+	private void readNamespace(DataInputStream dataIn, RdfSink store)
+		throws IOException, SailException
 	{
 		String prefix = readString(dataIn);
 		String name = readString(dataIn);
@@ -233,37 +242,30 @@ class FileIO {
 			dataIn.readBoolean();
 		}
 
-		store.getNamespaceStore().setNamespace(prefix, name);
+		store.setNamespace(prefix, name);
 	}
 
-	private void writeStatements(DataOutputStream dataOut)
+	private void writeStatements(RdfDataset store, DataOutputStream dataOut)
 		throws IOException, SailException
 	{
-		CloseableIteration<MemStatement, SailException> stIter = store.createStatementIterator(
-				SailException.class, null, null, null, false, store.getCurrentSnapshot(), ReadMode.COMMITTED);
+		writeStatement(store.getExplicit(null, null, null), EXPL_TRIPLE_MARKER, EXPL_QUAD_MARKER, dataOut);
+		writeStatement(store.getInferred(null, null, null), INF_TRIPLE_MARKER, INF_QUAD_MARKER, dataOut);
+	}
 
+	public void writeStatement(CloseableIteration<? extends Statement, SailException> stIter,
+			int tripleMarker, int quadMarker, DataOutputStream dataOut)
+		throws IOException, SailException
+	{
 		try {
 			while (stIter.hasNext()) {
-				MemStatement st = stIter.next();
+				Statement st = stIter.next();
 				Resource context = st.getContext();
-
-				if (st.isExplicit()) {
-					if (context == null) {
-						dataOut.writeByte(EXPL_TRIPLE_MARKER);
-					}
-					else {
-						dataOut.writeByte(EXPL_QUAD_MARKER);
-					}
+				if (context == null) {
+					dataOut.writeByte(tripleMarker);
 				}
 				else {
-					if (context == null) {
-						dataOut.writeByte(INF_TRIPLE_MARKER);
-					}
-					else {
-						dataOut.writeByte(INF_QUAD_MARKER);
-					}
+					dataOut.writeByte(quadMarker);
 				}
-
 				writeValue(st.getSubject(), dataOut);
 				writeValue(st.getPredicate(), dataOut);
 				writeValue(st.getObject(), dataOut);
@@ -277,8 +279,8 @@ class FileIO {
 		}
 	}
 
-	private void readStatement(boolean hasContext, boolean isExplicit, DataInputStream dataIn)
-		throws IOException, ClassCastException
+	private void readStatement(boolean hasContext, boolean isExplicit, DataInputStream dataIn, RdfSink store)
+		throws IOException, ClassCastException, SailException
 	{
 		MemResource memSubj = (MemResource)readValue(dataIn);
 		MemURI memPred = (MemURI)readValue(dataIn);
@@ -288,10 +290,11 @@ class FileIO {
 			memContext = (MemResource)readValue(dataIn);
 		}
 
-		MemStatement st = new MemStatement(memSubj, memPred, memObj, memContext, isExplicit,
-				store.getCurrentSnapshot());
-		store.getStatements().add(st);
-		st.addToComponentLists();
+		if (isExplicit) {
+			store.addExplicit(memSubj, memPred, memObj, memContext);
+		} else {
+			store.addInferred(memSubj, memPred, memObj, memContext);
+		}
 	}
 
 	private void writeValue(Value value, DataOutputStream dataOut)
@@ -335,25 +338,25 @@ class FileIO {
 
 		if (valueTypeMarker == URI_MARKER) {
 			String uriString = readString(dataIn);
-			return store.getValueFactory().createURI(uriString);
+			return vf.createURI(uriString);
 		}
 		else if (valueTypeMarker == BNODE_MARKER) {
 			String bnodeID = readString(dataIn);
-			return store.getValueFactory().createBNode(bnodeID);
+			return vf.createBNode(bnodeID);
 		}
 		else if (valueTypeMarker == PLAIN_LITERAL_MARKER) {
 			String label = readString(dataIn);
-			return store.getValueFactory().createLiteral(label);
+			return vf.createLiteral(label);
 		}
 		else if (valueTypeMarker == LANG_LITERAL_MARKER) {
 			String label = readString(dataIn);
 			String language = readString(dataIn);
-			return store.getValueFactory().createLiteral(label, language);
+			return vf.createLiteral(label, language);
 		}
 		else if (valueTypeMarker == DATATYPE_LITERAL_MARKER) {
 			String label = readString(dataIn);
 			URI datatype = (URI)readValue(dataIn);
-			return store.getValueFactory().createLiteral(label, datatype);
+			return vf.createLiteral(label, datatype);
 		}
 		else {
 			throw new IOException("Invalid value type marker: " + valueTypeMarker);

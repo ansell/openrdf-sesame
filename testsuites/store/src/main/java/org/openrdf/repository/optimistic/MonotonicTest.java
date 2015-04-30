@@ -461,6 +461,7 @@ public class MonotonicTest {
 		List<Value> result = eval("painting", b, "SELECT ?painting "
 				+ "WHERE { [a <Painter>] <paints> ?painting "
 				+ "OPTIONAL { ?painting a ?type  } FILTER (!bound(?type)) }");
+		assertEquals(5, result.size());
 		for (Value painting : result) {
 			if (painting != null) {
 				b.add((Resource) painting, RDF.TYPE, PAINTING);

@@ -68,12 +68,6 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	private final int snapshot;
 
 	/**
-	 * Flag indicating whether or not the iterator should read any non-committed
-	 * changes to the data.
-	 */
-	private final ReadMode readMode;
-
-	/**
 	 * The index of the last statement that has been returned.
 	 */
 	private volatile int statementIdx;
@@ -99,7 +93,29 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	 *        context(s) of pattern.
 	 */
 	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemURI predicate,
-			MemValue object, boolean explicitOnly, int snapshot, ReadMode readMode, MemResource... contexts)
+			MemValue object, MemResource... contexts)
+	{
+		this(statementList, subject, predicate, object, false, -1, contexts);
+	}
+
+	/**
+	 * Creates a new MemStatementIterator that will iterate over the statements
+	 * contained in the supplied MemStatementList searching for statements that
+	 * match the specified pattern of subject, predicate, object and context(s).
+	 * 
+	 * @param statementList
+	 *        the statements over which to iterate.
+	 * @param subject
+	 *        subject of pattern.
+	 * @param predicate
+	 *        predicate of pattern.
+	 * @param object
+	 *        object of pattern.
+	 * @param contexts
+	 *        context(s) of pattern.
+	 */
+	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemURI predicate,
+			MemValue object, boolean explicitOnly, int snapshot, MemResource... contexts)
 	{
 		this.statementList = statementList;
 		this.subject = subject;
@@ -108,7 +124,6 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 		this.contexts = contexts;
 		this.explicitOnly = explicitOnly;
 		this.snapshot = snapshot;
-		this.readMode = readMode;
 
 		this.statementIdx = -1;
 	}
@@ -132,7 +147,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 		for (; statementIdx < statementList.size(); statementIdx++) {
 			MemStatement st = statementList.get(statementIdx);
 
-			if (st.isInSnapshot(snapshot) && (subject == null || subject == st.getSubject())
+			if (isInSnapshot(st) && (subject == null || subject == st.getSubject())
 					&& (predicate == null || predicate == st.getPredicate())
 					&& (object == null || object == st.getObject()))
 			{
@@ -151,45 +166,9 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 					}
 				}
 
-				if (ReadMode.COMMITTED.equals(readMode)) {
-					// Only read committed statements
-
-					if (st.getTxnStatus() == TxnStatus.NEW) {
-						// Uncommitted statements, skip it
-						continue;
-					}
-					if (explicitOnly && !st.isExplicit()) {
-						// Explicit statements only; skip inferred ones
-						continue;
-					}
-				}
-				else if (ReadMode.TRANSACTION.equals(readMode)) {
-					// Pretend that the transaction has already been committed
-
-					TxnStatus txnStatus = st.getTxnStatus();
-
-					if (TxnStatus.DEPRECATED.equals(txnStatus) || TxnStatus.ZOMBIE.equals(txnStatus)) {
-						// Statement scheduled for removal, skip it
-						continue;
-					}
-
-					if (explicitOnly) {
-						if (!st.isExplicit() && !TxnStatus.EXPLICIT.equals(txnStatus)
-								|| TxnStatus.INFERRED.equals(txnStatus))
-						{
-							// Explicit statements only; skip inferred ones
-							continue;
-						}
-					}
-				}
-				else if (ReadMode.RAW.equals(readMode)) {
-					// Ignore the statement's transaction status, only check the
-					// explicitOnly requirement
-
-					if (explicitOnly && !st.isExplicit()) {
-						// Explicit statements only; skip inferred ones
-						continue;
-					}
+				if (explicitOnly && !st.isExplicit()) {
+					// Explicit statements only; skip inferred ones
+					continue;
 				}
 
 				return st;
@@ -198,5 +177,9 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 
 		// No more matching statements.
 		return null;
+	}
+
+	private boolean isInSnapshot(MemStatement st) {
+		return snapshot < 0 || st.isInSnapshot(snapshot);
 	}
 }

@@ -14,32 +14,27 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.memory.model;
+package org.openrdf.repository.sail.memory;
 
-/**
- * A type-safe enumeration for read modes for MemStatementIterator.
- *
- * @see MemStatementIterator
- */
-public enum ReadMode  {
-	
-	/**
-	 * Constant indicating that only committed statements should be read.
-	 * Statements that have been added but not yet committed will be skipped.
-	 */
-	COMMITTED, 
-	
-	/**
-	 * Constant indicating that statements should be treated as if the currently
-	 * active transaction has been committed. Statements that have been
-	 * scheduled for removal will be skipped.
-	 */
-	TRANSACTION, 
-	
-	/**
-	 * Constant indicating that statements should be read no matter what their
-	 * transaction status is.
-	 */
-	RAW;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+
+import org.openrdf.repository.OptimisticIsolationTest;
+import org.openrdf.sail.memory.config.MemoryStoreFactory;
+
+public class MemoryOptimisticIsolationTest extends OptimisticIsolationTest {
+
+	@BeforeClass
+	public static void setUpClass()
+		throws Exception
+	{
+		setSailFactory(new MemoryStoreFactory());
+	}
+
+	@AfterClass
+	public static void tearDown()
+		throws Exception
+	{
+		setSailFactory(null);
+	}
 }
-

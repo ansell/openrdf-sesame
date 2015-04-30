@@ -21,13 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIteratorIteration;
 
-import org.openrdf.IsolationLevel;
-import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -58,16 +54,16 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
+import org.openrdf.sail.derived.RdfDataset;
+import org.openrdf.sail.derived.RdfSink;
+import org.openrdf.sail.derived.RdfSource;
+import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.memory.model.MemResource;
-import org.openrdf.sail.memory.model.MemStatement;
-import org.openrdf.sail.memory.model.MemStatementIterator;
-import org.openrdf.sail.memory.model.MemStatementList;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
-import org.openrdf.sail.memory.model.ReadMode;
 
 /**
  * Implementation of a Sail Connection for memory stores.
@@ -83,24 +79,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 	protected final MemoryStore store;
 
-	/**
-	 * The exclusive transaction lock held by this connection during
-	 * transactions.
-	 */
-	private volatile Lock txnLock;
+	private RdfSource datasource;
 
-	/**
-	 * Indicates if the current connection has already acquired an exclusive
-	 * transaction lock.
-	 */
-	private volatile boolean txnLockAcquired;
-
-	/**
-	 * A statement list read lock held by this connection during transactions.
-	 * Keeping this lock prevents statements from being removed from the main
-	 * statement list during transactions.
-	 */
-	private volatile Lock txnStLock;
+	private volatile DefaultSailChangedEvent sailChangedEvent;
 
 	/*--------------*
 	 * Constructors *
@@ -109,6 +90,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected MemoryStoreConnection(MemoryStore store) {
 		super(store);
 		this.store = store;
+		sailChangedEvent = new DefaultSailChangedEvent(store);
 	}
 
 	/*---------*
@@ -131,42 +113,12 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			tupleExpr = new QueryRoot(tupleExpr);
 		}
 
-		Lock stLock = store.getStatementsReadLock();
+		RdfDataset rdfDataset = snapshot();
 		boolean releaseLock = true;
-		Lock tempWriteLock = null;
 
 		try {
-			int snapshot = store.getCurrentSnapshot();
-			ReadMode readMode = ReadMode.COMMITTED;
 
-
-			if (transactionActive()) {
-				// current connection has begun a transaction
-				readMode = ReadMode.TRANSACTION;
-
-				// verify that we have obtained the transaction write lock, in which
-				// case
-				// we need to look at the latest snapshot
-				if (txnLockAcquired) {
-					snapshot++;
-				}
-				else {
-					// obtain a very short-term transaction write lock, only to block
-					// concurrent transactions until we're done
-					// creating the statement iterator.
-					tempWriteLock = store.tryTransactionLock();
-
-					if (tempWriteLock != null) {
-						// no other transaction is actively writing, so we can look at
-						// the latest
-						// snapshot
-						snapshot++;
-					}
-				}
-
-			}
-
-			TripleSource tripleSource = new MemTripleSource(store, includeInferred, snapshot, readMode);
+			TripleSource tripleSource = new MemTripleSource(store.getValueFactory(), rdfDataset, includeInferred);
 			EvaluationStrategy strategy = getEvaluationStrategy(dataset, tripleSource);
 
 			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
@@ -186,7 +138,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 			CloseableIteration<BindingSet, QueryEvaluationException> iter;
 			iter = strategy.evaluate(tupleExpr, EmptyBindingSet.getInstance());
-			iter = new LockingIteration<BindingSet, QueryEvaluationException>(stLock, iter);
+			iter = new LockingIteration<BindingSet, QueryEvaluationException>(rdfDataset, iter);
 			releaseLock = false;
 			return iter;
 		}
@@ -195,10 +147,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 		finally {
 			if (releaseLock) {
-				stLock.release();
-			}
-			if (tempWriteLock != null) {
-				tempWriteLock.release();
+				rdfDataset.release();
 			}
 		}
 	}
@@ -218,57 +167,32 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
 		throws SailException
 	{
-		// Note: we can't do this in a streaming fashion due to concurrency
-		// issues; iterating over the set of URIs or bnodes while another thread
-		// adds statements with new resources would result in
-		// ConcurrentModificationException's (issue SES-544).
-
-		// Create a list of all resources that are used as contexts
-		ArrayList<MemResource> contextIDs = new ArrayList<MemResource>(32);
-
-		Lock stLock = store.getStatementsReadLock();
-
-		try {
-			final int snapshot = transactionActive() ? store.getCurrentSnapshot() + 1
-					: store.getCurrentSnapshot();
-			final ReadMode readMode = transactionActive() ? ReadMode.TRANSACTION : ReadMode.COMMITTED;
-
-			MemValueFactory valueFactory = store.getValueFactory();
-
-			synchronized (valueFactory) {
-				for (MemResource memResource : valueFactory.getMemURIs()) {
-					if (isContextResource(memResource, snapshot, readMode)) {
-						contextIDs.add(memResource);
-					}
-				}
-
-				for (MemResource memResource : valueFactory.getMemBNodes()) {
-					if (isContextResource(memResource, snapshot, readMode)) {
-						contextIDs.add(memResource);
-					}
-				}
-			}
-		}
-		finally {
-			stLock.release();
-		}
-
-		return new CloseableIteratorIteration<MemResource, SailException>(contextIDs.iterator());
+		RdfDataset snapshot = snapshot();
+		return new LockingIteration<Resource, SailException>(snapshot, snapshot.getContextIDs());
 	}
 
-	private boolean isContextResource(MemResource memResource, int snapshot, ReadMode readMode)
+	@Override
+	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
+			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
-		MemStatementList contextStatements = memResource.getContextStatementList();
-
-		// Filter resources that are not used as context identifier
-		if (contextStatements.size() == 0) {
-			return false;
+		RdfDataset snapshot = snapshot();
+		if (includeInferred) {
+			return new LockingIteration<Statement, SailException>(snapshot, snapshot.getStatements(subj, pred,
+					obj, contexts));
 		}
+		else {
+			return new LockingIteration<Statement, SailException>(snapshot, snapshot.getExplicit(subj, pred,
+					obj, contexts));
+		}
+	}
 
-		// Filter more thoroughly by considering snapshot and read-mode parameters
-		MemStatementIterator<SailException> iter = new MemStatementIterator<SailException>(contextStatements,
-				null, null, null, false, snapshot, readMode);
+	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws SailException
+	{
+		CloseableIteration<? extends Statement, SailException> iter;
+		iter = getStatementsInternal(subj, pred, obj, includeInferred, contexts);
 		try {
 			return iter.hasNext();
 		}
@@ -278,109 +202,24 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	protected CloseableIteration<? extends Statement, SailException> getStatementsInternal(Resource subj,
-			URI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
-	{
-		Lock stLock = store.getStatementsReadLock();
-		boolean releaseLock = true;
-
-		Lock tempWriteLock = null;
-		try {
-			int snapshot = store.getCurrentSnapshot();
-			ReadMode readMode = ReadMode.COMMITTED;
-
-			if (transactionActive()) {
-				// current connection has begun a transaction
-				readMode = ReadMode.TRANSACTION;
-
-				// verify that we have obtained the transaction write lock, in which
-				// case
-				// we need to look at the latest snapshot
-				if (txnLockAcquired) {
-					snapshot++;
-				}
-				else {
-					// obtain a very short-term transaction write lock, only to block
-					// concurrent transactions until we're done
-					// creating the statement iterator.
-					tempWriteLock = store.tryTransactionLock();
-
-					if (tempWriteLock != null) {
-						// no other transaction is actively writing, so we can look at
-						// the latest
-						// snapshot
-						snapshot++;
-					}
-				}
-
-			}
-
-			CloseableIteration<MemStatement, SailException> iter;
-			iter = store.createStatementIterator(SailException.class, subj, pred, obj, !includeInferred,
-					snapshot, readMode, contexts);
-			iter = new LockingIteration<MemStatement, SailException>(stLock, iter);
-			releaseLock = false;
-			return iter;
-		}
-		finally {
-			if (releaseLock) {
-				stLock.release();
-			}
-			if (tempWriteLock != null) {
-				tempWriteLock.release();
-			}
-		}
-	}
-
-	public boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
-			Resource... contexts)
-		throws SailException
-	{
-		Lock stLock = store.getStatementsReadLock();
-
-		try {
-			int snapshot = store.getCurrentSnapshot();
-			ReadMode readMode = ReadMode.COMMITTED;
-
-			if (transactionActive()) {
-				snapshot++;
-				readMode = ReadMode.TRANSACTION;
-			}
-
-			return store.hasStatement(subj, pred, obj, !includeInferred, snapshot, readMode, contexts);
-		}
-		finally {
-			stLock.release();
-		}
-	}
-
-	@Override
 	protected long sizeInternal(Resource... contexts)
 		throws SailException
 	{
-		Lock stLock = store.getStatementsReadLock();
+		CloseableIteration<? extends Statement, SailException> iter = getStatementsInternal(null, null, null,
+				false, contexts);
 
 		try {
-			CloseableIteration<? extends Statement, SailException> iter = getStatementsInternal(null, null,
-					null, false, contexts);
+			long size = 0L;
 
-			try {
-				long size = 0L;
-
-				while (iter.hasNext()) {
-					iter.next();
-					size++;
-				}
-
-				return size;
+			while (iter.hasNext()) {
+				iter.next();
+				size++;
 			}
-			finally {
-				iter.close();
-			}
+
+			return size;
 		}
 		finally {
-			stLock.release();
+			iter.close();
 		}
 	}
 
@@ -388,14 +227,21 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected CloseableIteration<? extends Namespace, SailException> getNamespacesInternal()
 		throws SailException
 	{
-		return new CloseableIteratorIteration<Namespace, SailException>(store.getNamespaceStore().iterator());
+		RdfDataset snapshot = snapshot();
+		return new LockingIteration<Namespace, SailException>(snapshot, snapshot.getNamespaces());
 	}
 
 	@Override
 	protected String getNamespaceInternal(String prefix)
 		throws SailException
 	{
-		return store.getNamespaceStore().getNamespace(prefix);
+		RdfDataset snapshot = snapshot();
+		try {
+			return snapshot.getNamespace(prefix);
+		}
+		finally {
+			snapshot.release();
+		}
 	}
 
 	@Override
@@ -405,45 +251,16 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		if (!store.isWritable()) {
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
-
-		IsolationLevel level = getTransactionIsolation();
-		if (IsolationLevels.READ_COMMITTED.isCompatibleWith(level)) {
-			// we do nothing, but delay obtaining transaction locks until the first
-			// write operation.
-		}
-		else if (IsolationLevels.SERIALIZABLE.isCompatibleWith(level)) {
-			acquireExclusiveTransactionLock();
-		}
-		else {
-			throw new SailException("transaction isolation level " + level + " not supported by memory store. ");
-		}
+		assert datasource == null;
+		datasource = store.fork();
 	}
 
-	private void acquireExclusiveTransactionLock()
+	@Override
+	protected void prepareInternal()
 		throws SailException
 	{
-		if (!txnLockAcquired) {
-			txnStLock = store.getStatementsReadLock();
-
-			boolean releaseLocks = true;
-			try {
-				txnLock = store.getTransactionLock();
-				try {
-					store.startTransaction();
-					releaseLocks = false;
-					txnLockAcquired = true;
-				}
-				finally {
-					if (releaseLocks) {
-						txnLock.release();
-					}
-				}
-			}
-			finally {
-				if (releaseLocks) {
-					txnStLock.release();
-				}
-			}
+		if (datasource != null) {
+			datasource.prepare();
 		}
 	}
 
@@ -451,13 +268,18 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void commitInternal()
 		throws SailException
 	{
-		if (txnLockAcquired) {
-			store.commit();
-			if (txnLock != null) {
-				txnLock.release();
-				txnLockAcquired = false;
+		if (datasource != null) {
+			try {
+				datasource.flush();
+			} finally {
+				datasource.release();
 			}
-			txnStLock.release();
+			datasource = null;
+
+			store.notifySailChanged(sailChangedEvent);
+
+			// create a fresh event object.
+			sailChangedEvent = new DefaultSailChangedEvent(store);
 		}
 	}
 
@@ -465,17 +287,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void rollbackInternal()
 		throws SailException
 	{
-		if (txnLockAcquired) {
-			try {
-				store.rollback();
-			}
-			finally {
-				if (txnLock != null) {
-					txnLock.release();
-					txnLockAcquired = false;
-				}
-				txnStLock.release();
-			}
+		if (datasource != null) {
+			datasource.release();
+			datasource = null;
 		}
 	}
 
@@ -516,31 +330,42 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws SailException
 	{
-		acquireExclusiveTransactionLock();
-
-		assert txnStLock.isActive();
-		assert txnLock.isActive();
-
-		Statement st = null;
-
-		if (contexts.length == 0) {
-			st = store.addStatement(subj, pred, obj, null, explicit);
-			if (st != null) {
-				notifyStatementAdded(st);
-			}
-		}
-		else {
-			for (Resource context : contexts) {
-				st = store.addStatement(subj, pred, obj, context, explicit);
-				if (st != null) {
-					notifyStatementAdded(st);
+		RdfDataset dataset = hasConnectionListeners() ? datasource.snapshot(getTransactionIsolation()) : null;
+		RdfSink sink = datasource.sink(getTransactionIsolation());
+		try {
+			if (contexts.length == 0) {
+				if (dataset == null || !hasStatement(dataset, subj, pred, obj, explicit, null)) {
+					if (explicit) {
+						sink.addExplicit(subj, pred, obj, null);
+					}
+					else {
+						sink.addInferred(subj, pred, obj, null);
+					}
+					notifyStatementAdded(store.getValueFactory().createStatement(subj, pred, obj));
 				}
 			}
+			else {
+				for (Resource ctx : contexts) {
+					if (dataset == null || !hasStatement(dataset, subj, pred, obj, explicit, ctx)) {
+						if (explicit) {
+							sink.addExplicit(subj, pred, obj, ctx);
+						}
+						else {
+							sink.addInferred(subj, pred, obj, ctx);
+						}
+						notifyStatementAdded(store.getValueFactory().createStatement(subj, pred, obj, ctx));
+					}
+				}
+			}
+			// assume the triple is not yet present in the triple store
+			sailChangedEvent.setStatementsAdded(true);
+			return true;
+		} finally {
+			sink.release();
+			if (dataset != null) {
+				dataset.release();
+			}
 		}
-
-		// FIXME: this return type is invalid in case multiple contexts were
-		// specified
-		return st != null;
 	}
 
 	@Override
@@ -599,7 +424,9 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
-	public void flushUpdates() throws SailException {
+	public void flushUpdates()
+		throws SailException
+	{
 		if (!isActiveOperation()) {
 			flush();
 		}
@@ -626,51 +453,63 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 			Resource... contexts)
 		throws SailException
 	{
-		CloseableIteration<MemStatement, SailException> stIter = store.createStatementIterator(
-				SailException.class, subj, pred, obj, explicit, store.getCurrentSnapshot() + 1,
-				ReadMode.TRANSACTION, contexts);
-
-		return removeIteratorStatements(stIter, explicit);
-	}
-
-	protected boolean removeIteratorStatements(CloseableIteration<MemStatement, SailException> stIter,
-			boolean explicit)
-		throws SailException
-	{
-		acquireExclusiveTransactionLock();
-
 		boolean statementsRemoved = false;
-
+		RdfDataset dataset = snapshot();
 		try {
-			while (stIter.hasNext()) {
-				MemStatement st = stIter.next();
-
-				if (store.removeStatement(st, explicit)) {
-					statementsRemoved = true;
-					notifyStatementRemoved(st);
+			RdfSink sink = datasource.sink(getTransactionIsolation());
+			try {
+				if (explicit) {
+					CloseableIteration<? extends Statement, SailException> iter;
+					iter = dataset.getExplicit(subj, pred, obj, contexts);
+					try {
+						while (iter.hasNext()) {
+							Statement st = iter.next();
+							sink.removeExplicit(st.getSubject(), st.getPredicate(), st.getObject(),
+									st.getContext());
+							statementsRemoved = true;
+							notifyStatementRemoved(st);
+						}
+					}
+					finally {
+						iter.close();
+					}
 				}
+				else {
+					CloseableIteration<? extends Statement, SailException> iter;
+					iter = dataset.getInferred(subj, pred, obj, contexts);
+					try {
+						while (iter.hasNext()) {
+							Statement st = iter.next();
+							sink.removeInferred(st.getSubject(), st.getPredicate(), st.getObject(),
+									st.getContext());
+							statementsRemoved = true;
+							notifyStatementRemoved(st);
+						}
+					}
+					finally {
+						iter.close();
+					}
+				}
+			} finally {
+				sink.release();
 			}
 		}
 		finally {
-			stIter.close();
+			dataset.release();
 		}
-
+		sailChangedEvent.setStatementsRemoved(true);
 		return statementsRemoved;
-
 	}
 
 	@Override
 	protected void setNamespaceInternal(String prefix, String name)
 		throws SailException
 	{
-		acquireExclusiveTransactionLock();
-
-		// FIXME: changes to namespace prefixes not isolated in transactions yet
+		RdfSink sink = datasource.sink(getTransactionIsolation());
 		try {
-			store.getNamespaceStore().setNamespace(prefix, name);
-		}
-		catch (IllegalArgumentException e) {
-			throw new SailException(e.getMessage());
+			sink.setNamespace(prefix, name);
+		} finally {
+			sink.release();
 		}
 	}
 
@@ -678,23 +517,69 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	protected void removeNamespaceInternal(String prefix)
 		throws SailException
 	{
-		acquireExclusiveTransactionLock();
-		// FIXME: changes to namespace prefixes not isolated in transactions yet
-		store.getNamespaceStore().removeNamespace(prefix);
+		RdfSink sink = datasource.sink(getTransactionIsolation());
+		try {
+			sink.removeNamespace(prefix);
+		} finally {
+			sink.release();
+		}
 	}
 
 	@Override
 	protected void clearNamespacesInternal()
 		throws SailException
 	{
-
-		// FIXME: changes to namespace prefixes not isolated in transactions yet
-		store.getNamespaceStore().clear();
+		RdfSink sink = datasource.sink(getTransactionIsolation());
+		try {
+			sink.clearNamespaces();
+		} finally {
+			sink.release();
+		}
 	}
 
 	/*-------------------------------------*
 	 * Inner class MemEvaluationStatistics *
 	 *-------------------------------------*/
+
+	/**
+	 * @return
+	 * @throws SailException
+	 */
+	private RdfDataset snapshot()
+		throws SailException
+	{
+		if (isActive()) {
+			return datasource.snapshot(getTransactionIsolation());
+		}
+		else {
+			return store.fork().snapshot(store.getDefaultIsolationLevel());
+		}
+	}
+
+	private boolean hasStatement(RdfDataset dataset, Resource subj, URI pred, Value obj, boolean explicit,
+			Resource ctx)
+		throws SailException
+	{
+		CloseableIteration<? extends Statement, SailException> iter;
+		if (explicit) {
+			iter = dataset.getExplicit(subj, pred, obj, ctx);
+			try {
+				return iter.hasNext();
+			}
+			finally {
+				iter.close();
+			}
+		}
+		else {
+			iter = dataset.getInferred(subj, pred, obj, ctx);
+			try {
+				return iter.hasNext();
+			}
+			finally {
+				iter.close();
+			}
+		}
+	}
 
 	/**
 	 * Uses the MemoryStore's statement sizes to give cost estimates based on the
@@ -773,7 +658,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 
 				if (listSizes.isEmpty()) {
 					// all wildcards
-					cardinality = store.size();
+					cardinality = Integer.MAX_VALUE;
 				}
 				else {
 					cardinality = (double)Collections.min(listSizes);

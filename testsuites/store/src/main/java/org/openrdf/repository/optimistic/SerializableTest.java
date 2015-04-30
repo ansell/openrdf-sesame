@@ -126,8 +126,8 @@ public class SerializableTest {
 		b.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA { <rembrandt> a <Painter> }", NS).execute();
 		assertEquals(1, size(a, null, RDF.TYPE, PAINTER, false));
 		a.commit();
-		assertEquals(2, size(b, null, RDF.TYPE, PAINTER, false));
 		b.commit();
+		assertEquals(2, size(b, null, RDF.TYPE, PAINTER, false));
 	}
 
 	@Test
@@ -160,6 +160,7 @@ public class SerializableTest {
 		a.add(PICASSO, PAINTS, JACQUELINE);
 		List<Value> result = eval("painting", b, "SELECT ?painting "
 				+ "WHERE { [a <Painter>] <paints> ?painting }");
+		assertEquals(3, result.size());
 		for (Value painting : result) {
 			b.add((Resource) painting, RDF.TYPE, PAINTING);
 		}
@@ -363,8 +364,14 @@ public class SerializableTest {
 			b.add((Resource) painting, RDF.TYPE, PAINTING);
 		}
 		a.commit();
-		b.commit();
-		assertEquals(10, size(a, null, null, null, false));
+		try {
+			b.commit();
+			assertEquals(10, size(a, null, null, null, false));
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+			assertTrue(e.getCause() instanceof SailConflictException);
+			assertEquals(7, size(a, null, null, null, false));
+		}
 	}
 
 	@Test
@@ -382,8 +389,14 @@ public class SerializableTest {
 				+ "WHERE { ?painter a <Painter>; <paints> ?painting "
 				+ "FILTER  regex(str(?painter), \"rem\", \"i\") }", NS).execute();
 		a.commit();
-		b.commit();
-		assertEquals(10, size(a, null, null, null, false));
+		try {
+			b.commit();
+			assertEquals(10, size(a, null, null, null, false));
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+			assertTrue(e.getCause() instanceof SailConflictException);
+			assertEquals(7, size(a, null, null, null, false));
+		}
 	}
 
 	@Test
@@ -470,8 +483,14 @@ public class SerializableTest {
 		a.add(REMBRANDT, PAINTS, NIGHTWATCH);
 		a.add(NIGHTWATCH, YEAR, lf.createLiteral(1642));
 		a.commit();
-		b.commit();
-		assertEquals(17, size(a, null, null, null, false));
+		try {
+			b.commit();
+			assertEquals(17, size(a, null, null, null, false));
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+			assertTrue(e.getCause() instanceof SailConflictException);
+			assertEquals(13, size(a, null, null, null, false));
+		}
 	}
 
 	@Test
@@ -495,8 +514,14 @@ public class SerializableTest {
 		a.add(REMBRANDT, PAINTS, NIGHTWATCH);
 		a.add(NIGHTWATCH, YEAR, lf.createLiteral(1642));
 		a.commit();
-		b.commit();
-		assertEquals(17, size(a, null, null, null, false));
+		try {
+			b.commit();
+			assertEquals(17, size(a, null, null, null, false));
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+			assertTrue(e.getCause() instanceof SailConflictException);
+			assertEquals(13, size(a, null, null, null, false));
+		}
 	}
 
 	@Test
