@@ -1725,7 +1725,6 @@ public abstract class RepositoryConnectionTest {
 	public final void testAddDeleteInsert()
 		throws OpenRDFException
 	{
-		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
 		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
 		testCon.begin();
 		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
