@@ -105,10 +105,11 @@ public interface Repository {
 	 * }
 	 * </pre>
 	 * 
-	 * Note that {@link RepositoryConnection} is not guaranteed thread-safe! The
-	 * recommended pattern for repository access in a multithreaded application
-	 * is to share the Repository object between threads, but have each thread
-	 * create and use its own {@link RepositoryConnection}s.
+	 * Note that {@link RepositoryConnection} is not guaranteed to be
+	 * thread-safe! The recommended pattern for repository access in a
+	 * multithreaded application is to share the Repository object between
+	 * threads, but have each thread create and use its own
+	 * {@link RepositoryConnection}s.
 	 * 
 	 * @return A connection that allows operations on this repository.
 	 * @throws RepositoryException

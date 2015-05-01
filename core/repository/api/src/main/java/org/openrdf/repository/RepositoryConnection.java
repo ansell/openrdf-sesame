@@ -54,8 +54,8 @@ import org.openrdf.rio.RDFParseException;
  * RepositoryConnection after one is finished with it, to free up resources and
  * avoid unnecessary locks.
  * <p>
- * RepositoryConnection is not guaranteed thread-safe. The recommended access
- * pattern in a multithreaded application is to ensure that each thread
+ * RepositoryConnection is not guaranteed to be thread-safe. The recommended
+ * access pattern in a multithreaded application is to ensure that each thread
  * creates/uses its own RepositoryConnections (which can be obtained from a
  * shared {@link Repository}).
  * <p>
@@ -580,7 +580,8 @@ public interface RepositoryConnection {
 	/**
 	 * Begins a new transaction, requiring {@link #commit()} or
 	 * {@link #rollback()} to be called to end the transaction. The transaction
-	 * will use the currently set {@link IsolationLevel isolation level} for this connection.
+	 * will use the currently set {@link IsolationLevel isolation level} for this
+	 * connection.
 	 * 
 	 * @throws RepositoryException
 	 *         If the connection could not start the transaction. One possible
