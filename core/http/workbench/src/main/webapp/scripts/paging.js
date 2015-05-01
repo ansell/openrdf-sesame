@@ -27,12 +27,19 @@ var workbench;
             var value = encodeURIComponent($('#' + name).val());
             var url = document.location.href;
             var ref = workbench.getCookie('ref');
-            if ('id' == ref && url.match(/query$/)) {
-                url = url + ';ref=id' + AMP + 'action=exec';
-                url = addCookieToUrlQueryIfPresent(url, 'query');
-                url = addCookieToUrlQueryIfPresent(url, 'queryLn');
-                url = addCookieToUrlQueryIfPresent(url, 'infer');
-                url = addCookieToUrlQueryIfPresent(url, 'limit_query');
+            if (url.match(/query$/)) {
+                if ('id' == ref) {
+                    url = url + ';ref=id' + AMP + 'action=exec';
+                    url = addCookieToUrlQueryIfPresent(url, 'query');
+                    url = addCookieToUrlQueryIfPresent(url, 'queryLn');
+                    url = addCookieToUrlQueryIfPresent(url, 'infer');
+                    url = addCookieToUrlQueryIfPresent(url, 'limit_query');
+                }
+                else {
+                    alert("Can't put query in URL, since it might be too long for your browser.\n" +
+                        "Save your query on the server, then execute it from the 'Saved Queries' page.");
+                    return;
+                }
             }
             if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
                 document.location.href = url + AMP + name + '=' + value;
