@@ -5,17 +5,17 @@
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 var workbench;
 (function (workbench) {
+    var namespaces;
     (function (namespaces) {
         /**
-        * Invoked by #prefix-select element in namespaces.xsl.
-        */
+         * Invoked by #prefix-select element in namespaces.xsl.
+         */
         function updatePrefix() {
             var select = $('#prefix-select');
             $('#prefix').val(select.find('option:selected').text());
             $('#namespace').val(select.val());
         }
         namespaces.updatePrefix = updatePrefix;
-    })(workbench.namespaces || (workbench.namespaces = {}));
-    var namespaces = workbench.namespaces;
+    })(namespaces = workbench.namespaces || (workbench.namespaces = {}));
 })(workbench || (workbench = {}));
 //# sourceMappingURL=namespaces.js.map

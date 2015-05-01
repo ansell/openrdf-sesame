@@ -5,27 +5,26 @@
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 var workbench;
 (function (workbench) {
+    var add;
     (function (add) {
         function handleFormatSelection(selected) {
-            if (selected == 'application/x-trig' || selected == 'application/trix' || selected == 'text/x-nquads') {
+            if (selected == 'application/x-trig' || selected == 'application/trix'
+                || selected == 'text/x-nquads') {
                 $('#useForContext').prop('checked', false);
                 $('#context').val('').prop('readonly', false);
             }
         }
         add.handleFormatSelection = handleFormatSelection;
-
         function setContextFromBaseURI() {
             var baseURI = $('#baseURI').val();
             $('#context').val(baseURI == '' ? '' : '<' + baseURI + '>');
         }
-
         function handleBaseURIUse() {
             if ($('#useForContext').prop('checked')) {
                 setContextFromBaseURI();
             }
         }
         add.handleBaseURIUse = handleBaseURIUse;
-
         function enabledInput(selected) {
             var istext = (selected == 'text');
             $('#text').prop('disabled', !istext);
@@ -47,16 +46,19 @@ var workbench;
                 if (turtle.length > 0) {
                     turtle.prop('selected', true);
                 }
-            } else {
+            }
+            else {
                 firstType.prop('selected', true);
                 var baseURI = $('#baseURI');
                 var checked = $('#useForContext').prop('checked');
                 if (isfile) {
-                    baseURI.val(file.val() == '' ? '' : encodeURI('file://' + file.val().replace(/\\/g, '/')));
+                    baseURI.val(file.val() == '' ? '' : encodeURI('file://'
+                        + file.val().replace(/\\/g, '/')));
                     if (checked) {
                         setContextFromBaseURI();
                     }
-                } else if (isurl) {
+                }
+                else if (isurl) {
                     baseURI.val(url.val());
                     if (checked) {
                         setContextFromBaseURI();
@@ -65,7 +67,6 @@ var workbench;
             }
         }
         add.enabledInput = enabledInput;
-    })(workbench.add || (workbench.add = {}));
-    var add = workbench.add;
+    })(add = workbench.add || (workbench.add = {}));
 })(workbench || (workbench = {}));
 //# sourceMappingURL=add.js.map
