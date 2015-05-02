@@ -26,6 +26,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.client.HttpClient;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.EmptyIteration;
@@ -34,6 +36,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.SingletonIteration;
 
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -83,7 +86,7 @@ import org.openrdf.rio.helpers.StatementCollector;
  * 
  * @author James Leigh
  */
-public class SPARQLConnection extends RepositoryConnectionBase {
+public class SPARQLConnection extends RepositoryConnectionBase implements HttpClientDependent {
 
 	private static final String EVERYTHING = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }";
 	
@@ -114,6 +117,14 @@ public class SPARQLConnection extends RepositoryConnectionBase {
 	@Override
 	public String toString() {
 		return client.getQueryURL();
+	}
+
+	public final HttpClient getHttpClient() {
+		return client.getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		client.setHttpClient(httpClient);
 	}
 
 	public void exportStatements(Resource subj, URI pred, Value obj, boolean includeInferred,

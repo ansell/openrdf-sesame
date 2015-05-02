@@ -21,17 +21,21 @@ import java.util.concurrent.Executors;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
-import org.apache.http.impl.client.SystemDefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * Uses {@link HttpClient} to manage HTTP connections.
  * 
  * @author James Leigh
  */
-public class SesameClientImpl implements SesameClient {
+public class SesameClientImpl implements SesameClient, HttpClientDependent {
 
+	/** independent life cycle */
 	private HttpClient httpClient;
+
+	/** dependent life cycle */
+	private CloseableHttpClient dependentClient;
 
 	private ExecutorService executor = null;
 
@@ -43,12 +47,17 @@ public class SesameClientImpl implements SesameClient {
 		initialize();
 	}
 
+	public SesameClientImpl(CloseableHttpClient dependentClient, ExecutorService dependentExecutorService) {
+		this.httpClient = this.dependentClient = dependentClient;
+		this.executor = dependentExecutorService;
+	}
+
 	/**
 	 * @return Returns the httpClient.
 	 */
 	public synchronized HttpClient getHttpClient() {
 		if (httpClient == null) {
-			return httpClient = createHttpClient();
+			httpClient = dependentClient = createHttpClient();
 		}
 		return httpClient;
 	}
@@ -60,12 +69,11 @@ public class SesameClientImpl implements SesameClient {
 		this.httpClient = httpClient;
 	}
 
-	private HttpClient createHttpClient() {
-		SystemDefaultHttpClient client = new SystemDefaultHttpClient();
-		client.setHttpRequestRetryHandler(new StandardHttpRequestRetryHandler(3, false));
-		return client;
+	private CloseableHttpClient createHttpClient() {
+		return HttpClients.createSystem();
 	}
 
+	@Override
 	public synchronized SparqlSession createSparqlSession(String queryEndpointUrl, String updateEndpointUrl) {
 		SparqlSession session = new SparqlSession(getHttpClient(), executor);
 		session.setQueryURL(queryEndpointUrl);
@@ -73,6 +81,7 @@ public class SesameClientImpl implements SesameClient {
 		return session;
 	}
 
+	@Override
 	public synchronized SesameSession createSesameSession(String serverURL) {
 		SesameSession session = new SesameSession(getHttpClient(), executor);
 		session.setServerURL(serverURL);
@@ -83,14 +92,15 @@ public class SesameClientImpl implements SesameClient {
 	 * Get/set methods *
 	 *-----------------*/
 
+	@Override
 	public synchronized void shutDown() {
 		if (executor != null) {
 			executor.shutdown();
 			executor = null;
 		}
-		if (httpClient != null) {
-			HttpClientUtils.closeQuietly(httpClient);
-			httpClient = null;
+		if (dependentClient != null) {
+			HttpClientUtils.closeQuietly(dependentClient);
+			dependentClient = null;
 		}
 	}
 

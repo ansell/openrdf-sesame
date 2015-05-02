@@ -50,6 +50,10 @@ public class RdbmsEvaluationFactory implements FederatedServiceResolverClient {
 		this.ids = ids;
 	}
 
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		return this.serviceResolver;
+	}
+
 	/**
 	 * @param reslover The SERVICE resolver to set.
 	 */

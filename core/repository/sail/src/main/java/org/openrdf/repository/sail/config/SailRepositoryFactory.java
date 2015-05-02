@@ -16,8 +16,6 @@
  */
 package org.openrdf.repository.sail.config;
 
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
@@ -37,9 +35,7 @@ import org.openrdf.sail.config.SailRegistry;
  * 
  * @author Arjohn Kampman
  */
-public class SailRepositoryFactory implements RepositoryFactory, RepositoryResolverClient,
-		FederatedServiceResolverClient
-{
+public class SailRepositoryFactory implements RepositoryFactory {
 
 	/*-----------*
 	 * Constants *
@@ -51,10 +47,6 @@ public class SailRepositoryFactory implements RepositoryFactory, RepositoryResol
 	 * @see RepositoryFactory#getRepositoryType()
 	 */
 	public static final String REPOSITORY_TYPE = "openrdf:SailRepository";
-
-	private RepositoryResolver resolver;
-
-	private FederatedServiceResolver serviceResolver;
 
 	/*---------*
 	 * Methods *
@@ -69,15 +61,6 @@ public class SailRepositoryFactory implements RepositoryFactory, RepositoryResol
 
 	public RepositoryImplConfig getConfig() {
 		return new SailRepositoryConfig();
-	}
-
-	public FederatedServiceResolver getFederatedServiceResolver() {
-		return serviceResolver;
-	}
-
-	@Override
-	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
-		this.serviceResolver = resolver;
 	}
 
 	public Repository getRepository(RepositoryImplConfig config)
@@ -117,12 +100,6 @@ public class SailRepositoryFactory implements RepositoryFactory, RepositoryResol
 		throws RepositoryConfigException, SailConfigException
 	{
 		SailFactory sailFactory = SailRegistry.getInstance().get(config.getType());
-		if (sailFactory instanceof RepositoryResolverClient) {
-			((RepositoryResolverClient)sailFactory).setRepositoryResolver(resolver);
-		}
-		if (sailFactory instanceof FederatedServiceResolverClient) {
-			((FederatedServiceResolverClient)sailFactory).setFederatedServiceResolver(getFederatedServiceResolver());
-		}
 		if (sailFactory != null) {
 			return sailFactory.getSail(config);
 		}
@@ -142,10 +119,5 @@ public class SailRepositoryFactory implements RepositoryFactory, RepositoryResol
 			throw new RepositoryConfigException("Delegate configured but " + sail.getClass()
 					+ " is not a StackableSail");
 		}
-	}
-
-	@Override
-	public void setRepositoryResolver(RepositoryResolver resolver) {
-		this.resolver = resolver;
 	}
 }
