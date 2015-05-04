@@ -9,14 +9,14 @@ workbench.addLoad(function createFederatePageLoaded() {
         var enoughMembers = memberID.filter(':checked').length >= 2;
         if (enoughMembers) {
             $('#create-feedback').hide();
-        } else {
+        }
+        else {
             $('#create-feedback').show();
         }
         var fedID = $('#id').val();
         var validID = /.+/.test(fedID);
         var disable = !(validID && enoughMembers);
         var matchExisting = false;
-
         // test that fedID not equal any existing id
         memberID.each(function () {
             if (fedID == $(this).attr('value')) {
@@ -28,20 +28,19 @@ workbench.addLoad(function createFederatePageLoaded() {
         var recurseMessage = $('#recurse-message');
         if (matchExisting) {
             recurseMessage.show();
-        } else {
+        }
+        else {
             recurseMessage.hide();
         }
         $('input#create').prop('disabled', disable);
     }
-
     /**
-    * Calls another function with a delay of 0 msec. (Workaround for annoying
-    * browser behavior.)
-    */
+     * Calls another function with a delay of 0 msec. (Workaround for annoying
+     * browser behavior.)
+     */
     function timeoutRespond() {
         setTimeout(respondToFormState, 0);
     }
-
     respondToFormState();
     $('input.memberID').on('change', respondToFormState);
     $("input[name='type']").on('change', respondToFormState);

@@ -19,19 +19,39 @@ module workbench {
 
         var AMP = decodeURIComponent('%26');
 
+        function addCookieToUrlQueryIfPresent(url: string, name: string){
+            var value = workbench.getCookie(name);
+            if (value) {
+                url = url + AMP + name + '=' + value;
+            }
+            return url;
+        }
+
         /**
          * Invoked in graph.xsl and tuple.xsl for download functionality. Takes a
          * document element by name, and creates a request with it as a parameter.
          */
         export function addGraphParam(name: string) {
-            var value = $('#' + name).val();
+            var value = encodeURIComponent($('#' + name).val());
             var url = document.location.href;
+            var ref = workbench.getCookie('ref');
+            if (url.match(/query$/)) { // looking at POST query results?
+                if ('id' == ref) {
+                    url = url + ';ref=id' + AMP + 'action=exec';
+                    url = addCookieToUrlQueryIfPresent(url, 'query');
+                    url = addCookieToUrlQueryIfPresent(url, 'queryLn');
+                    url = addCookieToUrlQueryIfPresent(url, 'infer');
+                    url = addCookieToUrlQueryIfPresent(url, 'limit_query');
+                } else {
+                    alert("Can't put query in URL, since it might be too long for your browser.\n" +
+                    "Save your query on the server, then execute it from the 'Saved Queries' page.");
+                    return;
+                }
+            }
             if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
-                document.location.href = url + decodeURIComponent('%26') + name
-                + '=' + encodeURIComponent(value);
+                document.location.href = url + AMP + name + '=' + value;
             } else {
-                document.location.href = url + ';' + name + '='
-                + encodeURIComponent(value);
+                document.location.href = url + ';' + name + '=' + value;
             }
         }
         
@@ -185,7 +205,7 @@ module workbench {
          * @returns The substring after the 'split' character, or the original
          *          string if 'split' is not found.
          */
-        function tailAfter(value: string, split: string) {
+        function tailAfter(value: string, split: string): string {
             return value.substring(value.indexOf(split) + 1);
         }
 

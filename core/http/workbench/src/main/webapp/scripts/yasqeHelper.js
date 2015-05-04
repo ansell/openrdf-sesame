@@ -6,10 +6,10 @@
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 var workbench;
 (function (workbench) {
+    var yasqeHelper;
     (function (yasqeHelper) {
         function setupCompleters(namespaces) {
             var newPrefixCompleterName = "customPrefixCompleter";
-
             //take the current prefix completer as base, to present our own namespaces for prefix autocompletion
             YASQE.registerAutocompleter(newPrefixCompleterName, function (yasqe, name) {
                 //also, auto-append prefixes if needed
@@ -35,12 +35,10 @@ var workbench;
                     }
                 };
             });
-
             //i.e., disable the property/class autocompleters
             YASQE.defaults.autocompleters = [newPrefixCompleterName, "variables"];
         }
         yasqeHelper.setupCompleters = setupCompleters;
-    })(workbench.yasqeHelper || (workbench.yasqeHelper = {}));
-    var yasqeHelper = workbench.yasqeHelper;
+    })(yasqeHelper = workbench.yasqeHelper || (workbench.yasqeHelper = {}));
 })(workbench || (workbench = {}));
 //# sourceMappingURL=yasqeHelper.js.map
