@@ -1599,7 +1599,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public final void testAddRemove()
+	public void testAddRemove()
 		throws OpenRDFException
 	{
 		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
@@ -1620,7 +1620,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public final void testAddDelete()
+	public void testAddDelete()
 		throws OpenRDFException
 	{
 		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
@@ -1662,7 +1662,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public final void testInsertDelete()
+	public void testInsertDelete()
 		throws OpenRDFException
 	{
 		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
@@ -1683,7 +1683,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public final void testAddRemoveAdd()
+	public void testAddRemoveAdd()
 		throws OpenRDFException
 	{
 		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
@@ -1696,7 +1696,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public final void testAddDeleteAdd()
+	public void testAddDeleteAdd()
 		throws OpenRDFException
 	{
 		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
@@ -1709,7 +1709,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public final void testAddRemoveInsert()
+	public void testAddRemoveInsert()
 		throws OpenRDFException
 	{
 		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
@@ -1722,7 +1722,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public final void testAddDeleteInsert()
+	public  void testAddDeleteInsert()
 		throws OpenRDFException
 	{
 		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
