@@ -1,0 +1,8 @@
+PREFIX my: <my:>
+
+# must be at least 18 years old
+ASK WHERE {
+	?this my:age ?age .
+	FILTER (?age < 18) .
+}
+    

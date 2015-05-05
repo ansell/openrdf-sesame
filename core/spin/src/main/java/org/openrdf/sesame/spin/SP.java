@@ -230,6 +230,13 @@ public class SP {
 
 	public static final URI PATH_PREDICATE;
 
+	public static final URI EQ;
+	public static final URI NE;
+	public static final URI LT;
+	public static final URI LE;
+	public static final URI GE;
+	public static final URI GT;
+
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		PATH = factory.createURI(SP.NAMESPACE, "Path");
@@ -336,5 +343,12 @@ public class SP {
 		FROM = factory.createURI(SP.NAMESPACE, "from");
 		MOD_MIN = factory.createURI(SP.NAMESPACE, "modMin");
 		INSERT_PATTERN = factory.createURI(SP.NAMESPACE, "insertPattern");
+
+		EQ = factory.createURI(SP.NAMESPACE, "eq");
+		NE = factory.createURI(SP.NAMESPACE, "ne");
+		LT = factory.createURI(SP.NAMESPACE, "lt");
+		LE = factory.createURI(SP.NAMESPACE, "le");
+		GE = factory.createURI(SP.NAMESPACE, "ge");
+		GT = factory.createURI(SP.NAMESPACE, "gt");
 	}
 }
