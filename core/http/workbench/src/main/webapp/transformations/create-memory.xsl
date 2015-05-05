@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE rdf:RDF [
-   <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#" >
- ]>
+<!DOCTYPE xsl:stylesheet>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
@@ -56,10 +54,10 @@
 							<xsl:value-of select="$repository-persist.label" />
 						</th>
 						<td>
-							<input type="radio" id="persist" name="Persist" size="48"
+							<input type="radio" name="Persist" size="48"
 								value="true" checked="true" />
 							<xsl:value-of select="$true.label" />
-							<input type="radio" id="persist" name="Persist" size="48"
+							<input type="radio" name="Persist" size="48"
 								value="false" />
 							<xsl:value-of select="$false.label" />
 						</td>
@@ -79,7 +77,8 @@
 						<td></td>
 						<td>
 							<input type="button" value="{$cancel.label}" style="float:right"
-								href="repositories" onclick="document.location.href=this.getAttribute('href')" />
+								data-href="repositories"
+                                onclick="document.location.href=this.getAttribute('data-href')" />
 							<input id="create" type="button" value="{$create.label}"
 								onclick="checkOverwrite()" />
 						</td>

@@ -4,15 +4,16 @@
 // corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 /**
-* Invoked by the "Delete" button on the form in delete.xsl. Checks with the
-* DeleteServlet whether the given ID has been proxied, giving a chance to back
-* out if it is.
-*/
+ * Invoked by the "Delete" button on the form in delete.xsl. Checks with the
+ * DeleteServlet whether the given ID has been proxied, giving a chance to back
+ * out if it is.
+ */
 function checkIsSafeToDelete() {
     var id = $('#id').val();
     var submitForm = false;
     var feedback = $('#delete-feedback');
-    $.ajax({
+    $
+        .ajax({
         dataType: 'json',
         url: 'delete',
         async: false,
@@ -22,9 +23,15 @@ function checkIsSafeToDelete() {
         },
         error: function (jqXHR, textStatus, errorThrown) {
             if (textStatus == 'timeout') {
-                feedback.text('The server seems unresponsive. Delete request not sent.');
-            } else {
-                feedback.text('There is a problem with the server. Delete request not sent. Error Type = ' + textStatus + ', HTTP Status Text = "' + errorThrown + '"');
+                feedback
+                    .text('The server seems unresponsive. Delete request not sent.');
+            }
+            else {
+                feedback
+                    .text('There is a problem with the server. Delete request not sent. Error Type = '
+                    + textStatus
+                    + ', HTTP Status Text = "'
+                    + errorThrown + '"');
             }
         },
         success: function (data) {
