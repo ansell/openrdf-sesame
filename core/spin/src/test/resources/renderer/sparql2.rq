@@ -1,0 +1,10 @@
+SELECT ?y
+WHERE {
+    ?class a rdfs:Class .
+    {
+        SELECT ?y
+        WHERE {
+            ?class rdfs:label ?y .
+        }
+    } .
+}

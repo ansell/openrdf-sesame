@@ -1,0 +1,28 @@
+@prefix sp: <http://spinrdf.org/sp#>.
+@prefix spin: <http://spinrdf.org/spin#>.
+@prefix ex: <ex:>.
+
+[ a       sp:Construct ;
+	sp:text """# infer grandParent relationship
+CONSTRUCT {
+	?this ex:grandParent ?grandParent .
+}
+WHERE {
+    ?parent ex:child ?this .
+    ?grandParent ex:child ?parent .
+}
+""";
+#  rdfs:comment "infer grandParent relationship"^^xsd:string ;
+  sp:templates ([ sp:object sp:_grandParent ;
+                  sp:predicate ex:grandParent ;
+                  sp:subject spin:_this
+                ]) ;
+  sp:where ([ sp:object spin:_this ;
+              sp:predicate ex:child ;
+              sp:subject sp:_parent
+            ] 
+            [ sp:object sp:_parent ;
+              sp:predicate ex:child ;
+              sp:subject sp:_grandParent
+            ])
+].

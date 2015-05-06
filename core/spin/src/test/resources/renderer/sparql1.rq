@@ -5,4 +5,3 @@ ASK WHERE {
 	?this my:age ?age .
 	FILTER (?age < 18) .
 }
-    

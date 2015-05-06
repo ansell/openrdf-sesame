@@ -3,6 +3,14 @@
 @prefix my: <my:>.
 
 [ a       sp:Ask ;
+	sp:text """PREFIX my: <my:>
+
+# must be at least 18 years old
+ASK WHERE {
+	?this my:age ?age .
+	FILTER (?age < 18) .
+}
+""";
 #    rdfs:comment "must be at least 18 years old"^^xsd:string ;
     sp:where ([ sp:object _:age ;
                 sp:predicate my:age ;
