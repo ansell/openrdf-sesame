@@ -16,11 +16,14 @@
  */
 package org.openrdf.repository;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+
+import info.aduna.io.FileUtil;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.repository.config.RepositoryFactory;
@@ -56,24 +59,38 @@ public abstract class OptimisticIsolationTest {
 
 	private static RepositoryFactory factory;
 
-	public static void setRepositoryFactory(RepositoryFactory factory) {
+	private static File dataDir;
+
+	public static void setRepositoryFactory(RepositoryFactory factory)
+		throws IOException
+	{
+		if (dataDir != null) {
+			FileUtil.deleteDir(dataDir);
+		}
 		OptimisticIsolationTest.factory = factory;
 	}
 
-	public static void setSailFactory(final SailFactory factory) {
-		OptimisticIsolationTest.factory = new SailRepositoryFactory() {
+	public static void setSailFactory(final SailFactory factory)
+		throws IOException
+	{
+		setRepositoryFactory(new SailRepositoryFactory() {
 
 			@Override
 			public RepositoryImplConfig getConfig() {
 				return new SailRepositoryConfig(factory.getConfig());
 			}
-		};
+		});
 	}
 
 	public static Repository getEmptyInitializedRepository(Class<?> caller)
 		throws OpenRDFException, IOException
 	{
+		if (dataDir != null) {
+			FileUtil.deleteDir(dataDir);
+		}
+		dataDir = FileUtil.createTempDir(caller.getSimpleName());
 		Repository repository = factory.getRepository(factory.getConfig());
+		repository.setDataDir(dataDir);
 		repository.initialize();
 		RepositoryConnection con = repository.getConnection();
 		try {
