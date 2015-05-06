@@ -1,17 +1,18 @@
-@prefix sp: <http:spinrdf.org/sp#>.
-@prefix spin: <http:spinrdf.org/spin#>.
+@prefix sp: <http://spinrdf.org/sp#>.
+@prefix spin: <http://spinrdf.org/spin#>.
 @prefix my: <my:>.
 
 [ a       sp:Ask ;
 #    rdfs:comment "must be at least 18 years old"^^xsd:string ;
-    sp:where ([ sp:object sp:_age ;
+    sp:where ([ sp:object _:age ;
                 sp:predicate my:age ;
                 sp:subject spin:_this
               ] [ a       sp:Filter ;
                 sp:expression
-                        [ sp:arg1 sp:_age ;
+                        [ sp:arg1 _:age ;
                           sp:arg2 18 ;
                           a sp:lt
                         ]
               ])
   ].
+  _:age sp:varName "age".

@@ -14,6 +14,8 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.SP;
+import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -68,7 +70,7 @@ public class SPINParser implements AutoCloseable {
 			RepositoryConnection connection) throws RepositoryException,
 			MalformedQueryException, MalformedRuleException {
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
-				null, RDF.TYPE, SP.CONSTRUCT, true);
+				null, RDF.TYPE, SP.CONSTRUCT_CLASS, true);
 		while (queryStarts.hasNext()) {
 			recoverConstructQueryFromTriples(queryStarts.next(), queries,
 					connection);
@@ -158,12 +160,12 @@ public class SPINParser implements AutoCloseable {
 
 	private List<Resource> getVariables(Resource where,
 			RepositoryConnection connection) throws RepositoryException {
-		return findSubjects(where, connection, SP.VAR_NAME);
+		return findSubjects(where, connection, SP.VAR_NAME_PROPERTY);
 	}
 
 	private List<Resource> getWhere(Resource subject,
 			RepositoryConnection connection) throws RepositoryException {
-		return findSubjects(subject, connection, SP.WHERE);
+		return findSubjects(subject, connection, SP.WHERE_PROPERTY);
 	}
 
 	private List<Resource> findSubjects(Resource subject,
@@ -177,7 +179,7 @@ public class SPINParser implements AutoCloseable {
 			RepositoryConnection connection) throws RepositoryException {
 		List<Literal> result = new ArrayList<Literal>();
 		RepositoryResult<Statement> queryStarts = connection.getStatements(
-				subject, SP.TEXT, null, true);
+				subject, SP.TEXT_PROPERTY, null, true);
 		while (queryStarts.hasNext()) {
 			Statement queryStart = queryStarts.next();
 			result.add((Literal) queryStart.getObject());
