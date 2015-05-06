@@ -1,7 +1,7 @@
 @prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:<http://www.w3.org/2002/07/owl#> .
-@prefix sp:<http:spinrdf.org/sp#> .
-@prefix spin:<http:spinrdf.org/spin#> .
+@prefix sp:<http://spinrdf.org/sp#> .
+@prefix spin:<http://spinrdf.org/spin#> .
 @prefix core:<http://purl.uniprot.org/core/> .
 @prefix taxonomy:<http://purl.uniprot.org/taxonomy/> .
 

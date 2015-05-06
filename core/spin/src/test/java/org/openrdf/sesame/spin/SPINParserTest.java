@@ -17,6 +17,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -33,16 +34,21 @@ public class SPINParserTest {
 	public void test() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		SPINParser spinParser = new SPINParser(new StringReader(""), "",
+		Repository repo = SPINParser.load(new StringReader(""), "",
 				RDFFormat.TURTLE);
-		assertThat(spinParser.parseConstraint().size(), is(equalTo(0)));
+		try {
+			assertThat(SPINParser.parseConstraint(repo).size(), is(equalTo(0)));
+		}
+		finally {
+			repo.shutDown();
+		}
 	}
 
 	@Test
 	public void testBasic() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		assertOneConstraint(createParser("constraint.ttl").parseConstraint(),
+		assertOneConstraint(parseConstraint("constraint.ttl"),
 				PROTEIN);
 	}
 
@@ -50,23 +56,21 @@ public class SPINParserTest {
 	public void testBasicText() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		assertOneConstraint(createParser("constraintText.ttl")
-				.parseConstraint(), PROTEIN);
+		assertOneConstraint(parseConstraint("constraintText.ttl"), PROTEIN);
 	}
 
 	@Test(expected = MalformedRuleException.class)
 	public void testRequireAttachedResource() throws RDFParseException,
 			RepositoryException, IOException, MalformedQueryException,
 			MalformedRuleException {
-		createParser("unattachedConstraintText.ttl").parseConstraint();
+		parseConstraint("unattachedConstraintText.ttl");
 	}
 
 	@Test
 	public void testExplictlyUnbound() throws RDFParseException,
 			RepositoryException, IOException, MalformedQueryException,
 			MalformedRuleException {
-		assertOneConstraint(createParser("unattachedUnboundConstraintText.ttl")
-				.parseConstraint(), null);
+		assertOneConstraint(parseConstraint("unattachedUnboundConstraintText.ttl"), null);
 	}
 
 	private static void assertOneConstraint(
@@ -79,9 +83,15 @@ public class SPINParserTest {
 				is(instanceOf(ParsedGraphQuery.class)));
 	}
 
-	private static SPINParser createParser(String filename)
-			throws RDFParseException, RepositoryException, IOException {
-		return new SPINParser(new InputStreamReader(
+	private static Multimap<Resource, ParsedQuery> parseConstraint(String filename)
+			throws RDFParseException, RepositoryException, IOException, MalformedQueryException, MalformedRuleException {
+		Repository repo = SPINParser.load(new InputStreamReader(
 				ResourceUtil.getInputStream(filename)), "", RDFFormat.TURTLE);
+		try {
+			return SPINParser.parseConstraint(repo);
+		}
+		finally {
+			repo.shutDown();
+		}
 	}
 }

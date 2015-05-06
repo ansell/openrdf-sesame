@@ -31,37 +31,39 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.memory.MemoryStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-public class SPINParser implements AutoCloseable {
-	private Logger log = LoggerFactory.getLogger(SPINParser.class);
-	private Repository myRepository;
+public class SPINParser {
 
-	public SPINParser(Reader reader, String baseURI, RDFFormat dataFormat)
-			throws RDFParseException, RepositoryException, IOException {
-		myRepository = new SailRepository(new MemoryStore());
-		myRepository.initialize();
-		RepositoryConnection connection = myRepository.getConnection();
+	public static Repository load(Reader reader, String baseURI, RDFFormat dataFormat) throws RDFParseException, RepositoryException, IOException {
+		Repository repository = new SailRepository(new MemoryStore());
+		repository.initialize();
+		RepositoryConnection connection = repository.getConnection();
 		connection.begin();
 		connection.add(reader, baseURI, dataFormat);
 		connection.commit();
 		connection.close();
+		return repository;
 	}
 
-	public Multimap<Resource, ParsedQuery> parseConstraint()
-			throws MalformedQueryException, MalformedRuleException {
-		RepositoryConnection connection;
-		Multimap<Resource, ParsedQuery> queries = HashMultimap.create(1, 1);
-		try {
-			connection = myRepository.getConnection();
-			recoverConstructQueriesFromTriples(queries, connection);
-		} catch (RepositoryException e) {
-			log.error("SPIN parsing failed", e);
+	public static Multimap<Resource, ParsedQuery> parseConstraint(Repository repository) throws RepositoryException, MalformedQueryException, MalformedRuleException {
+		RepositoryConnection connection = repository.getConnection();
+		try
+		{
+			return new SPINParser().parseConstraint(connection);
 		}
+		finally
+		{
+			connection.close();
+		}
+	}
+
+	public Multimap<Resource, ParsedQuery> parseConstraint(RepositoryConnection connection)
+			throws MalformedQueryException, MalformedRuleException, RepositoryException {
+		Multimap<Resource, ParsedQuery> queries = HashMultimap.create(1, 1);
+			recoverConstructQueriesFromTriples(queries, connection);
 		return queries;
 	}
 
@@ -197,12 +199,5 @@ public class SPINParser implements AutoCloseable {
 			types.add((Resource) queryStart.getObject());
 		}
 		return types;
-	}
-
-	@Override
-	public void close() throws RepositoryException {
-		if (myRepository != null) {
-			myRepository.shutDown();
-		}
 	}
 }
