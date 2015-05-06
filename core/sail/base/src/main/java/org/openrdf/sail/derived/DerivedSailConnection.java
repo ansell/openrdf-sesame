@@ -16,9 +16,13 @@
  */
 package org.openrdf.sail.derived;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -50,6 +54,7 @@ import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
+import org.openrdf.sail.UpdateContext;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
 import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -64,6 +69,17 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	/**
+	 * The state of store for outstanding operations.
+	 */
+	private final Map<UpdateContext, RdfDataset> datasets = new HashMap<UpdateContext, RdfDataset>();
+
+	/**
+	 * Outstanding changes that are underway, but not yet realized, by an active
+	 * operation.
+	 */
+	private final Map<UpdateContext, RdfSink> sinks = new HashMap<UpdateContext, RdfSink>();
 
 	private final ValueFactory vf;
 
@@ -293,11 +309,84 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 	protected void rollbackInternal()
 		throws SailException
 	{
+		synchronized (sinks) {
+			sinks.clear();
+		}
 		if (includeInferredDatasource != null) {
 			includeInferredDatasource.close();
 			includeInferredDatasource = null;
 			explicitOnlyDatasource = null;
 			inferredOnlyDatasource = null;
+		}
+	}
+
+	@Override
+	public void startUpdate(UpdateContext op)
+		throws SailException
+	{
+		if (op != null) {
+			IsolationLevel level = getTransactionIsolation();
+			if (!isActiveOperation() || isActive()
+					&& !level.isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+			{
+				flush();
+			}
+			synchronized (sinks) {
+				assert !sinks.containsKey(op);
+				RdfSource source = op.isIncludeInferred() ? new UnionRdfSource(explicitOnlyDatasource,
+						inferredOnlyDatasource) : explicitOnlyDatasource;
+				datasets.put(op, source.snapshot(level));
+				sinks.put(op, source.sink(level));
+			}
+		}
+	}
+
+	@Override
+	public void addStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		verifyIsOpen();
+		verifyIsActive();
+		if (op == null) {
+			addStatementInternal(subj, pred, obj, contexts);
+		} else {
+			synchronized (sinks) {
+				assert sinks.containsKey(op);
+				add(subj, pred, obj, datasets.get(op), sinks.get(op), contexts);
+			}
+		}
+	}
+
+	@Override
+	public void removeStatement(UpdateContext op, Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		verifyIsOpen();
+		verifyIsActive();
+		if (op == null) {
+			removeStatementsInternal(subj, pred, obj, contexts);
+		} else {
+			synchronized (sinks) {
+				assert sinks.containsKey(op);
+				remove(subj, pred, obj, datasets.get(op), sinks.get(op), contexts);
+			}
+		}
+	}
+
+	@Override
+	protected void endUpdateInternal(UpdateContext op)
+		throws SailException
+	{
+		if (op != null) {
+			synchronized (sinks) {
+				RdfSink sink = sinks.remove(op);
+				try {
+					sink.flush();
+				} finally {
+					sink.close();
+					datasets.remove(op).close();
+				}
+			}
 		}
 	}
 
@@ -309,20 +398,7 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 		RdfDataset dataset = hasConnectionListeners() ? source.snapshot(getTransactionIsolation()) : null;
 		RdfSink sink = source.sink(getTransactionIsolation());
 		try {
-			if (contexts.length == 0) {
-				if (dataset == null || !hasStatement(dataset, subj, pred, obj, null)) {
-					sink.approve(subj, pred, obj, null);
-					notifyStatementAdded(vf.createStatement(subj, pred, obj));
-				}
-			}
-			else {
-				for (Resource ctx : contexts) {
-					if (dataset == null || !hasStatement(dataset, subj, pred, obj, ctx)) {
-						sink.approve(subj, pred, obj, ctx);
-						notifyStatementAdded(vf.createStatement(subj, pred, obj, ctx));
-					}
-				}
-			}
+			add(subj, pred, obj, dataset, sink, contexts);
 			sink.flush();
 		}
 		finally {
@@ -348,20 +424,7 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 				RdfDataset dataset = hasConnectionListeners() ? source.snapshot(getTransactionIsolation()) : null;
 				RdfSink sink = source.sink(getTransactionIsolation());
 				try {
-					if (contexts.length == 0) {
-						if (dataset == null || !hasStatement(dataset, subj, pred, obj, null)) {
-							sink.approve(subj, pred, obj, null);
-							notifyStatementAdded(vf.createStatement(subj, pred, obj));
-						}
-					}
-					else {
-						for (Resource ctx : contexts) {
-							if (dataset == null || !hasStatement(dataset, subj, pred, obj, ctx)) {
-								sink.approve(subj, pred, obj, ctx);
-								notifyStatementAdded(vf.createStatement(subj, pred, obj, ctx));
-							}
-						}
-					}
+					add(subj, pred, obj, dataset, sink, contexts);
 					sink.flush();
 				}
 				finally {
@@ -382,6 +445,26 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 		}
 	}
 
+	private void add(Resource subj, URI pred, Value obj, RdfDataset dataset, RdfSink sink,
+			Resource... contexts)
+		throws SailException
+	{
+		if (contexts.length == 0) {
+			if (dataset == null || !hasStatement(dataset, subj, pred, obj, null)) {
+				sink.approve(subj, pred, obj, null);
+				notifyStatementAdded(vf.createStatement(subj, pred, obj));
+			}
+		}
+		else {
+			for (Resource ctx : contexts) {
+				if (dataset == null || !hasStatement(dataset, subj, pred, obj, ctx)) {
+					sink.approve(subj, pred, obj, ctx);
+					notifyStatementAdded(vf.createStatement(subj, pred, obj, ctx));
+				}
+			}
+		}
+	}
+
 	@Override
 	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
@@ -391,18 +474,7 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 		try {
 			RdfSink sink = source.sink(getTransactionIsolation());
 			try {
-				CloseableIteration<? extends Statement, SailException> iter;
-				iter = dataset.get(subj, pred, obj, contexts);
-				try {
-					while (iter.hasNext()) {
-						Statement st = iter.next();
-						sink.deprecate(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
-						notifyStatementRemoved(st);
-					}
-				}
-				finally {
-					iter.close();
-				}
+				remove(subj, pred, obj, dataset, sink, contexts);
 				sink.flush();
 			}
 			finally {
@@ -431,19 +503,7 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 				try {
 					RdfSink sink = source.sink(getTransactionIsolation());
 					try {
-						CloseableIteration<? extends Statement, SailException> iter;
-						iter = dataset.get(subj, pred, obj, contexts);
-						try {
-							while (iter.hasNext()) {
-								Statement st = iter.next();
-								sink.deprecate(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
-								statementsRemoved = true;
-								notifyStatementRemoved(st);
-							}
-						}
-						finally {
-							iter.close();
-						}
+						statementsRemoved |= remove(subj, pred, obj, dataset, sink, contexts);
 						sink.flush();
 					}
 					finally {
@@ -463,6 +523,27 @@ public class DerivedSailConnection extends NotifyingSailConnectionBase implement
 		finally {
 			connectionLock.readLock().unlock();
 		}
+	}
+
+	private boolean remove(Resource subj, URI pred, Value obj, RdfDataset dataset,
+			RdfSink sink, Resource... contexts)
+		throws SailException
+	{
+		boolean statementsRemoved = false;
+		CloseableIteration<? extends Statement, SailException> iter;
+		iter = dataset.get(subj, pred, obj, contexts);
+		try {
+			while (iter.hasNext()) {
+				Statement st = iter.next();
+				sink.deprecate(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
+				statementsRemoved = true;
+				notifyStatementRemoved(st);
+			}
+		}
+		finally {
+			iter.close();
+		}
+		return statementsRemoved;
 	}
 
 	@Override
