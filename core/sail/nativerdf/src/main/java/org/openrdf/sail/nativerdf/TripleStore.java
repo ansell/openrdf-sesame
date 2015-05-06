@@ -527,6 +527,9 @@ class TripleStore {
 		if (readTransaction && explicit) {
 			// Filter implicit statements from the result
 			btreeIter = new ExplicitStatementFilter(btreeIter);
+		} else if (!explicit) {
+			// Filter out explicit statements from the result
+			btreeIter = new ImplicitStatementFilter(btreeIter);
 		}
 
 		return btreeIter;
@@ -576,6 +579,45 @@ class TripleStore {
 			wrappedIter.close();
 		}
 	} // end inner class ExplicitStatementFilter
+
+	private static class ImplicitStatementFilter implements RecordIterator {
+
+		private final RecordIterator wrappedIter;
+
+		public ImplicitStatementFilter(RecordIterator wrappedIter) {
+			this.wrappedIter = wrappedIter;
+		}
+
+		public byte[] next()
+			throws IOException
+		{
+			byte[] result;
+
+			while ((result = wrappedIter.next()) != null) {
+				byte flags = result[TripleStore.FLAG_IDX];
+				boolean explicit = (flags & TripleStore.EXPLICIT_FLAG) != 0;
+
+				if (!explicit) {
+					// Statement is implicit
+					break;
+				}
+			}
+
+			return result;
+		}
+
+		public void set(byte[] value)
+			throws IOException
+		{
+			wrappedIter.set(value);
+		}
+
+		public void close()
+			throws IOException
+		{
+			wrappedIter.close();
+		}
+	} // end inner class ImplicitStatementFilter
 
 	private RecordIterator getTriples(int subj, int pred, int obj, int context, int flags, int flagsMask)
 		throws IOException

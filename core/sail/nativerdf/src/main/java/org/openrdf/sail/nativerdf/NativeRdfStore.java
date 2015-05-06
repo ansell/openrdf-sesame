@@ -1,0 +1,673 @@
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
+ *
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+package org.openrdf.sail.nativerdf;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.ConvertingIteration;
+import info.aduna.iteration.DistinctIteration;
+import info.aduna.iteration.ExceptionConvertingIteration;
+import info.aduna.iteration.FilterIteration;
+import info.aduna.iteration.ReducedIteration;
+
+import org.openrdf.IsolationLevel;
+import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.Namespace;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
+import org.openrdf.sail.SailException;
+import org.openrdf.sail.derived.ClosingRdfIteration;
+import org.openrdf.sail.derived.DelegatingRdfSource;
+import org.openrdf.sail.derived.DerivedRDfSource;
+import org.openrdf.sail.derived.EmptyRdfIteration;
+import org.openrdf.sail.derived.RdfDataset;
+import org.openrdf.sail.derived.RdfIteration;
+import org.openrdf.sail.derived.RdfSink;
+import org.openrdf.sail.derived.RdfSource;
+import org.openrdf.sail.derived.RdfStore;
+import org.openrdf.sail.derived.UnionRdfIteration;
+import org.openrdf.sail.nativerdf.btree.RecordIterator;
+import org.openrdf.sail.nativerdf.model.NativeValue;
+
+/**
+ * @author James Leigh
+ */
+class NativeRdfStore implements RdfStore {
+
+	final Logger logger = LoggerFactory.getLogger(NativeRdfStore.class);
+
+	final TripleStore tripleStore;
+
+	final ValueStore valueStore;
+
+	final NamespaceStore namespaceStore;
+
+	private final RdfSource explicitRdfSource;
+
+	private final RdfSource inferredRdfSource;
+
+	/**
+	 * Lock manager used to prevent concurrent transactions.
+	 */
+	final ReentrantLock txnLockManager = new ReentrantLock();
+
+	public NativeRdfStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
+			int namespaceCacheSize, int namespaceIDCacheSize, String tripleIndexes)
+		throws IOException, SailException
+	{
+		boolean initialized = false;
+		try {
+			namespaceStore = new NamespaceStore(dataDir);
+			valueStore = new ValueStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
+					namespaceCacheSize, namespaceIDCacheSize);
+			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
+			explicitRdfSource = new NativeRdfSource(true).fork();
+			inferredRdfSource = new NativeRdfSource(false).fork();
+			initialized = true;
+		}
+		finally {
+			if (!initialized) {
+				close();
+			}
+		}
+	}
+
+	public ValueFactory getValueFactory() {
+		return valueStore;
+	}
+
+	public void close() {
+		if (namespaceStore != null) {
+			namespaceStore.close();
+		}
+		try {
+			if (valueStore != null) {
+				valueStore.close();
+			}
+			if (tripleStore != null) {
+				tripleStore.close();
+			}
+		}
+		catch (IOException e) {
+			logger.warn("Failed to close store", e);
+		}
+	}
+
+	@Override
+	public EvaluationStatistics getEvaluationStatistics() {
+		return new NativeEvaluationStatistics(valueStore, tripleStore);
+	}
+
+	public RdfSource getExplicitRdfSource() {
+		return new DelegatingRdfSource(explicitRdfSource, false);
+	}
+
+	public RdfSource getInferredRdfSource() {
+		return new DelegatingRdfSource(inferredRdfSource, false);
+	}
+
+	List<Integer> getContextIDs(Resource... contexts)
+		throws IOException
+	{
+		assert contexts.length > 0 : "contexts must not be empty";
+
+		// Filter duplicates
+		LinkedHashSet<Resource> contextSet = new LinkedHashSet<Resource>();
+		Collections.addAll(contextSet, contexts);
+
+		// Fetch IDs, filtering unknown resources from the result
+		List<Integer> contextIDs = new ArrayList<Integer>(contextSet.size());
+		for (Resource context : contextSet) {
+			if (context == null) {
+				contextIDs.add(0);
+			}
+			else {
+				int contextID = valueStore.getID(context);
+				if (contextID != NativeValue.UNKNOWN_ID) {
+					contextIDs.add(contextID);
+				}
+			}
+		}
+
+		return contextIDs;
+	}
+
+	/**
+	 * Creates a statement iterator based on the supplied pattern.
+	 * 
+	 * @param subj
+	 *        The subject of the pattern, or <tt>null</tt> to indicate a
+	 *        wildcard.
+	 * @param pred
+	 *        The predicate of the pattern, or <tt>null</tt> to indicate a
+	 *        wildcard.
+	 * @param obj
+	 *        The object of the pattern, or <tt>null</tt> to indicate a wildcard.
+	 * @param contexts
+	 *        The context(s) of the pattern. Note that this parameter is a vararg
+	 *        and as such is optional. If no contexts are supplied the method
+	 *        operates on the entire repository.
+	 * @return A StatementIterator that can be used to iterate over the
+	 *         statements that match the specified pattern.
+	 */
+	RdfIteration<? extends Statement> createStatementIterator(Resource subj, URI pred, Value obj,
+			boolean explicit, Resource... contexts)
+		throws IOException
+	{
+		int subjID = NativeValue.UNKNOWN_ID;
+		if (subj != null) {
+			subjID = valueStore.getID(subj);
+			if (subjID == NativeValue.UNKNOWN_ID) {
+				return EmptyRdfIteration.emptyIteration();
+			}
+		}
+
+		int predID = NativeValue.UNKNOWN_ID;
+		if (pred != null) {
+			predID = valueStore.getID(pred);
+			if (predID == NativeValue.UNKNOWN_ID) {
+				return EmptyRdfIteration.emptyIteration();
+			}
+		}
+
+		int objID = NativeValue.UNKNOWN_ID;
+		if (obj != null) {
+			objID = valueStore.getID(obj);
+			if (objID == NativeValue.UNKNOWN_ID) {
+				return EmptyRdfIteration.emptyIteration();
+			}
+		}
+
+		List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
+		if (contexts.length == 0) {
+			contextIDList.add(NativeValue.UNKNOWN_ID);
+		}
+		else {
+			for (Resource context : contexts) {
+				if (context == null) {
+					contextIDList.add(0);
+				}
+				else {
+					int contextID = valueStore.getID(context);
+
+					if (contextID != NativeValue.UNKNOWN_ID) {
+						contextIDList.add(contextID);
+					}
+				}
+			}
+		}
+
+		ArrayList<NativeStatementIterator> perContextIterList = new ArrayList<NativeStatementIterator>(
+				contextIDList.size());
+
+		for (int contextID : contextIDList) {
+			RecordIterator btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, explicit, false);
+
+			perContextIterList.add(new NativeStatementIterator(btreeIter, valueStore));
+		}
+
+		if (perContextIterList.size() == 1) {
+			return perContextIterList.get(0);
+		}
+		else {
+			return new UnionRdfIteration<Statement>(perContextIterList);
+		}
+	}
+
+	double cardinality(Resource subj, URI pred, Value obj, Resource context)
+		throws IOException
+	{
+		int subjID = NativeValue.UNKNOWN_ID;
+		if (subj != null) {
+			subjID = valueStore.getID(subj);
+			if (subjID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int predID = NativeValue.UNKNOWN_ID;
+		if (pred != null) {
+			predID = valueStore.getID(pred);
+			if (predID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int objID = NativeValue.UNKNOWN_ID;
+		if (obj != null) {
+			objID = valueStore.getID(obj);
+			if (objID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int contextID = NativeValue.UNKNOWN_ID;
+		if (context != null) {
+			contextID = valueStore.getID(context);
+			if (contextID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		return tripleStore.cardinality(subjID, predID, objID, contextID);
+	}
+
+	private final class NativeRdfSource implements RdfSource {
+
+		private final boolean explicit;
+
+		public NativeRdfSource(boolean explicit) {
+			this.explicit = explicit;
+		}
+
+		@Override
+		public void close() {
+			// no-op
+		}
+
+		@Override
+		public RdfSource fork() {
+			return new DerivedRDfSource(this, true);
+		}
+
+		@Override
+		public void prepare() {
+			// assume all transactions will reasonably commit
+		}
+
+		@Override
+		public void flush() {
+			// already sync
+		}
+
+		@Override
+		public RdfSink sink(IsolationLevel level)
+			throws SailException
+		{
+			return new NativeRdfSink(explicit);
+		}
+
+		@Override
+		public NativeRdfDataset snapshot(IsolationLevel level)
+			throws SailException
+		{
+			return new NativeRdfDataset(explicit);
+		}
+
+	}
+
+	private final class NativeRdfSink implements RdfSink {
+
+		private boolean explicit;
+
+		/**
+		 * The exclusive transaction lock held by this connection during
+		 * transactions.
+		 */
+		private volatile boolean txnLockAcquired;
+
+		public NativeRdfSink(boolean explicit)
+			throws SailException
+		{
+			this.explicit = explicit;
+		}
+
+		@Override
+		public synchronized void close() {
+			// SES-1949 check necessary to avoid empty/read-only transactions
+			// messing
+			// up concurrent transactions
+			if (txnLockAcquired) {
+				txnLockManager.unlock();
+				txnLockAcquired = false;
+			}
+		}
+
+		@Override
+		public void prepare()
+			throws SailException
+		{
+			// serializable is not supported at this level
+		}
+
+		@Override
+		public void flush()
+			throws SailException
+		{
+			// SES-1949 check necessary to avoid empty/read-only transactions
+			// messing up concurrent transactions
+			if (txnLockAcquired) {
+				try {
+					valueStore.sync();
+					namespaceStore.sync();
+					tripleStore.commit();
+				}
+				catch (IOException e) {
+					logger.error("Encountered an unexpected problem while trying to commit", e);
+				}
+				catch (RuntimeException e) {
+					logger.error("Encountered an unexpected problem while trying to commit", e);
+					throw e;
+				}
+			}
+		}
+
+		@Override
+		public void setNamespace(String prefix, String name)
+			throws SailException
+		{
+			acquireExclusiveTransactionLock();
+			namespaceStore.setNamespace(prefix, name);
+		}
+
+		@Override
+		public void removeNamespace(String prefix)
+			throws SailException
+		{
+			acquireExclusiveTransactionLock();
+			namespaceStore.removeNamespace(prefix);
+		}
+
+		@Override
+		public void clearNamespaces()
+			throws SailException
+		{
+			acquireExclusiveTransactionLock();
+			namespaceStore.clear();
+		}
+
+		@Override
+		public void observe(Resource subj, URI pred, Value obj, Resource... contexts)
+			throws SailException
+		{
+			// serializable is not supported at this level
+		}
+
+		@Override
+		public void clear(Resource... contexts)
+			throws SailException
+		{
+			removeStatements(null, null, null, explicit, contexts);
+		}
+
+		@Override
+		public void approve(Resource subj, URI pred, Value obj, Resource ctx)
+			throws SailException
+		{
+			addStatement(subj, pred, obj, explicit, ctx);
+		}
+
+		@Override
+		public void deprecate(Resource subj, URI pred, Value obj, Resource ctx)
+			throws SailException
+		{
+			removeStatements(subj, pred, obj, explicit, ctx);
+		}
+
+		private synchronized void acquireExclusiveTransactionLock()
+			throws SailException
+		{
+			if (!txnLockAcquired) {
+				txnLockManager.lock();
+				try {
+					tripleStore.startTransaction();
+					txnLockAcquired = true;
+				}
+				catch (IOException e) {
+					throw new SailException(e);
+				}
+				finally {
+					if (!txnLockAcquired) {
+						txnLockManager.unlock();
+					}
+				}
+			}
+		}
+
+		private boolean addStatement(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
+			throws SailException
+		{
+			acquireExclusiveTransactionLock();
+
+			OpenRDFUtil.verifyContextNotNull(contexts);
+
+			boolean result = false;
+
+			try {
+				int subjID = valueStore.storeValue(subj);
+				int predID = valueStore.storeValue(pred);
+				int objID = valueStore.storeValue(obj);
+
+				if (contexts.length == 0) {
+					contexts = new Resource[] { null };
+				}
+
+				for (Resource context : contexts) {
+					int contextID = 0;
+					if (context != null) {
+						contextID = valueStore.storeValue(context);
+					}
+
+					boolean wasNew = tripleStore.storeTriple(subjID, predID, objID, contextID, explicit);
+					result |= wasNew;
+				}
+			}
+			catch (IOException e) {
+				throw new SailException(e);
+			}
+			catch (RuntimeException e) {
+				logger.error("Encountered an unexpected problem while trying to add a statement", e);
+				throw e;
+			}
+
+			return result;
+		}
+
+		private int removeStatements(Resource subj, URI pred, Value obj, boolean explicit, Resource... contexts)
+			throws SailException
+		{
+			acquireExclusiveTransactionLock();
+
+			OpenRDFUtil.verifyContextNotNull(contexts);
+
+			try {
+				int subjID = NativeValue.UNKNOWN_ID;
+				if (subj != null) {
+					subjID = valueStore.getID(subj);
+					if (subjID == NativeValue.UNKNOWN_ID) {
+						return 0;
+					}
+				}
+				int predID = NativeValue.UNKNOWN_ID;
+				if (pred != null) {
+					predID = valueStore.getID(pred);
+					if (predID == NativeValue.UNKNOWN_ID) {
+						return 0;
+					}
+				}
+				int objID = NativeValue.UNKNOWN_ID;
+				if (obj != null) {
+					objID = valueStore.getID(obj);
+					if (objID == NativeValue.UNKNOWN_ID) {
+						return 0;
+					}
+				}
+
+				List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
+				if (contexts.length == 0) {
+					contextIDList.add(NativeValue.UNKNOWN_ID);
+				}
+				else {
+					for (Resource context : contexts) {
+						if (context == null) {
+							contextIDList.add(0);
+						}
+						else {
+							int contextID = valueStore.getID(context);
+							if (contextID != NativeValue.UNKNOWN_ID) {
+								contextIDList.add(contextID);
+							}
+						}
+					}
+				}
+
+				int removeCount = 0;
+
+				for (int i = 0; i < contextIDList.size(); i++) {
+					int contextID = contextIDList.get(i);
+
+					removeCount += tripleStore.removeTriples(subjID, predID, objID, contextID, explicit);
+				}
+
+				return removeCount;
+			}
+			catch (IOException e) {
+				throw new SailException(e);
+			}
+			catch (RuntimeException e) {
+				logger.error("Encountered an unexpected problem while trying to remove statements", e);
+				throw e;
+			}
+		}
+	}
+
+	/**
+	 * @author James Leigh
+	 */
+	private final class NativeRdfDataset implements RdfDataset {
+
+		private final boolean explicit;
+
+		public NativeRdfDataset(boolean explicit)
+			throws SailException
+		{
+			this.explicit = explicit;
+		}
+
+		@Override
+		public void close() {
+			// no-op
+		}
+
+		@Override
+		public String getNamespace(String prefix)
+			throws SailException
+		{
+			return namespaceStore.getNamespace(prefix);
+		}
+
+		@Override
+		public RdfIteration<? extends Namespace> getNamespaces() {
+			return ClosingRdfIteration.close(namespaceStore.iterator());
+		}
+
+		@Override
+		public RdfIteration<? extends Resource> getContextIDs()
+			throws SailException
+		{
+			// Which resources are used as context identifiers is not stored
+			// separately. Iterate over all statements and extract their context.
+			try {
+				CloseableIteration<? extends Statement, SailException> stIter;
+				CloseableIteration<Resource, SailException> ctxIter;
+				RecordIterator btreeIter;
+				btreeIter = tripleStore.getAllTriplesSortedByContext(false);
+				if (btreeIter == null) {
+					// Iterator over all statements
+					stIter = createStatementIterator(null, null, null, explicit);
+				}
+				else {
+					stIter = new NativeStatementIterator(btreeIter, valueStore);
+				}
+				// Filter statements without context resource
+				stIter = new FilterIteration<Statement, SailException>(stIter) {
+
+					@Override
+					protected boolean accept(Statement st) {
+						return st.getContext() != null;
+					}
+				};
+				// Return the contexts of the statements
+				ctxIter = new ConvertingIteration<Statement, Resource, SailException>(stIter) {
+
+					@Override
+					protected Resource convert(Statement st) {
+						return st.getContext();
+					}
+				};
+				if (btreeIter == null) {
+					// Filtering any duplicates
+					ctxIter = new DistinctIteration<Resource, SailException>(ctxIter);
+				}
+				else {
+					// Filtering sorted duplicates
+					ctxIter = new ReducedIteration<Resource, SailException>(ctxIter);
+				}
+
+				return ClosingRdfIteration.close(new ExceptionConvertingIteration<Resource, SailException>(
+						ctxIter)
+				{
+
+					@Override
+					protected SailException convert(Exception e) {
+						if (e instanceof IOException) {
+							return new SailException(e);
+						}
+						else if (e instanceof RuntimeException) {
+							throw (RuntimeException)e;
+						}
+						else if (e == null) {
+							throw new IllegalArgumentException("e must not be null");
+						}
+						else {
+							throw new IllegalArgumentException("Unexpected exception type: " + e.getClass());
+						}
+					}
+				});
+			}
+			catch (IOException e) {
+				throw new SailException(e);
+			}
+		}
+
+		@Override
+		public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+			throws SailException
+		{
+			try {
+				return createStatementIterator(subj, pred, obj, explicit, contexts);
+			}
+			catch (IOException e) {
+				throw new SailException("Unable to get statements", e);
+			}
+		}
+	}
+}
