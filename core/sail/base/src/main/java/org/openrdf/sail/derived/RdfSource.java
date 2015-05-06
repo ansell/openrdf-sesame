@@ -16,8 +16,6 @@
  */
 package org.openrdf.sail.derived;
 
-import info.aduna.concurrent.locks.Lock;
-
 import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
@@ -27,16 +25,9 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public interface RdfSource extends Lock {
+public interface RdfSource extends RdfClosable {
 
-	/**
-	 * Called when this {@link RdfSource} is no longer is used, such as when a
-	 * transaction is complete.
-	 */
-	void release();
-
-	RdfSource fork()
-		throws SailException;
+	RdfSource fork();
 
 	void prepare()
 		throws SailException;

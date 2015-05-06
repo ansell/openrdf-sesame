@@ -120,10 +120,10 @@ class FileIO {
 	 * Methods *
 	 *---------*/
 
-	public synchronized void write(RdfDataset store, File syncFile, File dataFile)
+	public synchronized void write(RdfDataset explicit, RdfDataset inferred, File syncFile, File dataFile)
 		throws IOException, SailException
 	{
-		write(store, syncFile);
+		write(explicit, inferred, syncFile);
 
 		// prefer atomic renameTo operations
 		boolean renamed = syncFile.renameTo(dataFile);
@@ -143,7 +143,7 @@ class FileIO {
 		}
 	}
 
-	private void write(RdfDataset store, File dataFile)
+	private void write(RdfDataset explicit, RdfDataset inferred, File dataFile)
 		throws IOException, SailException
 	{
 		OutputStream out = new FileOutputStream(dataFile);
@@ -156,9 +156,9 @@ class FileIO {
 			DataOutputStream dataOut = new DataOutputStream(new GZIPOutputStream(out));
 			out = dataOut;
 
-			writeNamespaces(store, dataOut);
+			writeNamespaces(explicit, dataOut);
 
-			writeStatements(store, dataOut);
+			writeStatements(explicit, inferred, dataOut);
 
 			dataOut.writeByte(EOF_MARKER);
 		}
@@ -167,7 +167,7 @@ class FileIO {
 		}
 	}
 
-	public synchronized void read(File dataFile, RdfSink store)
+	public synchronized void read(File dataFile, RdfSink explicit, RdfSink inferred)
 		throws IOException, SailException
 	{
 		InputStream in = new FileInputStream(dataFile);
@@ -190,19 +190,19 @@ class FileIO {
 			while ((recordTypeMarker = dataIn.readByte()) != EOF_MARKER) {
 				switch (recordTypeMarker) {
 					case NAMESPACE_MARKER:
-						readNamespace(dataIn, store);
+						readNamespace(dataIn, explicit);
 						break;
 					case EXPL_TRIPLE_MARKER:
-						readStatement(false, true, dataIn, store);
+						readStatement(false, true, dataIn, explicit, inferred);
 						break;
 					case EXPL_QUAD_MARKER:
-						readStatement(true, true, dataIn, store);
+						readStatement(true, true, dataIn, explicit, inferred);
 						break;
 					case INF_TRIPLE_MARKER:
-						readStatement(false, false, dataIn, store);
+						readStatement(false, false, dataIn, explicit, inferred);
 						break;
 					case INF_QUAD_MARKER:
-						readStatement(true, false, dataIn, store);
+						readStatement(true, false, dataIn, explicit, inferred);
 						break;
 					default:
 						throw new IOException("Invalid record type marker: " + recordTypeMarker);
@@ -245,11 +245,13 @@ class FileIO {
 		store.setNamespace(prefix, name);
 	}
 
-	private void writeStatements(RdfDataset store, DataOutputStream dataOut)
+	private void writeStatements(final RdfDataset explicit, RdfDataset inferred, DataOutputStream dataOut)
 		throws IOException, SailException
 	{
-		writeStatement(store.getExplicit(null, null, null), EXPL_TRIPLE_MARKER, EXPL_QUAD_MARKER, dataOut);
-		writeStatement(store.getInferred(null, null, null), INF_TRIPLE_MARKER, INF_QUAD_MARKER, dataOut);
+		// write explicit only statements
+		writeStatement(explicit.get(null, null, null), EXPL_TRIPLE_MARKER, EXPL_QUAD_MARKER, dataOut);
+		// write inferred only statements
+		writeStatement(inferred.get(null, null, null), INF_TRIPLE_MARKER, INF_QUAD_MARKER, dataOut);
 	}
 
 	public void writeStatement(CloseableIteration<? extends Statement, SailException> stIter,
@@ -279,7 +281,8 @@ class FileIO {
 		}
 	}
 
-	private void readStatement(boolean hasContext, boolean isExplicit, DataInputStream dataIn, RdfSink store)
+	private void readStatement(boolean hasContext, boolean isExplicit, DataInputStream dataIn,
+			RdfSink explicit, RdfSink inferred)
 		throws IOException, ClassCastException, SailException
 	{
 		MemResource memSubj = (MemResource)readValue(dataIn);
@@ -291,9 +294,9 @@ class FileIO {
 		}
 
 		if (isExplicit) {
-			store.addExplicit(memSubj, memPred, memObj, memContext);
+			explicit.approve(memSubj, memPred, memObj, memContext);
 		} else {
-			store.addInferred(memSubj, memPred, memObj, memContext);
+			inferred.approve(memSubj, memPred, memObj, memContext);
 		}
 	}
 

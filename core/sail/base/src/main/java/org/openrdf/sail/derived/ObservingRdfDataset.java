@@ -16,8 +16,6 @@
  */
 package org.openrdf.sail.derived;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -28,7 +26,7 @@ import org.openrdf.sail.SailException;
  *
  * @author James Leigh
  */
-public class ObservingRdfDataset extends DelegatingRdfDataset {
+class ObservingRdfDataset extends DelegatingRdfDataset {
 	private final RdfSink observer;
 
 	public ObservingRdfDataset(RdfDataset delegate, RdfSink observer) {
@@ -37,7 +35,15 @@ public class ObservingRdfDataset extends DelegatingRdfDataset {
 	}
 
 	@Override
-	public CloseableIteration<? extends Resource, SailException> getContextIDs()
+	public void close() throws SailException {
+		super.close();
+		// flush observer regardless of consistency
+		observer.flush();
+		observer.close();
+	}
+
+	@Override
+	public RdfIteration<? extends Resource> getContextIDs()
 		throws SailException
 	{
 		observer.observe(null, null, null);
@@ -45,30 +51,12 @@ public class ObservingRdfDataset extends DelegatingRdfDataset {
 	}
 
 	@Override
-	public CloseableIteration<? extends Statement, SailException> getExplicit(Resource subj, URI pred,
+	public RdfIteration<? extends Statement> get(Resource subj, URI pred,
 			Value obj, Resource... contexts)
 		throws SailException
 	{
 		observer.observe(subj, pred, obj, contexts);
-		return super.getExplicit(subj, pred, obj, contexts);
-	}
-
-	@Override
-	public CloseableIteration<? extends Statement, SailException> getInferred(Resource subj, URI pred,
-			Value obj, Resource... contexts)
-		throws SailException
-	{
-		observer.observe(subj, pred, obj, contexts);
-		return super.getInferred(subj, pred, obj, contexts);
-	}
-
-	@Override
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
-			Value obj, Resource... contexts)
-		throws SailException
-	{
-		observer.observe(subj, pred, obj, contexts);
-		return super.getStatements(subj, pred, obj, contexts);
+		return super.get(subj, pred, obj, contexts);
 	}
 	
 }

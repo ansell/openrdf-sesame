@@ -16,12 +16,11 @@
  */
 package org.openrdf.sail.derived;
 
-import info.aduna.concurrent.locks.Lock;
-
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
 
 /**
@@ -30,13 +29,21 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public interface RdfSink extends Lock {
+public interface RdfSink extends RdfClosable {
 
 	/**
-	 * Called when this {@link RdfSink} is no longer is used, such as when a
-	 * write operation is finished and before a monotonic read operation starts.
+	 * Checks if this Sink is consistent with the isolation level it was created
+	 * with. If this Sink was created with a {@link IsolationLevels#SERIALIZABLE}
+	 * and another conflicting {@link RdfSink} is consistent, this method will
+	 * throw a {@link SailConflictException}.
+	 * 
+	 * @return <code>false</code> if this sink has a conflict
 	 */
-	void release();
+	void prepare()
+		throws SailException;
+
+	void flush()
+		throws SailException;
 
 	/**
 	 * Sets the prefix for a namespace.
@@ -115,7 +122,7 @@ public interface RdfSink extends Lock {
 		throws SailException;
 
 	/**
-	 * Adds an explicit statement to the store.
+	 * Adds a statement to the store.
 	 * 
 	 * @param subj
 	 *        The subject of the statement to add.
@@ -131,32 +138,12 @@ public interface RdfSink extends Lock {
 	 *         If the statement could not be added, for example because no
 	 *         transaction is active.
 	 */
-	void addExplicit(Resource subj, URI pred, Value obj, Resource ctx)
+	void approve(Resource subj, URI pred, Value obj, Resource ctx)
 		throws SailException;
 
 	/**
-	 * Adds an inferred statement to the store.
-	 * 
-	 * @param subj
-	 *        The subject of the statement to add.
-	 * @param pred
-	 *        The predicate of the statement to add.
-	 * @param obj
-	 *        The object of the statement to add.
-	 * @param contexts
-	 *        The context(s) to add the statement to. Note that this parameter is
-	 *        a vararg and as such is optional. If no contexts are specified, a
-	 *        context-less statement will be added.
-	 * @throws SailException
-	 *         If the statement could not be added, for example because no
-	 *         transaction is active.
-	 */
-	void addInferred(Resource subj, URI pred, Value obj, Resource ctx)
-		throws SailException;
-
-	/**
-	 * Removes an explicit statement with the specified subject, predicate,
-	 * object, and context. All four parameters may be non-null.
+	 * Removes a statement with the specified subject, predicate, object, and
+	 * context. All four parameters may be non-null.
 	 * 
 	 * @param subj
 	 *        The subject of the statement that should be removed
@@ -170,26 +157,7 @@ public interface RdfSink extends Lock {
 	 *         If the statement could not be removed, for example because no
 	 *         transaction is active.
 	 */
-	void removeExplicit(Resource subj, URI pred, Value obj, Resource ctx)
-		throws SailException;
-
-	/**
-	 * Removes an inferred statement with the specified subject, predicate,
-	 * object, and context. All four parameters may be non-null.
-	 * 
-	 * @param subj
-	 *        The subject of the statement that should be removed
-	 * @param pred
-	 *        The predicate of the statement that should be removed
-	 * @param obj
-	 *        The object of the statement that should be removed
-	 * @param ctx
-	 *        The context from which to remove the statement
-	 * @throws SailException
-	 *         If the statement could not be removed, for example because no
-	 *         transaction is active.
-	 */
-	void removeInferred(Resource subj, URI pred, Value obj, Resource ctx)
+	void deprecate(Resource subj, URI pred, Value obj, Resource ctx)
 		throws SailException;
 
 }

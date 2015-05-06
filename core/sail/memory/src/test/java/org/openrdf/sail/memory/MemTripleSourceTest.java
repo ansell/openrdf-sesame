@@ -35,20 +35,24 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.derived.DerivedTripleSource;
 import org.openrdf.sail.derived.RdfDataset;
-import org.openrdf.sail.memory.model.MemValueFactory;
+import org.openrdf.sail.derived.RdfSource;
+import org.openrdf.sail.derived.UnionRdfSource;
 
 /**
- * Unit Test for {@link MemTripleSource}
+ * Unit Test for {@link TripleSource}
  * 
  * @author Peter Ansell
  */
@@ -66,7 +70,9 @@ public class MemTripleSourceTest {
 
 	private URI mary;
 
-	private MemValueFactory f;
+	private ValueFactory f;
+
+	private RdfSource source;
 
 	private RdfDataset snapshot;
 
@@ -94,14 +100,17 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		if (snapshot != null) {
-			snapshot.release();
+			snapshot.close();
+		}
+		if (source != null) {
+			source.close();
 		}
 		store.shutDown();
 	}
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -109,7 +118,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				null, null);
@@ -126,7 +135,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -134,7 +143,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				null, null);
@@ -151,7 +160,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -159,7 +168,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				null, null);
@@ -176,7 +185,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -184,7 +193,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null);
@@ -201,7 +210,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -209,7 +218,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null);
@@ -226,7 +235,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -234,7 +243,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null);
@@ -251,7 +260,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -259,7 +268,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null, this.alice);
@@ -276,7 +285,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -284,7 +293,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null, this.alice);
@@ -301,7 +310,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -309,7 +318,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null, this.alice);
@@ -326,7 +335,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -334,7 +343,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null, this.alice, this.bob);
@@ -351,7 +360,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -359,7 +368,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null, this.alice, this.bob);
@@ -376,7 +385,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -384,7 +393,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, null, this.alice, this.bob);
@@ -401,7 +410,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -409,7 +418,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, OWL.THING, this.alice, this.bob);
@@ -426,7 +435,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -434,7 +443,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, OWL.THING, this.alice, this.bob);
@@ -451,7 +460,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -459,7 +468,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, OWL.THING, this.alice, this.bob);
@@ -476,7 +485,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -484,7 +493,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDF.TYPE, OWL.CLASS, this.alice, this.bob);
@@ -501,7 +510,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -509,7 +518,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDF.TYPE, OWL.CLASS, this.alice, this.bob);
@@ -526,7 +535,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -534,7 +543,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDF.TYPE, OWL.CLASS, this.alice, this.bob);
@@ -551,7 +560,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -559,7 +568,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDF.TYPE, OWL.CLASS);
@@ -576,7 +585,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -584,7 +593,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDF.TYPE, OWL.CLASS);
@@ -601,7 +610,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -609,7 +618,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDF.TYPE, OWL.CLASS);
@@ -626,7 +635,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -634,7 +643,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"));
@@ -651,7 +660,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -659,7 +668,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"));
@@ -676,7 +685,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -684,7 +693,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"));
@@ -701,7 +710,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -709,7 +718,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice);
@@ -726,7 +735,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -734,7 +743,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice);
@@ -751,7 +760,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -759,7 +768,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice);
@@ -776,7 +785,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -784,7 +793,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice, this.bob);
@@ -801,7 +810,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -809,7 +818,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice, this.bob);
@@ -826,7 +835,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -834,7 +843,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				RDFS.SUBCLASSOF, f.createURI(EX_NS, "A"), this.alice, this.bob);
@@ -851,7 +860,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -859,7 +868,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(
 				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
@@ -876,7 +885,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -884,7 +893,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(
 				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
@@ -901,7 +910,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -909,7 +918,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(
 				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null, this.alice, this.bob);
@@ -926,7 +935,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -934,7 +943,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl");
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(
 				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null);
@@ -951,7 +960,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -959,7 +968,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(
 				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null);
@@ -976,7 +985,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -984,7 +993,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(
 				f.createURI(EX_NS, "C"), RDFS.SUBCLASSOF, null);
@@ -1001,7 +1010,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -1009,7 +1018,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob, this.mary);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				null, null);
@@ -1026,7 +1035,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -1034,7 +1043,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob, this.mary);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				null, null, this.alice);
@@ -1051,7 +1060,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -1059,7 +1068,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob, this.mary);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				null, null, this.alice, this.bob);
@@ -1076,7 +1085,7 @@ public class MemTripleSourceTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.sail.memory.MemTripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
+	 * {@link org.openrdf.sail.memory.TripleSource#getStatements(org.openrdf.model.Resource, org.openrdf.model.URI, org.openrdf.model.Value, org.openrdf.model.Resource[])}
 	 * .
 	 */
 	@Test
@@ -1084,7 +1093,7 @@ public class MemTripleSourceTest {
 		throws Exception
 	{
 		loadTestData("/alp-testdata.ttl", this.alice, this.bob, this.mary);
-		MemTripleSource source = getTripleSourceCommitted();
+		TripleSource source = getTripleSourceCommitted();
 
 		CloseableIteration<? extends Statement, QueryEvaluationException> statements = source.getStatements(null,
 				null, null, this.alice, this.bob, this.mary);
@@ -1127,10 +1136,11 @@ public class MemTripleSourceTest {
 	 * @return
 	 * @throws SailException 
 	 */
-	private MemTripleSource getTripleSourceCommitted() throws SailException {
+	private TripleSource getTripleSourceCommitted() throws SailException {
 		IsolationLevel level = store.getDefaultIsolationLevel();
-		snapshot = store.fork(level).snapshot(level);
-		return new MemTripleSource(store.getValueFactory(), snapshot, true);
+		source = new UnionRdfSource(store.getRdfStore().getExplicitRdfSource(), store.getRdfStore().getInferredRdfSource());
+		snapshot = source.snapshot(level);
+		return new DerivedTripleSource(store.getValueFactory(), snapshot);
 	}
 
 }

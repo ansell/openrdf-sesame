@@ -16,8 +16,6 @@
  */
 package org.openrdf.sail.derived;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -29,33 +27,31 @@ import org.openrdf.sail.SailException;
  *
  * @author James Leigh
  */
-public class DelegatingRdfDataset implements RdfDataset {
+class DelegatingRdfDataset implements RdfDataset {
 	private final RdfDataset delegate;
 	private final boolean releasing;
-	private boolean released;
 
 	/**
 	 * @param delegate
-	 * @param releasing if {@link #release()} should be delegated
+	 * @param closing if {@link #close()} should be delegated
 	 */
-	public DelegatingRdfDataset(RdfDataset delegate, boolean releasing) {
+	public DelegatingRdfDataset(RdfDataset delegate, boolean closing) {
 		super();
 		this.delegate = delegate;
-		this.releasing = releasing;
+		this.releasing = closing;
 	}
 
-	public boolean isActive() {
-		return !released && delegate.isActive();
+	public String toString() {
+		return delegate.toString();
 	}
 
-	public void release() {
-		released = true;
+	public void close() throws SailException {
 		if (releasing) {
-			delegate.release();
+			delegate.close();
 		}
 	}
 
-	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
+	public RdfIteration<? extends Namespace> getNamespaces()
 		throws SailException
 	{
 		return delegate.getNamespaces();
@@ -67,30 +63,16 @@ public class DelegatingRdfDataset implements RdfDataset {
 		return delegate.getNamespace(prefix);
 	}
 
-	public CloseableIteration<? extends Resource, SailException> getContextIDs()
+	public RdfIteration<? extends Resource> getContextIDs()
 		throws SailException
 	{
 		return delegate.getContextIDs();
 	}
 
-	public CloseableIteration<? extends Statement, SailException> getExplicit(Resource subj, URI pred,
+	public RdfIteration<? extends Statement> get(Resource subj, URI pred,
 			Value obj, Resource... contexts)
 		throws SailException
 	{
-		return delegate.getExplicit(subj, pred, obj, contexts);
-	}
-
-	public CloseableIteration<? extends Statement, SailException> getInferred(Resource subj, URI pred,
-			Value obj, Resource... contexts)
-		throws SailException
-	{
-		return delegate.getInferred(subj, pred, obj, contexts);
-	}
-
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
-			Value obj, Resource... contexts)
-		throws SailException
-	{
-		return delegate.getStatements(subj, pred, obj, contexts);
+		return delegate.get(subj, pred, obj, contexts);
 	}
 }

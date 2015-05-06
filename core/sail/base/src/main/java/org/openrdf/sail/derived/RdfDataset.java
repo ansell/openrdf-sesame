@@ -16,9 +16,6 @@
  */
 package org.openrdf.sail.derived;
 
-import info.aduna.concurrent.locks.Lock;
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -34,7 +31,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public interface RdfDataset extends Lock {
+public interface RdfDataset extends RdfClosable {
 
 	/**
 	 * Called when this {@link RdfDataset} is no longer is used, such as when a
@@ -43,7 +40,8 @@ public interface RdfDataset extends Lock {
 	 * {@link RdfDataset} dose not change between the first call to this object
 	 * until {@link #release()} is called.
 	 */
-	void release();
+	void close()
+		throws SailException;
 
 	/**
 	 * Gets the namespaces relevant to the data contained in this object.
@@ -54,7 +52,7 @@ public interface RdfDataset extends Lock {
 	 *         If this object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	CloseableIteration<? extends Namespace, SailException> getNamespaces()
+	RdfIteration<? extends Namespace> getNamespaces()
 		throws SailException;
 
 	/**
@@ -81,15 +79,14 @@ public interface RdfDataset extends Lock {
 	 * @return An iterator over the context identifiers, should not contain any
 	 *         duplicates.
 	 */
-	CloseableIteration<? extends Resource, SailException> getContextIDs()
+	RdfIteration<? extends Resource> getContextIDs()
 		throws SailException;
 
 	/**
-	 * Gets all explicit statements that have a specific subject, predicate
-	 * and/or object. All three parameters may be null to indicate wildcards.
-	 * Optionally a (set of) context(s) may be specified in which case the result
-	 * will be restricted to statements matching one or more of the specified
-	 * contexts.
+	 * Gets all statements that have a specific subject, predicate and/or object.
+	 * All three parameters may be null to indicate wildcards. Optionally a (set
+	 * of) context(s) may be specified in which case the result will be
+	 * restricted to statements matching one or more of the specified contexts.
 	 * 
 	 * @param subj
 	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
@@ -105,58 +102,7 @@ public interface RdfDataset extends Lock {
 	 * @throws SailException
 	 *         If the triple source failed to get the statements.
 	 */
-	CloseableIteration<? extends Statement, SailException> getExplicit(Resource subj, URI pred, Value obj,
-			Resource... contexts)
-		throws SailException;
-
-	/**
-	 * Gets only inferred (not explicit) statements that have a specific subject,
-	 * predicate and/or object. All three parameters may be null to indicate
-	 * wildcards. Optionally a (set of) context(s) may be specified in which case
-	 * the result will be restricted to statements matching one or more of the
-	 * specified contexts.
-	 * 
-	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
-	 * @param pred
-	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
-	 * @param obj
-	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
-	 * @param contexts
-	 *        The context(s) to get the statements from. Note that this parameter
-	 *        is a vararg and as such is optional. If no contexts are supplied
-	 *        the method operates on all contexts.
-	 * @return An iterator over the relevant statements.
-	 * @throws SailException
-	 *         If the triple source failed to get the statements.
-	 */
-	CloseableIteration<? extends Statement, SailException> getInferred(Resource subj, URI pred, Value obj,
-			Resource... contexts)
-		throws SailException;
-
-	/**
-	 * Gets all (explit and inferred) statements that have a specific subject,
-	 * predicate and/or object. All three parameters may be null to indicate
-	 * wildcards. Optionally a (set of) context(s) may be specified in which case
-	 * the result will be restricted to statements matching one or more of the
-	 * specified contexts.
-	 * 
-	 * @param subj
-	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
-	 * @param pred
-	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
-	 * @param obj
-	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
-	 * @param contexts
-	 *        The context(s) to get the statements from. Note that this parameter
-	 *        is a vararg and as such is optional. If no contexts are supplied
-	 *        the method operates on all contexts.
-	 * @return An iterator over the relevant statements.
-	 * @throws SailException
-	 *         If the triple source failed to get the statements.
-	 */
-	CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 }

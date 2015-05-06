@@ -8,15 +8,15 @@
 		<version>2.8.2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-sail-memory</artifactId>
+	<artifactId>sesame-sail-base</artifactId>
 
-	<name>OpenRDF Sesame: MemoryStore</name>
-	<description>Sail implementation that stores data in main memory, optionally using a dump-restore file for persistence.</description>
+	<name>OpenRDF Sesame: Sail base implementations</name>
+	<description>RDF Storage And Inference Layer ("Sail") API.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-base</artifactId>
+			<artifactId>sesame-sail-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -51,21 +51,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-turtle</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

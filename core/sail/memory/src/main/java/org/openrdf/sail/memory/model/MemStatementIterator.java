@@ -58,9 +58,9 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 
 	/**
 	 * Flag indicating whether this iterator should only return explicitly added
-	 * statements.
+	 * statements or only return inferred statements.
 	 */
-	private final boolean explicitOnly;
+	private final Boolean explicit;
 
 	/**
 	 * Indicates which snapshot should be iterated over.
@@ -93,36 +93,14 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	 *        context(s) of pattern.
 	 */
 	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemURI predicate,
-			MemValue object, MemResource... contexts)
-	{
-		this(statementList, subject, predicate, object, false, -1, contexts);
-	}
-
-	/**
-	 * Creates a new MemStatementIterator that will iterate over the statements
-	 * contained in the supplied MemStatementList searching for statements that
-	 * match the specified pattern of subject, predicate, object and context(s).
-	 * 
-	 * @param statementList
-	 *        the statements over which to iterate.
-	 * @param subject
-	 *        subject of pattern.
-	 * @param predicate
-	 *        predicate of pattern.
-	 * @param object
-	 *        object of pattern.
-	 * @param contexts
-	 *        context(s) of pattern.
-	 */
-	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemURI predicate,
-			MemValue object, boolean explicitOnly, int snapshot, MemResource... contexts)
+			MemValue object, Boolean explicit, int snapshot, MemResource... contexts)
 	{
 		this.statementList = statementList;
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
 		this.contexts = contexts;
-		this.explicitOnly = explicitOnly;
+		this.explicit = explicit;
 		this.snapshot = snapshot;
 
 		this.statementIdx = -1;
@@ -166,8 +144,8 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 					}
 				}
 
-				if (explicitOnly && !st.isExplicit()) {
-					// Explicit statements only; skip inferred ones
+				if (explicit != null && explicit.booleanValue() != st.isExplicit()) {
+					// Explicit flag does not match
 					continue;
 				}
 

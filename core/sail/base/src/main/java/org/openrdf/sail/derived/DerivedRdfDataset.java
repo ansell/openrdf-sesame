@@ -16,7 +16,10 @@
  */
 package org.openrdf.sail.derived;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -24,9 +27,6 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.FilterIteration;
-import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -35,6 +35,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.TreeModel;
 import org.openrdf.sail.SailException;
 
 class DerivedRdfDataset implements RdfDataset {
@@ -58,35 +59,36 @@ class DerivedRdfDataset implements RdfDataset {
 		changes.addRefback(this);
 	}
 
-	@Override
-	public boolean isActive() {
-		return derivedFrom.isActive();
+	public String toString() {
+		return changes + "\n" + derivedFrom;
 	}
 
 	@Override
-	public void release() {
-		derivedFrom.release();
+	public void close() throws SailException {
 		changes.removeRefback(this);
+		derivedFrom.close();
 	}
 
 	@Override
 	public String getNamespace(String prefix)
 		throws SailException
 	{
-		if (changes.getAddedNamespaces().containsKey(prefix))
-			return changes.getAddedNamespaces().get(prefix);
-		if (changes.getRemovedPrefixes().contains(prefix) || changes.isNamespaceCleared())
+		Map<String, String> addedNamespaces = changes.getAddedNamespaces();
+		if (addedNamespaces != null && addedNamespaces.containsKey(prefix))
+			return addedNamespaces.get(prefix);
+		Set<String> removedPrefixes = changes.getRemovedPrefixes();
+		if (removedPrefixes != null && removedPrefixes.contains(prefix) || changes.isNamespaceCleared())
 			return null;
 		return derivedFrom.getNamespace(prefix);
 	}
 
 	@Override
-	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
+	public RdfIteration<? extends Namespace> getNamespaces()
 		throws SailException
 	{
-		final CloseableIteration<? extends Namespace, SailException> namespaces;
+		final RdfIteration<? extends Namespace> namespaces;
 		if (changes.isNamespaceCleared()) {
-			namespaces = new EmptyIteration<Namespace, SailException>();
+			namespaces = EmptyRdfIteration.emptyIteration();
 		}
 		else {
 			namespaces = derivedFrom.getNamespaces();
@@ -94,18 +96,17 @@ class DerivedRdfDataset implements RdfDataset {
 		Iterator<Map.Entry<String, String>> added = null;
 		Set<String> removed = null;
 		synchronized (this) {
-			if (!changes.getAddedNamespaces().isEmpty()) {
-				added = changes.getAddedNamespaces().entrySet().iterator();
+			Map<String, String> addedNamespaces = changes.getAddedNamespaces();
+			if (addedNamespaces != null) {
+				added = addedNamespaces.entrySet().iterator();
 			}
-			if (!changes.getRemovedPrefixes().isEmpty()) {
-				removed = changes.getRemovedPrefixes();
-			}
+			removed = changes.getRemovedPrefixes();
 		}
 		if (added == null && removed == null)
 			return namespaces;
 		final Iterator<Map.Entry<String, String>> addedIter = added;
 		final Set<String> removedSet = removed;
-		return new CloseableIteration<Namespace, SailException>() {
+		return new RdfIteration<Namespace>() {
 
 			Namespace next;
 
@@ -154,25 +155,27 @@ class DerivedRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public CloseableIteration<? extends Resource, SailException> getContextIDs()
+	public RdfIteration<? extends Resource> getContextIDs()
 		throws SailException
 	{
-		final CloseableIteration<? extends Resource, SailException> contextIDs = derivedFrom.getContextIDs();
+		final RdfIteration<? extends Resource> contextIDs = derivedFrom.getContextIDs();
 		Iterator<Resource> added = null;
 		Set<Resource> removed = null;
 		synchronized (this) {
-			if (!changes.getAddedContexts().isEmpty()) {
-				added = changes.getAddedContexts().iterator();
+			Set<Resource> approvedContexts = changes.getApprovedContexts();
+			if (approvedContexts != null) {
+				added = approvedContexts.iterator();
 			}
-			if (!changes.getRemovedContexts().isEmpty()) {
-				removed = changes.getRemovedContexts();
+			Set<Resource> deprecatedContexts = changes.getDeprecatedContexts();
+			if (deprecatedContexts != null) {
+				removed = deprecatedContexts;
 			}
 		}
 		if (added == null && removed == null)
 			return contextIDs;
 		final Iterator<Resource> addedIter = added;
 		final Set<Resource> removedSet = removed;
-		return new CloseableIteration<Resource, SailException>() {
+		return new RdfIteration<Resource>() {
 
 			Resource next;
 
@@ -221,48 +224,44 @@ class DerivedRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+	public RdfIteration<? extends Statement> get(Resource subj, URI pred,
 			Value obj, Resource... contexts)
 		throws SailException
 	{
-		return union(
-				union(difference(
-						difference(derivedFrom.getStatements(subj, pred, obj, contexts),
-								changes.getDeprecated().filter(subj, pred, obj, contexts)),
-						changes.getInvalid().filter(subj, pred, obj, contexts)),
-						changes.getExplicit().filter(subj, pred, obj, contexts)),
-				changes.getInferred().filter(subj, pred, obj, contexts));
+		Set<Resource> deprecatedContexts = changes.getDeprecatedContexts();
+		RdfIteration<? extends Statement> iter;
+		if (changes.isStatementCleared()) {
+			iter = EmptyRdfIteration.emptyIteration();
+		}
+		else if (contexts == null && deprecatedContexts != null && deprecatedContexts.contains(null)) {
+			iter = EmptyRdfIteration.emptyIteration();
+		} else if (contexts.length > 0 && deprecatedContexts != null && deprecatedContexts.containsAll(Arrays.asList(contexts))) {
+			iter = EmptyRdfIteration.emptyIteration();
+		} else if (contexts.length > 0 && deprecatedContexts != null) {
+			List<Resource> remaining = new ArrayList<Resource>(Arrays.asList(contexts));
+			remaining.removeAll(deprecatedContexts);
+			iter = derivedFrom.get(subj, pred, obj, contexts);
+		} else {
+			iter = derivedFrom.get(subj, pred, obj, contexts);
+		}
+		TreeModel deprecated = changes.getDeprecated();
+		if (deprecated != null) {
+			iter = difference(iter, deprecated.filter(subj, pred, obj, contexts));
+		}
+		TreeModel approved = changes.getApproved();
+		if (approved != null) {
+			iter = union(iter, approved.filter(subj, pred, obj, contexts));
+		}
+		return iter;
 	}
 
-	@Override
-	public CloseableIteration<? extends Statement, SailException> getExplicit(Resource subj, URI pred,
-			Value obj, Resource... contexts)
-		throws SailException
-	{
-		return union(
-				difference(derivedFrom.getExplicit(subj, pred, obj, contexts),
-						changes.getDeprecated().filter(subj, pred, obj, contexts)),
-				changes.getExplicit().filter(subj, pred, obj, contexts));
-	}
-
-	@Override
-	public CloseableIteration<? extends Statement, SailException> getInferred(Resource subj, URI pred,
-			Value obj, Resource... contexts)
-		throws SailException
-	{
-		return union(
-				difference(derivedFrom.getInferred(subj, pred, obj, contexts),
-						changes.getInvalid().filter(subj, pred, obj, contexts)),
-				changes.getInferred().filter(subj, pred, obj, contexts));
-	}
-
-	private CloseableIteration<? extends Statement, SailException> difference(
-			CloseableIteration<? extends Statement, SailException> result, final Model excluded)
+	private RdfIteration<? extends Statement> difference(
+			RdfIteration<? extends Statement> result, final Model excluded)
 	{
 		if (excluded.isEmpty()) {
 			return result;
 		}
-		return new FilterIteration<Statement, SailException>(result) {
+		return new FilterRdfIteration<Statement>(result) {
 
 			protected boolean accept(Statement stmt) {
 				return !excluded.contains(stmt);
@@ -270,8 +269,8 @@ class DerivedRdfDataset implements RdfDataset {
 		};
 	}
 
-	private CloseableIteration<? extends Statement, SailException> union(
-			CloseableIteration<? extends Statement, SailException> result, Model included)
+	private RdfIteration<? extends Statement> union(
+			RdfIteration<? extends Statement> result, Model included)
 	{
 		if (included.isEmpty()) {
 			return result;
@@ -279,7 +278,7 @@ class DerivedRdfDataset implements RdfDataset {
 		final Iterator<Statement> iter = included.iterator();
 		CloseableIteration<Statement, SailException> incl;
 		incl = new CloseableIteratorIteration<Statement, SailException>(iter);
-		return new UnionIteration<Statement, SailException>(incl, result);
+		return new UnionRdfIteration<Statement>(incl, result);
 	}
 
 }

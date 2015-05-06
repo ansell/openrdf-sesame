@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.memory;
+package org.openrdf.sail.derived;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
@@ -28,23 +28,23 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.RdfDataset;
 
 /**
- * Implementation of the TripleSource interface from the Sail Query Model
+ * Implementation of the TripleSource interface using {@link RdfDataset}
  */
-class MemTripleSource implements TripleSource {
-
-	protected final boolean includeInferred;
+public class DerivedTripleSource implements TripleSource {
 
 	private final ValueFactory vf;
 
 	private final RdfDataset dataset;
 
-	MemTripleSource(ValueFactory vf, RdfDataset dataset, boolean includeInferred) {
+	public DerivedTripleSource(ValueFactory vf, RdfDataset dataset) {
 		this.vf = vf;
-		this.includeInferred = includeInferred;
 		this.dataset = dataset;
+	}
+
+	public String toString() {
+		return dataset.toString();
 	}
 
 	public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
@@ -52,12 +52,7 @@ class MemTripleSource implements TripleSource {
 		throws QueryEvaluationException
 	{
 		try {
-			if (includeInferred) {
-				return new Eval(dataset.getStatements(subj, pred, obj, contexts));
-			}
-			else {
-				return new Eval(dataset.getExplicit(subj, pred, obj, contexts));
-			}
+			return new Eval(dataset.get(subj, pred, obj, contexts));
 		}
 		catch (SailException e) {
 			throw new QueryEvaluationException(e);
