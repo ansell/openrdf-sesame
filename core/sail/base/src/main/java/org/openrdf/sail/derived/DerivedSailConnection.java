@@ -523,68 +523,44 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	protected void clearInternal(Resource... contexts)
 		throws SailException
 	{
-		RdfBranch branch = branch(false);
-		RdfDataset dataset = branch.dataset(getIsolationLevel());
-		try {
-			RdfSink sink = branch.sink(getTransactionIsolation());
-			try {
-				sink.clear(contexts);
-				sink.flush();
+		verifyIsOpen();
+		verifyIsActive();
+		synchronized (datasets) {
+			if (!datasets.containsKey(null)) {
+				RdfSource source = explicitSource(true);
+				datasets.put(null, source.dataset(getIsolationLevel()));
+				explicitSinks.put(null, source.sink(getIsolationLevel()));
 			}
-			finally {
-				sink.close();
+			assert explicitSinks.containsKey(null);
+			if (this.hasConnectionListeners()) {
+				remove(null, null, null, datasets.get(null), explicitSinks.get(null), contexts);
+			} else {
+				explicitSinks.get(null).clear(contexts);
 			}
-		}
-		finally {
-			dataset.close();
-			branch.close();
 		}
 	}
 
 	public void clearInferred(Resource... contexts)
 		throws SailException
 	{
-		connectionLock.readLock().lock();
-		try {
-			verifyIsOpen();
-
-			updateLock.lock();
-			try {
-				verifyIsActive();
+		verifyIsOpen();
+		verifyIsActive();
+		synchronized (datasets) {
+			if (!datasets.containsKey(null)) {
+				RdfSource source = explicitSource(true);
+				datasets.put(null, source.dataset(getIsolationLevel()));
+				explicitSinks.put(null, source.sink(getIsolationLevel()));
+			}
+			if (!inferredSinks.containsKey(null)) {
 				RdfBranch branch = branch(true);
-				RdfDataset dataset = branch.dataset(getIsolationLevel());
-				try {
-					RdfSink sink = branch.sink(getTransactionIsolation());
-					try {
-						CloseableIteration<? extends Statement, SailException> iter;
-						iter = dataset.get(null, null, null, contexts);
-						try {
-							while (iter.hasNext()) {
-								Statement st = iter.next();
-								sink.deprecate(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
-								notifyStatementRemoved(st);
-							}
-						}
-						finally {
-							iter.close();
-						}
-						sink.flush();
-					}
-					finally {
-						sink.close();
-					}
-				}
-				finally {
-					dataset.close();
-					branch.close();
-				}
+				inferredSinks.put(null, branch.sink(getIsolationLevel()));
 			}
-			finally {
-				updateLock.unlock();
+			assert inferredSinks.containsKey(null);
+			if (this.hasConnectionListeners()) {
+				remove(null, null, null, datasets.get(null), inferredSinks.get(null), contexts);
+			} else {
+				inferredSinks.get(null).clear(contexts);
 			}
-		}
-		finally {
-			connectionLock.readLock().unlock();
 		}
 	}
 

@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.inferencer.fc;
 
+import org.openrdf.IsolationLevels;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
@@ -71,7 +72,7 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 
 		ForwardChainingRDFSInferencerConnection con = getConnection();
 		try {
-			con.begin();
+			con.begin(IsolationLevels.READ_UNCOMMITTED);
 			con.addAxiomStatements();
 			con.commit();
 		}
