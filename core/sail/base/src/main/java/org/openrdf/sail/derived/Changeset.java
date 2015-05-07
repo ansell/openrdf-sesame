@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -31,41 +32,74 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
 
+/**
+ * Set of changes applied to an {@link DerivedRdfBranch} awaiting to be flushed
+ * into its backing {@link RdfSource}.
+ * 
+ * @author James Leigh
+ */
 abstract class Changeset implements RdfSink {
 
+	/**
+	 * Set of {@link RdfDataset}s that are currently using this {@link Changeset}
+	 * to derive the state of the {@link RdfBranch}.
+	 */
 	private Set<DerivedRdfDataset> refbacks;
 
+	/**
+	 * {@link Changeset}s that have been {@link #flush()}ed to the same
+	 * {@link DerivedRdfBranch}, since this object was {@link #flush()}ed.
+	 */
 	private Set<Changeset> prepend;
 
+	/**
+	 * When in {@link IsolationLevels#SERIALIZABLE} this contains all the
+	 * observed {@link StatementPattern}s that were observed by
+	 * {@link ObservingRdfDataset}.
+	 */
 	private Set<StatementPattern> observations;
 
 	/**
-	 * Statements that have been explicitly added as part of a transaction, but
-	 * has not yet been committed.
+	 * Statements that have been added as part of a transaction, but has not yet
+	 * been committed.
 	 */
 	private Model approved;
 
 	/**
-	 * Explicit statements that have been deprecated and should be removed upon
-	 * commit.
+	 * Explicit statements that have been removed as part of a transaction, but
+	 * have not yet been committed.
 	 */
 	private Model deprecated;
 
+	/**
+	 * Set of contexts of the {@link #approved} statements.
+	 */
 	private Set<Resource> approvedContexts;
 
+	/**
+	 * Set of contexts that were passed to {@link #clear(Resource...)}.
+	 */
 	private Set<Resource> deprecatedContexts;
 
+	/**
+	 * Additional namespaces added.
+	 */
 	private Map<String, String> addedNamespaces;
 
+	/**
+	 * Namespace prefixes that were removed.
+	 */
 	private Set<String> removedPrefixes;
 
+	/**
+	 * If all namespaces were removed, other than {@link #addedNamespaces}.
+	 */
 	private boolean namespaceCleared;
 
+	/**
+	 * If all statements were removed, other than {@link #approved}.
+	 */
 	private boolean statementCleared;
-
-	public Changeset() {
-		super();
-	}
 
 	@Override
 	public void close()
@@ -194,7 +228,8 @@ abstract class Changeset implements RdfSink {
 				approvedContexts.clear();
 			}
 			statementCleared = true;
-		} else {
+		}
+		else {
 			if (approved != null) {
 				approved.remove(null, null, null, contexts);
 			}
@@ -234,7 +269,8 @@ abstract class Changeset implements RdfSink {
 			deprecated = createEmptyModel();
 		}
 		deprecated.add(subj, pred, obj, ctx);
-		if (approvedContexts != null && approvedContexts.contains(ctx) && !approved.contains(null, null, null, ctx))
+		if (approvedContexts != null && approvedContexts.contains(ctx)
+				&& !approved.contains(null, null, null, ctx))
 		{
 			approvedContexts.remove(ctx);
 		}

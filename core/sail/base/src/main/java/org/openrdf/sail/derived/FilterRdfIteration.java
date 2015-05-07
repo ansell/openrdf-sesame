@@ -22,10 +22,15 @@ import info.aduna.iteration.Iteration;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * A {@link RdfIteration} that wraps another Iteration, applying a filter on the
+ * objects that are returned. Subclasses must implement the <tt>accept</tt>
+ * method to indicate which objects should be returned.
+ * 
  * @author James Leigh
  */
-public abstract class FilterRdfIteration<E> extends FilterIteration<E, SailException> implements RdfIteration<E> {
+public abstract class FilterRdfIteration<E> extends FilterIteration<E, SailException> implements
+		RdfIteration<E>
+{
 
 	public FilterRdfIteration(Iteration<? extends E, ? extends SailException> iter) {
 		super(iter);

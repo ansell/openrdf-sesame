@@ -34,22 +34,51 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 
 /**
+ * An {@link RdfBranch} that keeps a delta of its state from a backing
+ * {@link RdfSource}.
+ * 
  * @author James Leigh
  */
 public class DerivedRdfBranch implements RdfBranch {
 
+	/**
+	 * Used to prevent changes to this object's field from multiple threads.
+	 */
 	private final ReentrantLock semaphore = new ReentrantLock();
 
+	/**
+	 * The difference between this {@link RdfBranch} and the backing
+	 * {@link RdfSource}.
+	 */
 	private final LinkedList<Changeset> changes = new LinkedList<Changeset>();
 
+	/**
+	 * {@link RdfSink} that have been created, but not yet
+	 * {@link RdfSink#flush()}ed to this {@link RdfBranch}.
+	 */
 	private final LinkedList<Changeset> pending = new LinkedList<Changeset>();
 
+	/**
+	 * Set of open {@link RdfDataset} for this {@link RdfBranch}.
+	 */
 	private final LinkedList<RdfDataset> observers = new LinkedList<RdfDataset>();
 
+	/**
+	 * The underly {@link RdfSource} this {@link RdfBranch} is derived from.
+	 */
 	private final RdfSource backingSource;
 
+	/**
+	 * The {@link Model} instances that should be used to store
+	 * {@link RdfSink#approve(Resource, URI, Value, Resource)} and
+	 * {@link RdfSink#deprecate(Resource, URI, Value, Resource)} statements.
+	 */
 	private final RdfModelFactory modelFactory;
 
+	/**
+	 * If this {@link RdfBranch} should be flushed to the backing
+	 * {@link RdfSource} when it is not in use.
+	 */
 	private final boolean autoFlush;
 
 	/**
@@ -67,14 +96,35 @@ public class DerivedRdfBranch implements RdfBranch {
 	 */
 	private RdfSink prepared;
 
+	/**
+	 * Creates a new in-memory {@link RdfBranch} derived from the given
+	 * {@link RdfSource}.
+	 * 
+	 * @param backingSource
+	 */
 	public DerivedRdfBranch(RdfSource backingSource) {
 		this(backingSource, new RdfModelFactory(), false);
 	}
 
+	/**
+	 * Creates a new {@link RdfBranch} derived from the given {@link RdfSource}.
+	 * 
+	 * @param backingSource
+	 * @param modelFactory
+	 */
 	public DerivedRdfBranch(RdfSource backingSource, RdfModelFactory modelFactory) {
 		this(backingSource, modelFactory, false);
 	}
 
+	/**
+	 * Creates a new {@link RdfBranch} derived from the given {@link RdfSource}
+	 * and if <code>autoFlush</code> is true, will automatically call
+	 * {@link #flush()} when not in use.
+	 * 
+	 * @param backingSource
+	 * @param modelFactory
+	 * @param autoFlush
+	 */
 	public DerivedRdfBranch(RdfSource backingSource, RdfModelFactory modelFactory, boolean autoFlush) {
 		this.backingSource = backingSource;
 		this.modelFactory = modelFactory;
@@ -170,7 +220,7 @@ public class DerivedRdfBranch implements RdfBranch {
 	public RdfDataset dataset(IsolationLevel level)
 		throws SailException
 	{
-		RdfDataset dataset = new DelegatingRdfDataset(derivedFromSerializable(level), true) {
+		RdfDataset dataset = new DelegatingRdfDataset(derivedFromSerializable(level)) {
 
 			@Override
 			public void close()
@@ -204,7 +254,7 @@ public class DerivedRdfBranch implements RdfBranch {
 	}
 
 	@Override
-	public synchronized void prepare()
+	public void prepare()
 		throws SailException
 	{
 		try {
@@ -212,7 +262,8 @@ public class DerivedRdfBranch implements RdfBranch {
 			if (!changes.isEmpty()) {
 				if (prepared == null && serializable == null) {
 					prepared = backingSource.sink(IsolationLevels.NONE);
-				} else if (prepared == null) {
+				}
+				else if (prepared == null) {
 					prepared = serializable;
 				}
 				prepare(prepared);
@@ -225,7 +276,7 @@ public class DerivedRdfBranch implements RdfBranch {
 	}
 
 	@Override
-	public synchronized void flush()
+	public void flush()
 		throws SailException
 	{
 		try {
@@ -240,7 +291,8 @@ public class DerivedRdfBranch implements RdfBranch {
 					if (prepared != serializable) {
 						prepared.close();
 					}
-				} finally {
+				}
+				finally {
 					prepared = null;
 				}
 			}
@@ -362,14 +414,30 @@ public class DerivedRdfBranch implements RdfBranch {
 			RdfDataset derivedFrom;
 			if (this.snapshot != null) {
 				// this object is already has at least snapshot isolation
-				derivedFrom = new DelegatingRdfDataset(this.snapshot, false);
+				derivedFrom = new DelegatingRdfDataset(this.snapshot) {
+
+					@Override
+					public void close()
+						throws SailException
+					{
+						// don't close snapshot yet
+					}
+				};
 			}
 			else {
 				derivedFrom = backingSource.dataset(level);
 				if (level.isCompatibleWith(IsolationLevels.SNAPSHOT)) {
 					this.snapshot = derivedFrom;
 					// don't release snapshot until this RdfSource is released
-					derivedFrom = new DelegatingRdfDataset(derivedFrom, false);
+					derivedFrom = new DelegatingRdfDataset(derivedFrom) {
+
+						@Override
+						public void close()
+							throws SailException
+						{
+							// don't close snapshot yet
+						}
+					};
 				}
 			}
 			Iterator<Changeset> iter = changes.iterator();
@@ -424,11 +492,13 @@ public class DerivedRdfBranch implements RdfBranch {
 		try {
 			semaphore.lock();
 			if (changes.size() == 1 && !changes.getFirst().isRefback() && sink instanceof Changeset
-					&& !isChanged((Changeset)sink)) {
+					&& !isChanged((Changeset)sink))
+			{
 				// one change to apply that is not in use to an empty Changeset
-				Changeset dst = (Changeset) sink;
+				Changeset dst = (Changeset)sink;
 				dst.setChangeset(changes.pop());
-			} else {
+			}
+			else {
 				Iterator<Changeset> iter = changes.iterator();
 				while (iter.hasNext()) {
 					flush(iter.next(), sink);

@@ -23,20 +23,44 @@ import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * A {@link RdfStore} wrapper that branches the backing {@link RdfSource}s to
+ * provide concurrent {@link IsolationLevels#SNAPSHOT_READ} isolation and
+ * higher.
+ * 
  * @author James Leigh
  */
 public class SnapshotRdfStore implements RdfStore {
+
+	/**
+	 * The underlying {@link RdfStore}.
+	 */
 	private final RdfStore backingStore;
 
+	/**
+	 * {@link RdfBranch} of {@link RdfStore#getExplicitRdfSource(IsolationLevel)}
+	 * .
+	 */
 	private final DerivedRdfBranch explicitAutoFlush;
 
+	/**
+	 * {@link RdfBranch} of {@link RdfStore#getInferredRdfSource(IsolationLevel)}
+	 * .
+	 */
 	private final DerivedRdfBranch inferredAutoFlush;
 
+	/**
+	 * Wraps an {@link RdfStore}, tracking changes in {@link RdfModelFactory}
+	 * instances.
+	 * 
+	 * @param backingStore
+	 * @param modelFactory
+	 */
 	public SnapshotRdfStore(RdfStore backingStore, RdfModelFactory modelFactory) {
 		this.backingStore = backingStore;
-		explicitAutoFlush = new DerivedRdfBranch(backingStore.getExplicitRdfSource(IsolationLevels.NONE), modelFactory, true);
-		inferredAutoFlush = new DerivedRdfBranch(backingStore.getInferredRdfSource(IsolationLevels.NONE), modelFactory, true);
+		explicitAutoFlush = new DerivedRdfBranch(backingStore.getExplicitRdfSource(IsolationLevels.NONE),
+				modelFactory, true);
+		inferredAutoFlush = new DerivedRdfBranch(backingStore.getInferredRdfSource(IsolationLevels.NONE),
+				modelFactory, true);
 	}
 
 	@Override
@@ -47,11 +71,13 @@ public class SnapshotRdfStore implements RdfStore {
 			try {
 				explicitAutoFlush.flush();
 				inferredAutoFlush.flush();
-			} finally {
+			}
+			finally {
 				explicitAutoFlush.close();
 				inferredAutoFlush.close();
 			}
-		} finally {
+		}
+		finally {
 			backingStore.close();
 		}
 	}
@@ -66,18 +92,22 @@ public class SnapshotRdfStore implements RdfStore {
 		return backingStore.getEvaluationStatistics();
 	}
 
+	@Override
 	public RdfSource getExplicitRdfSource(IsolationLevel level) {
 		if (IsolationLevels.NONE.isCompatibleWith(level) && !explicitAutoFlush.isChanged()) {
 			return backingStore.getExplicitRdfSource(level);
-		} else {
+		}
+		else {
 			return explicitAutoFlush;
 		}
 	}
 
+	@Override
 	public RdfSource getInferredRdfSource(IsolationLevel level) {
 		if (IsolationLevels.NONE.isCompatibleWith(level) && !inferredAutoFlush.isChanged()) {
 			return backingStore.getInferredRdfSource(level);
-		} else {
+		}
+		else {
 			return inferredAutoFlush;
 		}
 	}

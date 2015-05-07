@@ -21,22 +21,38 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 
 /**
+ * A high level interface used by {@link DerivedSailConnection} to access
+ * {@link RdfSource}.
+ * 
  * @author James Leigh
  */
 public interface RdfStore extends RdfClosable {
 
+	/**
+	 * The {@link ValueFactory} that should be used in association with this.
+	 * 
+	 * @return this object's {@link ValueFactory}
+	 */
 	ValueFactory getValueFactory();
 
+	/**
+	 * Used by {@link DerivedSailConnection} to determine query join order.
+	 * 
+	 * @return a {@link EvaluationStatistics} that is aware of the data
+	 *         distribution of this {@link RdfStore}.
+	 */
 	EvaluationStatistics getEvaluationStatistics();
 
 	/**
-	 * @param level Minimum isolation level required
+	 * @param level
+	 *        Minimum isolation level required
 	 * @return {@link RdfSource} of only explicit statements
 	 */
 	RdfSource getExplicitRdfSource(IsolationLevel level);
 
 	/**
-	 * @param level Minimum isolation level required
+	 * @param level
+	 *        Minimum isolation level required
 	 * @return {@link RdfSource} of only inferred statements
 	 */
 	RdfSource getInferredRdfSource(IsolationLevel level);

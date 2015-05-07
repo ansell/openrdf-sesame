@@ -18,8 +18,6 @@ package org.openrdf.sail.derived;
 
 import java.util.Arrays;
 
-import info.aduna.iteration.CloseableIteration;
-
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -28,12 +26,23 @@ import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 
 /**
+ * Combines multiple {@link RdfDataset} into a single view.
+ * 
  * @author James Leigh
  */
 class UnionRdfDataset implements RdfDataset {
 
+	/**
+	 * Set of {@link RdfDataset}s to combine.
+	 */
 	private final RdfDataset[] datasets;
 
+	/**
+	 * Creates a new {@link RdfDataset} that includes all the given
+	 * {@link RdfDataset}s.
+	 * 
+	 * @param datasets
+	 */
 	public UnionRdfDataset(RdfDataset... datasets) {
 		this.datasets = datasets;
 	}

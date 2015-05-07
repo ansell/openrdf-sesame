@@ -57,6 +57,8 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
 /**
+ * A disk based {@link RdfStore} implementation that keeps committed statements in a {@link TripleStore}.
+ *  
  * @author James Leigh
  */
 class NativeRdfStore implements RdfStore {
@@ -74,15 +76,21 @@ class NativeRdfStore implements RdfStore {
 	 */
 	final ReentrantLock txnLockManager = new ReentrantLock();
 
+	/**
+	 * Creates a new NativeRdfStore with the default cache sizes.
+	 */
 	public NativeRdfStore(File dataDir, String tripleIndexes)
 		throws IOException, SailException
 	{
-		this(dataDir, false, ValueStore.VALUE_CACHE_SIZE, ValueStore.VALUE_ID_CACHE_SIZE,
-				ValueStore.NAMESPACE_CACHE_SIZE, ValueStore.NAMESPACE_ID_CACHE_SIZE, tripleIndexes);
+		this(dataDir, tripleIndexes, false, ValueStore.VALUE_CACHE_SIZE,
+				ValueStore.VALUE_ID_CACHE_SIZE, ValueStore.NAMESPACE_CACHE_SIZE, ValueStore.NAMESPACE_ID_CACHE_SIZE);
 	}
 
-	public NativeRdfStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
-			int namespaceCacheSize, int namespaceIDCacheSize, String tripleIndexes)
+	/**
+	 * Creates a new NativeRdfStore.
+	 */
+	public NativeRdfStore(File dataDir, String tripleIndexes, boolean forceSync, int valueCacheSize,
+			int valueIDCacheSize, int namespaceCacheSize, int namespaceIDCacheSize)
 		throws IOException, SailException
 	{
 		boolean initialized = false;

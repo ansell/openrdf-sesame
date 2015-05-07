@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.derived;
 
+import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
 
 /**
@@ -26,9 +27,23 @@ import org.openrdf.sail.SailException;
  */
 public interface RdfBranch extends RdfSource, RdfClosable {
 
+	/**
+	 * Check the consistency of this {@link RdfBranch} and throw a
+	 * {@link SailConflictException} if {@link RdfBranch#flush()}ing this
+	 * {@link RdfBranch} would cause the backing {@link RdfSource} to be
+	 * inconsistent.
+	 * 
+	 * @throws SailException
+	 */
 	void prepare()
 		throws SailException;
 
+	/**
+	 * Apply all the changes to this {@link RdfBranch} to the backing
+	 * {@link RdfSource}.
+	 * 
+	 * @throws SailException
+	 */
 	void flush()
 		throws SailException;
 

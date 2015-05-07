@@ -228,8 +228,8 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			if (!VERSION.equals(version) && upgradeStore(dataDir, version)) {
 				FileUtils.writeStringToFile(versionFile, VERSION);
 			}
-			NativeRdfStore master = new NativeRdfStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
-					namespaceCacheSize, namespaceIDCacheSize, tripleIndexes);
+			NativeRdfStore master = new NativeRdfStore(dataDir, tripleIndexes, forceSync, valueCacheSize,
+					valueIDCacheSize, namespaceCacheSize, namespaceIDCacheSize);
 			this.store = new SnapshotRdfStore(master, new RdfModelFactory() {
 
 				@Override

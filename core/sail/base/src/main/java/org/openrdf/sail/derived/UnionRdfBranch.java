@@ -20,16 +20,28 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
+ * Combines two branches to act as a single {@link RdfBranch}. This is useful to
+ * provide a combined view of both explicit and inferred statements.
+ * 
  * @author James Leigh
  */
 public class UnionRdfBranch implements RdfBranch {
 
+	/**
+	 * The branch that will be used in calls to {@link #sink(IsolationLevel)}.
+	 */
 	private final RdfBranch primary;
 
+	/**
+	 * Additional statements that should be included in {@link RdfDataset}s.
+	 */
 	private final RdfBranch additional;
 
 	/**
-	 * @param sources
+	 * An {@link RdfBranch} that combines two other {@link RdfBranch}es.
+	 * 
+	 * @param primary delegates all calls to the given {@link RdfBranch}.
+	 * @param additional delegate all call except {@link #sink(IsolationLevel)}.
 	 */
 	public UnionRdfBranch(RdfBranch primary, RdfBranch additional) {
 		super();
@@ -42,7 +54,9 @@ public class UnionRdfBranch implements RdfBranch {
 	}
 
 	@Override
-	public void close() throws SailException {
+	public void close()
+		throws SailException
+	{
 		primary.close();
 		additional.close();
 	}

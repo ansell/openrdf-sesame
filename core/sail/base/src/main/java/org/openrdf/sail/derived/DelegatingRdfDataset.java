@@ -24,31 +24,32 @@ import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * A wrapper around an {@link RdfDataset} to specialize the behaviour of an
+ * {@link RdfDataset}.
+ * 
  * @author James Leigh
  */
-class DelegatingRdfDataset implements RdfDataset {
+abstract class DelegatingRdfDataset implements RdfDataset {
+
 	private final RdfDataset delegate;
-	private final boolean releasing;
 
 	/**
+	 * Wraps an {@link RdfDataset} delegating all calls to it.
+	 * 
 	 * @param delegate
-	 * @param closing if {@link #close()} should be delegated
 	 */
-	public DelegatingRdfDataset(RdfDataset delegate, boolean closing) {
-		super();
+	public DelegatingRdfDataset(RdfDataset delegate) {
 		this.delegate = delegate;
-		this.releasing = closing;
 	}
 
 	public String toString() {
 		return delegate.toString();
 	}
 
-	public void close() throws SailException {
-		if (releasing) {
-			delegate.close();
-		}
+	public void close()
+		throws SailException
+	{
+		delegate.close();
 	}
 
 	public RdfIteration<? extends Namespace> getNamespaces()
@@ -69,8 +70,7 @@ class DelegatingRdfDataset implements RdfDataset {
 		return delegate.getContextIDs();
 	}
 
-	public RdfIteration<? extends Statement> get(Resource subj, URI pred,
-			Value obj, Resource... contexts)
+	public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		return delegate.get(subj, pred, obj, contexts);

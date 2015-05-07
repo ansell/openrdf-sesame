@@ -37,10 +37,22 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.sail.SailException;
 
+/**
+ * A view of an {@link RdfBranch} that is based on a backing {@link RdfSource}.
+ * 
+ * @author James Leigh
+ */
 class DerivedRdfDataset implements RdfDataset {
 
+	/**
+	 * {@link RdfDataset} of the backing {@link RdfSource}.
+	 */
 	private final RdfDataset derivedFrom;
 
+	/**
+	 * Changes that have not yet been {@link RdfBranch#flush()}ed to the backing
+	 * {@link RdfDataset}.
+	 */
 	private final Changeset changes;
 
 	/**
@@ -63,7 +75,9 @@ class DerivedRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public void close() throws SailException {
+	public void close()
+		throws SailException
+	{
 		changes.removeRefback(this);
 		derivedFrom.close();
 	}
@@ -223,8 +237,7 @@ class DerivedRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Statement> get(Resource subj, URI pred,
-			Value obj, Resource... contexts)
+	public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		Set<Resource> deprecatedContexts = changes.getDeprecatedContexts();
@@ -234,13 +247,18 @@ class DerivedRdfDataset implements RdfDataset {
 		}
 		else if (contexts == null && deprecatedContexts != null && deprecatedContexts.contains(null)) {
 			iter = EmptyRdfIteration.emptyIteration();
-		} else if (contexts.length > 0 && deprecatedContexts != null && deprecatedContexts.containsAll(Arrays.asList(contexts))) {
+		}
+		else if (contexts.length > 0 && deprecatedContexts != null
+				&& deprecatedContexts.containsAll(Arrays.asList(contexts)))
+		{
 			iter = EmptyRdfIteration.emptyIteration();
-		} else if (contexts.length > 0 && deprecatedContexts != null) {
+		}
+		else if (contexts.length > 0 && deprecatedContexts != null) {
 			List<Resource> remaining = new ArrayList<Resource>(Arrays.asList(contexts));
 			remaining.removeAll(deprecatedContexts);
 			iter = derivedFrom.get(subj, pred, obj, contexts);
-		} else {
+		}
+		else {
 			iter = derivedFrom.get(subj, pred, obj, contexts);
 		}
 		Model deprecated = changes.getDeprecated();
@@ -254,8 +272,8 @@ class DerivedRdfDataset implements RdfDataset {
 		return iter;
 	}
 
-	private RdfIteration<? extends Statement> difference(
-			RdfIteration<? extends Statement> result, final Model excluded)
+	private RdfIteration<? extends Statement> difference(RdfIteration<? extends Statement> result,
+			final Model excluded)
 	{
 		if (excluded.isEmpty()) {
 			return result;
@@ -268,9 +286,7 @@ class DerivedRdfDataset implements RdfDataset {
 		};
 	}
 
-	private RdfIteration<? extends Statement> union(
-			RdfIteration<? extends Statement> result, Model included)
-	{
+	private RdfIteration<? extends Statement> union(RdfIteration<? extends Statement> result, Model included) {
 		if (included.isEmpty()) {
 			return result;
 		}

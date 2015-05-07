@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.FileUtil;
 
-import org.openrdf.IsolationLevels;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;

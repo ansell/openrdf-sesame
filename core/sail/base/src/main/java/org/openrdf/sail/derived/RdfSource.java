@@ -21,7 +21,7 @@ import org.openrdf.sail.SailException;
 
 /**
  * A persistent yet mutable source or container of RDF graphs. In which its
- * state can change over time. The life cycle follows that of a transaction.
+ * state can change over time. The life cycle follows that of a store.
  * 
  * @author James Leigh
  */

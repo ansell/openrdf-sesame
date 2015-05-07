@@ -20,12 +20,24 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * Allows an {@link RdfSource} to be used as an {@link RdfBranch}. Calls to
+ * {@link #close()}, {@link #prepare()}, and {@link #flush()} are ignored.
+ * 
  * @author James Leigh
  */
 public class RdfNotBranchedSource implements RdfBranch {
+
+	/**
+	 * Target {@link RdfSource} for calls to this {@link RdfBranch}.
+	 */
 	private final RdfSource source;
 
+	/**
+	 * Wraps an {@link RdfSource} with the {@link RdfBranch} interface. All
+	 * applicable calls are delegated, others are ignored.
+	 * 
+	 * @param source
+	 */
 	public RdfNotBranchedSource(RdfSource source) {
 		this.source = source;
 	}

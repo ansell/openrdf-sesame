@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.derived;
 
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -23,19 +24,40 @@ import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * A {@link IsolationLevels#SERIALIZABLE} {@link RdfDataset} that tracks the
+ * observed statement patterns to an
+ * {@link RdfSink#observe(Resource, URI, Value, Resource...)} to check
+ * consistency.
+ * 
  * @author James Leigh
  */
 class ObservingRdfDataset extends DelegatingRdfDataset {
+
+	/**
+	 * The {@link RdfSink} that is tracking the statement patterns.
+	 */
 	private final RdfSink observer;
 
+	/**
+	 * Creates a {@link IsolationLevels#SERIALIZABLE} {@link RdfDataset} that
+	 * tracks consistency.
+	 * 
+	 * @param delegate
+	 *        to be {@link RdfDataset#close()} when this {@link RdfDataset} is
+	 *        closed.
+	 * @param observer
+	 *        to be {@link RdfSink#flush()} and {@link RdfSink#close()} when this
+	 *        {@link RdfDataset} is closed.
+	 */
 	public ObservingRdfDataset(RdfDataset delegate, RdfSink observer) {
-		super(delegate, true);
+		super(delegate);
 		this.observer = observer;
 	}
 
 	@Override
-	public void close() throws SailException {
+	public void close()
+		throws SailException
+	{
 		super.close();
 		// flush observer regardless of consistency
 		observer.flush();
@@ -51,12 +73,11 @@ class ObservingRdfDataset extends DelegatingRdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Statement> get(Resource subj, URI pred,
-			Value obj, Resource... contexts)
+	public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		observer.observe(subj, pred, obj, contexts);
 		return super.get(subj, pred, obj, contexts);
 	}
-	
+
 }

@@ -32,9 +32,10 @@ import org.openrdf.sail.SailException;
 public interface RdfSink extends RdfClosable {
 
 	/**
-	 * Checks if this Sink is consistent with the isolation level it was created
-	 * with. If this Sink was created with a {@link IsolationLevels#SERIALIZABLE}
-	 * and another conflicting {@link RdfSink} is consistent, this method will
+	 * Checks if this {@link RdfSink} is consistent with the isolation level it
+	 * was created with. If this Sink was created with a
+	 * {@link IsolationLevels#SERIALIZABLE} and another conflicting
+	 * {@link RdfSink} has already been {@link #flush()}ed, this method will
 	 * throw a {@link SailConflictException}.
 	 * 
 	 * @return <code>false</code> if this sink has a conflict
@@ -42,6 +43,13 @@ public interface RdfSink extends RdfClosable {
 	void prepare()
 		throws SailException;
 
+	/**
+	 * Once this method returns successfully, changes that were made to this
+	 * {@link RdfSink} will be visible to subsequent
+	 * {@link RdfBranch#dataset(org.openrdf.IsolationLevel)}.
+	 * 
+	 * @throws SailException
+	 */
 	void flush()
 		throws SailException;
 
@@ -130,10 +138,8 @@ public interface RdfSink extends RdfClosable {
 	 *        The predicate of the statement to add.
 	 * @param obj
 	 *        The object of the statement to add.
-	 * @param contexts
-	 *        The context(s) to add the statement to. Note that this parameter is
-	 *        a vararg and as such is optional. If no contexts are specified, a
-	 *        context-less statement will be added.
+	 * @param ctx
+	 *        The context to add the statement to.
 	 * @throws SailException
 	 *         If the statement could not be added, for example because no
 	 *         transaction is active.

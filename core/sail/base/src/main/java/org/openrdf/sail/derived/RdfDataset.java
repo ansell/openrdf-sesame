@@ -26,7 +26,7 @@ import org.openrdf.sail.SailException;
 
 /**
  * A state of an {@link RdfSource} at a point in time that will remain
- * consistent until {@link #release()} is called. The life cycle follows that of
+ * consistent until {@link #close()} is called. The life cycle follows that of
  * a read operation.
  * 
  * @author James Leigh

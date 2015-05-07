@@ -19,6 +19,8 @@ package org.openrdf.sail.derived;
 import java.util.NoSuchElementException;
 
 /**
+ * An {@link RdfIteration} that does not contain any elements.
+ * 
  * @author James Leigh
  */
 public class EmptyRdfIteration<T> implements RdfIteration<T> {

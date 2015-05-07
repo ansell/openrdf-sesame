@@ -51,6 +51,7 @@ import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.QueryModelNormalizer;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.impl.EmptyBindingSet;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
 import org.openrdf.sail.UpdateContext;
@@ -59,10 +60,12 @@ import org.openrdf.sail.helpers.SailBase;
 import org.openrdf.sail.inferencer.InferencerConnection;
 
 /**
+ * A {@link SailConnection} implementation that is based on an {@link RdfStore}.
+ * 
  * @author James Leigh
  */
-public abstract class DerivedSailConnection extends NotifyingSailConnectionBase implements InferencerConnection,
-		FederatedServiceResolverClient
+public abstract class DerivedSailConnection extends NotifyingSailConnectionBase implements
+		InferencerConnection, FederatedServiceResolverClient
 {
 
 	/*-----------*
@@ -86,16 +89,36 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	 */
 	private final Map<UpdateContext, RdfSink> inferredSinks = new HashMap<UpdateContext, RdfSink>();
 
+	/**
+	 * {@link ValueFactory} used by this connection.
+	 */
 	private final ValueFactory vf;
 
+	/**
+	 * The backing {@link RdfStore} used to manage the state.
+	 */
 	private final RdfStore store;
 
+	/**
+	 * The default {@link IsolationLevel} when not otherwise specified.
+	 */
 	private final IsolationLevel defaultIsolationLevel;
 
+	/**
+	 * An {@link RdfBranch} of only explicit statements when in an isolated
+	 * transaction.
+	 */
 	private RdfBranch explicitOnlyDatasource;
 
+	/**
+	 * An {@link RdfBranch} of only inferred statements when in an isolated
+	 * transaction.
+	 */
 	private RdfBranch inferredOnlyDatasource;
 
+	/**
+	 * An {@link RdfBranch} of all statements when in an isolated transaction.
+	 */
 	private RdfBranch includeInferredDatasource;
 
 	/**
@@ -108,15 +131,14 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	 *--------------*/
 
 	/**
+	 * Creates a new {@link SailConnection}, using the given {@link RdfStore} to
+	 * manage the state.
 	 * 
 	 * @param sail
-	 * @param explicit source of explicit-only statements
-	 * @param inferred source of sinks inferred, but observes both
-	 * @param stats
+	 * @param store
 	 * @param resolver
 	 */
-	protected DerivedSailConnection(SailBase sail, RdfStore store, FederatedServiceResolver resolver)
-	{
+	protected DerivedSailConnection(SailBase sail, RdfStore store, FederatedServiceResolver resolver) {
 		super(sail);
 		this.vf = sail.getValueFactory();
 		this.store = store;
@@ -302,7 +324,8 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 			if (includeInferredDatasource != null) {
 				includeInferredDatasource.flush();
 			}
-		} finally {
+		}
+		finally {
 			if (includeInferredDatasource != null) {
 				includeInferredDatasource.close();
 				includeInferredDatasource = null;
@@ -335,9 +358,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	{
 		if (op != null) {
 			IsolationLevel level = getIsolationLevel();
-			if (!isActiveOperation() || isActive()
-					&& !level.isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
-			{
+			if (!isActiveOperation() || isActive() && !level.isCompatibleWith(IsolationLevels.SNAPSHOT_READ)) {
 				flush();
 			}
 			synchronized (datasets) {
@@ -394,7 +415,8 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 			if (inferred != null) {
 				try {
 					inferred.flush();
-				} finally {
+				}
+				finally {
 					inferred.close();
 				}
 			}
@@ -402,7 +424,8 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 			if (explicit != null) {
 				try {
 					explicit.flush();
-				} finally {
+				}
+				finally {
 					explicit.close();
 					datasets.remove(op).close();
 				}
@@ -475,8 +498,8 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		}
 	}
 
-	private boolean remove(Resource subj, URI pred, Value obj, RdfDataset dataset,
-			RdfSink sink, Resource... contexts)
+	private boolean remove(Resource subj, URI pred, Value obj, RdfDataset dataset, RdfSink sink,
+			Resource... contexts)
 		throws SailException
 	{
 		boolean statementsRemoved = false;
@@ -683,7 +706,8 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		}
 		else if (includeinferred) {
 			// create a new branch for read operation
-			return new UnionRdfBranch(store.getInferredRdfSource(level).fork(), store.getExplicitRdfSource(level).fork());
+			return new UnionRdfBranch(store.getInferredRdfSource(level).fork(),
+					store.getExplicitRdfSource(level).fork());
 		}
 		else {
 			// create a new branch for read operation

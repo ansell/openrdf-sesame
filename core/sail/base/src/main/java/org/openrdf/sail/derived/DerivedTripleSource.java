@@ -74,4 +74,4 @@ public class DerivedTripleSource implements TripleSource {
 		}
 
 	}
-} // end inner class MemTripleSource
+}

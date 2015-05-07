@@ -20,11 +20,16 @@ import org.openrdf.model.Model;
 import org.openrdf.model.impl.TreeModel;
 
 /**
- *
+ * Abstraction to allow an {@link RdfStore} to use a different {@link Model} to
+ * store statement changes.
+ * 
  * @author James Leigh
  */
 public class RdfModelFactory {
 
+	/**
+	 * @return a newly created {@link Model}
+	 */
 	public Model createEmptyModel() {
 		return new TreeModel();
 	}

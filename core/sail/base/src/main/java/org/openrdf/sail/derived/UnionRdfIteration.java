@@ -22,15 +22,32 @@ import info.aduna.iteration.UnionIteration;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * An {@link RdfIteration} that returns the bag union of the results of a number
+ * of Iterations. 'Bag union' means that the UnionIteration does not filter
+ * duplicate objects.
+ * 
  * @author James Leigh
  */
 public class UnionRdfIteration<T> extends UnionIteration<T, SailException> implements RdfIteration<T> {
 
+	/**
+	 * Creates a new {@link RdfIteration} that returns the bag union of the
+	 * results of a number of Iterations.
+	 * 
+	 * @param args
+	 *        The Iterations containing the elements to iterate over.
+	 */
 	public UnionRdfIteration(Iterable<? extends Iteration<? extends T, SailException>> args) {
 		super(args);
 	}
 
+	/**
+	 * Creates a new {@link RdfIteration} that returns the bag union of the
+	 * results of a number of Iterations.
+	 * 
+	 * @param args
+	 *        The Iterations containing the elements to iterate over.
+	 */
 	public UnionRdfIteration(Iteration<? extends T, SailException>... args) {
 		super(args);
 	}

@@ -19,16 +19,20 @@ package org.openrdf.sail.derived;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * Common interface to objects that throw {@link SailException} on close.
+ * 
  * @author James Leigh
  */
 public interface RdfClosable extends AutoCloseable {
-   /**
-    * Closes this resource, relinquishing any underlying resources.
-    * This method is invoked automatically on objects managed by the
-    * {@code try}-with-resources statement.
-    *
-    * @throws SailException if this resource cannot be closed
-    */
-   void close() throws SailException;
+
+	/**
+	 * Closes this resource, relinquishing any underlying resources. This method
+	 * is invoked automatically on objects managed by the {@code try}
+	 * -with-resources statement.
+	 * 
+	 * @throws SailException
+	 *         if this resource cannot be closed
+	 */
+	void close()
+		throws SailException;
 }

@@ -20,6 +20,10 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
+ * A wrapper around an {@link RdfBranch} that can suppress the call to
+ * {@link #close()}. This is useful when the a shared branch is sometimes to be
+ * used and other times a dedicated branch is to be used.
+ * 
  * @author James Leigh
  */
 public class DelegatingRdfBranch implements RdfBranch {
@@ -29,6 +33,10 @@ public class DelegatingRdfBranch implements RdfBranch {
 	private final boolean releasing;
 
 	/**
+	 * Wraps this {@link RdfBranch}, delegating all calls to it unless
+	 * <code>closing</code> is false, in which case {@link #close()} will not be
+	 * delegated.
+	 * 
 	 * @param delegate
 	 * @param closing
 	 *        if {@link #close()} should be delegated
@@ -43,14 +51,15 @@ public class DelegatingRdfBranch implements RdfBranch {
 		return delegate.toString();
 	}
 
-	public void close() throws SailException {
+	public void close()
+		throws SailException
+	{
 		if (releasing) {
 			delegate.close();
 		}
 	}
 
-	public RdfBranch fork()
-	{
+	public RdfBranch fork() {
 		return delegate.fork();
 	}
 

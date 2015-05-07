@@ -61,6 +61,8 @@ import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 
 /**
+ * An implementation of {@link RdfStore} that keeps committed statements in a {@link MemStatementList}.
+ * 
  * @author James Leigh
  */
 class MemoryRdfStore implements RdfStore {
@@ -77,8 +79,9 @@ class MemoryRdfStore implements RdfStore {
 	 */
 	private final MemStatementList statements = new MemStatementList(256);
 
-	volatile boolean closed;
-
+	/**
+	 * Identifies the current snapshot.
+	 */
 	volatile int currentSnapshot;
 
 	/**
@@ -120,7 +123,6 @@ class MemoryRdfStore implements RdfStore {
 
 	@Override
 	public void close() {
-		closed = true;
 		try {
 			Lock stLock = statementListLockManager.getWriteLock();
 			try {
@@ -265,11 +267,6 @@ class MemoryRdfStore implements RdfStore {
 	{
 		// System.out.println("cleanSnapshots() starting...");
 		// long startTime = System.currentTimeMillis();
-
-		if (closed) {
-			// Store has been shut down
-			return;
-		}
 
 		// Sets used to keep track of which lists have already been processed
 		HashSet<MemValue> processedSubjects = new HashSet<MemValue>();

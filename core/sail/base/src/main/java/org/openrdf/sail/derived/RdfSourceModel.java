@@ -39,6 +39,8 @@ import org.openrdf.model.util.ModelException;
 import org.openrdf.sail.SailException;
 
 /**
+ * A {@link Model} that keeps the {@link Statement}s in an {@link RdfSource}.
+ * 
  * @author James Leigh
  */
 public class RdfSourceModel extends AbstractModel {

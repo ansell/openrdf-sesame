@@ -21,7 +21,9 @@ import info.aduna.iteration.CloseableIteration;
 import org.openrdf.sail.SailException;
 
 /**
- *
+ * A shorter name for {@link CloseableIteration} that throw {@link
+ * SailException#}.
+ * 
  * @author James Leigh
  */
 public interface RdfIteration<T> extends CloseableIteration<T, SailException>, RdfClosable {
