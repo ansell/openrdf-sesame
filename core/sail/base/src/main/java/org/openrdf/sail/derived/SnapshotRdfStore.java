@@ -31,6 +31,8 @@ import org.openrdf.sail.SailException;
  */
 public class SnapshotRdfStore implements RdfStore {
 
+	private static final IsolationLevels NONE = IsolationLevels.NONE;
+
 	/**
 	 * The underlying {@link RdfStore}.
 	 */
@@ -57,10 +59,8 @@ public class SnapshotRdfStore implements RdfStore {
 	 */
 	public SnapshotRdfStore(RdfStore backingStore, RdfModelFactory modelFactory) {
 		this.backingStore = backingStore;
-		explicitAutoFlush = new DerivedRdfBranch(backingStore.getExplicitRdfSource(IsolationLevels.NONE),
-				modelFactory, true);
-		inferredAutoFlush = new DerivedRdfBranch(backingStore.getInferredRdfSource(IsolationLevels.NONE),
-				modelFactory, true);
+		explicitAutoFlush = new DerivedRdfBranch(backingStore.getExplicitRdfSource(NONE), modelFactory, true);
+		inferredAutoFlush = new DerivedRdfBranch(backingStore.getInferredRdfSource(NONE), modelFactory, true);
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public class SnapshotRdfStore implements RdfStore {
 
 	@Override
 	public RdfSource getExplicitRdfSource(IsolationLevel level) {
-		if (IsolationLevels.NONE.isCompatibleWith(level) && !explicitAutoFlush.isChanged()) {
+		if (NONE.isCompatibleWith(level) && !explicitAutoFlush.isChanged()) {
 			return backingStore.getExplicitRdfSource(level);
 		}
 		else {
@@ -104,7 +104,7 @@ public class SnapshotRdfStore implements RdfStore {
 
 	@Override
 	public RdfSource getInferredRdfSource(IsolationLevel level) {
-		if (IsolationLevels.NONE.isCompatibleWith(level) && !inferredAutoFlush.isChanged()) {
+		if (NONE.isCompatibleWith(level) && !inferredAutoFlush.isChanged()) {
 			return backingStore.getInferredRdfSource(level);
 		}
 		else {

@@ -354,7 +354,7 @@ class NativeRdfStore implements RdfStore {
 		{
 			// SES-1949 check necessary to avoid empty/read-only transactions
 			// messing up concurrent transactions
-			if (txnLockAcquired) {
+			if (txnLockAcquired && txnLockManager.getHoldCount() == 1) {
 				try {
 					valueStore.sync();
 					namespaceStore.sync();
@@ -428,7 +428,10 @@ class NativeRdfStore implements RdfStore {
 			if (!txnLockAcquired) {
 				txnLockManager.lock();
 				try {
-					tripleStore.startTransaction();
+					if (txnLockManager.getHoldCount() == 1) {
+						// first object
+						tripleStore.startTransaction();
+					}
 					txnLockAcquired = true;
 				}
 				catch (IOException e) {
