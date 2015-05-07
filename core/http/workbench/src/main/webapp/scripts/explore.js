@@ -9,7 +9,6 @@ workbench.addLoad(function () {
         function textContent(element) {
             return $.trim(element.innerText || element.textContent);
         }
-
         var lists = document.getElementsByTagName('ul');
         for (var i = lists.length - 1; i + 1; i--) {
             var items = lists[i].getElementsByTagName('li');
@@ -19,18 +18,15 @@ workbench.addLoad(function () {
                     items[j].parentNode.removeChild(items[j]);
                 }
             }
-
             text = textContent(items[0]);
             if (text == self) {
                 items[0].parentNode.removeChild(items[0]);
             }
-
             if (items.length == 0) {
                 lists[i].parentNode.parentNode.removeChild(lists[i].parentNode);
             }
         }
     }
-
     // Populate parameters
     var elements = workbench.getQueryStringElements();
     var resource = $('#resource');
@@ -43,7 +39,8 @@ workbench.addLoad(function () {
         var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
         if ('resource' == pair[0]) {
             resource.val(value);
-        } else if (limit_param == pair[0]) {
+        }
+        else if (limit_param == pair[0]) {
             $(limit_id).val(value);
             limit_param_found = true;
         }
@@ -63,14 +60,12 @@ workbench.addLoad(function () {
         h1.appendChild(document.createTextNode(' (' + rvalue + ')'));
         removeDuplicates(rvalue);
         var limit = workbench.paging.getLimit(explore);
-
         // Modify title to reflect total_result_count cookie
         var total_result_count = workbench.paging.getTotalResultCount();
         var have_total_count = (total_result_count > 0);
         var offset = limit == 0 ? 0 : workbench.paging.getOffset();
         var first = offset + 1;
         var last = limit == 0 ? total_result_count : offset + limit;
-
         // Truncate range if close to end.
         last = have_total_count ? Math.min(total_result_count, last) : last;
         var newHTML = '(' + first + '-' + last;

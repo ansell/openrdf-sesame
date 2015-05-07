@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
@@ -60,7 +60,7 @@
 						<td>
 							<select id="Content-Type" name="Content-Type"
 								onchange="workbench.add.handleFormatSelection(this.value)">
-								<option id='autodetect' value="autodetect" selected="true">(autodetect)
+								<option id='autodetect' value="autodetect" selected="selected">(autodetect)
 								</option>
 								<xsl:for-each
 									select="document(//sparql:link/@href)//sparql:binding[@name='upload-format']">
