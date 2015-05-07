@@ -35,10 +35,10 @@ public class LuceneSailFactory implements SailFactory {
 	 * 
 	 * @see SailFactory#getSailType()
 	 */
-	public static final String SAIL_TYPE = "openrdf:LuceneSail4";
+	public static final String SAIL_TYPE = "openrdf:LuceneSail/4";
 
 	/**
-	 * Returns the Sail's type: <tt>openrdf:LuceneSail4</tt>.
+	 * Returns the Sail's type: <tt>openrdf:LuceneSail/4</tt>.
 	 */
 	@Override
 	public String getSailType() {
