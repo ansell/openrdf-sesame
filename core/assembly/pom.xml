@@ -304,7 +304,7 @@
 				<configuration>
 					<encoding>utf8</encoding>
 					<source>1.6</source>
-					<quiet>true</quiet>
+					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
 					<execution>
