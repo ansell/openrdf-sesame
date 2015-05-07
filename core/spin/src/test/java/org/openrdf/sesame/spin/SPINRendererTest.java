@@ -31,9 +31,9 @@ import org.openrdf.rio.helpers.StatementCollector;
 @RunWith(Parameterized.class)
 public class SPINRendererTest {
 
-	@Parameters
+	@Parameters(name="{0}, {1}")
 	public static Collection<Object[]> testData() {
-		int n=3;
+		int n=5;
 		List<Object[]> params = new ArrayList<Object[]>(n);
 		for(int i=0; i<n; i++) {
 			String suffix = String.valueOf(i+1);

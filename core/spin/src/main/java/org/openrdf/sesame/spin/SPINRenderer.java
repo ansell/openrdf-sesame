@@ -14,6 +14,7 @@ import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
@@ -23,6 +24,7 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedDescribeQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
@@ -50,6 +52,10 @@ public class SPINRenderer {
 		}
 		else if(query instanceof ParsedTupleQuery) {
 			render((ParsedTupleQuery)query, handler);
+		}
+		// order matters as subclass of ParsedGraphQuery
+		else if(query instanceof ParsedDescribeQuery) {
+			render((ParsedDescribeQuery)query, handler);
 		}
 		else if(query instanceof ParsedGraphQuery) {
 			render((ParsedGraphQuery)query, handler);
@@ -90,6 +96,20 @@ public class SPINRenderer {
 		handler.endRDF();
 	}
 
+	public void render(ParsedDescribeQuery query, RDFHandler handler) throws RDFHandlerException {
+		handler.startRDF();
+		Resource querySubj = valueFactory.createBNode();
+		handler.handleStatement(valueFactory.createStatement(querySubj, RDF.TYPE, SP.DESCRIBE_CLASS));
+		handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
+		if(includeRdf) {
+			TupleExpr expr = query.getTupleExpr();
+			SPINQueryModelVisitor visitor = new DescribeSPINQueryModelVisitor(handler, querySubj);
+			expr.visit(visitor);
+			visitor.handleVars();
+		}
+		handler.endRDF();
+	}
+
 	public void render(ParsedGraphQuery query, RDFHandler handler) throws RDFHandlerException {
 		handler.startRDF();
 		Resource querySubj = valueFactory.createBNode();
@@ -97,7 +117,7 @@ public class SPINRenderer {
 		handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
 		if(includeRdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SPINQueryModelVisitor visitor = new SPINQueryModelVisitor(handler, null, querySubj);
+			SPINQueryModelVisitor visitor = new ConstructSPINQueryModelVisitor(handler, querySubj);
 			expr.visit(visitor);
 			visitor.handleVars();
 		}
@@ -105,14 +125,59 @@ public class SPINRenderer {
 	}
 
 
+	class DescribeSPINQueryModelVisitor extends SPINQueryModelVisitor
+	{
+		DescribeSPINQueryModelVisitor(RDFHandler handler, Resource subject) {
+			super(handler, null, subject);
+		}
+
+		@Override
+		public void meet(ProjectionElemList node) throws RDFHandlerException {
+			if(isSubQuery) {
+				super.meet(node);
+			}
+			else {
+				Resource elemListBNode = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.RESULT_NODES_PROPERTY, elemListBNode));
+				Context ctx = newList(elemListBNode);
+				node.visitChildren(this);
+				endList(ctx);
+			}
+		}
+	}
+
+
+	class ConstructSPINQueryModelVisitor extends SPINQueryModelVisitor
+	{
+		ConstructSPINQueryModelVisitor(RDFHandler handler, Resource subject) {
+			super(handler, null, subject);
+		}
+
+		@Override
+		public void meet(ProjectionElemList node) throws RDFHandlerException {
+			if(isSubQuery) {
+				super.meet(node);
+			}
+			else {
+				Resource elemListBNode = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.TEMPLATES_PROPERTY, elemListBNode));
+				Context ctx = newList(elemListBNode);
+				node.visitChildren(this);
+				endList(ctx);
+			}
+		}
+	}
+
+
 	class SPINQueryModelVisitor extends QueryModelVisitorBase<RDFHandlerException>
 	{
-		private final RDFHandler handler;
-		private final Map<String,Resource> varResources = new HashMap<String,Resource>();
-		private Resource list;
-		private Resource subject;
-		private URI predicate;
-		private boolean isSubQuery;
+		final RDFHandler handler;
+		final Map<String,Resource> varResources = new HashMap<String,Resource>();
+		Resource list;
+		Resource subject;
+		URI predicate;
+		boolean isMultiProjection;
+		boolean isSubQuery;
 
 		SPINQueryModelVisitor(RDFHandler handler, Resource list, Resource subject) {
 			this.handler = handler;
@@ -120,27 +185,27 @@ public class SPINRenderer {
 			this.subject = subject;
 		}
 
-		private Context save() {
+		Context save() {
 			return new Context(list, subject);
 		}
 
-		private void restore(Context ctx) {
+		void restore(Context ctx) {
 			list = ctx.list;
 			subject = ctx.subject;
 		}
 
-		private Context newList(Resource res) {
+		Context newList(Resource res) {
 			Context ctx = save();
 			list = res;
 			subject = null;
 			return ctx;
 		}
 
-		private void listEntry() throws RDFHandlerException {
+		void listEntry() throws RDFHandlerException {
 			listEntry(null);
 		}
 
-		private void listEntry(Resource entry) throws RDFHandlerException {
+		void listEntry(Resource entry) throws RDFHandlerException {
 			if(list == null) {
 				list = valueFactory.createBNode();
 			}
@@ -155,7 +220,7 @@ public class SPINRenderer {
 			subject = entry;
 		}
 
-		private void endList(Context ctx) throws RDFHandlerException {
+		void endList(Context ctx) throws RDFHandlerException {
 			nextListEntry(RDF.NIL);
 			if(ctx != null) {
 				restore(ctx);
@@ -168,16 +233,24 @@ public class SPINRenderer {
 			subject = null;
 		}
 
-		private Resource createVar(String name) {
+		Resource createVar(String name) {
 			Resource res = valueFactory.createBNode(name);
 			varResources.put(name, res);
 			return res;
 		}
 
-		private void handleVars() throws RDFHandlerException {
+		void handleVars() throws RDFHandlerException {
 			for(Map.Entry<String,Resource> entry : varResources.entrySet()) {
 				handler.handleStatement(valueFactory.createStatement(entry.getValue(), SP.VAR_NAME_PROPERTY, valueFactory.createLiteral(entry.getKey())));
 			}
+		}
+
+		@Override
+		public void meet(MultiProjection node) throws RDFHandlerException {
+			isMultiProjection = true;
+			super.meet(node);
+			isMultiProjection = false;
+			isSubQuery = true;
 		}
 
 		@Override
@@ -191,9 +264,14 @@ public class SPINRenderer {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.SELECT_CLASS));
 			}
 			node.getProjectionElemList().visit(this);
+
 			Resource whereBNode = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(subject, SP.WHERE_PROPERTY, whereBNode));
-			isSubQuery = true;
+
+			if(!isMultiProjection) {
+				isSubQuery = true;
+			}
+
 			Context ctx = newList(whereBNode);
 			node.getArg().visit(this);
 			endList(ctx);
