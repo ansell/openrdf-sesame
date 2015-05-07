@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
+	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame</artifactId>
 		<version>2.8.3-SNAPSHOT</version>
-    </parent>
+	</parent>
 
-    <artifactId>sesame-core</artifactId>
-    <packaging>pom</packaging>
+	<artifactId>sesame-core</artifactId>
+	<packaging>pom</packaging>
 
-    <modules>
+	<modules>
 		<module>util</module>
 		<module>model</module>
 		<module>rio</module>
@@ -30,85 +30,85 @@
 		<module>runtime</module>
 		<module>runtime-osgi</module>
 		<module>assembly</module> <!-- this module should always be last in the list -->
-    </modules>
+	</modules>
 
-    <name>OpenRDF Sesame Core</name>
-    <description>Core modules for OpenRDF Sesame</description>
+	<name>OpenRDF Sesame Core</name>
+	<description>Core modules for OpenRDF Sesame</description>
 
-    <profiles>
+	<profiles>
 		<profile>
-	    	<id>assembly</id>
-	    	<build>
+			<id>assembly</id>
+			<build>
 				<plugins>
-		    		<plugin>
+					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<configuration>
-			    			<encoding>utf8</encoding>
-			    			<source>1.6</source>
-			    			<quiet>true</quiet>
+							<encoding>utf8</encoding>
+							<source>1.6</source>
+							<quiet>true</quiet>
 						</configuration>
 						<executions>				
-			    			<execution>
+							<execution>
 								<id>create-aggregate-javadoc</id>
 								<inherited>false</inherited>
 								<phase>package</phase>
 								<goals>
-				    				<goal>aggregate-jar</goal>
+									<goal>aggregate-jar</goal>
 								</goals>
 
 								<configuration>
-				    				<doctitle>Sesame ${project.version} API</doctitle>
-				    				<windowtitle>Sesame ${project.version} API</windowtitle>
-				    				<groups>
+									<doctitle>Sesame ${project.version} API</doctitle>
+									<windowtitle>Sesame ${project.version} API</windowtitle>
+									<groups>
 										<group>
-					    					<title>Repository API</title>
-					    					<packages>org.openrdf.repository*</packages>
+											<title>Repository API</title>
+											<packages>org.openrdf.repository*</packages>
 										</group>
 										<group>
-					    					<title>RDF Model API</title>
-					    					<packages>org.openrdf.model*</packages>
-										</group>
-
-										<group>
-					    					<title>Storage And Inference Layer (SAIL) API</title>
-					    					<packages>org.openrdf.sail*</packages>
-										</group>
-										<group>
-					    					<title>Rio: RDF Parsers and Writers </title>
-					    					<packages>org.openrdf.rio*</packages>
+											<title>RDF Model API</title>
+											<packages>org.openrdf.model*</packages>
 										</group>
 
 										<group>
-					    					<title>Query API and query engines</title>
-					    					<packages>org.openrdf.query:org.openrdf.query.impl:org.openrdf.query.algebra*:org.openrdf.query.parser*</packages>
-
+											<title>Storage And Inference Layer (SAIL) API</title>
+											<packages>org.openrdf.sail*</packages>
 										</group>
 										<group>
-					    					<title>Query Result Parsers and Writers</title>
-					    					<packages>org.openrdf.query.resultio*</packages>
-										</group>
-
-										<group>
-					    					<title>OpenRDF Web Client</title>
-					    					<packages>org.openrdf.http.webclient*</packages>
+											<title>Rio: RDF Parsers and Writers </title>
+											<packages>org.openrdf.rio*</packages>
 										</group>
 
 										<group>
-					    					<title>HTTP Protocol for Client/Server Communication</title>
-					    					<packages>org.openrdf.http*</packages>
-										</group>
-				    				</groups>
+											<title>Query API and query engines</title>
+											<packages>org.openrdf.query:org.openrdf.query.impl:org.openrdf.query.algebra*:org.openrdf.query.parser*</packages>
 
-				    				<links>
+										</group>
+										<group>
+											<title>Query Result Parsers and Writers</title>
+											<packages>org.openrdf.query.resultio*</packages>
+										</group>
+
+										<group>
+											<title>OpenRDF Web Client</title>
+											<packages>org.openrdf.http.webclient*</packages>
+										</group>
+
+										<group>
+											<title>HTTP Protocol for Client/Server Communication</title>
+											<packages>org.openrdf.http*</packages>
+										</group>
+									</groups>
+
+									<links>
 										<link>http://docs.oracle.com/javase/6/docs/api/</link>
-				    				</links>
+									</links>
 								</configuration>
-			    			</execution>
+							</execution>
 						</executions>
-		    		</plugin>
+					</plugin>
 				</plugins>
-	    	</build>
+			</build>
 		</profile>
-    </profiles>
+	</profiles>
 </project>
