@@ -35,17 +35,28 @@ import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
 public class SPINRenderer {
+	public enum Output {
+		TEXT_AND_RDF(true, true), TEXT_ONLY(true, false), RDF_ONLY(false, true);
+
+		final boolean text, rdf;
+
+		Output(boolean text, boolean rdf) {
+			this.text = text;
+			this.rdf = rdf;
+		}
+	}
+
 	private final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
-	private final boolean includeRdf;
+	private final Output output;
 
 	public SPINRenderer()
 	{
-		this(true);
+		this(Output.TEXT_AND_RDF);
 	}
 
-	public SPINRenderer(boolean includeRdf)
+	public SPINRenderer(Output output)
 	{
-		this.includeRdf = includeRdf;
+		this.output = output;
 	}
 
 	public void render(ParsedQuery query, RDFHandler handler) throws RDFHandlerException
@@ -72,8 +83,10 @@ public class SPINRenderer {
 		handler.startRDF();
 		Resource querySubj = valueFactory.createBNode();
 		handler.handleStatement(valueFactory.createStatement(querySubj, RDF.TYPE, SP.ASK_CLASS));
-		handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
-		if(includeRdf) {
+		if(output.text) {
+			handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
+		}
+		if(output.rdf) {
 			Resource whereBNode = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(querySubj, SP.WHERE_PROPERTY, whereBNode));
 			TupleExpr expr = query.getTupleExpr();
@@ -89,8 +102,10 @@ public class SPINRenderer {
 		handler.startRDF();
 		Resource querySubj = valueFactory.createBNode();
 		handler.handleStatement(valueFactory.createStatement(querySubj, RDF.TYPE, SP.SELECT_CLASS));
-		handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
-		if(includeRdf) {
+		if(output.text) {
+			handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
+		}
+		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
 			SPINQueryModelVisitor visitor = new SPINQueryModelVisitor(handler, null, querySubj);
 			expr.visit(visitor);
@@ -103,8 +118,10 @@ public class SPINRenderer {
 		handler.startRDF();
 		Resource querySubj = valueFactory.createBNode();
 		handler.handleStatement(valueFactory.createStatement(querySubj, RDF.TYPE, SP.DESCRIBE_CLASS));
-		handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
-		if(includeRdf) {
+		if(output.text) {
+			handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
+		}
+		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
 			SPINQueryModelVisitor visitor = new DescribeSPINQueryModelVisitor(handler, querySubj);
 			expr.visit(visitor);
@@ -117,8 +134,10 @@ public class SPINRenderer {
 		handler.startRDF();
 		Resource querySubj = valueFactory.createBNode();
 		handler.handleStatement(valueFactory.createStatement(querySubj, RDF.TYPE, SP.CONSTRUCT_CLASS));
-		handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
-		if(includeRdf) {
+		if(output.text) {
+			handler.handleStatement(valueFactory.createStatement(querySubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(query.getSourceString())));
+		}
+		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
 			SPINQueryModelVisitor visitor = new ConstructSPINQueryModelVisitor(handler, querySubj);
 			expr.visit(visitor);
