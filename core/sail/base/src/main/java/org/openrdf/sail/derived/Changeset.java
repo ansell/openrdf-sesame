@@ -22,10 +22,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.TreeModel;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailConflictException;
@@ -43,13 +43,13 @@ abstract class Changeset implements RdfSink {
 	 * Statements that have been explicitly added as part of a transaction, but
 	 * has not yet been committed.
 	 */
-	private TreeModel approved;
+	private Model approved;
 
 	/**
 	 * Explicit statements that have been deprecated and should be removed upon
 	 * commit.
 	 */
-	private TreeModel deprecated;
+	private Model deprecated;
 
 	private Set<Resource> approvedContexts;
 
@@ -92,8 +92,8 @@ abstract class Changeset implements RdfSink {
 					contexts = new Resource[] { (Resource)ctxVar.getValue() };
 				}
 				for (Changeset changeset : prepend) {
-					TreeModel approved = changeset.getApproved();
-					TreeModel deprecated = changeset.getDeprecated();
+					Model approved = changeset.getApproved();
+					Model deprecated = changeset.getDeprecated();
 					if (approved != null && approved.contains(subj, pred, obj, contexts) || deprecated != null
 							&& deprecated.contains(subj, pred, obj, contexts))
 					{
@@ -214,7 +214,7 @@ abstract class Changeset implements RdfSink {
 			deprecated.remove(subj, pred, obj, ctx);
 		}
 		if (approved == null) {
-			approved = new TreeModel();
+			approved = createEmptyModel();
 		}
 		approved.add(subj, pred, obj, ctx);
 		if (ctx != null) {
@@ -231,7 +231,7 @@ abstract class Changeset implements RdfSink {
 			approved.remove(subj, pred, obj, ctx);
 		}
 		if (deprecated == null) {
-			deprecated = new TreeModel();
+			deprecated = createEmptyModel();
 		}
 		deprecated.add(subj, pred, obj, ctx);
 		if (approvedContexts != null && approvedContexts.contains(ctx) && !approved.contains(null, null, null, ctx))
@@ -269,15 +269,27 @@ abstract class Changeset implements RdfSink {
 		return sb.toString().trim();
 	}
 
+	protected void setChangeset(Changeset from) {
+		this.observations = from.observations;
+		this.approved = from.approved;
+		this.deprecated = from.deprecated;
+		this.approvedContexts = from.approvedContexts;
+		this.deprecatedContexts = from.deprecatedContexts;
+		this.addedNamespaces = from.addedNamespaces;
+		this.removedPrefixes = from.removedPrefixes;
+		this.namespaceCleared = from.namespaceCleared;
+		this.statementCleared = from.statementCleared;
+	}
+
 	public synchronized Set<StatementPattern> getObservations() {
 		return observations;
 	}
 
-	public synchronized TreeModel getApproved() {
+	public synchronized Model getApproved() {
 		return approved;
 	}
 
-	public synchronized TreeModel getDeprecated() {
+	public synchronized Model getDeprecated() {
 		return deprecated;
 	}
 
@@ -304,4 +316,6 @@ abstract class Changeset implements RdfSink {
 	public synchronized boolean isNamespaceCleared() {
 		return namespaceCleared;
 	}
+
+	protected abstract Model createEmptyModel();
 }

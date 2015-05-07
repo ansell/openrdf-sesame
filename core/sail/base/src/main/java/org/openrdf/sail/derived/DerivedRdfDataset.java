@@ -35,7 +35,6 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.TreeModel;
 import org.openrdf.sail.SailException;
 
 class DerivedRdfDataset implements RdfDataset {
@@ -244,11 +243,11 @@ class DerivedRdfDataset implements RdfDataset {
 		} else {
 			iter = derivedFrom.get(subj, pred, obj, contexts);
 		}
-		TreeModel deprecated = changes.getDeprecated();
+		Model deprecated = changes.getDeprecated();
 		if (deprecated != null) {
 			iter = difference(iter, deprecated.filter(subj, pred, obj, contexts));
 		}
-		TreeModel approved = changes.getApproved();
+		Model approved = changes.getApproved();
 		if (approved != null) {
 			iter = union(iter, approved.filter(subj, pred, obj, contexts));
 		}

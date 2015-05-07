@@ -24,11 +24,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.TreeModel;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
@@ -36,7 +36,7 @@ import org.openrdf.sail.SailException;
 /**
  * @author James Leigh
  */
-public class DerivedRDfSource implements RdfSource {
+public class DerivedRdfBranch implements RdfBranch {
 
 	private final ReentrantLock semaphore = new ReentrantLock();
 
@@ -47,6 +47,8 @@ public class DerivedRDfSource implements RdfSource {
 	private final LinkedList<RdfDataset> observers = new LinkedList<RdfDataset>();
 
 	private final RdfSource backingSource;
+
+	private final RdfModelFactory modelFactory;
 
 	private final boolean autoFlush;
 
@@ -60,12 +62,22 @@ public class DerivedRDfSource implements RdfSource {
 	 */
 	private RdfSink serializable;
 
-	public DerivedRDfSource(RdfSource backingSource) {
-		this(backingSource, false);
+	/**
+	 * Non-null after {@link #prepare()}, but before {@link #flush()}.
+	 */
+	private RdfSink prepared;
+
+	public DerivedRdfBranch(RdfSource backingSource) {
+		this(backingSource, new RdfModelFactory(), false);
 	}
 
-	public DerivedRDfSource(RdfSource backingSource, boolean autoFlush) {
+	public DerivedRdfBranch(RdfSource backingSource, RdfModelFactory modelFactory) {
+		this(backingSource, modelFactory, false);
+	}
+
+	public DerivedRdfBranch(RdfSource backingSource, RdfModelFactory modelFactory, boolean autoFlush) {
 		this.backingSource = backingSource;
+		this.modelFactory = modelFactory;
 		this.autoFlush = autoFlush;
 	}
 
@@ -138,6 +150,11 @@ public class DerivedRDfSource implements RdfSource {
 					autoFlush();
 				}
 			}
+
+			@Override
+			protected Model createEmptyModel() {
+				return modelFactory.createEmptyModel();
+			}
 		};
 		try {
 			semaphore.lock();
@@ -150,7 +167,7 @@ public class DerivedRDfSource implements RdfSource {
 	}
 
 	@Override
-	public RdfDataset snapshot(IsolationLevel level)
+	public RdfDataset dataset(IsolationLevel level)
 		throws SailException
 	{
 		RdfDataset dataset = new DelegatingRdfDataset(derivedFromSerializable(level), true) {
@@ -182,8 +199,8 @@ public class DerivedRDfSource implements RdfSource {
 	}
 
 	@Override
-	public RdfSource fork() {
-		return new DerivedRDfSource(this);
+	public RdfBranch fork() {
+		return new DerivedRdfBranch(this, modelFactory);
 	}
 
 	@Override
@@ -192,11 +209,15 @@ public class DerivedRDfSource implements RdfSource {
 	{
 		try {
 			semaphore.lock();
-			if (serializable == null) {
-				serializable = backingSource.sink(IsolationLevels.NONE);
+			if (!changes.isEmpty()) {
+				if (prepared == null && serializable == null) {
+					prepared = backingSource.sink(IsolationLevels.NONE);
+				} else if (prepared == null) {
+					prepared = serializable;
+				}
+				prepare(prepared);
+				prepared.prepare();
 			}
-			prepare(serializable);
-			serializable.prepare();
 		}
 		finally {
 			semaphore.unlock();
@@ -209,11 +230,30 @@ public class DerivedRDfSource implements RdfSource {
 	{
 		try {
 			semaphore.lock();
-			if (serializable == null) {
-				prepare();
+			if (!changes.isEmpty()) {
+				if (prepared == null) {
+					prepare();
+				}
+				flush(prepared);
+				prepared.flush();
+				try {
+					if (prepared != serializable) {
+						prepared.close();
+					}
+				} finally {
+					prepared = null;
+				}
 			}
-			flush(serializable);
-			serializable.flush();
+		}
+		finally {
+			semaphore.unlock();
+		}
+	}
+
+	public boolean isChanged() {
+		try {
+			semaphore.lock();
+			return !changes.isEmpty();
 		}
 		finally {
 			semaphore.unlock();
@@ -276,20 +316,8 @@ public class DerivedRDfSource implements RdfSource {
 	{
 		if (autoFlush && semaphore.tryLock()) {
 			try {
-				if (!changes.isEmpty() && observers.isEmpty()) {
-					boolean autoClose = serializable == null;
-					try {
-						flush();
-					} finally {
-						if (autoClose) {
-							try {
-								serializable.close();
-							}
-							finally {
-								serializable = null;
-							}
-						}
-					}
+				if (serializable == null && observers.isEmpty()) {
+					flush();
 				}
 			}
 			finally {
@@ -337,7 +365,7 @@ public class DerivedRDfSource implements RdfSource {
 				derivedFrom = new DelegatingRdfDataset(this.snapshot, false);
 			}
 			else {
-				derivedFrom = backingSource.snapshot(level);
+				derivedFrom = backingSource.dataset(level);
 				if (level.isCompatibleWith(IsolationLevels.SNAPSHOT)) {
 					this.snapshot = derivedFrom;
 					// don't release snapshot until this RdfSource is released
@@ -395,10 +423,17 @@ public class DerivedRDfSource implements RdfSource {
 	{
 		try {
 			semaphore.lock();
-			Iterator<Changeset> iter = changes.iterator();
-			while (iter.hasNext()) {
-				flush(iter.next(), sink);
-				iter.remove();
+			if (changes.size() == 1 && !changes.getFirst().isRefback() && sink instanceof Changeset
+					&& !isChanged((Changeset)sink)) {
+				// one change to apply that is not in use to an empty Changeset
+				Changeset dst = (Changeset) sink;
+				dst.setChangeset(changes.pop());
+			} else {
+				Iterator<Changeset> iter = changes.iterator();
+				while (iter.hasNext()) {
+					flush(iter.next(), sink);
+					iter.remove();
+				}
 			}
 		}
 		finally {
@@ -432,13 +467,13 @@ public class DerivedRDfSource implements RdfSource {
 		if (deprecatedContexts != null && !deprecatedContexts.isEmpty()) {
 			sink.clear(deprecatedContexts.toArray(new Resource[deprecatedContexts.size()]));
 		}
-		TreeModel deprecated = change.getDeprecated();
+		Model deprecated = change.getDeprecated();
 		if (deprecated != null) {
 			for (Statement st : deprecated) {
 				sink.deprecate(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
 		}
-		TreeModel approved = change.getApproved();
+		Model approved = change.getApproved();
 		if (approved != null) {
 			for (Statement st : approved) {
 				sink.approve(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());

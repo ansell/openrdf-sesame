@@ -94,7 +94,6 @@ public class NativeStoreConnection extends DerivedSailConnection {
 	protected void addStatementInternal(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		super.addStatementInternal(subj, pred, obj, contexts);
 		// assume the triple is not yet present in the triple store
 		sailChangedEvent.setStatementsAdded(true);
 	}
@@ -112,7 +111,6 @@ public class NativeStoreConnection extends DerivedSailConnection {
 	protected void removeStatementsInternal(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		super.removeStatementsInternal(subj, pred, obj, contexts);
 		sailChangedEvent.setStatementsRemoved(true);
 	}
 

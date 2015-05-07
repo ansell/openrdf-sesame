@@ -113,8 +113,8 @@ public class SnapshotTest {
 		b.add(REMBRANDT, RDF.TYPE, PAINTER);
 		assertEquals(1, size(a, null, RDF.TYPE, PAINTER, false));
 		a.commit();
-		assertEquals(2, size(b, null, RDF.TYPE, PAINTER, false));
 		b.commit();
+		assertEquals(2, size(b, null, RDF.TYPE, PAINTER, false));
 	}
 
 	@Test

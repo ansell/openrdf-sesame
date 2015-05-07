@@ -16,29 +16,16 @@
  */
 package org.openrdf.sail.derived;
 
-import org.openrdf.IsolationLevel;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
+import org.openrdf.model.Model;
+import org.openrdf.model.impl.TreeModel;
 
 /**
+ *
  * @author James Leigh
  */
-public interface RdfStore extends RdfClosable {
+public class RdfModelFactory {
 
-	ValueFactory getValueFactory();
-
-	EvaluationStatistics getEvaluationStatistics();
-
-	/**
-	 * @param level Minimum isolation level required
-	 * @return {@link RdfSource} of only explicit statements
-	 */
-	RdfSource getExplicitRdfSource(IsolationLevel level);
-
-	/**
-	 * @param level Minimum isolation level required
-	 * @return {@link RdfSource} of only inferred statements
-	 */
-	RdfSource getInferredRdfSource(IsolationLevel level);
-
+	public Model createEmptyModel() {
+		return new TreeModel();
+	}
 }

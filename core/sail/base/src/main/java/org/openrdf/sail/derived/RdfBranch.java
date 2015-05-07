@@ -16,29 +16,20 @@
  */
 package org.openrdf.sail.derived;
 
-import org.openrdf.IsolationLevel;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
+import org.openrdf.sail.SailException;
 
 /**
+ * A persistent yet mutable source or container of RDF graphs. In which its
+ * state can change over time. The life cycle follows that of a transaction.
+ * 
  * @author James Leigh
  */
-public interface RdfStore extends RdfClosable {
+public interface RdfBranch extends RdfSource, RdfClosable {
 
-	ValueFactory getValueFactory();
+	void prepare()
+		throws SailException;
 
-	EvaluationStatistics getEvaluationStatistics();
-
-	/**
-	 * @param level Minimum isolation level required
-	 * @return {@link RdfSource} of only explicit statements
-	 */
-	RdfSource getExplicitRdfSource(IsolationLevel level);
-
-	/**
-	 * @param level Minimum isolation level required
-	 * @return {@link RdfSource} of only inferred statements
-	 */
-	RdfSource getInferredRdfSource(IsolationLevel level);
+	void flush()
+		throws SailException;
 
 }

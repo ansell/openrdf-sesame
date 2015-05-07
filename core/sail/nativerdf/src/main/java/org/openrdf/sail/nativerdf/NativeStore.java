@@ -25,13 +25,16 @@ import info.aduna.concurrent.locks.Lock;
 import info.aduna.io.MavenUtil;
 
 import org.openrdf.IsolationLevels;
+import org.openrdf.model.Model;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.derived.RdfModelFactory;
 import org.openrdf.sail.derived.RdfStore;
+import org.openrdf.sail.derived.SnapshotRdfStore;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.NotifyingSailBase;
 
@@ -92,8 +95,8 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 */
 	public NativeStore() {
 		super();
-		setSupportedIsolationLevels(IsolationLevels.READ_COMMITTED, IsolationLevels.SNAPSHOT_READ,
-				IsolationLevels.SNAPSHOT, IsolationLevels.SERIALIZABLE);
+		setSupportedIsolationLevels(IsolationLevels.NONE, IsolationLevels.READ_COMMITTED,
+				IsolationLevels.SNAPSHOT_READ, IsolationLevels.SNAPSHOT, IsolationLevels.SERIALIZABLE);
 	}
 
 	public NativeStore(File dataDir) {
@@ -225,8 +228,23 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			if (!VERSION.equals(version) && upgradeStore(dataDir, version)) {
 				FileUtils.writeStringToFile(versionFile, VERSION);
 			}
-			store = new NativeRdfStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize, namespaceCacheSize,
-					namespaceIDCacheSize, tripleIndexes);
+			NativeRdfStore master = new NativeRdfStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
+					namespaceCacheSize, namespaceIDCacheSize, tripleIndexes);
+			this.store = new SnapshotRdfStore(master, new RdfModelFactory() {
+
+				@Override
+				public Model createEmptyModel() {
+					return new MemoryOverflowModel() {
+
+						@Override
+						protected RdfStore createRdfStore(File dataDir)
+							throws IOException, SailException
+						{
+							return new NativeRdfStore(dataDir, getTripleIndexes());
+						}
+					};
+				}
+			});
 		}
 		catch (Throwable e) {
 			// NativeStore initialization failed, release any allocated files

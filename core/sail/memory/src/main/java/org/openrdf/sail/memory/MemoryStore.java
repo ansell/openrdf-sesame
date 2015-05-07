@@ -33,7 +33,6 @@ import org.openrdf.sail.SailChangedEvent;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.derived.RdfDataset;
 import org.openrdf.sail.derived.RdfSink;
-import org.openrdf.sail.derived.RdfSource;
 import org.openrdf.sail.derived.RdfStore;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.NotifyingSailBase;
@@ -265,10 +264,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					logger.warn("Ignoring empty data file: {}", dataFile);
 				}
 				else {
-					RdfSource explicitDatasource = store.getExplicitRdfSource();
-					RdfSource inferredDatasource = store.getInferredRdfSource();
-					RdfSink explicit = explicitDatasource.sink(IsolationLevels.NONE);
-					RdfSink inferred = inferredDatasource.sink(IsolationLevels.NONE);
+					RdfSink explicit = store.getExplicitRdfSource(IsolationLevels.NONE).sink(IsolationLevels.NONE);
+					RdfSink inferred = store.getInferredRdfSource(IsolationLevels.NONE).sink(IsolationLevels.NONE);
 					try {
 						new FileIO(store.getValueFactory()).read(dataFile, explicit, inferred);
 						logger.debug("Data file read successfully");
@@ -283,12 +280,6 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 						inferred.prepare();
 						inferred.flush();
 						inferred.close();
-						explicitDatasource.prepare();
-						explicitDatasource.flush();
-						explicitDatasource.close();
-						inferredDatasource.prepare();
-						inferredDatasource.flush();
-						inferredDatasource.close();
 					}
 				}
 			}
@@ -307,17 +298,13 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					dirLock = locker.lockOrFail();
 
 					logger.debug("Initializing data file...");
-					RdfSource explicitDatasource = store.getExplicitRdfSource();
-					RdfSource inferredDatasource = store.getInferredRdfSource();
-					RdfDataset explicit = explicitDatasource.snapshot(IsolationLevels.SNAPSHOT);
-					RdfDataset inferred = inferredDatasource.snapshot(IsolationLevels.SNAPSHOT);
+					RdfDataset explicit = store.getExplicitRdfSource(IsolationLevels.NONE).dataset(IsolationLevels.SNAPSHOT);
+					RdfDataset inferred = store.getInferredRdfSource(IsolationLevels.NONE).dataset(IsolationLevels.SNAPSHOT);
 					try {
 						new FileIO(store.getValueFactory()).write(explicit, inferred, syncFile, dataFile);
 					} finally {
 						explicit.close();
 						inferred.close();
-						explicitDatasource.close();
-						inferredDatasource.close();
 					
 					}
 					logger.debug("Data file initialized");
@@ -462,17 +449,14 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 			if (persist && contentsChanged) {
 				logger.debug("syncing data to file...");
 				try {
-					RdfSource explicitDatasource = store.getExplicitRdfSource();
-					RdfSource inferredDatasource = store.getInferredRdfSource();
-					RdfDataset explicit = explicitDatasource.snapshot(IsolationLevels.SNAPSHOT);
-					RdfDataset inferred = inferredDatasource.snapshot(IsolationLevels.SNAPSHOT);
+					IsolationLevels level = IsolationLevels.SNAPSHOT;
+					RdfDataset explicit = store.getExplicitRdfSource(level).dataset(level);
+					RdfDataset inferred = store.getInferredRdfSource(level).dataset(level);
 					try {
 						new FileIO(store.getValueFactory()).write(explicit, inferred, syncFile, dataFile);
 					} finally {
 						explicit.close();
 						inferred.close();
-						explicitDatasource.close();
-						inferredDatasource.close();
 					}
 					contentsChanged = false;
 					logger.debug("Data synced to file");

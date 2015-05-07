@@ -25,15 +25,9 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public interface RdfSource extends RdfClosable {
+public interface RdfSource {
 
-	RdfSource fork();
-
-	void prepare()
-		throws SailException;
-
-	void flush()
-		throws SailException;
+	RdfBranch fork();
 
 	RdfSink sink(IsolationLevel level)
 		throws SailException;
@@ -45,7 +39,7 @@ public interface RdfSource extends RdfClosable {
 	 * @return an {@link RdfDataset} of the current state
 	 * @throws SailException
 	 */
-	RdfDataset snapshot(IsolationLevel level)
+	RdfDataset dataset(IsolationLevel level)
 		throws SailException;
 
 }

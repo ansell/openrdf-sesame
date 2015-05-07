@@ -22,59 +22,62 @@ import org.openrdf.sail.SailException;
 /**
  * @author James Leigh
  */
-public class DelegatingRdfSource implements RdfSource {
+public class UnionRdfBranch implements RdfBranch {
 
-	private final RdfSource delegate;
+	private final RdfBranch primary;
 
-	private final boolean releasing;
+	private final RdfBranch additional;
 
 	/**
-	 * @param delegate
-	 * @param closing
-	 *        if {@link #close()} should be delegated
+	 * @param sources
 	 */
-	public DelegatingRdfSource(RdfSource delegate, boolean closing) {
+	public UnionRdfBranch(RdfBranch primary, RdfBranch additional) {
 		super();
-		this.delegate = delegate;
-		this.releasing = closing;
+		this.primary = primary;
+		this.additional = additional;
 	}
 
 	public String toString() {
-		return delegate.toString();
+		return primary.toString();
 	}
 
+	@Override
 	public void close() throws SailException {
-		if (releasing) {
-			delegate.close();
-		}
+		primary.close();
+		additional.close();
 	}
 
-	public RdfSource fork()
-	{
-		return delegate.fork();
+	@Override
+	public RdfBranch fork() {
+		return new UnionRdfBranch(primary.fork(), additional.fork());
 	}
 
 	public void prepare()
 		throws SailException
 	{
-		delegate.prepare();
+		primary.prepare();
+		additional.prepare();
 	}
 
 	public void flush()
 		throws SailException
 	{
-		delegate.flush();
+		primary.flush();
+		additional.flush();
 	}
 
+	@Override
 	public RdfSink sink(IsolationLevel level)
 		throws SailException
 	{
-		return delegate.sink(level);
+		return primary.sink(level);
 	}
 
-	public RdfDataset snapshot(IsolationLevel level)
+	@Override
+	public RdfDataset dataset(IsolationLevel level)
 		throws SailException
 	{
-		return delegate.snapshot(level);
+		return new UnionRdfDataset(primary.dataset(level), additional.dataset(level));
 	}
+
 }

@@ -45,9 +45,8 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.derived.ClosingRdfIteration;
-import org.openrdf.sail.derived.DelegatingRdfSource;
-import org.openrdf.sail.derived.DerivedRDfSource;
 import org.openrdf.sail.derived.EmptyRdfIteration;
+import org.openrdf.sail.derived.RdfBranch;
 import org.openrdf.sail.derived.RdfDataset;
 import org.openrdf.sail.derived.RdfIteration;
 import org.openrdf.sail.derived.RdfSink;
@@ -70,14 +69,17 @@ class NativeRdfStore implements RdfStore {
 
 	final NamespaceStore namespaceStore;
 
-	private final RdfSource explicitRdfSource;
-
-	private final RdfSource inferredRdfSource;
-
 	/**
 	 * Lock manager used to prevent concurrent transactions.
 	 */
 	final ReentrantLock txnLockManager = new ReentrantLock();
+
+	public NativeRdfStore(File dataDir, String tripleIndexes)
+		throws IOException, SailException
+	{
+		this(dataDir, false, ValueStore.VALUE_CACHE_SIZE, ValueStore.VALUE_ID_CACHE_SIZE,
+				ValueStore.NAMESPACE_CACHE_SIZE, ValueStore.NAMESPACE_ID_CACHE_SIZE, tripleIndexes);
+	}
 
 	public NativeRdfStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
 			int namespaceCacheSize, int namespaceIDCacheSize, String tripleIndexes)
@@ -89,8 +91,6 @@ class NativeRdfStore implements RdfStore {
 			valueStore = new ValueStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
 					namespaceCacheSize, namespaceIDCacheSize);
 			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
-			explicitRdfSource = new NativeRdfSource(true).fork();
-			inferredRdfSource = new NativeRdfSource(false).fork();
 			initialized = true;
 		}
 		finally {
@@ -126,12 +126,12 @@ class NativeRdfStore implements RdfStore {
 		return new NativeEvaluationStatistics(valueStore, tripleStore);
 	}
 
-	public RdfSource getExplicitRdfSource() {
-		return new DelegatingRdfSource(explicitRdfSource, false);
+	public RdfSource getExplicitRdfSource(IsolationLevel level) {
+		return new NativeRdfSource(true);
 	}
 
-	public RdfSource getInferredRdfSource() {
-		return new DelegatingRdfSource(inferredRdfSource, false);
+	public RdfSource getInferredRdfSource(IsolationLevel level) {
+		return new NativeRdfSource(false);
 	}
 
 	List<Integer> getContextIDs(Resource... contexts)
@@ -289,23 +289,8 @@ class NativeRdfStore implements RdfStore {
 		}
 
 		@Override
-		public void close() {
-			// no-op
-		}
-
-		@Override
-		public RdfSource fork() {
-			return new DerivedRDfSource(this, true);
-		}
-
-		@Override
-		public void prepare() {
-			// assume all transactions will reasonably commit
-		}
-
-		@Override
-		public void flush() {
-			// already sync
+		public RdfBranch fork() {
+			throw new UnsupportedOperationException("This store does not support multiple datasets");
 		}
 
 		@Override
@@ -316,7 +301,7 @@ class NativeRdfStore implements RdfStore {
 		}
 
 		@Override
-		public NativeRdfDataset snapshot(IsolationLevel level)
+		public NativeRdfDataset dataset(IsolationLevel level)
 			throws SailException
 		{
 			return new NativeRdfDataset(explicit);
@@ -342,9 +327,6 @@ class NativeRdfStore implements RdfStore {
 
 		@Override
 		public synchronized void close() {
-			// SES-1949 check necessary to avoid empty/read-only transactions
-			// messing
-			// up concurrent transactions
 			if (txnLockAcquired) {
 				txnLockManager.unlock();
 				txnLockAcquired = false;

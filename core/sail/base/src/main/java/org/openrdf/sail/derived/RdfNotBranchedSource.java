@@ -20,64 +20,50 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
+ *
  * @author James Leigh
  */
-public class UnionRdfSource implements RdfSource {
+public class RdfNotBranchedSource implements RdfBranch {
+	private final RdfSource source;
 
-	private final RdfSource primary;
-
-	private final RdfSource additional;
-
-	/**
-	 * @param sources
-	 */
-	public UnionRdfSource(RdfSource primary, RdfSource additional) {
-		super();
-		this.primary = primary;
-		this.additional = additional;
+	public RdfNotBranchedSource(RdfSource source) {
+		this.source = source;
 	}
 
-	public String toString() {
-		return primary.toString();
+	public RdfBranch fork() {
+		return source.fork();
 	}
 
-	@Override
-	public void close() throws SailException {
-		primary.close();
-		additional.close();
-	}
-
-	@Override
-	public RdfSource fork() {
-		return new UnionRdfSource(primary.fork(), additional.fork());
-	}
-
-	public void prepare()
-		throws SailException
-	{
-		primary.prepare();
-		additional.prepare();
-	}
-
-	public void flush()
-		throws SailException
-	{
-		primary.flush();
-		additional.flush();
-	}
-
-	@Override
 	public RdfSink sink(IsolationLevel level)
 		throws SailException
 	{
-		return primary.sink(level);
+		return source.sink(level);
+	}
+
+	public RdfDataset dataset(IsolationLevel level)
+		throws SailException
+	{
+		return source.dataset(level);
 	}
 
 	@Override
-	public RdfDataset snapshot(IsolationLevel level)
+	public void close()
 		throws SailException
 	{
-		return new UnionRdfDataset(primary.snapshot(level), additional.snapshot(level));
+		// no-op
 	}
 
+	@Override
+	public void prepare()
+		throws SailException
+	{
+		// no-op
+	}
+
+	@Override
+	public void flush()
+		throws SailException
+	{
+		// no-op
+	}
 }

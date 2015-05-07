@@ -39,11 +39,14 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.derived.ClosingRdfIteration;
-import org.openrdf.sail.derived.DerivedRDfSource;
+import org.openrdf.sail.derived.DerivedRdfBranch;
+import org.openrdf.sail.derived.RdfBranch;
 import org.openrdf.sail.derived.RdfDataset;
 import org.openrdf.sail.derived.RdfIteration;
 import org.openrdf.sail.derived.RdfSink;
@@ -128,12 +131,12 @@ class MemoryRdfStore implements RdfStore {
 	}
 
 	@Override
-	public RdfSource getExplicitRdfSource() {
+	public RdfSource getExplicitRdfSource(IsolationLevel level) {
 		return new MemoryRdfSource(true);
 	}
 
 	@Override
-	public RdfSource getInferredRdfSource() {
+	public RdfSource getInferredRdfSource(IsolationLevel level) {
 		return new MemoryRdfSource(false);
 	}
 
@@ -340,23 +343,8 @@ class MemoryRdfStore implements RdfStore {
 		}
 
 		@Override
-		public void close() {
-			// no-op
-		}
-
-		@Override
-		public RdfSource fork() {
-			return new DerivedRDfSource(this);
-		}
-
-		@Override
-		public void prepare() {
-			// assume all transactions will reasonably commit
-		}
-
-		@Override
-		public void flush() {
-			scheduleSnapshotCleanup();
+		public RdfBranch fork() {
+			return new DerivedRdfBranch(this);
 		}
 
 		@Override
@@ -367,7 +355,7 @@ class MemoryRdfStore implements RdfStore {
 		}
 
 		@Override
-		public MemoryRdfDataset snapshot(IsolationLevel level)
+		public MemoryRdfDataset dataset(IsolationLevel level)
 			throws SailException
 		{
 			if (level.isCompatibleWith(IsolationLevels.SNAPSHOT_READ)) {
@@ -389,7 +377,7 @@ class MemoryRdfStore implements RdfStore {
 
 		private int nextSnapshot;
 
-		private boolean conflict;
+		private Set<StatementPattern> observations;
 
 		private boolean txnLock;
 
@@ -413,9 +401,6 @@ class MemoryRdfStore implements RdfStore {
 			} else {
 				sb.append("inferred ");
 			}
-			if (conflict) {
-				sb.append("conflict ");
-			}
 			if (txnLock) {
 				sb.append("snapshot ").append(nextSnapshot);
 			} else {
@@ -428,8 +413,37 @@ class MemoryRdfStore implements RdfStore {
 		public void prepare()
 			throws SailException
 		{
-			if (conflict) {
-				throw new SailConflictException("Observed State has Changed");
+			acquireExclusiveTransactionLock();
+			if (observations != null) {
+				for (StatementPattern p : observations) {
+					Resource subj = (Resource)p.getSubjectVar().getValue();
+					URI pred = (URI)p.getPredicateVar().getValue();
+					Value obj = p.getObjectVar().getValue();
+					Var ctxVar = p.getContextVar();
+					Resource[] contexts;
+					if (ctxVar == null) {
+						contexts = new Resource[0];
+					}
+					else {
+						contexts = new Resource[] { (Resource)ctxVar.getValue() };
+					}
+					CloseableIteration<MemStatement, SailException> iter;
+					iter = createStatementIterator(subj, pred, obj, explicit, -1, contexts);
+					try {
+						while (iter.hasNext()) {
+							MemStatement st = iter.next();
+							int since = st.getSinceSnapshot();
+							int till = st.getTillSnapshot();
+							if (serializable < since && since < nextSnapshot || serializable < till && till < nextSnapshot)
+							{
+								throw new SailConflictException("Observed State has Changed");
+							}
+						}
+					}
+					finally {
+						iter.close();
+					}
+				}
 			}
 		}
 
@@ -437,17 +451,15 @@ class MemoryRdfStore implements RdfStore {
 		public void flush()
 			throws SailException
 		{
-			if (txnLock && !conflict) {
+			if (txnLock) {
 				currentSnapshot = Math.max(currentSnapshot, nextSnapshot);
+				scheduleSnapshotCleanup();
 			}
 		}
 
 		@Override
 		public void close() {
 			if (txnLock) {
-				if (!conflict) {
-					currentSnapshot = Math.max(currentSnapshot, nextSnapshot);
-				}
 				txnLockManager.unlock();
 				txnLock = false;
 			}
@@ -484,22 +496,21 @@ class MemoryRdfStore implements RdfStore {
 		public void observe(Resource subj, URI pred, Value obj, Resource... contexts)
 			throws SailException
 		{
-			acquireExclusiveTransactionLock();
-			CloseableIteration<MemStatement, SailException> iter;
-			iter = createStatementIterator(subj, pred, obj, explicit, -1, contexts);
-			try {
-				while (iter.hasNext()) {
-					MemStatement st = iter.next();
-					int since = st.getSinceSnapshot();
-					int till = st.getTillSnapshot();
-					if (serializable < since && since < nextSnapshot || serializable < till && till < nextSnapshot)
-					{
-						conflict = true;
-					}
-				}
+			if (observations == null) {
+				observations = new HashSet<StatementPattern>();
 			}
-			finally {
-				iter.close();
+			if (contexts == null) {
+				observations.add(new StatementPattern(new Var("s", subj), new Var("p", pred), new Var("o", obj),
+						new Var("g", null)));
+			}
+			else if (contexts.length == 0) {
+				observations.add(new StatementPattern(new Var("s", subj), new Var("p", pred), new Var("o", obj)));
+			}
+			else {
+				for (Resource ctx : contexts) {
+					observations.add(new StatementPattern(new Var("s", subj), new Var("p", pred), new Var("o", obj),
+							new Var("g", ctx)));
+				}
 			}
 		}
 
