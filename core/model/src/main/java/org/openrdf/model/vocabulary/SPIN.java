@@ -31,7 +31,9 @@ public class SPIN {
 	 * constraints and rules to RDFS classes, and to encapsulate reusable SPARQL
 	 * queries into functions and templates.
 	 */
-	private static final String NAMESPACE = "http://spinrdf.org/spin#";
+	public static final String NAMESPACE = "http://spinrdf.org/spin#";
+
+	public static final String PREFIX = "spin";
 
 	/**
 	 * http://spinrdf.org/spin#Function Metaclass for functions that can be used

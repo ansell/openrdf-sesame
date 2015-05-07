@@ -30,7 +30,9 @@ public class SP {
 	 * http://spinrdf.org/sp An RDF Schema to syntactically represent SPARQL
 	 * queries (including SPARQL UPDATE) as RDF triples.
 	 */
-	private static final String NAMESPACE = "http://spinrdf.org/sp#";
+	public static final String NAMESPACE = "http://spinrdf.org/sp#";
+
+	public static final String PREFIX = "sp";
 
 	/**
 	 * http://spinrdf.org/sp#Path The base class of SPARQL property path
