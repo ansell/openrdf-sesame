@@ -64,8 +64,9 @@ public abstract class OptimisticIsolationTest {
 	public static void setRepositoryFactory(RepositoryFactory factory)
 		throws IOException
 	{
-		if (dataDir != null) {
+		if (dataDir != null && dataDir.isDirectory()) {
 			FileUtil.deleteDir(dataDir);
+			dataDir = null;
 		}
 		OptimisticIsolationTest.factory = factory;
 	}
@@ -85,8 +86,9 @@ public abstract class OptimisticIsolationTest {
 	public static Repository getEmptyInitializedRepository(Class<?> caller)
 		throws OpenRDFException, IOException
 	{
-		if (dataDir != null) {
+		if (dataDir != null && dataDir.isDirectory()) {
 			FileUtil.deleteDir(dataDir);
+			dataDir = null;
 		}
 		dataDir = FileUtil.createTempDir(caller.getSimpleName());
 		Repository repository = factory.getRepository(factory.getConfig());
