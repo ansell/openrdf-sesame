@@ -78,7 +78,13 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	 * Outstanding changes that are underway, but not yet realized, by an active
 	 * operation.
 	 */
-	private final Map<UpdateContext, RdfSink> sinks = new HashMap<UpdateContext, RdfSink>();
+	private final Map<UpdateContext, RdfSink> explicitSinks = new HashMap<UpdateContext, RdfSink>();
+
+	/**
+	 * Outstanding changes that are underway, but not yet realized, by an active
+	 * operation.
+	 */
+	private final Map<UpdateContext, RdfSink> inferredSinks = new HashMap<UpdateContext, RdfSink>();
 
 	private final ValueFactory vf;
 
@@ -297,7 +303,12 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 				includeInferredDatasource.flush();
 			}
 		} finally {
-			rollbackInternal();
+			if (includeInferredDatasource != null) {
+				includeInferredDatasource.close();
+				includeInferredDatasource = null;
+				explicitOnlyDatasource = null;
+				inferredOnlyDatasource = null;
+			}
 		}
 	}
 
@@ -305,8 +316,10 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	protected void rollbackInternal()
 		throws SailException
 	{
-		synchronized (sinks) {
-			sinks.clear();
+		synchronized (datasets) {
+			datasets.clear();
+			explicitSinks.clear();
+			inferredSinks.clear();
 		}
 		if (includeInferredDatasource != null) {
 			includeInferredDatasource.close();
@@ -327,12 +340,11 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 			{
 				flush();
 			}
-			synchronized (sinks) {
-				assert !sinks.containsKey(op);
-				RdfSource source = op.isIncludeInferred() ? new UnionRdfBranch(explicitOnlyDatasource,
-						inferredOnlyDatasource) : explicitOnlyDatasource;
+			synchronized (datasets) {
+				assert !datasets.containsKey(op);
+				RdfSource source = explicitSource(op.isIncludeInferred());
 				datasets.put(op, source.dataset(level));
-				sinks.put(op, source.sink(level));
+				explicitSinks.put(op, source.sink(level));
 			}
 		}
 	}
@@ -343,14 +355,14 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	{
 		verifyIsOpen();
 		verifyIsActive();
-		synchronized (sinks) {
-			if (op == null && !sinks.containsKey(op)) {
-				RdfBranch branch = branch(false);
-				datasets.put(op, branch.dataset(getIsolationLevel()));
-				sinks.put(op, branch.sink(getIsolationLevel()));
+		synchronized (datasets) {
+			if (op == null && !datasets.containsKey(op)) {
+				RdfSource source = explicitSource(true);
+				datasets.put(op, source.dataset(getIsolationLevel()));
+				explicitSinks.put(op, source.sink(getIsolationLevel()));
 			}
-			assert sinks.containsKey(op);
-			add(subj, pred, obj, datasets.get(op), sinks.get(op), contexts);
+			assert explicitSinks.containsKey(op);
+			add(subj, pred, obj, datasets.get(op), explicitSinks.get(op), contexts);
 		}
 		addStatementInternal(subj, pred, obj, contexts);
 	}
@@ -361,14 +373,14 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	{
 		verifyIsOpen();
 		verifyIsActive();
-		synchronized (sinks) {
-			if (op == null && !sinks.containsKey(op)) {
-				RdfBranch branch = branch(false);
-				datasets.put(op, branch.dataset(getIsolationLevel()));
-				sinks.put(op, branch.sink(getIsolationLevel()));
+		synchronized (datasets) {
+			if (op == null && !datasets.containsKey(op)) {
+				RdfSource source = explicitSource(true);
+				datasets.put(op, source.dataset(getIsolationLevel()));
+				explicitSinks.put(op, source.sink(getIsolationLevel()));
 			}
-			assert sinks.containsKey(op);
-			remove(subj, pred, obj, datasets.get(op), sinks.get(op), contexts);
+			assert explicitSinks.containsKey(op);
+			remove(subj, pred, obj, datasets.get(op), explicitSinks.get(op), contexts);
 		}
 		removeStatementsInternal(subj, pred, obj, contexts);
 	}
@@ -377,13 +389,21 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	protected void endUpdateInternal(UpdateContext op)
 		throws SailException
 	{
-		synchronized (sinks) {
-			RdfSink sink = sinks.remove(op);
-			if (sink != null) {
+		synchronized (datasets) {
+			RdfSink inferred = inferredSinks.remove(op);
+			if (inferred != null) {
 				try {
-					sink.flush();
+					inferred.flush();
 				} finally {
-					sink.close();
+					inferred.close();
+				}
+			}
+			RdfSink explicit = explicitSinks.remove(op);
+			if (explicit != null) {
+				try {
+					explicit.flush();
+				} finally {
+					explicit.close();
 					datasets.remove(op).close();
 				}
 			}
@@ -393,93 +413,65 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	public boolean addInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		connectionLock.readLock().lock();
-		try {
-			verifyIsOpen();
-
-			updateLock.lock();
-			try {
-				verifyIsActive();
+		verifyIsOpen();
+		verifyIsActive();
+		synchronized (datasets) {
+			if (!datasets.containsKey(null)) {
+				RdfSource source = explicitSource(true);
+				datasets.put(null, source.dataset(getIsolationLevel()));
+				explicitSinks.put(null, source.sink(getIsolationLevel()));
+			}
+			if (!inferredSinks.containsKey(null)) {
 				RdfBranch branch = branch(true);
-				RdfDataset dataset = hasConnectionListeners() ? branch.dataset(getTransactionIsolation()) : null;
-				RdfSink sink = branch.sink(getTransactionIsolation());
-				try {
-					add(subj, pred, obj, dataset, sink, contexts);
-					sink.flush();
-				}
-				finally {
-					sink.close();
-					if (dataset != null) {
-						dataset.close();
-					}
-					branch.close();
-				}
-				return true;
+				inferredSinks.put(null, branch.sink(getIsolationLevel()));
 			}
-			finally {
-				updateLock.unlock();
-			}
-		}
-		finally {
-			connectionLock.readLock().unlock();
+			addStatementInternal(subj, pred, obj, contexts);
+			return add(subj, pred, obj, datasets.get(null), inferredSinks.get(null), contexts);
 		}
 	}
 
-	private void add(Resource subj, URI pred, Value obj, RdfDataset dataset, RdfSink sink,
+	private boolean add(Resource subj, URI pred, Value obj, RdfDataset dataset, RdfSink sink,
 			Resource... contexts)
 		throws SailException
 	{
+		boolean modified = false;
 		if (contexts.length == 0) {
 			if (dataset == null || !hasStatement(dataset, subj, pred, obj, null)) {
-				sink.approve(subj, pred, obj, null);
 				notifyStatementAdded(vf.createStatement(subj, pred, obj));
+				modified = true;
 			}
+			sink.approve(subj, pred, obj, null);
 		}
 		else {
 			for (Resource ctx : contexts) {
 				if (dataset == null || !hasStatement(dataset, subj, pred, obj, ctx)) {
-					sink.approve(subj, pred, obj, ctx);
 					notifyStatementAdded(vf.createStatement(subj, pred, obj, ctx));
+					modified = true;
 				}
+				sink.approve(subj, pred, obj, ctx);
 			}
 		}
+		return modified;
 	}
 
 	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		connectionLock.readLock().lock();
-		try {
-			verifyIsOpen();
-
-			updateLock.lock();
-			try {
-				verifyIsActive();
-				boolean statementsRemoved = false;
+		verifyIsOpen();
+		verifyIsActive();
+		synchronized (datasets) {
+			if (!datasets.containsKey(null)) {
+				RdfSource source = explicitSource(true);
+				datasets.put(null, source.dataset(getIsolationLevel()));
+				explicitSinks.put(null, source.sink(getIsolationLevel()));
+			}
+			if (!inferredSinks.containsKey(null)) {
 				RdfBranch branch = branch(true);
-				RdfDataset dataset = branch.dataset(getIsolationLevel());
-				try {
-					RdfSink sink = branch.sink(getTransactionIsolation());
-					try {
-						statementsRemoved |= remove(subj, pred, obj, dataset, sink, contexts);
-						sink.flush();
-					}
-					finally {
-						sink.close();
-					}
-				}
-				finally {
-					dataset.close();
-					branch.close();
-				}
-				return statementsRemoved;
+				inferredSinks.put(null, branch.sink(getIsolationLevel()));
 			}
-			finally {
-				updateLock.unlock();
-			}
-		}
-		finally {
-			connectionLock.readLock().unlock();
+			assert inferredSinks.containsKey(null);
+			removeStatementsInternal(subj, pred, obj, contexts);
+			return remove(subj, pred, obj, datasets.get(null), inferredSinks.get(null), contexts);
 		}
 	}
 
@@ -641,6 +633,24 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		}
 		else {
 			return defaultIsolationLevel;
+		}
+	}
+
+	private RdfSource explicitSource(boolean includeInferred)
+		throws SailException
+	{
+		IsolationLevel level = getIsolationLevel();
+		if (includeInferred && inferredOnlyDatasource == null) {
+			// IsolationLevels.NONE
+			RdfBranch explicit = new RdfNotBranchedSource(store.getExplicitRdfSource(level));
+			RdfBranch inferred = new RdfNotBranchedSource(store.getInferredRdfSource(level));
+			return new UnionRdfBranch(explicit, inferred);
+		}
+		else if (includeInferred) {
+			return new UnionRdfBranch(explicitOnlyDatasource, inferredOnlyDatasource);
+		}
+		else {
+			return branch(false);
 		}
 	}
 

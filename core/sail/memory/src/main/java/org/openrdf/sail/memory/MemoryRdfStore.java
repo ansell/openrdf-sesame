@@ -121,8 +121,19 @@ class MemoryRdfStore implements RdfStore {
 	@Override
 	public void close() {
 		closed = true;
-		valueFactory.clear();
-		statements.clear();
+		try {
+			Lock stLock = statementListLockManager.getWriteLock();
+			try {
+				valueFactory.clear();
+				statements.clear();
+			}
+			finally {
+				stLock.release();
+			}
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	@Override
@@ -161,7 +172,7 @@ class MemoryRdfStore implements RdfStore {
 	 * StatementIterator will assume the specified read mode.
 	 */
 	CloseableIteration<MemStatement, SailException> createStatementIterator(Resource subj, URI pred,
-			Value obj, boolean explicit, int snapshot, Resource... contexts)
+			Value obj, Boolean explicit, int snapshot, Resource... contexts)
 	{
 		// Perform look-ups for value-equivalents of the specified values
 		MemResource memSubj = valueFactory.getMemResource(subj);
@@ -428,7 +439,7 @@ class MemoryRdfStore implements RdfStore {
 						contexts = new Resource[] { (Resource)ctxVar.getValue() };
 					}
 					CloseableIteration<MemStatement, SailException> iter;
-					iter = createStatementIterator(subj, pred, obj, explicit, -1, contexts);
+					iter = createStatementIterator(subj, pred, obj, null, -1, contexts);
 					try {
 						while (iter.hasNext()) {
 							MemStatement st = iter.next();
@@ -583,7 +594,7 @@ class MemoryRdfStore implements RdfStore {
 				// All values are used in at least one statement. Possibly, the
 				// statement is already present. Check this.
 				CloseableIteration<MemStatement, SailException> stIter = createStatementIterator(memSubj,
-						memPred, memObj, explicit, Integer.MAX_VALUE - 1, memContext);
+						memPred, memObj, null, Integer.MAX_VALUE - 1, memContext);
 
 				try {
 					if (stIter.hasNext()) {

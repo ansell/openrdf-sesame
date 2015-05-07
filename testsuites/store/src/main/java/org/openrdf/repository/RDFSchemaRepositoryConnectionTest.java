@@ -22,6 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
@@ -148,6 +149,9 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testInferencerTransactionIsolation()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		testCon.begin();
 		testCon.add(bob, name, nameBob);
 
