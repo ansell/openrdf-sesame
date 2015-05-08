@@ -33,7 +33,7 @@ public class SPINRendererTest {
 
 	@Parameters(name="{0}")
 	public static Collection<Object[]> testData() {
-		int n=5;
+		int n=7;
 		List<Object[]> params = new ArrayList<Object[]>(n);
 		for(int i=0; i<n; i++) {
 			String suffix = String.valueOf(i+1);

@@ -1,7 +1,6 @@
 package org.openrdf.sesame.spin;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,21 +13,24 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
-import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
+import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -38,6 +40,8 @@ import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+
+import com.google.common.base.Function;
 
 public class SPINRenderer {
 	public enum Output {
@@ -51,8 +55,9 @@ public class SPINRenderer {
 		}
 	}
 
-	private final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+	private final ValueFactory valueFactory;
 	private final Output output;
+	private final Function<String,URI> wellKnownVars;
 
 	public SPINRenderer()
 	{
@@ -61,7 +66,14 @@ public class SPINRenderer {
 
 	public SPINRenderer(Output output)
 	{
+		this(output, SPINWellKnownVars.INSTANCE, ValueFactoryImpl.getInstance());
+	}
+
+	public SPINRenderer(Output output, Function<String,URI> wellKnownVarMapper, ValueFactory vf)
+	{
 		this.output = output;
+		this.wellKnownVars = wellKnownVarMapper;
+		this.valueFactory = vf;
 	}
 
 	public void render(ParsedQuery query, RDFHandler handler) throws RDFHandlerException
@@ -98,7 +110,6 @@ public class SPINRenderer {
 			SPINQueryModelVisitor visitor = new SPINQueryModelVisitor(handler, whereBNode, null);
 			expr.visit(visitor);
 			visitor.endList(null);
-			visitor.handleVars();
 		}
 		handler.endRDF();
 	}
@@ -114,7 +125,6 @@ public class SPINRenderer {
 			TupleExpr expr = query.getTupleExpr();
 			SPINQueryModelVisitor visitor = new SPINQueryModelVisitor(handler, null, querySubj);
 			expr.visit(visitor);
-			visitor.handleVars();
 		}
 		handler.endRDF();
 	}
@@ -130,7 +140,6 @@ public class SPINRenderer {
 			TupleExpr expr = query.getTupleExpr();
 			SPINQueryModelVisitor visitor = new DescribeSPINQueryModelVisitor(handler, querySubj);
 			expr.visit(visitor);
-			visitor.handleVars();
 		}
 		handler.endRDF();
 	}
@@ -146,7 +155,6 @@ public class SPINRenderer {
 			TupleExpr expr = query.getTupleExpr();
 			SPINQueryModelVisitor visitor = new ConstructSPINQueryModelVisitor(handler, querySubj);
 			expr.visit(visitor);
-			visitor.handleVars();
 		}
 		handler.endRDF();
 	}
@@ -176,17 +184,8 @@ public class SPINRenderer {
 
 	class ConstructSPINQueryModelVisitor extends SPINQueryModelVisitor
 	{
-		Map<String,Value> boundValues = Collections.emptyMap();
-		boolean isSubExtension;
-
 		ConstructSPINQueryModelVisitor(RDFHandler handler, Resource subject) {
 			super(handler, null, subject);
-		}
-
-		private void meetExtensions(TupleExpr expr) {
-			ExtensionQueryModelVisitor extVisitor = new ExtensionQueryModelVisitor();
-			expr.visit(extVisitor);
-			boundValues = extVisitor.extensionValues;
 		}
 
 		private Context startTemplateList() throws RDFHandlerException {
@@ -201,18 +200,9 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(MultiProjection node) throws RDFHandlerException {
-			meetExtensions(node.getArg());
 			Context ctx = startTemplateList();
 			super.meet(node);
 			endTemplateList(ctx);
-		}
-
-		@Override
-		public void meet(Projection node) throws RDFHandlerException {
-			if(!isSubQuery) {
-				meetExtensions(node.getArg());
-			}
-			super.meet(node);
 		}
 
 		@Override
@@ -239,49 +229,23 @@ public class SPINRenderer {
 			}
 			else {
 				String varName = node.getSourceName();
-				Value value = boundValues.get(varName);
-				if(value == null) {
-					value = createVar(varName);
+				ValueExpr valueExpr = extensionExprs.get(varName);
+				Value value = (valueExpr instanceof ValueConstant) ? ((ValueConstant)valueExpr).getValue() : createVar(varName);
+				String targetName = node.getTargetName();
+				URI pred;
+				if("subject".equals(targetName)) {
+					pred = SP.SUBJECT_PROPERTY;
 				}
-				handler.handleStatement(valueFactory.createStatement(subject, valueFactory.createURI(SP.NAMESPACE, node.getTargetName()), value));
-			}
-		}
-
-		@Override
-		public void meet(Extension node) throws RDFHandlerException {
-			if(isSubExtension) {
-				super.meet(node);
-			}
-			else {
-				node.getArg().visit(this);
-			}
-			isSubExtension = true;
-		}
-
-		class ExtensionQueryModelVisitor extends QueryModelVisitorBase<RuntimeException>
-		{
-			final Map<String,Value> extensionValues = new HashMap<String,Value>();
-			Value extValue;
-
-			@Override
-			public void meet(Extension node) {
-				for(ExtensionElem elem : node.getElements()) {
-					elem.visit(this);
+				else if("predicate".equals(targetName)) {
+					pred = SP.PREDICATE_PROPERTY;
 				}
-			}
-
-			@Override
-			public void meet(ExtensionElem node) {
-				extValue = null;
-				super.meet(node);
-				if(extValue != null) {
-					extensionValues.put(node.getName(), extValue);
+				else if("object".equals(targetName)) {
+					pred = SP.OBJECT_PROPERTY;
 				}
-			}
-
-			@Override
-			public void meet(ValueConstant node) {
-				extValue = node.getValue();
+				else {
+					throw new AssertionError("Unexpected ProjectionElem: "+node);
+				}
+				handler.handleStatement(valueFactory.createStatement(subject, pred, value));
 			}
 		}
 	}
@@ -290,8 +254,7 @@ public class SPINRenderer {
 	class SPINQueryModelVisitor extends QueryModelVisitorBase<RDFHandlerException>
 	{
 		final RDFHandler handler;
-		final Map<String,Resource> varResources = new HashMap<String,Resource>();
-		final ExtensionElemQueryModelVisitor extVisitor = new ExtensionElemQueryModelVisitor();
+		Map<String,ValueExpr> extensionExprs;
 		Resource list;
 		Resource subject;
 		URI predicate;
@@ -302,6 +265,12 @@ public class SPINRenderer {
 			this.handler = handler;
 			this.list = list;
 			this.subject = subject;
+		}
+
+		private void meetExtension(TupleExpr expr) {
+			ExtensionQueryModelVisitor extVisitor = new ExtensionQueryModelVisitor();
+			expr.visit(extVisitor);
+			extensionExprs = extVisitor.extensionExprs;
 		}
 
 		Context save() {
@@ -356,26 +325,18 @@ public class SPINRenderer {
 			subject = null;
 		}
 
-		Resource createVar(String name) {
-			Resource res;
-			if("this".equals(name)) {
-				res = SPIN.THIS_CONTEXT_INSTANCE;
-			}
-			else {
+		Resource createVar(String name) throws RDFHandlerException {
+			Resource res = (wellKnownVars != null) ? wellKnownVars.apply(name) : null;
+			if(res == null) {
 				res = valueFactory.createBNode(name);
-				varResources.put(name, res);
+				handler.handleStatement(valueFactory.createStatement(res, SP.VAR_NAME_PROPERTY, valueFactory.createLiteral(name)));
 			}
 			return res;
 		}
 
-		void handleVars() throws RDFHandlerException {
-			for(Map.Entry<String,Resource> entry : varResources.entrySet()) {
-				handler.handleStatement(valueFactory.createStatement(entry.getValue(), SP.VAR_NAME_PROPERTY, valueFactory.createLiteral(entry.getKey())));
-			}
-		}
-
 		@Override
 		public void meet(MultiProjection node) throws RDFHandlerException {
+			meetExtension(node.getArg());
 			isMultiProjection = true;
 			super.meet(node);
 			isMultiProjection = false;
@@ -384,6 +345,7 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(Projection node) throws RDFHandlerException {
+			meetExtension(node.getArg());
 			if(isSubQuery) {
 				listEntry();
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.SUB_QUERY_CLASS));
@@ -421,10 +383,8 @@ public class SPINRenderer {
 			listEntry(var);
 		}
 
+		@Override
 		public void meet(Extension node) throws RDFHandlerException {
-			for(ExtensionElem elem : node.getElements()) {
-				elem.visit(extVisitor);
-			}
 			node.getArg().visit(this);
 		}
 
@@ -493,16 +453,33 @@ public class SPINRenderer {
 			throw new AssertionError("Unrecognised CompareOp: "+op);
 		}
 
+		@Override
+		public void meet(Group node) throws RDFHandlerException {
+			node.getArg().visit(this);
+		}
+
+		@Override
+		public void meet(Count node) throws RDFHandlerException {
+			super.meet(node);
+		}
+
+		@Override
 		public void meet(BindingSetAssignment node) throws RDFHandlerException {
 			listEntry();
 			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.VALUES_CLASS));
 			Resource bindingList = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(subject, SP.BINDINGS_PROPERTY, bindingList));
 			Context bindingCtx = newList(bindingList);
+			List<String> bindingVars = new ArrayList<String>();
+			for(ValueExpr valueExpr : extensionExprs.values()) {
+				if(valueExpr instanceof Var) {
+					bindingVars.add(((Var)valueExpr).getName());
+				}
+			}
 			for(BindingSet bs : node.getBindingSets()) {
 				listEntry();
 				Context setCtx = newList(subject);
-				for(String varName : extVisitor.bindingVars) {
+				for(String varName : bindingVars) {
 					Value v = bs.getValue(varName);
 					if(v == null) {
 						v = SP.UNDEF;
@@ -516,7 +493,7 @@ public class SPINRenderer {
 			Resource varNameList = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(subject, SP.VAR_NAMES_PROPERTY, varNameList));
 			Context varnameCtx = newList(varNameList);
-			for(String varName : extVisitor.bindingVars) {
+			for(String varName : bindingVars) {
 				listEntry(valueFactory.createLiteral(varName));
 			}
 			endList(varnameCtx);
@@ -524,13 +501,22 @@ public class SPINRenderer {
 	}
 
 
-	static final class ExtensionElemQueryModelVisitor extends QueryModelVisitorBase<RuntimeException>
+	static final class ExtensionQueryModelVisitor extends QueryModelVisitorBase<RuntimeException>
 	{
-		final List<String> bindingVars = new ArrayList<String>();
+		Map<String,ValueExpr> extensionExprs;
 
 		@Override
-		public void meet(Var node) {
-			bindingVars.add(node.getName());
+		public void meet(Extension node) {
+			List<ExtensionElem> elements = node.getElements();
+			extensionExprs = new HashMap<String,ValueExpr>(elements.size());
+			for(ExtensionElem elem : elements) {
+				extensionExprs.put(elem.getName(), elem.getExpr());
+			}
+		}
+
+		@Override
+		protected void meetNode(QueryModelNode node) {
+			// stop
 		}
 	}
 
@@ -543,6 +529,16 @@ public class SPINRenderer {
 		Context(Resource list, Resource subject) {
 			this.list = list;
 			this.subject = subject;
+		}
+	}
+
+	static final class SPINWellKnownVars implements Function<String,URI>
+	{
+		static final SPINWellKnownVars INSTANCE = new SPINWellKnownVars();
+
+		@Override
+		public URI apply(String name) {
+			return "this".equals(name) ? SPIN.THIS_CONTEXT_INSTANCE : null;
 		}
 	}
 }
