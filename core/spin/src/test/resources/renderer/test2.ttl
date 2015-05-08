@@ -1,7 +1,8 @@
 @prefix sp: <http://spinrdf.org/sp#>.
 
 [ a       sp:Select ;
-	sp:text """SELECT ?y
+	sp:text """
+SELECT ?y
 WHERE {
     ?class a rdfs:Class .
     {

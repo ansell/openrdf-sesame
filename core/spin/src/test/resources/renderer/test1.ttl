@@ -3,7 +3,8 @@
 @prefix my: <my:>.
 
 [ a       sp:Ask ;
-	sp:text """PREFIX my: <my:>
+	sp:text """
+PREFIX my: <my:>
 
 # must be at least 18 years old
 ASK WHERE {
