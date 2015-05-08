@@ -28,13 +28,7 @@ import org.openrdf.sail.config.DelegatingSailImplConfigBase;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfig;
 
-public class LuceneSailConfig extends DelegatingSailImplConfigBase {
-
-	/**
-	 * The sail factory type.
-	 */
-	public static final String SAIL_TYPE = "openrdf:LuceneSail";
-
+public abstract class AbstractLuceneSailConfig extends DelegatingSailImplConfigBase {
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -45,21 +39,21 @@ public class LuceneSailConfig extends DelegatingSailImplConfigBase {
 	 * Constructors *
 	 *--------------*/
 
-	public LuceneSailConfig() {
-		super(SAIL_TYPE);
+	protected AbstractLuceneSailConfig(String type) {
+		super(type);
 	}
 
-	public LuceneSailConfig(SailImplConfig delegate) {
-		super(SAIL_TYPE, delegate);
+	protected AbstractLuceneSailConfig(String type, SailImplConfig delegate) {
+		super(type, delegate);
 	}
 
-	public LuceneSailConfig(String luceneDir) {
-		super(SAIL_TYPE);
+	protected AbstractLuceneSailConfig(String type, String luceneDir) {
+		super(type);
 		setIndexDir(luceneDir);
 	}
 
-	public LuceneSailConfig(String luceneDir, SailImplConfig delegate) {
-		super(SAIL_TYPE, delegate);
+	protected AbstractLuceneSailConfig(String type, String luceneDir, SailImplConfig delegate) {
+		super(type, delegate);
 		setIndexDir(luceneDir);
 	}
 
