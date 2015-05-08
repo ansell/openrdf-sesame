@@ -22,7 +22,7 @@ WHERE {
             sp:bindings  ( 
                 ( ex:Germany "de" )
                 ( ex:Norway "no" ) 
-                ( ex:Norway sp:undef ) 
+                ( ex:Endor sp:undef ) 
             ) ;
             sp:varNames  ( "country"^^xsd:string "code"^^xsd:string )
         ] )

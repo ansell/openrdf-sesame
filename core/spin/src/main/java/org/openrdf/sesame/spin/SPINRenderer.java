@@ -1,7 +1,9 @@
 package org.openrdf.sesame.spin;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.openrdf.model.Resource;
@@ -12,6 +14,9 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
+import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Extension;
@@ -259,10 +264,6 @@ public class SPINRenderer {
 			Value extValue;
 
 			@Override
-			public void meet(Projection node) {
-			}
-
-			@Override
 			public void meet(Extension node) {
 				for(ExtensionElem elem : node.getElements()) {
 					elem.visit(this);
@@ -290,6 +291,7 @@ public class SPINRenderer {
 	{
 		final RDFHandler handler;
 		final Map<String,Resource> varResources = new HashMap<String,Resource>();
+		final ExtensionElemQueryModelVisitor extVisitor = new ExtensionElemQueryModelVisitor();
 		Resource list;
 		Resource subject;
 		URI predicate;
@@ -322,7 +324,7 @@ public class SPINRenderer {
 			listEntry(null);
 		}
 
-		void listEntry(Resource entry) throws RDFHandlerException {
+		void listEntry(Value entry) throws RDFHandlerException {
 			if(list == null) {
 				list = valueFactory.createBNode();
 			}
@@ -334,7 +336,11 @@ public class SPINRenderer {
 				entry = valueFactory.createBNode();
 			}
 			handler.handleStatement(valueFactory.createStatement(list, RDF.FIRST, entry));
-			subject = entry;
+			if(entry instanceof Resource) {
+				subject = (Resource) entry;
+			} else {
+				subject = list;
+			}
 		}
 
 		void endList(Context ctx) throws RDFHandlerException {
@@ -415,6 +421,13 @@ public class SPINRenderer {
 			listEntry(var);
 		}
 
+		public void meet(Extension node) throws RDFHandlerException {
+			for(ExtensionElem elem : node.getElements()) {
+				elem.visit(extVisitor);
+			}
+			node.getArg().visit(this);
+		}
+
 		@Override
 		public void meet(StatementPattern node) throws RDFHandlerException {
 			listEntry();
@@ -478,6 +491,46 @@ public class SPINRenderer {
 				case GT: return SP.GT;
 			}
 			throw new AssertionError("Unrecognised CompareOp: "+op);
+		}
+
+		public void meet(BindingSetAssignment node) throws RDFHandlerException {
+			listEntry();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.VALUES_CLASS));
+			Resource bindingList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.BINDINGS_PROPERTY, bindingList));
+			Context bindingCtx = newList(bindingList);
+			for(BindingSet bs : node.getBindingSets()) {
+				listEntry();
+				Context setCtx = newList(subject);
+				for(String varName : extVisitor.bindingVars) {
+					Value v = bs.getValue(varName);
+					if(v == null) {
+						v = SP.UNDEF;
+					}
+					listEntry(v);
+				}
+				endList(setCtx);
+			}
+			endList(bindingCtx);
+
+			Resource varNameList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.VAR_NAMES_PROPERTY, varNameList));
+			Context varnameCtx = newList(varNameList);
+			for(String varName : extVisitor.bindingVars) {
+				listEntry(valueFactory.createLiteral(varName));
+			}
+			endList(varnameCtx);
+		}
+	}
+
+
+	static final class ExtensionElemQueryModelVisitor extends QueryModelVisitorBase<RuntimeException>
+	{
+		final List<String> bindingVars = new ArrayList<String>();
+
+		@Override
+		public void meet(Var node) {
+			bindingVars.add(node.getName());
 		}
 	}
 

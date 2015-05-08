@@ -653,6 +653,11 @@ public class SP {
 	 */
 	public static final URI INSERT_PATTERN_PROPERTY;
 
+	public static final URI VALUES_CLASS;
+	public static final URI BINDINGS_PROPERTY;
+	public static final URI VAR_NAMES_PROPERTY;
+	public static final URI UNDEF;
+
 	// "The SPIN RDF Syntax provides standard URIs for the built-in functions and operators of the SPARQL language.
 	// For example, sp:gt represents the > operator."
 	public static final URI EQ;
@@ -767,6 +772,11 @@ public class SP {
 		FROM_PROPERTY = factory.createURI(NAMESPACE, "from");
 		MOD_MIN_PROPERTY = factory.createURI(NAMESPACE, "modMin");
 		INSERT_PATTERN_PROPERTY = factory.createURI(NAMESPACE, "insertPattern");
+
+		VALUES_CLASS = factory.createURI(NAMESPACE, "Values");
+		BINDINGS_PROPERTY = factory.createURI(NAMESPACE, "bindings");
+		VAR_NAMES_PROPERTY = factory.createURI(NAMESPACE, "varNames");
+		UNDEF = factory.createURI(NAMESPACE, "undef");
 
 		EQ = factory.createURI(NAMESPACE, "eq");
 		NE = factory.createURI(NAMESPACE, "ne");
