@@ -265,6 +265,8 @@ class DerivedRdfDataset implements RdfDataset {
 			return union(iter, approved.filter(subj, pred, obj, contexts));
 		} else if (approved != null) {
 			return ClosingRdfIteration.close(approved.filter(subj, pred, obj, contexts).iterator());
+		} else if (iter != null) {
+			return iter;
 		} else {
 			return EmptyRdfIteration.emptyIteration();
 		}
