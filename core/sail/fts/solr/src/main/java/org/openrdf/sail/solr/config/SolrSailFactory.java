@@ -21,7 +21,7 @@ import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.lucene.LuceneSail;
-import org.openrdf.sail.lucene.config.LuceneSailConfig;
+import org.openrdf.sail.lucene.config.AbstractLuceneSailConfig;
 import org.openrdf.sail.solr.SolrIndex;
 
 /**
@@ -35,10 +35,10 @@ public class SolrSailFactory implements SailFactory {
 	 * 
 	 * @see SailFactory#getSailType()
 	 */
-	public static final String SAIL_TYPE = LuceneSailConfig.SAIL_TYPE;
+	public static final String SAIL_TYPE = "openrdf:LuceneSail/Solr";
 
 	/**
-	 * Returns the Sail's type: <tt>openrdf:LuceneSail</tt>.
+	 * Returns the Sail's type: <tt>openrdf:LuceneSail/Solr</tt>.
 	 */
 	@Override
 	public String getSailType() {
@@ -47,7 +47,7 @@ public class SolrSailFactory implements SailFactory {
 
 	@Override
 	public SailImplConfig getConfig() {
-		return new LuceneSailConfig();
+		return new SolrSailConfig();
 	}
 
 	@Override
@@ -61,8 +61,8 @@ public class SolrSailFactory implements SailFactory {
 		LuceneSail luceneSail = new LuceneSail();
 		luceneSail.setParameter(LuceneSail.INDEX_CLASS_KEY, SolrIndex.class.getName());
 
-		if (config instanceof LuceneSailConfig) {
-			LuceneSailConfig luceneConfig = (LuceneSailConfig)config;
+		if (config instanceof AbstractLuceneSailConfig) {
+			AbstractLuceneSailConfig luceneConfig = (AbstractLuceneSailConfig)config;
 			luceneSail.setParameter(LuceneSail.LUCENE_DIR_KEY, luceneConfig.getIndexDir());
 		}
 
