@@ -242,16 +242,11 @@ class DerivedRdfDataset implements RdfDataset {
 	{
 		Set<Resource> deprecatedContexts = changes.getDeprecatedContexts();
 		RdfIteration<? extends Statement> iter;
-		if (changes.isStatementCleared()) {
-			iter = EmptyRdfIteration.emptyIteration();
-		}
-		else if (contexts == null && deprecatedContexts != null && deprecatedContexts.contains(null)) {
-			iter = EmptyRdfIteration.emptyIteration();
-		}
-		else if (contexts.length > 0 && deprecatedContexts != null
+		if (changes.isStatementCleared() || contexts == null && deprecatedContexts != null
+				&& deprecatedContexts.contains(null) || contexts.length > 0 && deprecatedContexts != null
 				&& deprecatedContexts.containsAll(Arrays.asList(contexts)))
 		{
-			iter = EmptyRdfIteration.emptyIteration();
+			iter = null;
 		}
 		else if (contexts.length > 0 && deprecatedContexts != null) {
 			List<Resource> remaining = new ArrayList<Resource>(Arrays.asList(contexts));
@@ -262,14 +257,17 @@ class DerivedRdfDataset implements RdfDataset {
 			iter = derivedFrom.get(subj, pred, obj, contexts);
 		}
 		Model deprecated = changes.getDeprecated();
-		if (deprecated != null) {
+		if (deprecated != null && iter != null) {
 			iter = difference(iter, deprecated.filter(subj, pred, obj, contexts));
 		}
 		Model approved = changes.getApproved();
-		if (approved != null) {
-			iter = union(iter, approved.filter(subj, pred, obj, contexts));
+		if (approved != null && iter != null) {
+			return union(iter, approved.filter(subj, pred, obj, contexts));
+		} else if (approved != null) {
+			return ClosingRdfIteration.close(approved.filter(subj, pred, obj, contexts).iterator());
+		} else {
+			return EmptyRdfIteration.emptyIteration();
 		}
-		return iter;
 	}
 
 	private RdfIteration<? extends Statement> difference(RdfIteration<? extends Statement> result,
