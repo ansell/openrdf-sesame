@@ -194,14 +194,6 @@ public class SP {
 	public static final URI BIND_CLASS;
 
 	/**
-	 * http://spinrdf.org/sp#Let Deprecated: use sp:Bind instead. A variable
-	 * assignment (LET (?<varName> := <expression>)). Not part of the SPARQL 1.0
-	 * standard, but (for example) ARQ.
-	 */
-	@Deprecated
-	public static URI Let;
-
-	/**
 	 * http://spinrdf.org/sp#ElementList A list of Elements. This class is never
 	 * instantiated directly as SPIN will use plain rdf:Lists to store element
 	 * lists.
@@ -221,15 +213,6 @@ public class SP {
 	 * sp:deletePattern. The WHERE clause is represented using sp:where.
 	 */
 	public static final URI DELETE_CLASS;
-
-	/**
-	 * http://spinrdf.org/sp#Delete Deprecated - use sp:Modify instead.
-	 * Represents a DELETE FROM (part of SPARQL UPDATE language). The graph IRIs
-	 * are stored in sp:graphIRI. The template patterns to delete are stored in
-	 * sp:deletePattern. The WHERE clause is represented using sp:where.
-	 */
-	@Deprecated
-	public static URI Delete;
 
 	/**
 	 * http://spinrdf.org/sp#Min Represents MIN aggregations.
@@ -660,6 +643,10 @@ public class SP {
 
 	// "The SPIN RDF Syntax provides standard URIs for the built-in functions and operators of the SPARQL language.
 	// For example, sp:gt represents the > operator."
+	public static final URI ADD;
+	public static final URI SUB;
+	public static final URI MUL;
+	public static final URI DIVIDE;
 	public static final URI EQ;
 	public static final URI NE;
 	public static final URI LT;
@@ -778,6 +765,10 @@ public class SP {
 		VAR_NAMES_PROPERTY = factory.createURI(NAMESPACE, "varNames");
 		UNDEF = factory.createURI(NAMESPACE, "undef");
 
+		ADD = factory.createURI(NAMESPACE, "add");
+		SUB = factory.createURI(NAMESPACE, "sub");
+		MUL = factory.createURI(NAMESPACE, "mul");
+		DIVIDE = factory.createURI(NAMESPACE, "divide");
 		EQ = factory.createURI(NAMESPACE, "eq");
 		NE = factory.createURI(NAMESPACE, "ne");
 		LT = factory.createURI(NAMESPACE, "lt");

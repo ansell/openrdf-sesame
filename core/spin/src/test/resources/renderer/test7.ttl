@@ -2,7 +2,7 @@
 @prefix spin: <http://spinrdf.org/spin#>.
 @prefix ex: <ex:>.
 
-[ a       sp:Service ;
+[ a sp:Select ;
 	sp:text """
 PREFIX ex: <ex:>
 
@@ -14,9 +14,17 @@ WHERE {
 	}
 }
 """;
-  sp:serviceURI <http://dbpedia.org/sparql>;
-  sp:elements ([ sp:subject spin:_this ;
-                 sp:predicate ex:firstName ;
-                 sp:object  [ sp:varName "value"^^xsd:string ]
-               ])
+    sp:resultVariables  (
+    	spin:_this 
+    	_:value );
+	sp:where (
+	[ a       sp:Service ;
+	  sp:serviceURI <http://dbpedia.org/sparql>;
+	  sp:elements ([ sp:subject spin:_this ;
+	                 sp:predicate ex:firstName ;
+	                 sp:object  _:value
+	               ])
+		]);
 ].
+
+_:value sp:varName "value".

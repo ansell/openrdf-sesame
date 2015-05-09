@@ -8,15 +8,14 @@ WHERE {
 	?this ?arg1 ?object
 }
 """;
-  sp:resultVariables (_:count [ a       sp:Count ;
-                        sp:expression _:object;
-						sp:varName "count"
-                      ]) ;
+  sp:resultVariables (_:count) ;
   sp:where ([ sp:object _:object ;
-              sp:predicate _:arg1 ;
+              sp:predicate spin:_arg1 ;
               sp:subject spin:_this
             ])
 ].
 
-_:arg1 sp:varName "arg1".
 _:object sp:varName "object".
+_:count  sp:varName "count" ;
+		 sp:expression _:object;
+		 a       sp:Count .

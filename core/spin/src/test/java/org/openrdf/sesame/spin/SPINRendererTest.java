@@ -33,7 +33,7 @@ public class SPINRendererTest {
 
 	@Parameters(name="{0}")
 	public static Collection<Object[]> testData() {
-		int n=7;
+		int n=8;
 		List<Object[]> params = new ArrayList<Object[]>(n);
 		for(int i=0; i<n; i++) {
 			String suffix = String.valueOf(i+1);
@@ -75,10 +75,10 @@ public class SPINRendererTest {
 		StatementCollector actual = new StatementCollector();
 		renderer.render(pq, actual);
 
-		assertTrue("Expected contents of "+testFile+" but was\n"+toRDF(actual.getStatements()), Models.isomorphic(actual.getStatements(), expected.getStatements()));
+		assertTrue("Expected\n"+toRDF(expected.getStatements())+"\nbut was\n"+toRDF(actual.getStatements()), Models.isomorphic(actual.getStatements(), expected.getStatements()));
 	}
 
-	private String toRDF(Iterable<Statement> stmts) throws RDFHandlerException
+	private static String toRDF(Iterable<Statement> stmts) throws RDFHandlerException
 	{
 		StringBuilderWriter writer = new StringBuilderWriter();
 		Rio.write(stmts, writer, RDFFormat.TURTLE);

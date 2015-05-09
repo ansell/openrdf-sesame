@@ -22,7 +22,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
  * @since 2.7.3
- * @version 1.3.0
+ * @version 1.4.0
  */
 public class SPIN {
 
@@ -402,6 +402,12 @@ public class SPIN {
 	 */
 	public static final URI RULE_PROPERTY;
 
+	public static final URI ARG1_INSTANCE;
+	public static final URI ARG2_INSTANCE;
+	public static final URI ARG3_INSTANCE;
+	public static final URI ARG4_INSTANCE;
+	public static final URI ARG5_INSTANCE;
+
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		FUNCTION_CLASS = factory.createURI(NAMESPACE, "Function");
@@ -454,5 +460,11 @@ public class SPIN {
 		THIS_CONTEXT_INSTANCE = factory.createURI(NAMESPACE, "_this");
 		UPDATE_TEMPLATES_CLASS = factory.createURI(NAMESPACE, "UpdateTemplates");
 		RULE_PROPERTY = factory.createURI(NAMESPACE, "rule");
+
+		ARG1_INSTANCE = factory.createURI(NAMESPACE, "_arg1");
+		ARG2_INSTANCE = factory.createURI(NAMESPACE, "_arg2");
+		ARG3_INSTANCE = factory.createURI(NAMESPACE, "_arg3");
+		ARG4_INSTANCE = factory.createURI(NAMESPACE, "_arg4");
+		ARG5_INSTANCE = factory.createURI(NAMESPACE, "_arg5");
 	}
 }
