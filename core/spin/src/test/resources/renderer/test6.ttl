@@ -9,7 +9,8 @@ WHERE {
 }
 """;
   sp:resultVariables (_:count [ a       sp:Count ;
-                        sp:expression _:object
+                        sp:expression _:object;
+						sp:varName "count"
                       ]) ;
   sp:where ([ sp:object _:object ;
               sp:predicate _:arg1 ;
@@ -18,5 +19,4 @@ WHERE {
 ].
 
 _:arg1 sp:varName "arg1".
-_:count sp:varName "count".
 _:object sp:varName "object".

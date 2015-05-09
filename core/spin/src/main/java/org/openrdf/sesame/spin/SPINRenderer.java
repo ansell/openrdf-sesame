@@ -107,7 +107,7 @@ public class SPINRenderer {
 			Resource whereBNode = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(querySubj, SP.WHERE_PROPERTY, whereBNode));
 			TupleExpr expr = query.getTupleExpr();
-			SPINQueryModelVisitor visitor = new SPINQueryModelVisitor(handler, whereBNode, null);
+			SPINVisitor visitor = new SPINVisitor(handler, whereBNode, null);
 			expr.visit(visitor);
 			visitor.endList(null);
 		}
@@ -123,7 +123,7 @@ public class SPINRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SPINQueryModelVisitor visitor = new SPINQueryModelVisitor(handler, null, querySubj);
+			SPINVisitor visitor = new SPINVisitor(handler, null, querySubj);
 			expr.visit(visitor);
 		}
 		handler.endRDF();
@@ -138,7 +138,7 @@ public class SPINRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SPINQueryModelVisitor visitor = new DescribeSPINQueryModelVisitor(handler, querySubj);
+			SPINVisitor visitor = new DescribeVisitor(handler, querySubj);
 			expr.visit(visitor);
 		}
 		handler.endRDF();
@@ -153,16 +153,16 @@ public class SPINRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SPINQueryModelVisitor visitor = new ConstructSPINQueryModelVisitor(handler, querySubj);
+			SPINVisitor visitor = new ConstructVisitor(handler, querySubj);
 			expr.visit(visitor);
 		}
 		handler.endRDF();
 	}
 
 
-	class DescribeSPINQueryModelVisitor extends SPINQueryModelVisitor
+	class DescribeVisitor extends SPINVisitor
 	{
-		DescribeSPINQueryModelVisitor(RDFHandler handler, Resource subject) {
+		DescribeVisitor(RDFHandler handler, Resource subject) {
 			super(handler, null, subject);
 		}
 
@@ -182,9 +182,9 @@ public class SPINRenderer {
 	}
 
 
-	class ConstructSPINQueryModelVisitor extends SPINQueryModelVisitor
+	class ConstructVisitor extends SPINVisitor
 	{
-		ConstructSPINQueryModelVisitor(RDFHandler handler, Resource subject) {
+		ConstructVisitor(RDFHandler handler, Resource subject) {
 			super(handler, null, subject);
 		}
 
@@ -251,7 +251,7 @@ public class SPINRenderer {
 	}
 
 
-	class SPINQueryModelVisitor extends QueryModelVisitorBase<RDFHandlerException>
+	class SPINVisitor extends QueryModelVisitorBase<RDFHandlerException>
 	{
 		final RDFHandler handler;
 		Map<String,ValueExpr> extensionExprs;
@@ -261,14 +261,14 @@ public class SPINRenderer {
 		boolean isMultiProjection;
 		boolean isSubQuery;
 
-		SPINQueryModelVisitor(RDFHandler handler, Resource list, Resource subject) {
+		SPINVisitor(RDFHandler handler, Resource list, Resource subject) {
 			this.handler = handler;
 			this.list = list;
 			this.subject = subject;
 		}
 
 		private void meetExtension(TupleExpr expr) {
-			ExtensionQueryModelVisitor extVisitor = new ExtensionQueryModelVisitor();
+			ExtensionCollector extVisitor = new ExtensionCollector();
 			expr.visit(extVisitor);
 			extensionExprs = extVisitor.extensionExprs;
 		}
@@ -379,12 +379,20 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(ProjectionElem node) throws RDFHandlerException {
-			Resource var = createVar(node.getSourceName());
-			listEntry(var);
+			Resource res = createVar(node.getTargetName());
+			listEntry(res);
+			String varName = node.getSourceName();
+			if(extensionExprs != null) {
+				ValueExpr valueExpr = extensionExprs.get(varName);
+				if(valueExpr != null) {
+					valueExpr.visit(new ExtensionVisitor());
+				}
+			}
 		}
 
 		@Override
 		public void meet(Extension node) throws RDFHandlerException {
+			// skip over ExtensionElem - already handled by meetExtension()
 			node.getArg().visit(this);
 		}
 
@@ -455,12 +463,8 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(Group node) throws RDFHandlerException {
+			// skip over GroupElem
 			node.getArg().visit(this);
-		}
-
-		@Override
-		public void meet(Count node) throws RDFHandlerException {
-			super.meet(node);
 		}
 
 		@Override
@@ -498,10 +502,20 @@ public class SPINRenderer {
 			}
 			endList(varnameCtx);
 		}
+
+
+		final class ExtensionVisitor extends QueryModelVisitorBase<RDFHandlerException>
+		{
+			@Override
+			public void meet(Count node) throws RDFHandlerException {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.COUNT_CLASS));
+				super.meet(node);
+			}
+		}
 	}
 
 
-	static final class ExtensionQueryModelVisitor extends QueryModelVisitorBase<RuntimeException>
+	static final class ExtensionCollector extends QueryModelVisitorBase<RuntimeException>
 	{
 		Map<String,ValueExpr> extensionExprs;
 
