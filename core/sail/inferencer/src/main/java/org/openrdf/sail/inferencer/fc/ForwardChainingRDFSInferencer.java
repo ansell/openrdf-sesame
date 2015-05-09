@@ -16,6 +16,10 @@
  */
 package org.openrdf.sail.inferencer.fc;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
@@ -31,6 +35,8 @@ import org.openrdf.sail.inferencer.InferencerConnection;
  * from their {@link Sail#getConnection()} method.
  */
 public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
+
+	private static final IsolationLevels READ_COMMITTED = IsolationLevels.READ_COMMITTED;
 
 	/*--------------*
 	 * Constructors *
@@ -54,11 +60,34 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new ForwardChainingRDFSInferencerConnection(con);
+			return new ForwardChainingRDFSInferencerConnection(this, con);
 		}
 		catch (ClassCastException e) {
 			throw new SailException(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public IsolationLevel getDefaultIsolationLevel() {
+		IsolationLevel level = super.getDefaultIsolationLevel();
+		if (level.isCompatibleWith(READ_COMMITTED)) {
+			return level;
+		} else {
+			List<IsolationLevel> supported = this.getSupportedIsolationLevels();
+			return IsolationLevels.getCompatibleIsolationLevel(READ_COMMITTED, supported);
+		}
+	}
+
+	@Override
+	public List<IsolationLevel> getSupportedIsolationLevels() {
+		List<IsolationLevel> supported = super.getSupportedIsolationLevels();
+		List<IsolationLevel> levels = new ArrayList<IsolationLevel>(supported.size());
+		for (IsolationLevel level : supported) {
+			if (level.isCompatibleWith(READ_COMMITTED)) {
+				levels.add(level);
+			}
+		}
+		return levels;
 	}
 
 	/**
@@ -72,7 +101,7 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 
 		ForwardChainingRDFSInferencerConnection con = getConnection();
 		try {
-			con.begin(IsolationLevels.READ_UNCOMMITTED);
+			con.begin(READ_COMMITTED);
 			con.addAxiomStatements();
 			con.commit();
 		}
