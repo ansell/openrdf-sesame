@@ -123,7 +123,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testInferencerUpdates()
 		throws Exception
 	{
-		testCon.begin();
+		testCon.begin(IsolationLevels.READ_COMMITTED);
 
 		testCon.add(bob, name, nameBob);
 		testCon.remove(bob, name, nameBob);

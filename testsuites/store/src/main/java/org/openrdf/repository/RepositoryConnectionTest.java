@@ -217,9 +217,9 @@ public abstract class RepositoryConnectionTest {
 		testRepository.initialize();
 
 		testCon = testRepository.getConnection();
-		testCon.setIsolationLevel(level);
 		testCon.clear();
 		testCon.clearNamespaces();
+		testCon.setIsolationLevel(level);
 
 		testCon2 = testRepository.getConnection();
 		testCon2.setIsolationLevel(level);
