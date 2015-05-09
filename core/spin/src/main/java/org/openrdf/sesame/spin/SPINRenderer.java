@@ -448,6 +448,20 @@ public class SPINRenderer {
 		@Override
 		public void meet(StatementPattern node) throws RDFHandlerException {
 			listEntry();
+			ListContext elementsCtx;
+			boolean isNamedGraph = (StatementPattern.Scope.NAMED_CONTEXTS == node.getScope());
+			if(isNamedGraph) {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.NAMED_GRAPH_CLASS));
+				predicate = SP.GRAPH_NAME_NODE_PROPERTY;
+				node.getContextVar().visit(this);
+				Resource elementsList = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
+				elementsCtx = newList(elementsList);
+				listEntry();
+			}
+			else {
+				elementsCtx = null;
+			}
 			predicate = SP.SUBJECT_PROPERTY;
 			node.getSubjectVar().visit(this);
 			predicate = SP.PREDICATE_PROPERTY;
@@ -455,6 +469,9 @@ public class SPINRenderer {
 			predicate = SP.OBJECT_PROPERTY;
 			node.getObjectVar().visit(this);
 			predicate = null;
+			if(isNamedGraph) {
+				endList(elementsCtx);
+			}
 		}
 
 		@Override
