@@ -50,7 +50,7 @@ public class UnionRdfBranch implements RdfBranch {
 	}
 
 	public String toString() {
-		return primary.toString();
+		return primary.toString() + "\n" + additional.toString();
 	}
 
 	@Override

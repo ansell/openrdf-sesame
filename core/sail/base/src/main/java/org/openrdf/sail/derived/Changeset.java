@@ -276,33 +276,45 @@ abstract class Changeset implements RdfSink {
 		}
 	}
 
-	public synchronized String toString() {
+	@Override
+	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		if (observations != null) {
-			sb.append(observations).append('\n');
+			sb.append(observations.size());
+			sb.append(" observations, ");
 		}
 		if (namespaceCleared) {
-			sb.append("namespace cleared\n");
+			sb.append("namespaceCleared, ");
 		}
 		if (removedPrefixes != null) {
-			sb.append(removedPrefixes).append('\n');
+			sb.append(removedPrefixes.size());
+			sb.append(" removedPrefixes, ");
 		}
 		if (addedNamespaces != null) {
-			sb.append(addedNamespaces).append('\n');
+			sb.append(addedNamespaces.size());
+			sb.append(" addedNamespaces, ");
 		}
 		if (statementCleared) {
-			sb.append("statements cleared\n");
+			sb.append("statementCleared, ");
 		}
 		if (deprecatedContexts != null && !deprecatedContexts.isEmpty()) {
-			sb.append(deprecatedContexts).append('\n');
+			sb.append(deprecatedContexts.size());
+			sb.append(" deprecatedContexts, ");
 		}
 		if (deprecated != null) {
-			sb.append(deprecated).append('\n');
+			sb.append(deprecated.size());
+			sb.append(" deprecated, ");
 		}
 		if (approved != null) {
-			sb.append(approved).append('\n');
+			sb.append(approved.size());
+			sb.append(" approved, ");
 		}
-		return sb.toString().trim();
+		if (sb.length() > 0) {
+			return sb.substring(0, sb.length() - 2);
+		}
+		else {
+			return super.toString();
+		}
 	}
 
 	protected void setChangeset(Changeset from) {
