@@ -135,6 +135,7 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	public MemoryStore() {
 		setSupportedIsolationLevels(IsolationLevels.NONE, IsolationLevels.READ_COMMITTED,
 				IsolationLevels.SNAPSHOT_READ, IsolationLevels.SNAPSHOT, IsolationLevels.SERIALIZABLE);
+		setDefaultIsolationLevel(IsolationLevels.SNAPSHOT_READ);
 	}
 
 	/**

@@ -97,6 +97,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		super();
 		setSupportedIsolationLevels(IsolationLevels.NONE, IsolationLevels.READ_COMMITTED,
 				IsolationLevels.SNAPSHOT_READ, IsolationLevels.SNAPSHOT, IsolationLevels.SERIALIZABLE);
+		setDefaultIsolationLevel(IsolationLevels.SNAPSHOT_READ);
 	}
 
 	public NativeStore(File dataDir) {
