@@ -177,6 +177,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
+		flush();
 		logger.trace("Incoming query model:\n{}", tupleExpr);
 
 		// Clone the tuple expression to allow for more aggresive optimizations
@@ -240,6 +241,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	protected CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
 		throws SailException
 	{
+		flush();
 		RdfBranch branch = branch(false);
 		RdfDataset snapshot = branch.dataset(getIsolationLevel());
 		return ClosingRdfIteration.close(snapshot.getContextIDs(), snapshot, branch);
@@ -250,6 +252,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 			URI pred, Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException
 	{
+		flush();
 		RdfBranch branch = branch(includeInferred);
 		RdfDataset snapshot = branch.dataset(getIsolationLevel());
 		return ClosingRdfIteration.close(snapshot.get(subj, pred, obj, contexts), snapshot, branch);
@@ -259,6 +262,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	protected long sizeInternal(Resource... contexts)
 		throws SailException
 	{
+		flush();
 		CloseableIteration<? extends Statement, SailException> iter = getStatementsInternal(null, null, null,
 				false, contexts);
 
@@ -350,11 +354,24 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		throws SailException
 	{
 		synchronized (datasets) {
-			datasets.clear();
-			explicitSinks.clear();
-			explicitOnlyDataset = null;
-			inferredDataset = null;
-			inferredSink = null;
+			if (datasets.containsKey(null)) {
+				datasets.remove(null).close();
+			}
+			if (explicitSinks.containsKey(null)) {
+				explicitSinks.remove(null).close();
+			}
+			if (explicitOnlyDataset != null) {
+				explicitOnlyDataset.close();
+				explicitOnlyDataset = null;
+			}
+			if (inferredDataset != null) {
+				inferredDataset.close();
+				inferredDataset = null;
+			}
+			if (inferredSink != null) {
+				inferredSink.close();
+				inferredSink = null;
+			}
 		}
 		if (includeInferredBranch != null) {
 			includeInferredBranch.close();
@@ -370,9 +387,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	{
 		if (op != null) {
 			IsolationLevel level = getIsolationLevel();
-			if (!isActiveOperation() || isActive() && !level.isCompatibleWith(IsolationLevels.SNAPSHOT_READ)) {
-				flush();
-			}
+			flush();
 			synchronized (datasets) {
 				assert !datasets.containsKey(op);
 				RdfSource source;
@@ -401,10 +416,10 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		verifyIsOpen();
 		verifyIsActive();
 		synchronized (datasets) {
-			if (op == null && !datasets.containsKey(op)) {
+			if (op == null && !datasets.containsKey(null)) {
 				RdfSource source = branch(false);
-				datasets.put(op, source.dataset(getIsolationLevel()));
-				explicitSinks.put(op, source.sink(getIsolationLevel()));
+				datasets.put(null, source.dataset(getIsolationLevel()));
+				explicitSinks.put(null, source.sink(getIsolationLevel()));
 			}
 			assert explicitSinks.containsKey(op);
 			add(subj, pred, obj, datasets.get(op), explicitSinks.get(op), contexts);
@@ -418,11 +433,12 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	{
 		verifyIsOpen();
 		verifyIsActive();
+		flush();
 		synchronized (datasets) {
-			if (op == null && !datasets.containsKey(op)) {
+			if (op == null && !datasets.containsKey(null)) {
 				RdfSource source = branch(false);
-				datasets.put(op, source.dataset(getIsolationLevel()));
-				explicitSinks.put(op, source.sink(getIsolationLevel()));
+				datasets.put(null, source.dataset(getIsolationLevel()));
+				explicitSinks.put(null, source.sink(getIsolationLevel()));
 			}
 			assert explicitSinks.containsKey(op);
 			remove(subj, pred, obj, datasets.get(op), explicitSinks.get(op), contexts);
@@ -614,10 +630,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	public void flushUpdates()
 		throws SailException
 	{
-		if (!isActiveOperation() || isActive()
-				&& !getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ)) {
-			flush();
-		}
+		flush();
 	}
 
 	@Override
