@@ -267,7 +267,7 @@ public class SP {
 	public static final URI REVERSE_LINK_PATH_CLASS;
 
 	/**
-	 * http://spinrdf.org/sp#NotExists A NOT EXISTS element group.
+	 * http://spinrdf.org/sp#NotExists A NOT EXISTS element group (ARQ only).
 	 */
 	public static final URI NOT_EXISTS_CLASS;
 
@@ -609,8 +609,6 @@ public class SP {
 	public static final URI VAR_NAMES_PROPERTY;
 	public static final URI UNDEF;
 
-	public static final URI EXISTS_CLASS;
-
 	// "The SPIN RDF Syntax provides standard URIs for the built-in functions and operators of the SPARQL language.
 	// For example, sp:gt represents the > operator."
 	public static final URI ADD;
@@ -623,6 +621,9 @@ public class SP {
 	public static final URI LE;
 	public static final URI GE;
 	public static final URI GT;
+	public static final URI NOT;
+	public static final URI EXISTS;
+	public static final URI NOT_EXISTS;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -732,8 +733,6 @@ public class SP {
 		VAR_NAMES_PROPERTY = factory.createURI(NAMESPACE, "varNames");
 		UNDEF = factory.createURI(NAMESPACE, "undef");
 
-		EXISTS_CLASS = factory.createURI(NAMESPACE, "Exists");
-
 		ADD = factory.createURI(NAMESPACE, "add");
 		SUB = factory.createURI(NAMESPACE, "sub");
 		MUL = factory.createURI(NAMESPACE, "mul");
@@ -744,5 +743,9 @@ public class SP {
 		LE = factory.createURI(NAMESPACE, "le");
 		GE = factory.createURI(NAMESPACE, "ge");
 		GT = factory.createURI(NAMESPACE, "gt");
+		NOT = factory.createURI(NAMESPACE, "not");
+
+		EXISTS = factory.createURI(NAMESPACE, "exists");
+		NOT_EXISTS = factory.createURI(NAMESPACE, "notExists");
 	}
 }

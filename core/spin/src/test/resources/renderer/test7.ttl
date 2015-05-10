@@ -27,4 +27,4 @@ WHERE {
 		]);
 ].
 
-_:value sp:varName "value".
+_:value sp:varName "value" .

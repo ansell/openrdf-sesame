@@ -29,5 +29,5 @@ WHERE {
                   ])
       ].
 
-_:b1 sp:varName "class".
-_:b2 sp:varName "y".
+_:b1 sp:varName "class" .
+_:b2 sp:varName "y" .

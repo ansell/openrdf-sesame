@@ -12,6 +12,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
@@ -20,13 +21,18 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
+import org.openrdf.query.algebra.Difference;
+import org.openrdf.query.algebra.Exists;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
+import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.MultiProjection;
+import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
@@ -34,6 +40,7 @@ import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -63,6 +70,7 @@ public class SPINRenderer {
 	private final ValueFactory valueFactory;
 	private final Output output;
 	private final Function<String,URI> wellKnownVars;
+	private final Function<String,URI> wellKnownFunctions;
 
 	public SPINRenderer()
 	{
@@ -71,13 +79,14 @@ public class SPINRenderer {
 
 	public SPINRenderer(Output output)
 	{
-		this(output, SPINWellKnownVars.INSTANCE, ValueFactoryImpl.getInstance());
+		this(output, SPINWellKnownVars.INSTANCE, SPINWellKnownFunctions.INSTANCE, ValueFactoryImpl.getInstance());
 	}
 
-	public SPINRenderer(Output output, Function<String,URI> wellKnownVarMapper, ValueFactory vf)
+	public SPINRenderer(Output output, Function<String,URI> wellKnownVarMapper, Function<String,URI> wellKnownFuncMapper, ValueFactory vf)
 	{
 		this.output = output;
 		this.wellKnownVars = wellKnownVarMapper;
+		this.wellKnownFunctions = wellKnownFuncMapper;
 		this.valueFactory = vf;
 	}
 
@@ -263,10 +272,12 @@ public class SPINRenderer {
 	{
 		final RDFHandler handler;
 		final Map<String,BNode> varBNodes = new HashMap<String,BNode>();
+		final Map<String,ListContext> namedGraphLists = new HashMap<String,ListContext>();
 		ExtensionContext inlineBindings;
 		Resource list;
 		Resource subject;
 		URI predicate;
+		ListContext namedGraphContext;
 		boolean isMultiProjection;
 		boolean isSubQuery;
 
@@ -286,6 +297,11 @@ public class SPINRenderer {
 
 		ListContext save() {
 			return new ListContext(list, subject);
+		}
+
+		void update(ListContext ctx) {
+			ctx.list = list;
+			ctx.subject = subject;
 		}
 
 		void restore(ListContext ctx) {
@@ -310,7 +326,6 @@ public class SPINRenderer {
 			}
 			if(subject != null) {
 				nextListEntry(valueFactory.createBNode());
-				subject = null;
 			}
 			if(entry == null) {
 				entry = valueFactory.createBNode();
@@ -319,7 +334,8 @@ public class SPINRenderer {
 			if(entry instanceof Resource) {
 				subject = (Resource) entry;
 			} else {
-				subject = list;
+				// in this case, actual value doesn't matter, only that it is not null
+				subject = RDF.NIL;
 			}
 		}
 
@@ -350,8 +366,40 @@ public class SPINRenderer {
 			return res;
 		}
 
+		ListContext getNamedGraph(Var context) throws RDFHandlerException {
+			ListContext currentCtx;
+			namedGraphContext = namedGraphLists.get(context.getName());
+			if(namedGraphContext == null) {
+				listEntry();
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.NAMED_GRAPH_CLASS));
+				predicate = SP.GRAPH_NAME_NODE_PROPERTY;
+				context.visit(this);
+				Resource elementsList = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
+				currentCtx = newList(elementsList);
+				namedGraphContext = save();
+				namedGraphLists.put(context.getName(), namedGraphContext);
+			}
+			else {
+				currentCtx = save();
+				restore(namedGraphContext);
+			}
+			return currentCtx;
+		}
+
+		void restoreNamedGraph(ListContext ctx) {
+			update(namedGraphContext);
+			restore(ctx);
+		}
+
 		public void end() throws RDFHandlerException {
 			if(list != null) {
+				endList(null);
+			}
+
+			// end any named graph lists
+			for(ListContext elementsCtx : namedGraphLists.values()) {
+				restore(elementsCtx);
 				endList(null);
 			}
 
@@ -447,21 +495,14 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(StatementPattern node) throws RDFHandlerException {
-			listEntry();
-			ListContext elementsCtx;
-			boolean isNamedGraph = (StatementPattern.Scope.NAMED_CONTEXTS == node.getScope());
-			if(isNamedGraph) {
-				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.NAMED_GRAPH_CLASS));
-				predicate = SP.GRAPH_NAME_NODE_PROPERTY;
-				node.getContextVar().visit(this);
-				Resource elementsList = valueFactory.createBNode();
-				handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
-				elementsCtx = newList(elementsList);
-				listEntry();
+			ListContext ctx;
+			if(StatementPattern.Scope.NAMED_CONTEXTS == node.getScope()) {
+				ctx = getNamedGraph(node.getContextVar());
 			}
 			else {
-				elementsCtx = null;
+				ctx = null;
 			}
+			listEntry();
 			predicate = SP.SUBJECT_PROPERTY;
 			node.getSubjectVar().visit(this);
 			predicate = SP.PREDICATE_PROPERTY;
@@ -469,8 +510,8 @@ public class SPINRenderer {
 			predicate = SP.OBJECT_PROPERTY;
 			node.getObjectVar().visit(this);
 			predicate = null;
-			if(isNamedGraph) {
-				endList(elementsCtx);
+			if(ctx != null) {
+				restoreNamedGraph(ctx);
 			}
 		}
 
@@ -507,11 +548,18 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(Compare node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			if(predicate != null) {
+				Resource func = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, predicate, func));
+				subject = func;
+			}
 			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, toValue(node.getOperator())));
 			predicate = SP.ARG1_PROPERTY;
 			node.getLeftArg().visit(this);
 			predicate = SP.ARG2_PROPERTY;
 			node.getRightArg().visit(this);
+			subject = currentSubj;
 			predicate = null;
 		}
 
@@ -531,11 +579,18 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(MathExpr node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			if(predicate != null) {
+				Resource func = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, predicate, func));
+				subject = func;
+			}
 			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, toValue(node.getOperator())));
 			predicate = SP.ARG1_PROPERTY;
 			node.getLeftArg().visit(this);
 			predicate = SP.ARG2_PROPERTY;
 			node.getRightArg().visit(this);
+			subject = currentSubj;
 			predicate = null;
 		}
 
@@ -552,9 +607,122 @@ public class SPINRenderer {
 		}
 
 		@Override
+		public void meet(FunctionCall node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			if(predicate != null) {
+				Resource func = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, predicate, func));
+				subject = func;
+			}
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, toValue(node)));
+			List<ValueExpr> args = node.getArgs();
+			for(int i=0; i<args.size(); i++) {
+				predicate = toArgProperty(i+1);
+				args.get(i).visit(this);
+			}
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		private Value toValue(FunctionCall node) {
+			String funcName = node.getURI();
+			URI funcUri = wellKnownFunctions.apply(funcName);
+			if(funcUri == null) {
+				funcUri = valueFactory.createURI(funcName);
+			}
+			return funcUri;
+		}
+
+		private URI toArgProperty(int i) {
+			switch(i) {
+			case 1: return SP.ARG1_PROPERTY;
+			case 2: return SP.ARG2_PROPERTY;
+			case 3: return SP.ARG2_PROPERTY;
+			case 4: return SP.ARG2_PROPERTY;
+			case 5: return SP.ARG2_PROPERTY;
+			default:
+				return valueFactory.createURI(SP.NAMESPACE, "arg"+i);
+			}
+		}
+
+		@Override
+		public void meet(Not node) throws RDFHandlerException {
+			if(node.getArg() instanceof Exists) {
+				super.meet(node);
+			}
+			else {
+				Resource currentSubj = subject;
+				if(predicate != null) {
+					Resource func = valueFactory.createBNode();
+					handler.handleStatement(valueFactory.createStatement(subject, predicate, func));
+					subject = func;
+				}
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.NOT));
+				predicate = SP.ARG1_PROPERTY;
+				node.getArg().visit(this);
+				subject = currentSubj;
+				predicate = null;
+			}
+		}
+
+		@Override
+		public void meet(Exists node) throws RDFHandlerException {
+			Resource op = (node.getParentNode() instanceof Not) ? SP.NOT_EXISTS : SP.EXISTS;
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, op));
+			Resource elementsList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
+			ListContext elementsCtx = newList(elementsList);
+			node.getSubQuery().visit(this);
+			endList(elementsCtx);
+		}
+
+		@Override
 		public void meet(Group node) throws RDFHandlerException {
 			// skip over GroupElem
 			node.getArg().visit(this);
+		}
+
+		@Override
+		public void meet(LeftJoin node) throws RDFHandlerException {
+			node.getLeftArg().visit(this);
+			listEntry();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.OPTIONAL_CLASS));
+			Resource elementsList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
+			ListContext elementsCtx = newList(elementsList);
+			node.getRightArg().visit(this);
+			endList(elementsCtx);
+		}
+
+		@Override
+		public void meet(Union node) throws RDFHandlerException {
+			listEntry();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.UNION_CLASS));
+			Resource elementsList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
+			ListContext elementsCtx = newList(elementsList);
+			listEntry();
+			ListContext leftCtx = newList(subject);
+			node.getLeftArg().visit(this);
+			endList(leftCtx);
+
+			listEntry();
+			ListContext rightCtx = newList(subject);
+			node.getRightArg().visit(this);
+			endList(rightCtx);
+			endList(elementsCtx);
+		}
+
+		@Override
+		public void meet(Difference node) throws RDFHandlerException {
+			node.getLeftArg().visit(this);
+			listEntry();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.MINUS_CLASS));
+			Resource elementsList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
+			ListContext elementsCtx = newList(elementsList);
+			node.getRightArg().visit(this);
+			endList(elementsCtx);
 		}
 
 		@Override
@@ -659,8 +827,8 @@ public class SPINRenderer {
 
 	static final class ListContext
 	{
-		final Resource list;
-		final Resource subject;
+		Resource list;
+		Resource subject;
 
 		ListContext(Resource list, Resource subject) {
 			this.list = list;
@@ -670,8 +838,8 @@ public class SPINRenderer {
 
 	static final class SPINWellKnownVars implements Function<String,URI>
 	{
-		static final SPINWellKnownVars INSTANCE = new SPINWellKnownVars();
 		static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+		static final SPINWellKnownVars INSTANCE = new SPINWellKnownVars();
 
 		final Map<String,URI> wkvs = new HashMap<String,URI>();
 
@@ -697,6 +865,23 @@ public class SPINRenderer {
 				}
 			}
 			return wkv;
+		}
+	}
+
+	static final class SPINWellKnownFunctions implements Function<String,URI>
+	{
+		static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+		static final SPINWellKnownFunctions INSTANCE = new SPINWellKnownFunctions();
+
+		final Map<String,URI> wkfs = new HashMap<String,URI>();
+
+		public SPINWellKnownFunctions() {
+			wkfs.put(FN.STRING_LENGTH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strlen"));
+		}
+
+		@Override
+		public URI apply(String name) {
+			return wkfs.get(name);
 		}
 	}
 }

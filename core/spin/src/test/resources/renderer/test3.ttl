@@ -30,5 +30,5 @@ WHERE {
             ])
 ].
 
-_:parent sp:varName "parent".
-_:grandParent sp:varName "grandParent".
+_:parent sp:varName "parent" .
+_:grandParent sp:varName "grandParent" .

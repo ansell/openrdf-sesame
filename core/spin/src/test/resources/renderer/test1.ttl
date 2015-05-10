@@ -24,4 +24,4 @@ ASK WHERE {
                         ]
               ])
   ].
-  _:age sp:varName "age".
+  _:age sp:varName "age" .

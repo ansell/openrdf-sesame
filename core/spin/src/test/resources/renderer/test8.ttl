@@ -25,5 +25,5 @@ WHERE {
     ]);
 ].
 
-_:age		sp:varName "age"^^xsd:string.
-_:birthYear	sp:varName "birthYear"^^xsd:string.
+_:age		sp:varName "age"^^xsd:string .
+_:birthYear	sp:varName "birthYear"^^xsd:string .

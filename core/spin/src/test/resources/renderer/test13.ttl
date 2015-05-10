@@ -8,20 +8,17 @@ PREFIX ex: <ex:>
 
 SELECT *
 WHERE {
-    GRAPH <http://example.org> {
-    	?this ex:firstName ?value .
-    }
+    MINUS { ?this ex:firstName ?value }
 }
 """;
     sp:resultVariables  (
     	spin:_this 
     	_:value );
 	sp:where (
-    [ a       sp:NamedGraph ;
-      sp:graphNameNode <http://example.org> ;
+    [ a       sp:Minus ;
       sp:elements ([ sp:subject spin:_this ;
                      sp:predicate ex:firstName ;
-                     sp:object _:value
+                     sp:object  _:value ;
                    ])
     ]);
 ].

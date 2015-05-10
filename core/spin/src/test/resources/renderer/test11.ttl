@@ -8,22 +8,21 @@ PREFIX ex: <ex:>
 
 SELECT *
 WHERE {
-    GRAPH <http://example.org> {
-    	?this ex:firstName ?value .
-    }
+    FILTER EXISTS { ?this ex:firstName ?value }
 }
 """;
     sp:resultVariables  (
     	spin:_this 
     	_:value );
 	sp:where (
-    [ a       sp:NamedGraph ;
-      sp:graphNameNode <http://example.org> ;
+    [ a       sp:Filter ;
+      sp:expression
+    [ a       sp:exists ;
       sp:elements ([ sp:subject spin:_this ;
                      sp:predicate ex:firstName ;
-                     sp:object _:value
+                     sp:object  _:value ;
                    ])
-    ]);
+    ]]);
 ].
 
 _:value sp:varName "value" .
