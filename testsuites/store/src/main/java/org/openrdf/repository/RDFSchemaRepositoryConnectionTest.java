@@ -20,6 +20,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
@@ -32,7 +35,17 @@ import org.openrdf.model.vocabulary.RDFS;
  * @author jeen
  * @author Arjohn Kampman
  */
+@RunWith(Parameterized.class)
 public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnectionTest {
+
+	@Parameters(name="{0}")
+	public static final IsolationLevel[] parametersREAD_COMMITTED() {
+		return new IsolationLevel[] {
+				IsolationLevels.READ_COMMITTED,
+				IsolationLevels.SNAPSHOT_READ,
+				IsolationLevels.SNAPSHOT,
+				IsolationLevels.SERIALIZABLE };
+	}
 
 	private URI person;
 

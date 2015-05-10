@@ -18,6 +18,10 @@ package org.openrdf.sail.federation;
 
 import java.io.IOException;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.repository.Repository;
@@ -25,10 +29,17 @@ import org.openrdf.repository.RepositoryConnectionTest;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
+@RunWith(Parameterized.class)
 public class FederationConnectionTest extends RepositoryConnectionTest {
 
+	@Parameters(name="{0}")
+	public static final IsolationLevel[] parametersNONE() {
+		// isolation is not supported
+		return new IsolationLevel[] { IsolationLevels.NONE };
+	}
+
 	public FederationConnectionTest(IsolationLevel level) {
-		super(IsolationLevels.NONE); // isolation is not supported
+		super(level);
 	}
 
 	@Override
