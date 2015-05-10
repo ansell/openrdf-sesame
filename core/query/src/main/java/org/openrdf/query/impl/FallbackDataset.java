@@ -16,6 +16,7 @@
  */
 package org.openrdf.query.impl;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.openrdf.model.URI;
@@ -26,7 +27,12 @@ import org.openrdf.query.Dataset;
  *
  * @author james
  */
-public class FallbackDataset implements Dataset {
+public class FallbackDataset implements Dataset, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5866540736738270376L;
 
 	public static Dataset fallback(Dataset primary, Dataset fallback) {
 		if (primary == null)
