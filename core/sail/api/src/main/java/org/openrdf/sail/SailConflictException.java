@@ -16,12 +16,31 @@
  */
 package org.openrdf.sail;
 
+import org.openrdf.IsolationLevels;
+
+/**
+ * An exception thrown by some methods in Sail to indicate that a requested
+ * isolation level could not be fulfilled. Such as when multiple conflicting
+ * {@link IsolationLevels#SERIALIZABLE} transactions overlap in time.
+ */
 public class SailConflictException extends SailException {
 
 	private static final long serialVersionUID = 8616609700552763681L;
 
+	public SailConflictException() {
+		super();
+	}
+
 	public SailConflictException(String msg) {
 		super(msg);
+	}
+
+	public SailConflictException(String msg, Throwable t) {
+		super(msg, t);
+	}
+
+	public SailConflictException(Throwable t) {
+		super(t);
 	}
 
 }
