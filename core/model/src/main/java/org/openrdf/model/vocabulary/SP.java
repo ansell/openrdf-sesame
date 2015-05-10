@@ -138,29 +138,12 @@ public class SP {
 	public static final URI MAX_CLASS;
 
 	/**
-	 * http://spinrdf.org/sp#Insert Deprecated - use sp:Modify instead.
-	 * Represents a INSERT INTO (part of SPARQL UPDATE language). The graph IRIs
-	 * are stored in sp:graphIRI. The template patterns to delete are stored in
-	 * sp:insertPattern. The WHERE clause is represented using sp:where.
-	 */
-	public static final URI INSERT_CLASS;
-
-	/**
 	 * http://spinrdf.org/sp#Modify Represents a MODIFY (part of SPARQL UPDATE
 	 * language). The graph IRIs are stored in sp:graphIRI. The template patterns
 	 * are stored in sp:deletePattern and sp:insertPattern. The WHERE clause is
 	 * represented using sp:where.
 	 */
 	public static final URI MODIFY_CLASS;
-
-	/**
-	 * http://spinrdf.org/sp#Insert Deprecated - use sp:Modify instead.
-	 * Represents a INSERT INTO (part of SPARQL UPDATE language). The graph IRIs
-	 * are stored in sp:graphIRI. The template patterns to delete are stored in
-	 * sp:insertPattern. The WHERE clause is represented using sp:where.
-	 */
-	@Deprecated
-	public static URI Insert;
 
 	/**
 	 * http://spinrdf.org/sp#Avg Represents AVG aggregations.
@@ -182,13 +165,6 @@ public class SP {
 	public static final URI TUPLE_CLASS;
 
 	/**
-	 * http://spinrdf.org/sp#Let Deprecated: use sp:Bind instead. A variable
-	 * assignment (LET (?<varName> := <expression>)). Not part of the SPARQL 1.0
-	 * standard, but (for example) ARQ.
-	 */
-	public static final URI LET_CLASS;
-
-	/**
 	 * http://spinrdf.org/sp#Bind A BIND element.
 	 */
 	public static final URI BIND_CLASS;
@@ -205,14 +181,6 @@ public class SP {
 	 * list. The query is stored in sp:query.
 	 */
 	public static final URI SUB_QUERY_CLASS;
-
-	/**
-	 * http://spinrdf.org/sp#Delete Deprecated - use sp:Modify instead.
-	 * Represents a DELETE FROM (part of SPARQL UPDATE language). The graph IRIs
-	 * are stored in sp:graphIRI. The template patterns to delete are stored in
-	 * sp:deletePattern. The WHERE clause is represented using sp:where.
-	 */
-	public static final URI DELETE_CLASS;
 
 	/**
 	 * http://spinrdf.org/sp#Min Represents MIN aggregations.
@@ -641,6 +609,8 @@ public class SP {
 	public static final URI VAR_NAMES_PROPERTY;
 	public static final URI UNDEF;
 
+	public static final URI EXISTS_CLASS;
+
 	// "The SPIN RDF Syntax provides standard URIs for the built-in functions and operators of the SPARQL language.
 	// For example, sp:gt represents the > operator."
 	public static final URI ADD;
@@ -673,16 +643,13 @@ public class SP {
 		DESC_CLASS = factory.createURI(NAMESPACE, "Desc");
 		TRIPLE_TEMPLATE_CLASS = factory.createURI(NAMESPACE, "TripleTemplate");
 		MAX_CLASS = factory.createURI(NAMESPACE, "Max");
-		INSERT_CLASS = factory.createURI(NAMESPACE, "Insert");
 		MODIFY_CLASS = factory.createURI(NAMESPACE, "Modify");
 		AVG_CLASS = factory.createURI(NAMESPACE, "Avg");
 		TRIPLE_PATH_CLASS = factory.createURI(NAMESPACE, "TriplePath");
 		TUPLE_CLASS = factory.createURI(NAMESPACE, "Tuple");
-		LET_CLASS = factory.createURI(NAMESPACE, "Let");
 		BIND_CLASS = factory.createURI(NAMESPACE, "Bind");
 		ELEMENT_LIST_CLASS = factory.createURI(NAMESPACE, "ElementList");
 		SUB_QUERY_CLASS = factory.createURI(NAMESPACE, "SubQuery");
-		DELETE_CLASS = factory.createURI(NAMESPACE, "Delete");
 		MIN_CLASS = factory.createURI(NAMESPACE, "Min");
 		OPTIONAL_CLASS = factory.createURI(NAMESPACE, "Optional");
 		ALT_PATH_CLASS = factory.createURI(NAMESPACE, "AltPath");
@@ -764,6 +731,8 @@ public class SP {
 		BINDINGS_PROPERTY = factory.createURI(NAMESPACE, "bindings");
 		VAR_NAMES_PROPERTY = factory.createURI(NAMESPACE, "varNames");
 		UNDEF = factory.createURI(NAMESPACE, "undef");
+
+		EXISTS_CLASS = factory.createURI(NAMESPACE, "Exists");
 
 		ADD = factory.createURI(NAMESPACE, "add");
 		SUB = factory.createURI(NAMESPACE, "sub");
