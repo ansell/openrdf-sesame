@@ -1,203 +1,84 @@
 package org.openrdf.sesame.spin;
 
-import info.aduna.iteration.Iterations;
+import info.aduna.iteration.CloseableIteration;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.openrdf.model.Literal;
-import org.openrdf.model.Namespace;
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
-import org.openrdf.model.vocabulary.SPIN;
-import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.algebra.Projection;
+import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedDescribeQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.sail.memory.MemoryStore;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 public class SPINParser {
-
-	public static Repository load(Reader reader, String baseURI, RDFFormat dataFormat) throws RDFParseException, RepositoryException, IOException {
-		Repository repository = new SailRepository(new MemoryStore());
-		repository.initialize();
-		RepositoryConnection connection = repository.getConnection();
-		connection.begin();
-		connection.add(reader, baseURI, dataFormat);
-		connection.commit();
-		connection.close();
-		return repository;
+	public ParsedQuery parseQuery(Resource queryResource, TripleSource store) throws OpenRDFException {
+		return parse(queryResource, null, store);
 	}
 
-	public static Multimap<Resource, ParsedQuery> parseConstraint(Repository repository) throws RepositoryException, MalformedQueryException, MalformedRuleException {
-		RepositoryConnection connection = repository.getConnection();
-		try
-		{
-			return new SPINParser().parseConstraint(connection);
+	public ParsedGraphQuery parseConstructQuery(Resource queryResource, TripleSource store) throws OpenRDFException {
+		return (ParsedGraphQuery) parse(queryResource, SP.CONSTRUCT_CLASS, store);
+	}
+
+	public ParsedTupleQuery parseSelectQuery(Resource queryResource, TripleSource store) throws OpenRDFException {
+		return (ParsedTupleQuery) parse(queryResource, SP.SELECT_CLASS, store);
+	}
+
+	public ParsedBooleanQuery parseAskQuery(Resource queryResource, TripleSource store) throws OpenRDFException {
+		return (ParsedBooleanQuery) parse(queryResource, SP.ASK_CLASS, store);
+	}
+
+	public ParsedDescribeQuery parseDescribeQuery(Resource queryResource, TripleSource store) throws OpenRDFException {
+		return (ParsedDescribeQuery) parse(queryResource, SP.DESCRIBE_CLASS, store);
+	}
+
+	protected ParsedQuery parse(Resource queryResource, URI queryType, TripleSource store) throws OpenRDFException {
+		// first try sp:text
+		Statement textStmt = single(queryResource, SP.TEXT_PROPERTY, null, store);
+		if(textStmt != null) {
+			return QueryParserUtil.parseQuery(QueryLanguage.SPARQL, textStmt.getObject().stringValue(), null);
 		}
-		finally
-		{
-			connection.close();
+
+		if(queryType == null) {
+			Statement queryTypeStmt = requireSingle(queryResource, RDF.TYPE, null, store);
+			queryType = (URI) queryTypeStmt.getObject();
 		}
+		throw new UnsupportedOperationException("TO DO");
 	}
 
-	public Multimap<Resource, ParsedQuery> parseConstraint(RepositoryConnection connection)
-			throws MalformedQueryException, MalformedRuleException, RepositoryException {
-		Multimap<Resource, ParsedQuery> queries = HashMultimap.create(1, 1);
-			recoverConstructQueriesFromTriples(queries, connection);
-		return queries;
-	}
-
-	private void recoverConstructQueriesFromTriples(
-			Multimap<Resource, ParsedQuery> queries,
-			RepositoryConnection connection) throws RepositoryException,
-			MalformedQueryException, MalformedRuleException {
-		RepositoryResult<Statement> queryStarts = connection.getStatements(
-				null, RDF.TYPE, SP.CONSTRUCT_CLASS, true);
-		while (queryStarts.hasNext()) {
-			recoverConstructQueryFromTriples(queryStarts.next(), queries,
-					connection);
-		}
-		queryStarts.close();
-	}
-
-	private void recoverConstructQueryFromTriples(Statement queryStart,
-			Multimap<Resource, ParsedQuery> queries,
-			RepositoryConnection connection) throws RepositoryException,
-			MalformedQueryException, MalformedRuleException {
-		Resource subject = queryStart.getSubject();
-		Resource resource = getBoundResource(connection, subject);
-		List<Literal> texts = findTexts(subject, connection);
-		for (Literal text : texts) {
-			RepositoryResult<Namespace> namespaces = connection.getNamespaces();
-			StringBuilder query = new StringBuilder(text.stringValue());
-			while (namespaces.hasNext()) {
-				Namespace namespace = namespaces.next();
-				query.insert(0, ">\n");
-				query.insert(0, namespace.getName());
-				query.insert(0, ": <");
-				query.insert(0, namespace.getPrefix());
-				query.insert(0, "PREFIX ");
+	private static Statement single(Resource subj, URI pred, Value obj, TripleSource store) throws OpenRDFException {
+		Statement stmt;
+		CloseableIteration<? extends Statement,QueryEvaluationException> stmts = store.getStatements(subj, pred, obj);
+		try {
+			if(stmts.hasNext()) {
+				stmt = stmts.next();
+				if(stmts.hasNext()) {
+					throw new MalformedQueryException("Multiple statements for pattern "+subj+" "+pred+" "+obj);
+				}
 			}
-			queries.put(
-					resource,
-					QueryParserUtil.parseGraphQuery(QueryLanguage.SPARQL,
-							query.toString(), null));
-		}
-		List<Resource> types = getWhere(subject, connection);
-		for (Resource where : types) {
-			List<Resource> variables = getVariables(where, connection);
-			queries.put(resource, new ParsedGraphQuery(new Projection()));
-		}
-	}
-
-	private Resource getBoundResource(RepositoryConnection connection,
-			Resource subject) throws RepositoryException,
-			MalformedRuleException {
-		Resource resource = null;
-		if (shouldBeBound(connection, subject)) {
-			List<Statement> list = Iterations.asList(connection.getStatements(
-					null, SPIN.CONSTRAINT_PROPERTY, subject, true));
-			int numBoundResources = list.size();
-			if (1 != numBoundResources) {
-				throw new MalformedRuleException(
-						"Expected 1 attached resource, got "
-								+ numBoundResources);
+			else {
+				stmt = null;
 			}
-			resource = list.get(0).getSubject();
 		}
-		return resource;
-	}
-
-	private boolean shouldBeBound(RepositoryConnection connection,
-			Resource subject) throws RepositoryException,
-			MalformedRuleException {
-		List<Statement> thisUnboundStatements = Iterations
-				.asList(connection.getStatements(subject,
-						SPIN.THIS_UNBOUND_PROPERTY, null, true));
-		int numUnboundStatements = thisUnboundStatements.size();
-		if (1 < numUnboundStatements) {
-			throw new MalformedRuleException(
-					"Expected at most 1 spin:thisUnbound predicate, found "
-							+ numUnboundStatements);
+		finally {
+			stmts.close();
 		}
-		boolean shouldBeBound = numUnboundStatements == 0;
-		if (!shouldBeBound) {
-			Statement statement = thisUnboundStatements.get(0);
-			Value boundValue = statement.getObject();
-			if (!(boundValue instanceof Literal)) {
-				throw new MalformedRuleException(
-						"Expected a Literal as the statement object: "
-								+ statement);
-			}
-			Literal boundLiteral = (Literal) boundValue;
-			if (boundLiteral.getDatatype() != XMLSchema.BOOLEAN) {
-				throw new MalformedRuleException(
-						"Expected an xsd:boolean as the statment object: "
-								+ statement);
-			}
-			shouldBeBound = !boundLiteral.booleanValue();
+		return stmt;
+	}
+
+	private static Statement requireSingle(Resource subj, URI pred, Value obj, TripleSource store) throws OpenRDFException {
+		Statement stmt = single(subj, pred, obj, store);
+		if(stmt == null) {
+			throw new MalformedQueryException("Missing statement for pattern "+subj+" "+pred+" "+obj);
 		}
-		return shouldBeBound;
-	}
-
-	private List<Resource> getVariables(Resource where,
-			RepositoryConnection connection) throws RepositoryException {
-		return findSubjects(where, connection, SP.VAR_NAME_PROPERTY);
-	}
-
-	private List<Resource> getWhere(Resource subject,
-			RepositoryConnection connection) throws RepositoryException {
-		return findSubjects(subject, connection, SP.WHERE_PROPERTY);
-	}
-
-	private List<Resource> findSubjects(Resource subject,
-			RepositoryConnection connection, URI predicate)
-			throws RepositoryException {
-		return findSubjects(subject, connection, new ArrayList<Resource>(),
-				predicate);
-	}
-
-	private List<Literal> findTexts(Resource subject,
-			RepositoryConnection connection) throws RepositoryException {
-		List<Literal> result = new ArrayList<Literal>();
-		RepositoryResult<Statement> queryStarts = connection.getStatements(
-				subject, SP.TEXT_PROPERTY, null, true);
-		while (queryStarts.hasNext()) {
-			Statement queryStart = queryStarts.next();
-			result.add((Literal) queryStart.getObject());
-		}
-		return result;
-	}
-
-	private List<Resource> findSubjects(Resource subject,
-			RepositoryConnection connection, List<Resource> types, URI predicate)
-			throws RepositoryException {
-		RepositoryResult<Statement> queryStarts = connection.getStatements(
-				subject, predicate, null, true);
-		while (queryStarts.hasNext()) {
-			Statement queryStart = queryStarts.next();
-			types.add((Resource) queryStart.getObject());
-		}
-		return types;
+		return stmt;
 	}
 }

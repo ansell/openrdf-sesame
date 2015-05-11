@@ -21,7 +21,7 @@ ASK WHERE {
                         	sp:arg1 [
                         		a sp:add ;
                         		sp:arg1 _:score ;
-                        		sp:arg2 +5 # '+' needed as for some reason the parser returns a non-canonical lexical representation
+                        		sp:arg2 5
                         	];
                         	sp:arg2 0
                           ];

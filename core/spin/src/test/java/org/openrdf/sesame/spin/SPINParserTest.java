@@ -34,10 +34,10 @@ public class SPINParserTest {
 	public void test() throws RDFParseException, RDFHandlerException,
 			IOException, RepositoryException, MalformedQueryException,
 			MalformedRuleException {
-		Repository repo = SPINParser.load(new StringReader(""), "",
+		Repository repo = OldSPINParser.load(new StringReader(""), "",
 				RDFFormat.TURTLE);
 		try {
-			assertThat(SPINParser.parseConstraint(repo).size(), is(equalTo(0)));
+			assertThat(OldSPINParser.parseConstraint(repo).size(), is(equalTo(0)));
 		}
 		finally {
 			repo.shutDown();
@@ -85,10 +85,10 @@ public class SPINParserTest {
 
 	private static Multimap<Resource, ParsedQuery> parseConstraint(String filename)
 			throws RDFParseException, RepositoryException, IOException, MalformedQueryException, MalformedRuleException {
-		Repository repo = SPINParser.load(new InputStreamReader(
+		Repository repo = OldSPINParser.load(new InputStreamReader(
 				ResourceUtil.getInputStream(filename)), "", RDFFormat.TURTLE);
 		try {
-			return SPINParser.parseConstraint(repo);
+			return OldSPINParser.parseConstraint(repo);
 		}
 		finally {
 			repo.shutDown();
