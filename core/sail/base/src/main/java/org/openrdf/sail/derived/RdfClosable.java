@@ -23,7 +23,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public interface RdfClosable extends AutoCloseable {
+public interface RdfClosable {
 
 	/**
 	 * Closes this resource, relinquishing any underlying resources. This method
