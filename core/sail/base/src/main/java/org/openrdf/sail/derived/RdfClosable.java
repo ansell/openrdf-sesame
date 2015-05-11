@@ -26,9 +26,7 @@ import org.openrdf.sail.SailException;
 public interface RdfClosable {
 
 	/**
-	 * Closes this resource, relinquishing any underlying resources. This method
-	 * is invoked automatically on objects managed by the {@code try}
-	 * -with-resources statement.
+	 * Closes this resource, relinquishing any underlying resources.
 	 * 
 	 * @throws SailException
 	 *         if this resource cannot be closed
