@@ -16,39 +16,21 @@
  */
 package org.openrdf.sail.derived;
 
-import java.util.NoSuchElementException;
+import info.aduna.iteration.EmptyIteration;
+
+import org.openrdf.sail.SailException;
 
 /**
  * An {@link RdfIteration} that does not contain any elements.
  * 
  * @author James Leigh
  */
-public class EmptyRdfIteration<T> implements RdfIteration<T> {
+public class EmptyRdfIteration<T> extends EmptyIteration<T, SailException> implements RdfIteration<T> {
 
 	private static final EmptyRdfIteration<?> instance = new EmptyRdfIteration<Object>();
 
 	public static <T> EmptyRdfIteration<T> emptyIteration() {
 		return (EmptyRdfIteration<T>)instance;
-	}
-
-	@Override
-	public void close() {
-		// no-op
-	}
-
-	@Override
-	public boolean hasNext() {
-		return false;
-	}
-
-	@Override
-	public T next() {
-		throw new NoSuchElementException();
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
 	}
 
 }

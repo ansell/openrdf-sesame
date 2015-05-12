@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.derived;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -56,12 +57,12 @@ public class DerivedRdfBranch implements RdfBranch {
 	 * {@link RdfSink} that have been created, but not yet
 	 * {@link RdfSink#flush()}ed to this {@link RdfBranch}.
 	 */
-	private final LinkedList<Changeset> pending = new LinkedList<Changeset>();
+	private final Collection<Changeset> pending = new LinkedList<Changeset>();
 
 	/**
 	 * Set of open {@link RdfDataset} for this {@link RdfBranch}.
 	 */
-	private final LinkedList<RdfDataset> observers = new LinkedList<RdfDataset>();
+	private final Collection<RdfDataset> observers = new LinkedList<RdfDataset>();
 
 	/**
 	 * The underly {@link RdfSource} this {@link RdfBranch} is derived from.
