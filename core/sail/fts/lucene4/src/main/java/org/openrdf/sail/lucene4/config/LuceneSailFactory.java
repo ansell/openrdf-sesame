@@ -21,7 +21,7 @@ import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.lucene.LuceneSail;
-import org.openrdf.sail.lucene.config.LuceneSailConfig;
+import org.openrdf.sail.lucene.config.AbstractLuceneSailConfig;
 import org.openrdf.sail.lucene4.LuceneIndex;
 
 /**
@@ -35,10 +35,10 @@ public class LuceneSailFactory implements SailFactory {
 	 * 
 	 * @see SailFactory#getSailType()
 	 */
-	public static final String SAIL_TYPE = LuceneSailConfig.SAIL_TYPE;
+	public static final String SAIL_TYPE = "openrdf:LuceneSail/4";
 
 	/**
-	 * Returns the Sail's type: <tt>openrdf:LuceneSail</tt>.
+	 * Returns the Sail's type: <tt>openrdf:LuceneSail/4</tt>.
 	 */
 	@Override
 	public String getSailType() {
@@ -61,8 +61,8 @@ public class LuceneSailFactory implements SailFactory {
 		LuceneSail luceneSail = new LuceneSail();
 		luceneSail.setParameter(LuceneSail.INDEX_CLASS_KEY, LuceneIndex.class.getName());
 
-		if (config instanceof LuceneSailConfig) {
-			LuceneSailConfig luceneConfig = (LuceneSailConfig)config;
+		if (config instanceof AbstractLuceneSailConfig) {
+			AbstractLuceneSailConfig luceneConfig = (AbstractLuceneSailConfig)config;
 			luceneSail.setParameter(LuceneSail.LUCENE_DIR_KEY, luceneConfig.getIndexDir());
 		}
 
