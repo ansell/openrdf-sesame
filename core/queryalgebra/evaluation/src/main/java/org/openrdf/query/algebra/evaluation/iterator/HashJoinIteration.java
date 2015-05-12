@@ -242,13 +242,14 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 			BindingSetHashKey hashKey = BindingSetHashKey.create(joinAttributes, b);
 
 			List<BindingSet> hashValue = hashTable.get(hashKey);
-			if (hashValue == null) {
+			boolean newEntry = (hashValue == null);
+			if (newEntry) {
 				hashValue = makeHashValue(maxListSize);
 			}
 			add(hashValue, b);
 			// always do a put() in case the map implementation is not memory-based
 			// e.g. it serializes the values
-			putHashTableEntry(hashTable, hashKey, hashValue);
+			putHashTableEntry(hashTable, hashKey, hashValue, newEntry);
 
 			maxListSize = Math.max(maxListSize, hashValue.size());
 		}
@@ -256,12 +257,12 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	}
 
 	protected void putHashTableEntry(Map<BindingSetHashKey, List<BindingSet>> hashTable, BindingSetHashKey hashKey,
-			List<BindingSet> hashValue)
+			List<BindingSet> hashValue, boolean newEntry)
 		throws QueryEvaluationException
 	{
 		// by default, we use a standard memory hash map
-		// so we only need to do the put() if the list new
-		if(hashValue.size() == 1)
+		// so we only need to do the put() if the list is new
+		if(newEntry)
 		{
 			hashTable.put(hashKey, hashValue);
 		}
