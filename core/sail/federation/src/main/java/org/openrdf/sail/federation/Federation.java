@@ -36,9 +36,13 @@ import org.openrdf.http.client.SesameClient;
 import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
+import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -47,6 +51,7 @@ import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.federation.evaluation.FederationStrategy;
 
 /**
  * Union multiple (possibly remote) Repositories into a single RDF store.
@@ -271,6 +276,10 @@ public class Federation implements Sail, Executor, FederatedServiceResolverClien
 			closeAll(connections);
 			throw e;
 		}
+	}
+
+	protected EvaluationStrategy createEvaluationStrategy(TripleSource tripleSource, Dataset dataset, FederatedServiceResolver resolver) {
+		return new FederationStrategy(this, tripleSource, dataset, getFederatedServiceResolver());
 	}
 
 	private void closeAll(Iterable<RepositoryConnection> connections) {
