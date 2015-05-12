@@ -22,7 +22,7 @@ import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
 import org.openrdf.sail.elasticsearch.ElasticsearchIndex;
 import org.openrdf.sail.lucene.LuceneSail;
-import org.openrdf.sail.lucene.config.LuceneSailConfig;
+import org.openrdf.sail.lucene.config.AbstractLuceneSailConfig;
 
 /**
  * A {@link SailFactory} that creates {@link LuceneSail}s based on RDF
@@ -35,10 +35,10 @@ public class ElasticsearchSailFactory implements SailFactory {
 	 * 
 	 * @see SailFactory#getSailType()
 	 */
-	public static final String SAIL_TYPE = LuceneSailConfig.SAIL_TYPE;
+	public static final String SAIL_TYPE = "openrdf:LuceneSail/Elasticsearch";
 
 	/**
-	 * Returns the Sail's type: <tt>openrdf:LuceneSail</tt>.
+	 * Returns the Sail's type: <tt>openrdf:LuceneSail/Elasticsearch</tt>.
 	 */
 	@Override
 	public String getSailType() {
@@ -47,7 +47,7 @@ public class ElasticsearchSailFactory implements SailFactory {
 
 	@Override
 	public SailImplConfig getConfig() {
-		return new LuceneSailConfig();
+		return new ElasticsearchSailConfig();
 	}
 
 	@Override
@@ -61,8 +61,8 @@ public class ElasticsearchSailFactory implements SailFactory {
 		LuceneSail luceneSail = new LuceneSail();
 		luceneSail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticsearchIndex.class.getName());
 
-		if (config instanceof LuceneSailConfig) {
-			LuceneSailConfig luceneConfig = (LuceneSailConfig)config;
+		if (config instanceof AbstractLuceneSailConfig) {
+			AbstractLuceneSailConfig luceneConfig = (AbstractLuceneSailConfig)config;
 			luceneSail.setParameter(LuceneSail.LUCENE_DIR_KEY, luceneConfig.getIndexDir());
 		}
 
