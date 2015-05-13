@@ -57,7 +57,7 @@ public class HashJoinIterationTest {
 			right.setBindingSets(Arrays.<BindingSet>asList(rightb));
 		}
 
-		HashJoinIteration iter = new HashJoinIteration(evaluator, new Join(left, right), EmptyBindingSet.getInstance());
+		HashJoinIteration iter = new HashJoinIteration(evaluator, left, right, EmptyBindingSet.getInstance(), false);
 		BindingSet actual = iter.next();
 		
 		assertEquals("1", actual.getValue("a").stringValue());
@@ -82,7 +82,7 @@ public class HashJoinIterationTest {
 			right.setBindingSets(Arrays.<BindingSet>asList(rightb));
 		}
 
-		HashJoinIteration iter = new HashJoinIteration(evaluator, new Join(left, right), EmptyBindingSet.getInstance());
+		HashJoinIteration iter = new HashJoinIteration(evaluator, left, right, EmptyBindingSet.getInstance(), false);
 		BindingSet actual = iter.next();
 		
 		assertEquals("1", actual.getValue("a").stringValue());
@@ -108,7 +108,7 @@ public class HashJoinIterationTest {
 			right.setBindingSets(Arrays.<BindingSet>asList(rightb));
 		}
 
-		HashJoinIteration iter = new HashJoinIteration(evaluator, new Join(left, right), EmptyBindingSet.getInstance(), true);
+		HashJoinIteration iter = new HashJoinIteration(evaluator, left, right, EmptyBindingSet.getInstance(), true);
 		BindingSet actual = iter.next();
 		
 		assertEquals("1", actual.getValue("a").stringValue());

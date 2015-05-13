@@ -33,6 +33,8 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -57,7 +59,7 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private Map<BindingSetHashKey, List<BindingSet>> hashTable;
 
-	private String[] joinAttributes;
+	protected final String[] joinAttributes;
 
 	private BindingSet currentScanElem;
 
@@ -72,17 +74,23 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	public HashJoinIteration(EvaluationStrategy strategy, Join join, BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		this(strategy, join, bindings, false);
+		this(strategy, join.getLeftArg(), join.getRightArg(), bindings, false);
 	}
 
-	public HashJoinIteration(EvaluationStrategy strategy, Join join, BindingSet bindings, boolean leftJoin)
+	public HashJoinIteration(EvaluationStrategy strategy, LeftJoin join, BindingSet bindings)
 			throws QueryEvaluationException
 	{
-		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
-		rightIter = strategy.evaluate(join.getRightArg(), bindings);
+		this(strategy, join.getLeftArg(), join.getRightArg(), bindings, true);
+	}
 
-		Set<String> joinAttributeNames = join.getLeftArg().getBindingNames();
-		joinAttributeNames.retainAll(join.getRightArg().getBindingNames());
+	public HashJoinIteration(EvaluationStrategy strategy, TupleExpr left, TupleExpr right, BindingSet bindings, boolean leftJoin)
+			throws QueryEvaluationException
+	{
+		leftIter = strategy.evaluate(left, bindings);
+		rightIter = strategy.evaluate(right, bindings);
+
+		Set<String> joinAttributeNames = left.getBindingNames();
+		joinAttributeNames.retainAll(right.getBindingNames());
 		joinAttributes = joinAttributeNames.toArray(new String[joinAttributeNames.size()]);
 
 		this.leftJoin = leftJoin;
