@@ -86,7 +86,7 @@ public class TransactionWriter {
 	 * @param op
 	 *        The operation to serialize
 	 */
-	private void serialize(TransactionOperation op, XMLWriter xmlWriter)
+	protected void serialize(TransactionOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (op instanceof AddStatementOperation) {
@@ -118,7 +118,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serialize(AddStatementOperation op, XMLWriter xmlWriter)
+	protected void serialize(AddStatementOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		xmlWriter.startTag(TransactionXMLConstants.ADD_STATEMENT_TAG);
@@ -126,7 +126,7 @@ public class TransactionWriter {
 		xmlWriter.endTag(TransactionXMLConstants.ADD_STATEMENT_TAG);
 	}
 
-	private void serialize(SPARQLUpdateOperation op, XMLWriter xmlWriter)
+	protected void serialize(SPARQLUpdateOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		String baseURI = op.getBaseURI();
@@ -212,7 +212,7 @@ public class TransactionWriter {
 
 	}
 
-	private void serialize(RemoveStatementsOperation op, XMLWriter xmlWriter)
+	protected void serialize(RemoveStatementsOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		xmlWriter.startTag(TransactionXMLConstants.REMOVE_STATEMENTS_TAG);
@@ -220,7 +220,7 @@ public class TransactionWriter {
 		xmlWriter.endTag(TransactionXMLConstants.REMOVE_STATEMENTS_TAG);
 	}
 
-	private void serialize(StatementOperation op, XMLWriter xmlWriter)
+	protected void serialize(StatementOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		serialize(op.getSubject(), xmlWriter);
@@ -229,7 +229,7 @@ public class TransactionWriter {
 		serialize(op.getContexts(), xmlWriter);
 	}
 
-	private void serialize(ClearOperation op, XMLWriter xmlWriter)
+	protected void serialize(ClearOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		xmlWriter.startTag(TransactionXMLConstants.CLEAR_TAG);
@@ -237,7 +237,7 @@ public class TransactionWriter {
 		xmlWriter.endTag(TransactionXMLConstants.CLEAR_TAG);
 	}
 
-	private void serialize(SetNamespaceOperation op, XMLWriter xmlWriter)
+	protected void serialize(SetNamespaceOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		xmlWriter.setAttribute(TransactionXMLConstants.PREFIX_ATT, op.getPrefix());
@@ -245,20 +245,20 @@ public class TransactionWriter {
 		xmlWriter.emptyElement(TransactionXMLConstants.SET_NAMESPACE_TAG);
 	}
 
-	private void serialize(RemoveNamespaceOperation op, XMLWriter xmlWriter)
+	protected void serialize(RemoveNamespaceOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		xmlWriter.setAttribute(TransactionXMLConstants.PREFIX_ATT, op.getPrefix());
 		xmlWriter.emptyElement(TransactionXMLConstants.REMOVE_NAMESPACE_TAG);
 	}
 
-	private void serialize(ClearNamespacesOperation op, XMLWriter xmlWriter)
+	protected void serialize(ClearNamespacesOperation op, XMLWriter xmlWriter)
 		throws IOException
 	{
 		xmlWriter.emptyElement(TransactionXMLConstants.CLEAR_NAMESPACES_TAG);
 	}
 
-	private void serialize(Resource[] contexts, XMLWriter xmlWriter)
+	protected void serialize(Resource[] contexts, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (contexts.length > 0) {
@@ -273,7 +273,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serialize(Value value, XMLWriter xmlWriter)
+	protected void serialize(Value value, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (value instanceof Resource) {
@@ -290,7 +290,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serialize(Resource resource, XMLWriter xmlWriter)
+	protected void serialize(Resource resource, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (resource instanceof URI) {
@@ -307,7 +307,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serialize(URI uri, XMLWriter xmlWriter)
+	protected void serialize(URI uri, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (uri != null) {
@@ -318,7 +318,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serialize(BNode bnode, XMLWriter xmlWriter)
+	protected void serialize(BNode bnode, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (bnode != null) {
@@ -329,7 +329,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serialize(Literal literal, XMLWriter xmlWriter)
+	protected void serialize(Literal literal, XMLWriter xmlWriter)
 		throws IOException
 	{
 		if (literal != null) {
@@ -361,7 +361,7 @@ public class TransactionWriter {
 		}
 	}
 
-	private void serializeNull(XMLWriter xmlWriter)
+	protected void serializeNull(XMLWriter xmlWriter)
 		throws IOException
 	{
 		xmlWriter.emptyElement(TransactionXMLConstants.NULL_TAG);
