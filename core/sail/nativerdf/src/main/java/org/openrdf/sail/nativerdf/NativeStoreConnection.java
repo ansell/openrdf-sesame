@@ -483,7 +483,16 @@ public class NativeStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	@Override
-	public void startUpdate(UpdateContext op) {
+	public void startUpdate(UpdateContext op)
+		throws SailException
+	{
+		if (op != null) {
+			if (!isActiveOperation() || isActive()
+					&& !getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+			{
+				flush();
+			}
+		}
 		synchronized (removed) {
 			assert !removed.containsKey(op);
 			removed.put(op, new StatementList());
