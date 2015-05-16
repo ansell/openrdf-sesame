@@ -22,23 +22,23 @@ import org.openrdf.OpenRDFException;
  * An exception thrown by the SPIN parser when it encounters malformed
  * SPIN rules, constraints or constructors.
  */
-public class MalformedRuleException extends OpenRDFException {
+public class MalformedQueryException extends OpenRDFException {
 
 	private static final long serialVersionUID = -5345676977796873420L;
 
-	public MalformedRuleException() {
+	public MalformedQueryException() {
 		super();
 	}
 
-	public MalformedRuleException(String msg) {
+	public MalformedQueryException(String msg) {
 		super(msg);
 	}
 
-	public MalformedRuleException(Throwable t) {
+	public MalformedQueryException(Throwable t) {
 		super(t);
 	}
 
-	public MalformedRuleException(String msg, Throwable t) {
+	public MalformedQueryException(String msg, Throwable t) {
 		super(msg, t);
 	}
 }

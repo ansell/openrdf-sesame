@@ -876,7 +876,41 @@ public class SPINRenderer {
 		final Map<String,URI> wkfs = new HashMap<String,URI>();
 
 		public SPINWellKnownFunctions() {
+			wkfs.put(FN.SUBSTRING.stringValue(), valueFactory.createURI(SP.NAMESPACE, "substr"));
+			wkfs.put(FN.SUBSTRING_BEFORE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strbefore"));
+			wkfs.put(FN.SUBSTRING_AFTER.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strafter"));
+			wkfs.put(FN.STARTS_WITH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strstarts"));
+			wkfs.put(FN.ENDS_WITH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strends"));
 			wkfs.put(FN.STRING_LENGTH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strlen"));
+			wkfs.put(FN.CONCAT.stringValue(), valueFactory.createURI(SP.NAMESPACE, "concat"));
+			wkfs.put(FN.CONTAINS.stringValue(), valueFactory.createURI(SP.NAMESPACE, "contains"));
+			wkfs.put(FN.LOWER_CASE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "lcase"));
+			wkfs.put(FN.UPPER_CASE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "ucase"));
+			wkfs.put(FN.REPLACE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "replace"));
+			wkfs.put(FN.NUMERIC_ABS.stringValue(), valueFactory.createURI(SP.NAMESPACE, "abs"));
+			wkfs.put(FN.NUMERIC_CEIL.stringValue(), valueFactory.createURI(SP.NAMESPACE, "ceil"));
+			wkfs.put(FN.NUMERIC_FLOOR.stringValue(), valueFactory.createURI(SP.NAMESPACE, "floor"));
+			wkfs.put(FN.NUMERIC_ROUND.stringValue(), valueFactory.createURI(SP.NAMESPACE, "round"));
+			wkfs.put(FN.YEAR_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "year"));
+			wkfs.put(FN.MONTH_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "month"));
+			wkfs.put(FN.DAY_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "day"));
+			wkfs.put(FN.HOURS_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "hours"));
+			wkfs.put(FN.MINUTES_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "minutes"));
+			wkfs.put(FN.SECONDS_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "seconds"));
+			wkfs.put(FN.TIMEZONE_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "timezone"));
+			wkfs.put(FN.ENCODE_FOR_URI.stringValue(), valueFactory.createURI(SP.NAMESPACE, "encode_for_uri"));
+			wkfs.put("NOW", valueFactory.createURI(SP.NAMESPACE, "now"));
+			wkfs.put("RAND", valueFactory.createURI(SP.NAMESPACE, "rand"));
+			wkfs.put("STRDT", valueFactory.createURI(SP.NAMESPACE, "strdt"));
+			wkfs.put("STRLANG", valueFactory.createURI(SP.NAMESPACE, "strlang"));
+			wkfs.put("TZ", valueFactory.createURI(SP.NAMESPACE, "tz"));
+			wkfs.put("UUID", valueFactory.createURI(SP.NAMESPACE, "uuid"));
+			wkfs.put("STRUUID", valueFactory.createURI(SP.NAMESPACE, "struuid"));
+			wkfs.put("MD5", valueFactory.createURI(SP.NAMESPACE, "md5"));
+			wkfs.put("SHA1", valueFactory.createURI(SP.NAMESPACE, "sha1"));
+			wkfs.put("SHA256", valueFactory.createURI(SP.NAMESPACE, "sha256"));
+			wkfs.put("SHA384", valueFactory.createURI(SP.NAMESPACE, "sha384"));
+			wkfs.put("SHA512", valueFactory.createURI(SP.NAMESPACE, "sha512"));
 		}
 
 		@Override
