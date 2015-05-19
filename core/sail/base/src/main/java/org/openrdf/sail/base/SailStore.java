@@ -16,7 +16,6 @@
  */
 package org.openrdf.sail.base;
 
-import org.openrdf.IsolationLevel;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 
@@ -44,17 +43,13 @@ public interface SailStore extends SailClosable {
 	EvaluationStatistics getEvaluationStatistics();
 
 	/**
-	 * @param level
-	 *        Minimum isolation level required
 	 * @return {@link SailSource} of only explicit statements
 	 */
-	SailSource getExplicitSailSource(IsolationLevel level);
+	SailSource getExplicitSailSource();
 
 	/**
-	 * @param level
-	 *        Minimum isolation level required
 	 * @return {@link SailSource} of only inferred statements
 	 */
-	SailSource getInferredSailSource(IsolationLevel level);
+	SailSource getInferredSailSource();
 
 }

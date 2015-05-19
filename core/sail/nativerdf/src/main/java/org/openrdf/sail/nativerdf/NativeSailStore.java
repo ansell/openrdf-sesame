@@ -133,11 +133,11 @@ class NativeSailStore implements SailStore {
 		return new NativeEvaluationStatistics(valueStore, tripleStore);
 	}
 
-	public SailSource getExplicitSailSource(IsolationLevel level) {
+	public SailSource getExplicitSailSource() {
 		return new NativeSailSource(true);
 	}
 
-	public SailSource getInferredSailSource(IsolationLevel level) {
+	public SailSource getInferredSailSource() {
 		return new NativeSailSource(false);
 	}
 

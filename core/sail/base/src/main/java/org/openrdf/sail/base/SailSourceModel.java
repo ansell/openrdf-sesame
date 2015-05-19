@@ -99,7 +99,7 @@ public class SailSourceModel extends AbstractModel {
 	private final IsolationLevels level = IsolationLevels.NONE;
 
 	public SailSourceModel(SailStore store) {
-		this(store.getExplicitSailSource(IsolationLevels.NONE));
+		this(store.getExplicitSailSource());
 	}
 
 	public SailSourceModel(SailSource source) {

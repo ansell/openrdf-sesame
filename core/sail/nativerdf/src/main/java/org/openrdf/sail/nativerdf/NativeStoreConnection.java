@@ -18,6 +18,8 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.IOException;
 
+import info.aduna.concurrent.locks.Lock;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -35,13 +37,18 @@ public class NativeStoreConnection extends DerivedSailConnection {
 	 * Constants *
 	 *-----------*/
 
-	protected final NativeStore sail;
+	protected final NativeStore nativeStore;
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
 	private volatile DefaultSailChangedEvent sailChangedEvent;
+
+	/**
+	 * The transaction lock held by this connection during transactions.
+	 */
+	private volatile Lock txnLock;
 
 	/*--------------*
 	 * Constructors *
@@ -51,7 +58,7 @@ public class NativeStoreConnection extends DerivedSailConnection {
 		throws IOException
 	{
 		super(sail, sail.getSailStore(), sail.getFederatedServiceResolver());
-		this.sail = sail;
+		this.nativeStore = sail;
 		sailChangedEvent = new DefaultSailChangedEvent(sail);
 	}
 
@@ -63,31 +70,53 @@ public class NativeStoreConnection extends DerivedSailConnection {
 	protected void startTransactionInternal()
 		throws SailException
 	{
-		if (!sail.isWritable()) {
+		if (!nativeStore.isWritable()) {
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
-		super.startTransactionInternal();
+		boolean releaseLock = true;
+		try {
+			if (txnLock == null || !txnLock.isActive()) {
+				txnLock = nativeStore.getTransactionLock(getTransactionIsolation());
+			}
+			super.startTransactionInternal();
+		} finally {
+			if (releaseLock && txnLock != null) {
+				txnLock.release();
+			}
+		}
 	}
 
 	@Override
 	protected void commitInternal()
 		throws SailException
 	{
-		super.commitInternal();
+		try {
+			super.commitInternal();
+		} finally {
+			if (txnLock != null) {
+				txnLock.release();
+			}
+		}
 
-		sail.notifySailChanged(sailChangedEvent);
+		nativeStore.notifySailChanged(sailChangedEvent);
 
 		// create a fresh event object.
-		sailChangedEvent = new DefaultSailChangedEvent(sail);
+		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
 	}
 
 	@Override
 	protected void rollbackInternal()
 		throws SailException
 	{
-		super.rollbackInternal();
+		try {
+			super.rollbackInternal();
+		} finally {
+			if (txnLock != null) {
+				txnLock.release();
+			}
+		}
 		// create a fresh event object.
-		sailChangedEvent = new DefaultSailChangedEvent(sail);
+		sailChangedEvent = new DefaultSailChangedEvent(nativeStore);
 	}
 
 	@Override

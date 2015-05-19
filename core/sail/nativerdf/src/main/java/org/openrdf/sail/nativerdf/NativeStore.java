@@ -18,12 +18,15 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.FileUtils;
 
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.concurrent.locks.LockManager;
 import info.aduna.io.MavenUtil;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Model;
 import org.openrdf.model.ValueFactory;
@@ -33,6 +36,7 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverI
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.base.SailModelFactory;
+import org.openrdf.sail.base.SailSource;
 import org.openrdf.sail.base.SailStore;
 import org.openrdf.sail.base.SnapshotSailStore;
 import org.openrdf.sail.helpers.DirectoryLockManager;
@@ -85,6 +89,21 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 
 	/** dependent life cycle */
 	private FederatedServiceResolverImpl dependentServiceResolver;
+
+	/**
+	 * Lock manager used to prevent concurrent {@link #getTransactionLock(IsolationLevel)} calls.
+	 */
+	private final ReentrantLock txnLockManager = new ReentrantLock();
+
+	/**
+	 * Holds locks for all isolated transactions.
+	 */
+	private final LockManager isolatedLockManager = new LockManager(debugEnabled());
+
+	/**
+	 * Holds locks for all {@link IsolationLevels#NONE} isolation transactions.
+	 */
+	private final LockManager disabledIsolationLockManager = new LockManager(debugEnabled());
 
 	/*--------------*
 	 * Constructors *
@@ -229,8 +248,8 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			if (!VERSION.equals(version) && upgradeStore(dataDir, version)) {
 				FileUtils.writeStringToFile(versionFile, VERSION);
 			}
-			NativeSailStore master = new NativeSailStore(dataDir, tripleIndexes, forceSync, valueCacheSize,
-					valueIDCacheSize, namespaceCacheSize, namespaceIDCacheSize);
+			final NativeSailStore master = new NativeSailStore(dataDir, tripleIndexes, forceSync,
+					valueCacheSize, valueIDCacheSize, namespaceCacheSize, namespaceIDCacheSize);
 			this.store = new SnapshotSailStore(master, new SailModelFactory() {
 
 				@Override
@@ -241,11 +260,36 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 						protected SailStore createSailStore(File dataDir)
 							throws IOException, SailException
 						{
+							// Model can't fit into memory, use another NativeSailStore to store delta
 							return new NativeSailStore(dataDir, getTripleIndexes());
 						}
 					};
 				}
-			});
+			})
+			{
+
+				@Override
+				public SailSource getExplicitSailSource() {
+					if (isIsolationDisabled()) {
+						// no isolation, use NativeSailStore directly
+						return master.getExplicitSailSource();
+					}
+					else {
+						return super.getExplicitSailSource();
+					}
+				}
+
+				@Override
+				public SailSource getInferredSailSource() {
+					if (isIsolationDisabled()) {
+						// no isolation, use NativeSailStore directly
+						return master.getInferredSailSource();
+					}
+					else {
+						return super.getInferredSailSource();
+					}
+				}
+			};
 		}
 		catch (Throwable e) {
 			// NativeStore initialization failed, release any allocated files
@@ -295,6 +339,57 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 
 	public ValueFactory getValueFactory() {
 		return store.getValueFactory();
+	}
+
+	/**
+	 * This call will block when {@link IsolationLevels#NONE} is provided when
+	 * there are active transactions with a higher isolation and block when a
+	 * higher isolation is provided when there are active transactions with
+	 * {@link IsolationLevels#NONE} isolation. Store is either exclusively in
+	 * {@link IsolationLevels#NONE} isolation with potentially zero or more
+	 * transactions, or exclusively in higher isolation mode with potentially
+	 * zero or more transactions.
+	 * 
+	 * @param level
+	 *        indicating desired mode {@link IsolationLevels#NONE} or higher
+	 * @return Lock used to prevent Store from switching isolation modes
+	 * @throws SailException
+	 */
+	protected Lock getTransactionLock(IsolationLevel level)
+		throws SailException
+	{
+		txnLockManager.lock();
+		try {
+			if (IsolationLevels.NONE.isCompatibleWith(level)) {
+				// make sure no isolated transaction are active
+				isolatedLockManager.waitForActiveLocks();
+				// mark isolation as disabled
+				return disabledIsolationLockManager.createLock(level.toString());
+			}
+			else {
+				// make sure isolation is not disabled
+				disabledIsolationLockManager.waitForActiveLocks();
+				// mark isolated transaction as active
+				return isolatedLockManager.createLock(level.toString());
+			}
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new SailException(e);
+		} finally {
+			txnLockManager.unlock();
+		}
+	}
+
+	/**
+	 * Checks if any {@link IsolationLevels#NONE} isolation transactions are
+	 * active.
+	 * 
+	 * @return <code>true</code> if at least one transaction has direct access to
+	 *         the indexes
+	 */
+	boolean isIsolationDisabled() {
+		return disabledIsolationLockManager.isActiveLock();
 	}
 
 	SailStore getSailStore() {

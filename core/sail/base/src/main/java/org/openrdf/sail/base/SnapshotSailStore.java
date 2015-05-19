@@ -16,7 +16,6 @@
  */
 package org.openrdf.sail.base;
 
-import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
@@ -31,21 +30,19 @@ import org.openrdf.sail.SailException;
  */
 public class SnapshotSailStore implements SailStore {
 
-	private static final IsolationLevels NONE = IsolationLevels.NONE;
-
 	/**
 	 * The underlying {@link SailStore}.
 	 */
 	private final SailStore backingStore;
 
 	/**
-	 * {@link SailBranch} of {@link SailStore#getExplicitSailSource(IsolationLevel)}
+	 * {@link SailBranch} of {@link SailStore#getExplicitSailSource()}
 	 * .
 	 */
 	private final DerivedSailBranch explicitAutoFlush;
 
 	/**
-	 * {@link SailBranch} of {@link SailStore#getInferredSailSource(IsolationLevel)}
+	 * {@link SailBranch} of {@link SailStore#getInferredSailSource()}
 	 * .
 	 */
 	private final DerivedSailBranch inferredAutoFlush;
@@ -59,8 +56,8 @@ public class SnapshotSailStore implements SailStore {
 	 */
 	public SnapshotSailStore(SailStore backingStore, SailModelFactory modelFactory) {
 		this.backingStore = backingStore;
-		explicitAutoFlush = new DerivedSailBranch(backingStore.getExplicitSailSource(NONE), modelFactory, true);
-		inferredAutoFlush = new DerivedSailBranch(backingStore.getInferredSailSource(NONE), modelFactory, true);
+		explicitAutoFlush = new DerivedSailBranch(backingStore.getExplicitSailSource(), modelFactory, true);
+		inferredAutoFlush = new DerivedSailBranch(backingStore.getInferredSailSource(), modelFactory, true);
 	}
 
 	@Override
@@ -93,23 +90,13 @@ public class SnapshotSailStore implements SailStore {
 	}
 
 	@Override
-	public SailSource getExplicitSailSource(IsolationLevel level) {
-		if (NONE.isCompatibleWith(level) && !explicitAutoFlush.isChanged()) {
-			return backingStore.getExplicitSailSource(level);
-		}
-		else {
-			return explicitAutoFlush;
-		}
+	public SailSource getExplicitSailSource() {
+		return explicitAutoFlush;
 	}
 
 	@Override
-	public SailSource getInferredSailSource(IsolationLevel level) {
-		if (NONE.isCompatibleWith(level) && !inferredAutoFlush.isChanged()) {
-			return backingStore.getInferredSailSource(level);
-		}
-		else {
-			return inferredAutoFlush;
-		}
+	public SailSource getInferredSailSource() {
+		return inferredAutoFlush;
 	}
 
 }

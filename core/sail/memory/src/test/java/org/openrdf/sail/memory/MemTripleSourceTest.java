@@ -1138,7 +1138,7 @@ public class MemTripleSourceTest {
 	 */
 	private TripleSource getTripleSourceCommitted() throws SailException {
 		IsolationLevel level = store.getDefaultIsolationLevel();
-		source = new UnionSailBranch(store.getSailStore().getExplicitSailSource(level).fork(), store.getSailStore().getInferredSailSource(level).fork());
+		source = new UnionSailBranch(store.getSailStore().getExplicitSailSource().fork(), store.getSailStore().getInferredSailSource().fork());
 		snapshot = source.dataset(level);
 		return new DerivedTripleSource(store.getValueFactory(), snapshot);
 	}

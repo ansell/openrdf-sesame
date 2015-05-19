@@ -265,8 +265,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					logger.warn("Ignoring empty data file: {}", dataFile);
 				}
 				else {
-					SailSink explicit = store.getExplicitSailSource(IsolationLevels.NONE).sink(IsolationLevels.NONE);
-					SailSink inferred = store.getInferredSailSource(IsolationLevels.NONE).sink(IsolationLevels.NONE);
+					SailSink explicit = store.getExplicitSailSource().sink(IsolationLevels.NONE);
+					SailSink inferred = store.getInferredSailSource().sink(IsolationLevels.NONE);
 					try {
 						new FileIO(store.getValueFactory()).read(dataFile, explicit, inferred);
 						logger.debug("Data file read successfully");
@@ -299,8 +299,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					dirLock = locker.lockOrFail();
 
 					logger.debug("Initializing data file...");
-					SailDataset explicit = store.getExplicitSailSource(IsolationLevels.NONE).dataset(IsolationLevels.SNAPSHOT);
-					SailDataset inferred = store.getInferredSailSource(IsolationLevels.NONE).dataset(IsolationLevels.SNAPSHOT);
+					SailDataset explicit = store.getExplicitSailSource().dataset(IsolationLevels.SNAPSHOT);
+					SailDataset inferred = store.getInferredSailSource().dataset(IsolationLevels.SNAPSHOT);
 					try {
 						new FileIO(store.getValueFactory()).write(explicit, inferred, syncFile, dataFile);
 					} finally {
@@ -451,8 +451,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 				logger.debug("syncing data to file...");
 				try {
 					IsolationLevels level = IsolationLevels.SNAPSHOT;
-					SailDataset explicit = store.getExplicitSailSource(level).dataset(level);
-					SailDataset inferred = store.getInferredSailSource(level).dataset(level);
+					SailDataset explicit = store.getExplicitSailSource().dataset(level);
+					SailDataset inferred = store.getInferredSailSource().dataset(level);
 					try {
 						new FileIO(store.getValueFactory()).write(explicit, inferred, syncFile, dataFile);
 					} finally {

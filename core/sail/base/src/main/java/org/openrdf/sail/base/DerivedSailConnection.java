@@ -315,8 +315,8 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		IsolationLevel level = getTransactionIsolation();
 		if (!IsolationLevels.NONE.isCompatibleWith(level)) {
 			// only create transaction branches if transaction is isolated
-			explicitOnlyBranch = store.getExplicitSailSource(level).fork();
-			inferredOnlyBranch = store.getInferredSailSource(level).fork();
+			explicitOnlyBranch = store.getExplicitSailSource().fork();
+			inferredOnlyBranch = store.getInferredSailSource().fork();
 			includeInferredBranch = new UnionSailBranch(inferredOnlyBranch, explicitOnlyBranch);
 		}
 	}
@@ -393,8 +393,8 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 				SailSource source;
 				if (op.isIncludeInferred() && inferredOnlyBranch == null) {
 					// IsolationLevels.NONE
-					SailBranch explicit = new SailNotBranchedSource(store.getExplicitSailSource(level));
-					SailBranch inferred = new SailNotBranchedSource(store.getInferredSailSource(level));
+					SailBranch explicit = new SailNotBranchedSource(store.getExplicitSailSource());
+					SailBranch inferred = new SailNotBranchedSource(store.getInferredSailSource());
 					source = new UnionSailBranch(explicit, inferred);
 				}
 				else if (op.isIncludeInferred()) {
@@ -716,21 +716,21 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		}
 		else if (includeinferred && active) {
 			// don't actually branch source
-			return new UnionSailBranch(new SailNotBranchedSource(store.getInferredSailSource(level)),
-					new SailNotBranchedSource(store.getExplicitSailSource(level)));
+			return new UnionSailBranch(new SailNotBranchedSource(store.getInferredSailSource()),
+					new SailNotBranchedSource(store.getExplicitSailSource()));
 		}
 		else if (active) {
 			// don't actually branch source
-			return new SailNotBranchedSource(store.getExplicitSailSource(level));
+			return new SailNotBranchedSource(store.getExplicitSailSource());
 		}
 		else if (includeinferred) {
 			// create a new branch for read operation
-			return new UnionSailBranch(store.getInferredSailSource(level).fork(),
-					store.getExplicitSailSource(level).fork());
+			return new UnionSailBranch(store.getInferredSailSource().fork(),
+					store.getExplicitSailSource().fork());
 		}
 		else {
 			// create a new branch for read operation
-			return store.getExplicitSailSource(level).fork();
+			return store.getExplicitSailSource().fork();
 		}
 	}
 

@@ -145,12 +145,12 @@ class MemorySailStore implements SailStore {
 	}
 
 	@Override
-	public SailSource getExplicitSailSource(IsolationLevel level) {
+	public SailSource getExplicitSailSource() {
 		return new MemorySailSource(true);
 	}
 
 	@Override
-	public SailSource getInferredSailSource(IsolationLevel level) {
+	public SailSource getInferredSailSource() {
 		return new MemorySailSource(false);
 	}
 
