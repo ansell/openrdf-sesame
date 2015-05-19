@@ -23,7 +23,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
-import org.openrdf.sail.derived.DerivedSailConnection;
+import org.openrdf.sail.base.DerivedSailConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 
 /**
@@ -47,7 +47,7 @@ public class MemoryStoreConnection extends DerivedSailConnection {
 	 *--------------*/
 
 	protected MemoryStoreConnection(MemoryStore sail) {
-		super(sail, sail.getRdfStore(), sail.getFederatedServiceResolver());
+		super(sail, sail.getSailStore(), sail.getFederatedServiceResolver());
 		this.sail = sail;
 		sailChangedEvent = new DefaultSailChangedEvent(sail);
 	}

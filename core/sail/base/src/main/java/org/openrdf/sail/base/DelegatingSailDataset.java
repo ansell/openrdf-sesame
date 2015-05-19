@@ -14,37 +14,32 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
-import org.openrdf.IsolationLevel;
+import org.openrdf.model.Namespace;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 
 /**
- * A wrapper around an {@link RdfBranch} that can suppress the call to
- * {@link #close()}. This is useful when the a shared branch is sometimes to be
- * used and other times a dedicated branch is to be used.
+ * A wrapper around an {@link SailDataset} to specialize the behaviour of an
+ * {@link SailDataset}.
  * 
  * @author James Leigh
  */
-public class DelegatingRdfBranch implements RdfBranch {
+abstract class DelegatingSailDataset implements SailDataset {
 
-	private final RdfBranch delegate;
-
-	private final boolean releasing;
+	private final SailDataset delegate;
 
 	/**
-	 * Wraps this {@link RdfBranch}, delegating all calls to it unless
-	 * <code>closing</code> is false, in which case {@link #close()} will not be
-	 * delegated.
+	 * Wraps an {@link SailDataset} delegating all calls to it.
 	 * 
 	 * @param delegate
-	 * @param closing
-	 *        if {@link #close()} should be delegated
 	 */
-	public DelegatingRdfBranch(RdfBranch delegate, boolean closing) {
-		assert delegate != null;
+	public DelegatingSailDataset(SailDataset delegate) {
 		this.delegate = delegate;
-		this.releasing = closing;
 	}
 
 	public String toString() {
@@ -54,36 +49,30 @@ public class DelegatingRdfBranch implements RdfBranch {
 	public void close()
 		throws SailException
 	{
-		if (releasing) {
-			delegate.close();
-		}
+		delegate.close();
 	}
 
-	public RdfBranch fork() {
-		return delegate.fork();
-	}
-
-	public void prepare()
+	public SailIteration<? extends Namespace> getNamespaces()
 		throws SailException
 	{
-		delegate.prepare();
+		return delegate.getNamespaces();
 	}
 
-	public void flush()
+	public String getNamespace(String prefix)
 		throws SailException
 	{
-		delegate.flush();
+		return delegate.getNamespace(prefix);
 	}
 
-	public RdfSink sink(IsolationLevel level)
+	public SailIteration<? extends Resource> getContextIDs()
 		throws SailException
 	{
-		return delegate.sink(level);
+		return delegate.getContextIDs();
 	}
 
-	public RdfDataset dataset(IsolationLevel level)
+	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		return delegate.dataset(level);
+		return delegate.get(subj, pred, obj, contexts);
 	}
 }

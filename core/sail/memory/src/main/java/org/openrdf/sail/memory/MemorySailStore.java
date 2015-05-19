@@ -44,14 +44,14 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.ClosingRdfIteration;
-import org.openrdf.sail.derived.DerivedRdfBranch;
-import org.openrdf.sail.derived.RdfBranch;
-import org.openrdf.sail.derived.RdfDataset;
-import org.openrdf.sail.derived.RdfIteration;
-import org.openrdf.sail.derived.RdfSink;
-import org.openrdf.sail.derived.RdfSource;
-import org.openrdf.sail.derived.RdfStore;
+import org.openrdf.sail.base.ClosingSailIteration;
+import org.openrdf.sail.base.DerivedSailBranch;
+import org.openrdf.sail.base.SailBranch;
+import org.openrdf.sail.base.SailDataset;
+import org.openrdf.sail.base.SailIteration;
+import org.openrdf.sail.base.SailSink;
+import org.openrdf.sail.base.SailSource;
+import org.openrdf.sail.base.SailStore;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemStatement;
 import org.openrdf.sail.memory.model.MemStatementIterator;
@@ -61,13 +61,13 @@ import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 
 /**
- * An implementation of {@link RdfStore} that keeps committed statements in a {@link MemStatementList}.
+ * An implementation of {@link SailStore} that keeps committed statements in a {@link MemStatementList}.
  * 
  * @author James Leigh
  */
-class MemoryRdfStore implements RdfStore {
+class MemorySailStore implements SailStore {
 
-	final Logger logger = LoggerFactory.getLogger(MemoryRdfStore.class);
+	final Logger logger = LoggerFactory.getLogger(MemorySailStore.class);
 
 	/**
 	 * Factory/cache for MemValue objects.
@@ -112,7 +112,7 @@ class MemoryRdfStore implements RdfStore {
 	 */
 	private final Object snapshotCleanupThreadSemaphore = new Object();
 
-	public MemoryRdfStore(boolean debug) {
+	public MemorySailStore(boolean debug) {
 		statementListLockManager = new ReadPrefReadWriteLockManager(debug);
 	}
 
@@ -144,13 +144,13 @@ class MemoryRdfStore implements RdfStore {
 	}
 
 	@Override
-	public RdfSource getExplicitRdfSource(IsolationLevel level) {
-		return new MemoryRdfSource(true);
+	public SailSource getExplicitSailSource(IsolationLevel level) {
+		return new MemorySailSource(true);
 	}
 
 	@Override
-	public RdfSource getInferredRdfSource(IsolationLevel level) {
-		return new MemoryRdfSource(false);
+	public SailSource getInferredSailSource(IsolationLevel level) {
+		return new MemorySailSource(false);
 	}
 
 	Lock openStatementsReadLock()
@@ -342,40 +342,40 @@ class MemoryRdfStore implements RdfStore {
 		}
 	}
 
-	private final class MemoryRdfSource implements RdfSource {
+	private final class MemorySailSource implements SailSource {
 
 		private final boolean explicit;
 
-		public MemoryRdfSource(boolean explicit) {
+		public MemorySailSource(boolean explicit) {
 			this.explicit = explicit;
 		}
 
 		@Override
-		public RdfBranch fork() {
-			return new DerivedRdfBranch(this);
+		public SailBranch fork() {
+			return new DerivedSailBranch(this);
 		}
 
 		@Override
-		public RdfSink sink(IsolationLevel level)
+		public SailSink sink(IsolationLevel level)
 			throws SailException
 		{
-			return new MemoryRdfSink(explicit, level.isCompatibleWith(IsolationLevels.SERIALIZABLE));
+			return new MemorySailSink(explicit, level.isCompatibleWith(IsolationLevels.SERIALIZABLE));
 		}
 
 		@Override
-		public MemoryRdfDataset dataset(IsolationLevel level)
+		public MemorySailDataset dataset(IsolationLevel level)
 			throws SailException
 		{
 			if (level.isCompatibleWith(IsolationLevels.SNAPSHOT_READ)) {
-				return new MemoryRdfDataset(explicit, currentSnapshot);
+				return new MemorySailDataset(explicit, currentSnapshot);
 			}
 			else {
-				return new MemoryRdfDataset(explicit);
+				return new MemorySailDataset(explicit);
 			}
 		}
 	}
 
-	private final class MemoryRdfSink implements RdfSink {
+	private final class MemorySailSink implements SailSink {
 	
 		private boolean explicit;
 
@@ -389,7 +389,7 @@ class MemoryRdfStore implements RdfStore {
 
 		private boolean txnLock;
 
-		public MemoryRdfSink(boolean explicit, boolean serializable)
+		public MemorySailSink(boolean explicit, boolean serializable)
 			throws SailException
 		{
 			this.explicit = explicit;
@@ -628,7 +628,7 @@ class MemoryRdfStore implements RdfStore {
 	/**
 	 * @author James Leigh
 	 */
-	private final class MemoryRdfDataset implements RdfDataset {
+	private final class MemorySailDataset implements SailDataset {
 
 		private final boolean explicit;
 
@@ -636,7 +636,7 @@ class MemoryRdfStore implements RdfStore {
 
 		private final Lock lock;
 
-		public MemoryRdfDataset(boolean explicit)
+		public MemorySailDataset(boolean explicit)
 			throws SailException
 		{
 			this.explicit = explicit;
@@ -644,7 +644,7 @@ class MemoryRdfStore implements RdfStore {
 			this.lock = null;
 		}
 
-		public MemoryRdfDataset(boolean explicit, int snapshot)
+		public MemorySailDataset(boolean explicit, int snapshot)
 			throws SailException
 		{
 			this.explicit = explicit;
@@ -683,12 +683,12 @@ class MemoryRdfStore implements RdfStore {
 		}
 
 		@Override
-		public RdfIteration<? extends Namespace> getNamespaces() {
-			return ClosingRdfIteration.close(namespaceStore.iterator());
+		public SailIteration<? extends Namespace> getNamespaces() {
+			return ClosingSailIteration.close(namespaceStore.iterator());
 		}
 
 		@Override
-		public RdfIteration<? extends Resource> getContextIDs()
+		public SailIteration<? extends Resource> getContextIDs()
 			throws SailException
 		{
 			// Note: we can't do this in a streaming fashion due to concurrency
@@ -722,18 +722,18 @@ class MemoryRdfStore implements RdfStore {
 				stLock.release();
 			}
 
-			return ClosingRdfIteration.close(contextIDs.iterator());
+			return ClosingSailIteration.close(contextIDs.iterator());
 		}
 
 		@Override
-		public RdfIteration<MemStatement> get(Resource subj, URI pred,
+		public SailIteration<MemStatement> get(Resource subj, URI pred,
 				Value obj, Resource... contexts)
 			throws SailException
 		{
 			boolean releaseLock = true;
 			Lock stLock = openStatementsReadLock();
 			try {
-				RdfIteration<MemStatement> ret = ClosingRdfIteration.close(new LockingIteration<MemStatement, SailException>(
+				SailIteration<MemStatement> ret = ClosingSailIteration.close(new LockingIteration<MemStatement, SailException>(
 						stLock, createStatementIterator(subj, pred, obj, explicit, getCurrentSnapshot(), contexts)));
 				releaseLock = false;
 				return ret;

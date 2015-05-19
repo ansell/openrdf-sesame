@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import java.util.NoSuchElementException;
 
@@ -25,7 +25,7 @@ import info.aduna.iteration.IterationWrapper;
 import org.openrdf.sail.SailException;
 
 /**
- * An {@link Iteration} that holds on to a {@link RdfClosable} until the
+ * An {@link Iteration} that holds on to a {@link SailClosable} until the
  * Iteration is closed. Upon closing, the underlying Iteration is closed before
  * the lock is released. This iterator closes itself as soon as all elements
  * have been read.
@@ -41,7 +41,7 @@ public abstract class ClosingIteration<T, X extends Exception> extends Iteration
 	/**
 	 * The lock to release when the Iteration is closed.
 	 */
-	private final RdfClosable[] closes;
+	private final SailClosable[] closes;
 
 	/*--------------*
 	 * Constructors *
@@ -49,15 +49,15 @@ public abstract class ClosingIteration<T, X extends Exception> extends Iteration
 
 	/**
 	 * Creates a new {@link Iteration} that automatically closes the given
-	 * {@link RdfClosable}s.
+	 * {@link SailClosable}s.
 	 * 
 	 * @param iter
 	 *        The underlying Iteration, must not be <tt>null</tt>.
 	 * @param closes
-	 *        The {@link RdfClosable}s to {@link RdfClosable#close()} when the
+	 *        The {@link SailClosable}s to {@link SailClosable#close()} when the
 	 *        itererator is closed.
 	 */
-	public ClosingIteration(CloseableIteration<? extends T, X> iter, RdfClosable... closes) {
+	public ClosingIteration(CloseableIteration<? extends T, X> iter, SailClosable... closes) {
 		super(iter);
 		this.closes = closes;
 	}
@@ -113,7 +113,7 @@ public abstract class ClosingIteration<T, X extends Exception> extends Iteration
 		}
 		finally {
 			synchronized (this) {
-				for (RdfClosable closing : closes) {
+				for (SailClosable closing : closes) {
 					try {
 						closing.close();
 					}

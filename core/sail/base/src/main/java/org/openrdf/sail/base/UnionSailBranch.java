@@ -14,36 +14,36 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
- * Combines two branches to act as a single {@link RdfBranch}. This is useful to
+ * Combines two branches to act as a single {@link SailBranch}. This is useful to
  * provide a combined view of both explicit and inferred statements.
  * 
  * @author James Leigh
  */
-public class UnionRdfBranch implements RdfBranch {
+public class UnionSailBranch implements SailBranch {
 
 	/**
 	 * The branch that will be used in calls to {@link #sink(IsolationLevel)}.
 	 */
-	private final RdfBranch primary;
+	private final SailBranch primary;
 
 	/**
-	 * Additional statements that should be included in {@link RdfDataset}s.
+	 * Additional statements that should be included in {@link SailDataset}s.
 	 */
-	private final RdfBranch additional;
+	private final SailBranch additional;
 
 	/**
-	 * An {@link RdfBranch} that combines two other {@link RdfBranch}es.
+	 * An {@link SailBranch} that combines two other {@link SailBranch}es.
 	 * 
-	 * @param primary delegates all calls to the given {@link RdfBranch}.
+	 * @param primary delegates all calls to the given {@link SailBranch}.
 	 * @param additional delegate all call except {@link #sink(IsolationLevel)}.
 	 */
-	public UnionRdfBranch(RdfBranch primary, RdfBranch additional) {
+	public UnionSailBranch(SailBranch primary, SailBranch additional) {
 		super();
 		this.primary = primary;
 		this.additional = additional;
@@ -62,8 +62,8 @@ public class UnionRdfBranch implements RdfBranch {
 	}
 
 	@Override
-	public RdfBranch fork() {
-		return new UnionRdfBranch(primary.fork(), additional.fork());
+	public SailBranch fork() {
+		return new UnionSailBranch(primary.fork(), additional.fork());
 	}
 
 	public void prepare()
@@ -81,17 +81,17 @@ public class UnionRdfBranch implements RdfBranch {
 	}
 
 	@Override
-	public RdfSink sink(IsolationLevel level)
+	public SailSink sink(IsolationLevel level)
 		throws SailException
 	{
 		return primary.sink(level);
 	}
 
 	@Override
-	public RdfDataset dataset(IsolationLevel level)
+	public SailDataset dataset(IsolationLevel level)
 		throws SailException
 	{
-		return new UnionRdfDataset(primary.dataset(level), additional.dataset(level));
+		return new UnionSailDataset(primary.dataset(level), additional.dataset(level));
 	}
 
 }

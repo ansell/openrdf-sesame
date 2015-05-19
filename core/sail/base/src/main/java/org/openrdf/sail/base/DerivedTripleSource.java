@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
@@ -30,15 +30,15 @@ import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.sail.SailException;
 
 /**
- * Implementation of the TripleSource interface using {@link RdfDataset}
+ * Implementation of the TripleSource interface using {@link SailDataset}
  */
 public class DerivedTripleSource implements TripleSource {
 
 	private final ValueFactory vf;
 
-	private final RdfDataset dataset;
+	private final SailDataset dataset;
 
-	public DerivedTripleSource(ValueFactory vf, RdfDataset dataset) {
+	public DerivedTripleSource(ValueFactory vf, SailDataset dataset) {
 		this.vf = vf;
 		this.dataset = dataset;
 	}

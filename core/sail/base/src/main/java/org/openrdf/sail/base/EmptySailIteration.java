@@ -14,37 +14,23 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
-import org.openrdf.sail.SailConflictException;
+import info.aduna.iteration.EmptyIteration;
+
 import org.openrdf.sail.SailException;
 
 /**
- * A persistent yet mutable source or container of RDF graphs. In which its
- * state can change over time. The life cycle follows that of a transaction.
+ * An {@link SailIteration} that does not contain any elements.
  * 
  * @author James Leigh
  */
-public interface RdfBranch extends RdfSource, RdfClosable {
+public class EmptySailIteration<T> extends EmptyIteration<T, SailException> implements SailIteration<T> {
 
-	/**
-	 * Check the consistency of this {@link RdfBranch} and throw a
-	 * {@link SailConflictException} if {@link RdfBranch#flush()}ing this
-	 * {@link RdfBranch} would cause the backing {@link RdfSource} to be
-	 * inconsistent.
-	 * 
-	 * @throws SailException
-	 */
-	void prepare()
-		throws SailException;
+	private static final EmptySailIteration<?> instance = new EmptySailIteration<Object>();
 
-	/**
-	 * Apply all the changes to this {@link RdfBranch} to the backing
-	 * {@link RdfSource}.
-	 * 
-	 * @throws SailException
-	 */
-	void flush()
-		throws SailException;
+	public static <T> EmptySailIteration<T> emptyIteration() {
+		return (EmptySailIteration<T>)instance;
+	}
 
 }

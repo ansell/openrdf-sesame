@@ -14,45 +14,45 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
- * Allows an {@link RdfSource} to be used as an {@link RdfBranch}. Calls to
+ * Allows an {@link SailSource} to be used as an {@link SailBranch}. Calls to
  * {@link #close()}, {@link #prepare()}, and {@link #flush()} are ignored.
  * 
  * @author James Leigh
  */
-public class RdfNotBranchedSource implements RdfBranch {
+public class SailNotBranchedSource implements SailBranch {
 
 	/**
-	 * Target {@link RdfSource} for calls to this {@link RdfBranch}.
+	 * Target {@link SailSource} for calls to this {@link SailBranch}.
 	 */
-	private final RdfSource source;
+	private final SailSource source;
 
 	/**
-	 * Wraps an {@link RdfSource} with the {@link RdfBranch} interface. All
+	 * Wraps an {@link SailSource} with the {@link SailBranch} interface. All
 	 * applicable calls are delegated, others are ignored.
 	 * 
 	 * @param source
 	 */
-	public RdfNotBranchedSource(RdfSource source) {
+	public SailNotBranchedSource(SailSource source) {
 		this.source = source;
 	}
 
-	public RdfBranch fork() {
+	public SailBranch fork() {
 		return source.fork();
 	}
 
-	public RdfSink sink(IsolationLevel level)
+	public SailSink sink(IsolationLevel level)
 		throws SailException
 	{
 		return source.sink(level);
 	}
 
-	public RdfDataset dataset(IsolationLevel level)
+	public SailDataset dataset(IsolationLevel level)
 		throws SailException
 	{
 		return source.dataset(level);

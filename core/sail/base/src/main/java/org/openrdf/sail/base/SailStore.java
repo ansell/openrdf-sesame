@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.model.ValueFactory;
@@ -22,11 +22,11 @@ import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 
 /**
  * A high level interface used by {@link DerivedSailConnection} to access
- * {@link RdfSource}.
+ * {@link SailSource}.
  * 
  * @author James Leigh
  */
-public interface RdfStore extends RdfClosable {
+public interface SailStore extends SailClosable {
 
 	/**
 	 * The {@link ValueFactory} that should be used in association with this.
@@ -39,22 +39,22 @@ public interface RdfStore extends RdfClosable {
 	 * Used by {@link DerivedSailConnection} to determine query join order.
 	 * 
 	 * @return a {@link EvaluationStatistics} that is aware of the data
-	 *         distribution of this {@link RdfStore}.
+	 *         distribution of this {@link SailStore}.
 	 */
 	EvaluationStatistics getEvaluationStatistics();
 
 	/**
 	 * @param level
 	 *        Minimum isolation level required
-	 * @return {@link RdfSource} of only explicit statements
+	 * @return {@link SailSource} of only explicit statements
 	 */
-	RdfSource getExplicitRdfSource(IsolationLevel level);
+	SailSource getExplicitSailSource(IsolationLevel level);
 
 	/**
 	 * @param level
 	 *        Minimum isolation level required
-	 * @return {@link RdfSource} of only inferred statements
+	 * @return {@link SailSource} of only inferred statements
 	 */
-	RdfSource getInferredRdfSource(IsolationLevel level);
+	SailSource getInferredSailSource(IsolationLevel level);
 
 }

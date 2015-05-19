@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -26,6 +26,6 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public interface RdfIteration<T> extends CloseableIteration<T, SailException>, RdfClosable {
+public interface SailIteration<T> extends CloseableIteration<T, SailException>, SailClosable {
 
 }

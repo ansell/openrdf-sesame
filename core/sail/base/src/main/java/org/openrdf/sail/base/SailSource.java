@@ -14,23 +14,32 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
-import info.aduna.iteration.EmptyIteration;
-
+import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
- * An {@link RdfIteration} that does not contain any elements.
+ * A persistent yet mutable source or container of RDF graphs. In which its
+ * state can change over time. The life cycle follows that of a store.
  * 
  * @author James Leigh
  */
-public class EmptyRdfIteration<T> extends EmptyIteration<T, SailException> implements RdfIteration<T> {
+public interface SailSource {
 
-	private static final EmptyRdfIteration<?> instance = new EmptyRdfIteration<Object>();
+	SailBranch fork();
 
-	public static <T> EmptyRdfIteration<T> emptyIteration() {
-		return (EmptyRdfIteration<T>)instance;
-	}
+	SailSink sink(IsolationLevel level)
+		throws SailException;
+
+	/**
+	 * Create an observable {@link SailDataset} of the current state of this
+	 * {@link SailSource}.
+	 * 
+	 * @return an {@link SailDataset} of the current state
+	 * @throws SailException
+	 */
+	SailDataset dataset(IsolationLevel level)
+		throws SailException;
 
 }

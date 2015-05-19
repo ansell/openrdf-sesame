@@ -14,23 +14,26 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
+
+import info.aduna.iteration.FilterIteration;
+import info.aduna.iteration.Iteration;
 
 import org.openrdf.sail.SailException;
 
 /**
- * Common interface to objects that throw {@link SailException} on close.
+ * A {@link SailIteration} that wraps another Iteration, applying a filter on the
+ * objects that are returned. Subclasses must implement the <tt>accept</tt>
+ * method to indicate which objects should be returned.
  * 
  * @author James Leigh
  */
-public interface RdfClosable {
+public abstract class FilterSailIteration<E> extends FilterIteration<E, SailException> implements
+		SailIteration<E>
+{
 
-	/**
-	 * Closes this resource, relinquishing any underlying resources.
-	 * 
-	 * @throws SailException
-	 *         if this resource cannot be closed
-	 */
-	void close()
-		throws SailException;
+	public FilterSailIteration(Iteration<? extends E, ? extends SailException> iter) {
+		super(iter);
+	}
+
 }

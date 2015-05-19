@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,11 +39,11 @@ import org.openrdf.model.util.ModelException;
 import org.openrdf.sail.SailException;
 
 /**
- * A {@link Model} that keeps the {@link Statement}s in an {@link RdfSource}.
+ * A {@link Model} that keeps the {@link Statement}s in an {@link SailSource}.
  * 
  * @author James Leigh
  */
-public class RdfSourceModel extends AbstractModel {
+public class SailSourceModel extends AbstractModel {
 
 	private final class StatementIterator implements Iterator<Statement> {
 
@@ -83,26 +83,26 @@ public class RdfSourceModel extends AbstractModel {
 		public void remove() {
 			if (last == null)
 				throw new IllegalStateException("next() not yet called");
-			RdfSourceModel.this.remove(last);
+			SailSourceModel.this.remove(last);
 			last = null;
 		}
 	}
 
-	final RdfSource source;
+	final SailSource source;
 
-	RdfDataset dataset;
+	SailDataset dataset;
 
-	RdfSink sink;
+	SailSink sink;
 
 	private long size;
 
 	private final IsolationLevels level = IsolationLevels.NONE;
 
-	public RdfSourceModel(RdfStore store) {
-		this(store.getExplicitRdfSource(IsolationLevels.NONE));
+	public SailSourceModel(SailStore store) {
+		this(store.getExplicitSailSource(IsolationLevels.NONE));
 	}
 
-	public RdfSourceModel(RdfSource source) {
+	public SailSourceModel(SailSource source) {
 		this.source = source;
 	}
 
@@ -146,7 +146,7 @@ public class RdfSourceModel extends AbstractModel {
 	public synchronized int size() {
 		if (size < 0) {
 			try {
-				RdfIteration<? extends Statement> iter = dataset().get(null, null, null);
+				SailIteration<? extends Statement> iter = dataset().get(null, null, null);
 				try {
 					while (iter.hasNext()) {
 						iter.next();
@@ -172,7 +172,7 @@ public class RdfSourceModel extends AbstractModel {
 	public Set<Namespace> getNamespaces() {
 		Set<Namespace> set = new LinkedHashSet<Namespace>();
 		try {
-			RdfIteration<? extends Namespace> spaces = dataset().getNamespaces();
+			SailIteration<? extends Namespace> spaces = dataset().getNamespaces();
 			try {
 				while (spaces.hasNext()) {
 					set.add(spaces.next());
@@ -276,7 +276,7 @@ public class RdfSourceModel extends AbstractModel {
 		try {
 			if (contains(subj, pred, obj, contexts)) {
 				size = -1;
-				RdfIteration<? extends Statement> stmts = dataset().get(subj, pred, obj, contexts);
+				SailIteration<? extends Statement> stmts = dataset().get(subj, pred, obj, contexts);
 				try {
 					while (stmts.hasNext()) {
 						Statement st = stmts.next();
@@ -314,7 +314,7 @@ public class RdfSourceModel extends AbstractModel {
 			public int size() {
 				if (subj == null && pred == null && obj == null) {
 					try {
-						RdfIteration<? extends Statement> iter = dataset().get(null, null, null);
+						SailIteration<? extends Statement> iter = dataset().get(null, null, null);
 						try {
 							long size = 0;
 							while (iter.hasNext()) {
@@ -350,7 +350,7 @@ public class RdfSourceModel extends AbstractModel {
 			protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
 					Value obj, Resource... contexts)
 			{
-				RdfSourceModel.this.removeTermIteration(iter, subj, pred, obj, contexts);
+				SailSourceModel.this.removeTermIteration(iter, subj, pred, obj, contexts);
 			}
 		};
 	}
@@ -360,7 +360,7 @@ public class RdfSourceModel extends AbstractModel {
 			Resource... contexts)
 	{
 		try {
-			RdfIteration<? extends Statement> stmts = dataset().get(subj, pred, obj, contexts);
+			SailIteration<? extends Statement> stmts = dataset().get(subj, pred, obj, contexts);
 			try {
 				while (stmts.hasNext()) {
 					Statement st = stmts.next();
@@ -377,14 +377,14 @@ public class RdfSourceModel extends AbstractModel {
 		}
 	}
 
-	private RdfSink sink() throws SailException {
+	private SailSink sink() throws SailException {
 		if (sink == null) {
 			sink = source.sink(level);
 		}
 		return sink;
 	}
 
-	private RdfDataset dataset() throws SailException {
+	private SailDataset dataset() throws SailException {
 		if (sink != null) {
 			try {
 				sink.flush();
@@ -403,13 +403,13 @@ public class RdfSourceModel extends AbstractModel {
 		return dataset;
 	}
 
-	private boolean contains(RdfDataset dataset, Resource subj, URI pred, Value obj, Resource... contexts)
+	private boolean contains(SailDataset dataset, Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		if (dataset == null) {
 			return false;
 		}
-		RdfIteration<? extends Statement> stmts = dataset.get(subj, pred, obj, contexts);
+		SailIteration<? extends Statement> stmts = dataset.get(subj, pred, obj, contexts);
 		try {
 			return stmts.hasNext();
 		}

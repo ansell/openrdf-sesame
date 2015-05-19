@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import java.util.Arrays;
 
@@ -26,24 +26,24 @@ import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 
 /**
- * Combines multiple {@link RdfDataset} into a single view.
+ * Combines multiple {@link SailDataset} into a single view.
  * 
  * @author James Leigh
  */
-class UnionRdfDataset implements RdfDataset {
+class UnionSailDataset implements SailDataset {
 
 	/**
-	 * Set of {@link RdfDataset}s to combine.
+	 * Set of {@link SailDataset}s to combine.
 	 */
-	private final RdfDataset[] datasets;
+	private final SailDataset[] datasets;
 
 	/**
-	 * Creates a new {@link RdfDataset} that includes all the given
-	 * {@link RdfDataset}s.
+	 * Creates a new {@link SailDataset} that includes all the given
+	 * {@link SailDataset}s.
 	 * 
 	 * @param datasets
 	 */
-	public UnionRdfDataset(RdfDataset... datasets) {
+	public UnionSailDataset(SailDataset... datasets) {
 		this.datasets = datasets;
 	}
 
@@ -55,16 +55,16 @@ class UnionRdfDataset implements RdfDataset {
 	public void close()
 		throws SailException
 	{
-		for (RdfDataset dataset : datasets) {
+		for (SailDataset dataset : datasets) {
 			dataset.close();
 		}
 	}
 
 	@Override
-	public RdfIteration<? extends Namespace> getNamespaces()
+	public SailIteration<? extends Namespace> getNamespaces()
 		throws SailException
 	{
-		RdfIteration<? extends Namespace>[] result = new RdfIteration[datasets.length];
+		SailIteration<? extends Namespace>[] result = new SailIteration[datasets.length];
 		for (int i = 0; i < datasets.length; i++) {
 			result[i] = datasets[i].getNamespaces();
 		}
@@ -85,10 +85,10 @@ class UnionRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Resource> getContextIDs()
+	public SailIteration<? extends Resource> getContextIDs()
 		throws SailException
 	{
-		RdfIteration<? extends Resource>[] result = new RdfIteration[datasets.length];
+		SailIteration<? extends Resource>[] result = new SailIteration[datasets.length];
 		for (int i = 0; i < datasets.length; i++) {
 			result[i] = datasets[i].getContextIDs();
 		}
@@ -96,18 +96,18 @@ class UnionRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		RdfIteration<? extends Statement>[] result = new RdfIteration[datasets.length];
+		SailIteration<? extends Statement>[] result = new SailIteration[datasets.length];
 		for (int i = 0; i < datasets.length; i++) {
 			result[i] = datasets[i].get(subj, pred, obj, contexts);
 		}
 		return union(result);
 	}
 
-	private <T> RdfIteration<? extends T> union(RdfIteration<? extends T>[] items) {
-		return new UnionRdfIteration<T>(items);
+	private <T> SailIteration<? extends T> union(SailIteration<? extends T>[] items) {
+		return new UnionSailIteration<T>(items);
 	}
 
 }

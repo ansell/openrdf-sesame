@@ -44,26 +44,26 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.ClosingRdfIteration;
-import org.openrdf.sail.derived.EmptyRdfIteration;
-import org.openrdf.sail.derived.RdfBranch;
-import org.openrdf.sail.derived.RdfDataset;
-import org.openrdf.sail.derived.RdfIteration;
-import org.openrdf.sail.derived.RdfSink;
-import org.openrdf.sail.derived.RdfSource;
-import org.openrdf.sail.derived.RdfStore;
-import org.openrdf.sail.derived.UnionRdfIteration;
+import org.openrdf.sail.base.ClosingSailIteration;
+import org.openrdf.sail.base.EmptySailIteration;
+import org.openrdf.sail.base.SailBranch;
+import org.openrdf.sail.base.SailDataset;
+import org.openrdf.sail.base.SailIteration;
+import org.openrdf.sail.base.SailSink;
+import org.openrdf.sail.base.SailSource;
+import org.openrdf.sail.base.SailStore;
+import org.openrdf.sail.base.UnionSailIteration;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
 /**
- * A disk based {@link RdfStore} implementation that keeps committed statements in a {@link TripleStore}.
+ * A disk based {@link SailStore} implementation that keeps committed statements in a {@link TripleStore}.
  *  
  * @author James Leigh
  */
-class NativeRdfStore implements RdfStore {
+class NativeSailStore implements SailStore {
 
-	final Logger logger = LoggerFactory.getLogger(NativeRdfStore.class);
+	final Logger logger = LoggerFactory.getLogger(NativeSailStore.class);
 
 	final TripleStore tripleStore;
 
@@ -77,9 +77,9 @@ class NativeRdfStore implements RdfStore {
 	final ReentrantLock txnLockManager = new ReentrantLock();
 
 	/**
-	 * Creates a new NativeRdfStore with the default cache sizes.
+	 * Creates a new {@link NativeSailStore} with the default cache sizes.
 	 */
-	public NativeRdfStore(File dataDir, String tripleIndexes)
+	public NativeSailStore(File dataDir, String tripleIndexes)
 		throws IOException, SailException
 	{
 		this(dataDir, tripleIndexes, false, ValueStore.VALUE_CACHE_SIZE,
@@ -87,9 +87,9 @@ class NativeRdfStore implements RdfStore {
 	}
 
 	/**
-	 * Creates a new NativeRdfStore.
+	 * Creates a new {@link NativeSailStore}.
 	 */
-	public NativeRdfStore(File dataDir, String tripleIndexes, boolean forceSync, int valueCacheSize,
+	public NativeSailStore(File dataDir, String tripleIndexes, boolean forceSync, int valueCacheSize,
 			int valueIDCacheSize, int namespaceCacheSize, int namespaceIDCacheSize)
 		throws IOException, SailException
 	{
@@ -134,12 +134,12 @@ class NativeRdfStore implements RdfStore {
 		return new NativeEvaluationStatistics(valueStore, tripleStore);
 	}
 
-	public RdfSource getExplicitRdfSource(IsolationLevel level) {
-		return new NativeRdfSource(true);
+	public SailSource getExplicitSailSource(IsolationLevel level) {
+		return new NativeSailSource(true);
 	}
 
-	public RdfSource getInferredRdfSource(IsolationLevel level) {
-		return new NativeRdfSource(false);
+	public SailSource getInferredSailSource(IsolationLevel level) {
+		return new NativeSailSource(false);
 	}
 
 	List<Integer> getContextIDs(Resource... contexts)
@@ -186,7 +186,7 @@ class NativeRdfStore implements RdfStore {
 	 * @return A StatementIterator that can be used to iterate over the
 	 *         statements that match the specified pattern.
 	 */
-	RdfIteration<? extends Statement> createStatementIterator(Resource subj, URI pred, Value obj,
+	SailIteration<? extends Statement> createStatementIterator(Resource subj, URI pred, Value obj,
 			boolean explicit, Resource... contexts)
 		throws IOException
 	{
@@ -194,7 +194,7 @@ class NativeRdfStore implements RdfStore {
 		if (subj != null) {
 			subjID = valueStore.getID(subj);
 			if (subjID == NativeValue.UNKNOWN_ID) {
-				return EmptyRdfIteration.emptyIteration();
+				return EmptySailIteration.emptyIteration();
 			}
 		}
 
@@ -202,7 +202,7 @@ class NativeRdfStore implements RdfStore {
 		if (pred != null) {
 			predID = valueStore.getID(pred);
 			if (predID == NativeValue.UNKNOWN_ID) {
-				return EmptyRdfIteration.emptyIteration();
+				return EmptySailIteration.emptyIteration();
 			}
 		}
 
@@ -210,7 +210,7 @@ class NativeRdfStore implements RdfStore {
 		if (obj != null) {
 			objID = valueStore.getID(obj);
 			if (objID == NativeValue.UNKNOWN_ID) {
-				return EmptyRdfIteration.emptyIteration();
+				return EmptySailIteration.emptyIteration();
 			}
 		}
 
@@ -246,7 +246,7 @@ class NativeRdfStore implements RdfStore {
 			return perContextIterList.get(0);
 		}
 		else {
-			return new UnionRdfIteration<Statement>(perContextIterList);
+			return new UnionSailIteration<Statement>(perContextIterList);
 		}
 	}
 
@@ -288,36 +288,36 @@ class NativeRdfStore implements RdfStore {
 		return tripleStore.cardinality(subjID, predID, objID, contextID);
 	}
 
-	private final class NativeRdfSource implements RdfSource {
+	private final class NativeSailSource implements SailSource {
 
 		private final boolean explicit;
 
-		public NativeRdfSource(boolean explicit) {
+		public NativeSailSource(boolean explicit) {
 			this.explicit = explicit;
 		}
 
 		@Override
-		public RdfBranch fork() {
+		public SailBranch fork() {
 			throw new UnsupportedOperationException("This store does not support multiple datasets");
 		}
 
 		@Override
-		public RdfSink sink(IsolationLevel level)
+		public SailSink sink(IsolationLevel level)
 			throws SailException
 		{
-			return new NativeRdfSink(explicit);
+			return new NativeSailSink(explicit);
 		}
 
 		@Override
-		public NativeRdfDataset dataset(IsolationLevel level)
+		public NativeSailDataset dataset(IsolationLevel level)
 			throws SailException
 		{
-			return new NativeRdfDataset(explicit);
+			return new NativeSailDataset(explicit);
 		}
 
 	}
 
-	private final class NativeRdfSink implements RdfSink {
+	private final class NativeSailSink implements SailSink {
 
 		private boolean explicit;
 
@@ -327,7 +327,7 @@ class NativeRdfStore implements RdfStore {
 		 */
 		private volatile boolean txnLockAcquired;
 
-		public NativeRdfSink(boolean explicit)
+		public NativeSailSink(boolean explicit)
 			throws SailException
 		{
 			this.explicit = explicit;
@@ -555,11 +555,11 @@ class NativeRdfStore implements RdfStore {
 	/**
 	 * @author James Leigh
 	 */
-	private final class NativeRdfDataset implements RdfDataset {
+	private final class NativeSailDataset implements SailDataset {
 
 		private final boolean explicit;
 
-		public NativeRdfDataset(boolean explicit)
+		public NativeSailDataset(boolean explicit)
 			throws SailException
 		{
 			this.explicit = explicit;
@@ -578,12 +578,12 @@ class NativeRdfStore implements RdfStore {
 		}
 
 		@Override
-		public RdfIteration<? extends Namespace> getNamespaces() {
-			return ClosingRdfIteration.close(namespaceStore.iterator());
+		public SailIteration<? extends Namespace> getNamespaces() {
+			return ClosingSailIteration.close(namespaceStore.iterator());
 		}
 
 		@Override
-		public RdfIteration<? extends Resource> getContextIDs()
+		public SailIteration<? extends Resource> getContextIDs()
 			throws SailException
 		{
 			// Which resources are used as context identifiers is not stored
@@ -625,7 +625,7 @@ class NativeRdfStore implements RdfStore {
 					ctxIter = new ReducedIteration<Resource, SailException>(ctxIter);
 				}
 
-				return ClosingRdfIteration.close(new ExceptionConvertingIteration<Resource, SailException>(
+				return ClosingSailIteration.close(new ExceptionConvertingIteration<Resource, SailException>(
 						ctxIter)
 				{
 
@@ -652,7 +652,7 @@ class NativeRdfStore implements RdfStore {
 		}
 
 		@Override
-		public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+		public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 			throws SailException
 		{
 			try {

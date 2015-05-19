@@ -52,14 +52,14 @@ import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.FilteredModel;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.RdfSourceModel;
-import org.openrdf.sail.derived.RdfStore;
+import org.openrdf.sail.base.SailSourceModel;
+import org.openrdf.sail.base.SailStore;
 
 /**
  * Model implementation that stores in a {@link TreeModel} until more than
  * 10KB statements are added and the estimated memory usage is more than the
  * amount of free memory available. Once the threshold is cross this
- * implementation seamlessly changes to a disk based {@link RdfSourceModel}.
+ * implementation seamlessly changes to a disk based {@link SailSourceModel}.
  * 
  * @author James Leigh
  * 
@@ -71,8 +71,8 @@ public abstract class MemoryOverflowModel extends AbstractModel {
 	final Logger logger = LoggerFactory.getLogger(MemoryOverflowModel.class);
 	private TreeModel memory;
 	transient File dataDir;
-	transient RdfStore store;
-	transient RdfSourceModel disk;
+	transient SailStore store;
+	transient SailSourceModel disk;
 	private long baseline = 0;
 	private long maxBlockSize = 0;
 
@@ -185,7 +185,7 @@ public abstract class MemoryOverflowModel extends AbstractModel {
 		}
 	}
 
-	protected abstract RdfStore createRdfStore(File dataDir) throws IOException,
+	protected abstract SailStore createSailStore(File dataDir) throws IOException,
 	SailException;
 
 	synchronized Model getDelegate() {
@@ -248,8 +248,8 @@ public abstract class MemoryOverflowModel extends AbstractModel {
 		try {
 			assert disk == null;
 			dataDir = createTempDir("model");
-			store = createRdfStore(dataDir);
-			disk = new RdfSourceModel(store) {
+			store = createSailStore(dataDir);
+			disk = new SailSourceModel(store) {
 
 				@Override
 				protected void finalize() throws Throwable {

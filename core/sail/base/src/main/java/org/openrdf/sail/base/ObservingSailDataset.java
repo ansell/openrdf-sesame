@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
@@ -24,32 +24,32 @@ import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 
 /**
- * A {@link IsolationLevels#SERIALIZABLE} {@link RdfDataset} that tracks the
+ * A {@link IsolationLevels#SERIALIZABLE} {@link SailDataset} that tracks the
  * observed statement patterns to an
- * {@link RdfSink#observe(Resource, URI, Value, Resource...)} to check
+ * {@link SailSink#observe(Resource, URI, Value, Resource...)} to check
  * consistency.
  * 
  * @author James Leigh
  */
-class ObservingRdfDataset extends DelegatingRdfDataset {
+class ObservingSailDataset extends DelegatingSailDataset {
 
 	/**
-	 * The {@link RdfSink} that is tracking the statement patterns.
+	 * The {@link SailSink} that is tracking the statement patterns.
 	 */
-	private final RdfSink observer;
+	private final SailSink observer;
 
 	/**
-	 * Creates a {@link IsolationLevels#SERIALIZABLE} {@link RdfDataset} that
+	 * Creates a {@link IsolationLevels#SERIALIZABLE} {@link SailDataset} that
 	 * tracks consistency.
 	 * 
 	 * @param delegate
-	 *        to be {@link RdfDataset#close()} when this {@link RdfDataset} is
+	 *        to be {@link SailDataset#close()} when this {@link SailDataset} is
 	 *        closed.
 	 * @param observer
-	 *        to be {@link RdfSink#flush()} and {@link RdfSink#close()} when this
-	 *        {@link RdfDataset} is closed.
+	 *        to be {@link SailSink#flush()} and {@link SailSink#close()} when this
+	 *        {@link SailDataset} is closed.
 	 */
-	public ObservingRdfDataset(RdfDataset delegate, RdfSink observer) {
+	public ObservingSailDataset(SailDataset delegate, SailSink observer) {
 		super(delegate);
 		this.observer = observer;
 	}
@@ -65,7 +65,7 @@ class ObservingRdfDataset extends DelegatingRdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Resource> getContextIDs()
+	public SailIteration<? extends Resource> getContextIDs()
 		throws SailException
 	{
 		observer.observe(null, null, null);
@@ -73,7 +73,7 @@ class ObservingRdfDataset extends DelegatingRdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		observer.observe(subj, pred, obj, contexts);

@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import java.util.Iterator;
 
@@ -24,36 +24,36 @@ import info.aduna.iteration.CloseableIteratorIteration;
 import org.openrdf.sail.SailException;
 
 /**
- * An {@link RdfIteration} that holds on to a {@link RdfClosable} until the
+ * An {@link SailIteration} that holds on to a {@link SailClosable} until the
  * Iteration is closed. Upon closing, the underlying Iteration is closed before
  * the lock is released. This iterator closes itself as soon as all elements
  * have been read.
  * 
  * @author James Leigh
  */
-public class ClosingRdfIteration<E> extends ClosingIteration<E, SailException> implements RdfIteration<E> {
+public class ClosingSailIteration<E> extends ClosingIteration<E, SailException> implements SailIteration<E> {
 
-	public static <E> ClosingRdfIteration<E> close(CloseableIteration<? extends E, SailException> iter,
-			RdfClosable... closes)
+	public static <E> ClosingSailIteration<E> close(CloseableIteration<? extends E, SailException> iter,
+			SailClosable... closes)
 	{
-		return new ClosingRdfIteration<E>(iter, closes);
+		return new ClosingSailIteration<E>(iter, closes);
 	}
 
-	public static <E> ClosingRdfIteration<E> close(Iterator<? extends E> iter, RdfClosable... closes) {
-		return new ClosingRdfIteration<E>(new CloseableIteratorIteration<E, SailException>(iter), closes);
+	public static <E> ClosingSailIteration<E> close(Iterator<? extends E> iter, SailClosable... closes) {
+		return new ClosingSailIteration<E>(new CloseableIteratorIteration<E, SailException>(iter), closes);
 	}
 
 	/**
-	 * Creates a new {@link RdfIteration} that automatically closes the given
-	 * {@link RdfClosable}s.
+	 * Creates a new {@link SailIteration} that automatically closes the given
+	 * {@link SailClosable}s.
 	 * 
 	 * @param iter
 	 *        The underlying Iteration, must not be <tt>null</tt>.
 	 * @param closes
-	 *        The {@link RdfClosable}s to {@link RdfClosable#close()} when the
+	 *        The {@link SailClosable}s to {@link SailClosable#close()} when the
 	 *        itererator is closed.
 	 */
-	protected ClosingRdfIteration(CloseableIteration<? extends E, SailException> iter, RdfClosable... closes) {
+	protected ClosingSailIteration(CloseableIteration<? extends E, SailException> iter, SailClosable... closes) {
 		super(iter, closes);
 	}
 

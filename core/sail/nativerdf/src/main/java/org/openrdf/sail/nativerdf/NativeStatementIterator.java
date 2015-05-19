@@ -26,7 +26,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.RdfIteration;
+import org.openrdf.sail.base.SailIteration;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
 /**
@@ -34,7 +34,7 @@ import org.openrdf.sail.nativerdf.btree.RecordIterator;
  * and translates these records to {@link Statement} objects.
  */
 class NativeStatementIterator extends LookAheadIteration<Statement, SailException> implements
-		RdfIteration<Statement>
+		SailIteration<Statement>
 {
 
 	/*-----------*

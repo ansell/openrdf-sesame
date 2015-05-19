@@ -47,8 +47,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.RdfDataset;
-import org.openrdf.sail.derived.RdfSink;
+import org.openrdf.sail.base.SailDataset;
+import org.openrdf.sail.base.SailSink;
 import org.openrdf.sail.memory.model.MemResource;
 import org.openrdf.sail.memory.model.MemURI;
 import org.openrdf.sail.memory.model.MemValue;
@@ -120,7 +120,7 @@ class FileIO {
 	 * Methods *
 	 *---------*/
 
-	public synchronized void write(RdfDataset explicit, RdfDataset inferred, File syncFile, File dataFile)
+	public synchronized void write(SailDataset explicit, SailDataset inferred, File syncFile, File dataFile)
 		throws IOException, SailException
 	{
 		write(explicit, inferred, syncFile);
@@ -143,7 +143,7 @@ class FileIO {
 		}
 	}
 
-	private void write(RdfDataset explicit, RdfDataset inferred, File dataFile)
+	private void write(SailDataset explicit, SailDataset inferred, File dataFile)
 		throws IOException, SailException
 	{
 		OutputStream out = new FileOutputStream(dataFile);
@@ -167,7 +167,7 @@ class FileIO {
 		}
 	}
 
-	public synchronized void read(File dataFile, RdfSink explicit, RdfSink inferred)
+	public synchronized void read(File dataFile, SailSink explicit, SailSink inferred)
 		throws IOException, SailException
 	{
 		InputStream in = new FileInputStream(dataFile);
@@ -214,7 +214,7 @@ class FileIO {
 		}
 	}
 
-	private void writeNamespaces(RdfDataset store, DataOutputStream dataOut)
+	private void writeNamespaces(SailDataset store, DataOutputStream dataOut)
 		throws IOException, SailException
 	{
 		CloseableIteration<? extends Namespace, SailException> iter;
@@ -231,7 +231,7 @@ class FileIO {
 		}
 	}
 
-	private void readNamespace(DataInputStream dataIn, RdfSink store)
+	private void readNamespace(DataInputStream dataIn, SailSink store)
 		throws IOException, SailException
 	{
 		String prefix = readString(dataIn);
@@ -245,7 +245,7 @@ class FileIO {
 		store.setNamespace(prefix, name);
 	}
 
-	private void writeStatements(final RdfDataset explicit, RdfDataset inferred, DataOutputStream dataOut)
+	private void writeStatements(final SailDataset explicit, SailDataset inferred, DataOutputStream dataOut)
 		throws IOException, SailException
 	{
 		// write explicit only statements
@@ -282,7 +282,7 @@ class FileIO {
 	}
 
 	private void readStatement(boolean hasContext, boolean isExplicit, DataInputStream dataIn,
-			RdfSink explicit, RdfSink inferred)
+			SailSink explicit, SailSink inferred)
 		throws IOException, ClassCastException, SailException
 	{
 		MemResource memSubj = (MemResource)readValue(dataIn);

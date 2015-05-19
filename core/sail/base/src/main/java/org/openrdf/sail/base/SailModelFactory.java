@@ -14,32 +14,23 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
-import org.openrdf.IsolationLevel;
-import org.openrdf.sail.SailException;
+import org.openrdf.model.Model;
+import org.openrdf.model.impl.TreeModel;
 
 /**
- * A persistent yet mutable source or container of RDF graphs. In which its
- * state can change over time. The life cycle follows that of a store.
+ * Abstraction to allow an {@link SailStore} to use a different {@link Model} to
+ * store statement changes.
  * 
  * @author James Leigh
  */
-public interface RdfSource {
-
-	RdfBranch fork();
-
-	RdfSink sink(IsolationLevel level)
-		throws SailException;
+public class SailModelFactory {
 
 	/**
-	 * Create an observable {@link RdfDataset} of the current state of this
-	 * {@link RdfSource}.
-	 * 
-	 * @return an {@link RdfDataset} of the current state
-	 * @throws SailException
+	 * @return a newly created {@link Model}
 	 */
-	RdfDataset dataset(IsolationLevel level)
-		throws SailException;
-
+	public Model createEmptyModel() {
+		return new TreeModel();
+	}
 }

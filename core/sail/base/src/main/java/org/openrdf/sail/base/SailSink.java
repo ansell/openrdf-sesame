@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
@@ -29,13 +29,13 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public interface RdfSink extends RdfClosable {
+public interface SailSink extends SailClosable {
 
 	/**
-	 * Checks if this {@link RdfSink} is consistent with the isolation level it
+	 * Checks if this {@link SailSink} is consistent with the isolation level it
 	 * was created with. If this Sink was created with a
 	 * {@link IsolationLevels#SERIALIZABLE} and another conflicting
-	 * {@link RdfSink} has already been {@link #flush()}ed, this method will
+	 * {@link SailSink} has already been {@link #flush()}ed, this method will
 	 * throw a {@link SailConflictException}.
 	 * 
 	 * @return <code>false</code> if this sink has a conflict
@@ -45,8 +45,8 @@ public interface RdfSink extends RdfClosable {
 
 	/**
 	 * Once this method returns successfully, changes that were made to this
-	 * {@link RdfSink} will be visible to subsequent
-	 * {@link RdfBranch#dataset(org.openrdf.IsolationLevel)}.
+	 * {@link SailSink} will be visible to subsequent
+	 * {@link SailBranch#dataset(org.openrdf.IsolationLevel)}.
 	 * 
 	 * @throws SailException
 	 */
@@ -85,7 +85,7 @@ public interface RdfSink extends RdfClosable {
 		throws SailException;
 
 	/**
-	 * Removes all namespace declarations from this {@link RdfSource}.
+	 * Removes all namespace declarations from this {@link SailSource}.
 	 * 
 	 * @throws SailException
 	 */
@@ -109,7 +109,7 @@ public interface RdfSink extends RdfClosable {
 
 	/**
 	 * Called to indicate matching statements have been observed and must not
-	 * change their state until after this {@link RdfSink} is committed, iff this
+	 * change their state until after this {@link SailSink} is committed, iff this
 	 * was opened in an isolation level compatible with
 	 * {@link IsolationLevels#SERIALIZABLE}.
 	 * 

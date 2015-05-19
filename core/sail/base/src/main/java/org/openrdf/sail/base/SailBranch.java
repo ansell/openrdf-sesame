@@ -14,23 +14,37 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
-import org.openrdf.model.Model;
-import org.openrdf.model.impl.TreeModel;
+import org.openrdf.sail.SailConflictException;
+import org.openrdf.sail.SailException;
 
 /**
- * Abstraction to allow an {@link RdfStore} to use a different {@link Model} to
- * store statement changes.
+ * A persistent yet mutable source or container of RDF graphs. In which its
+ * state can change over time. The life cycle follows that of a transaction.
  * 
  * @author James Leigh
  */
-public class RdfModelFactory {
+public interface SailBranch extends SailSource, SailClosable {
 
 	/**
-	 * @return a newly created {@link Model}
+	 * Check the consistency of this {@link SailBranch} and throw a
+	 * {@link SailConflictException} if {@link SailBranch#flush()}ing this
+	 * {@link SailBranch} would cause the backing {@link SailSource} to be
+	 * inconsistent.
+	 * 
+	 * @throws SailException
 	 */
-	public Model createEmptyModel() {
-		return new TreeModel();
-	}
+	void prepare()
+		throws SailException;
+
+	/**
+	 * Apply all the changes to this {@link SailBranch} to the backing
+	 * {@link SailSource}.
+	 * 
+	 * @throws SailException
+	 */
+	void flush()
+		throws SailException;
+
 }

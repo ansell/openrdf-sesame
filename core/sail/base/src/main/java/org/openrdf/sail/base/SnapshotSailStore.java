@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
@@ -23,44 +23,44 @@ import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailException;
 
 /**
- * A {@link RdfStore} wrapper that branches the backing {@link RdfSource}s to
+ * A {@link SailStore} wrapper that branches the backing {@link SailSource}s to
  * provide concurrent {@link IsolationLevels#SNAPSHOT_READ} isolation and
  * higher.
  * 
  * @author James Leigh
  */
-public class SnapshotRdfStore implements RdfStore {
+public class SnapshotSailStore implements SailStore {
 
 	private static final IsolationLevels NONE = IsolationLevels.NONE;
 
 	/**
-	 * The underlying {@link RdfStore}.
+	 * The underlying {@link SailStore}.
 	 */
-	private final RdfStore backingStore;
+	private final SailStore backingStore;
 
 	/**
-	 * {@link RdfBranch} of {@link RdfStore#getExplicitRdfSource(IsolationLevel)}
+	 * {@link SailBranch} of {@link SailStore#getExplicitSailSource(IsolationLevel)}
 	 * .
 	 */
-	private final DerivedRdfBranch explicitAutoFlush;
+	private final DerivedSailBranch explicitAutoFlush;
 
 	/**
-	 * {@link RdfBranch} of {@link RdfStore#getInferredRdfSource(IsolationLevel)}
+	 * {@link SailBranch} of {@link SailStore#getInferredSailSource(IsolationLevel)}
 	 * .
 	 */
-	private final DerivedRdfBranch inferredAutoFlush;
+	private final DerivedSailBranch inferredAutoFlush;
 
 	/**
-	 * Wraps an {@link RdfStore}, tracking changes in {@link RdfModelFactory}
+	 * Wraps an {@link SailStore}, tracking changes in {@link SailModelFactory}
 	 * instances.
 	 * 
 	 * @param backingStore
 	 * @param modelFactory
 	 */
-	public SnapshotRdfStore(RdfStore backingStore, RdfModelFactory modelFactory) {
+	public SnapshotSailStore(SailStore backingStore, SailModelFactory modelFactory) {
 		this.backingStore = backingStore;
-		explicitAutoFlush = new DerivedRdfBranch(backingStore.getExplicitRdfSource(NONE), modelFactory, true);
-		inferredAutoFlush = new DerivedRdfBranch(backingStore.getInferredRdfSource(NONE), modelFactory, true);
+		explicitAutoFlush = new DerivedSailBranch(backingStore.getExplicitSailSource(NONE), modelFactory, true);
+		inferredAutoFlush = new DerivedSailBranch(backingStore.getInferredSailSource(NONE), modelFactory, true);
 	}
 
 	@Override
@@ -93,9 +93,9 @@ public class SnapshotRdfStore implements RdfStore {
 	}
 
 	@Override
-	public RdfSource getExplicitRdfSource(IsolationLevel level) {
+	public SailSource getExplicitSailSource(IsolationLevel level) {
 		if (NONE.isCompatibleWith(level) && !explicitAutoFlush.isChanged()) {
-			return backingStore.getExplicitRdfSource(level);
+			return backingStore.getExplicitSailSource(level);
 		}
 		else {
 			return explicitAutoFlush;
@@ -103,9 +103,9 @@ public class SnapshotRdfStore implements RdfStore {
 	}
 
 	@Override
-	public RdfSource getInferredRdfSource(IsolationLevel level) {
+	public SailSource getInferredSailSource(IsolationLevel level) {
 		if (NONE.isCompatibleWith(level) && !inferredAutoFlush.isChanged()) {
-			return backingStore.getInferredRdfSource(level);
+			return backingStore.getInferredSailSource(level);
 		}
 		else {
 			return inferredAutoFlush;

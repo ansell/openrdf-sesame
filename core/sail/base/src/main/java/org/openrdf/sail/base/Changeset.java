@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,29 +33,29 @@ import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
 
 /**
- * Set of changes applied to an {@link DerivedRdfBranch} awaiting to be flushed
- * into its backing {@link RdfSource}.
+ * Set of changes applied to an {@link DerivedSailBranch} awaiting to be flushed
+ * into its backing {@link SailSource}.
  * 
  * @author James Leigh
  */
-abstract class Changeset implements RdfSink {
+abstract class Changeset implements SailSink {
 
 	/**
-	 * Set of {@link RdfDataset}s that are currently using this {@link Changeset}
-	 * to derive the state of the {@link RdfBranch}.
+	 * Set of {@link SailDataset}s that are currently using this {@link Changeset}
+	 * to derive the state of the {@link SailBranch}.
 	 */
-	private Set<DerivedRdfDataset> refbacks;
+	private Set<DerivedSailDataset> refbacks;
 
 	/**
 	 * {@link Changeset}s that have been {@link #flush()}ed to the same
-	 * {@link DerivedRdfBranch}, since this object was {@link #flush()}ed.
+	 * {@link DerivedSailBranch}, since this object was {@link #flush()}ed.
 	 */
 	private Set<Changeset> prepend;
 
 	/**
 	 * When in {@link IsolationLevels#SERIALIZABLE} this contains all the
 	 * observed {@link StatementPattern}s that were observed by
-	 * {@link ObservingRdfDataset}.
+	 * {@link ObservingSailDataset}.
 	 */
 	private Set<StatementPattern> observations;
 
@@ -138,14 +138,14 @@ abstract class Changeset implements RdfSink {
 		}
 	}
 
-	public synchronized void addRefback(DerivedRdfDataset dataset) {
+	public synchronized void addRefback(DerivedSailDataset dataset) {
 		if (refbacks == null) {
-			refbacks = new HashSet<DerivedRdfDataset>();
+			refbacks = new HashSet<DerivedSailDataset>();
 		}
 		refbacks.add(dataset);
 	}
 
-	public synchronized void removeRefback(DerivedRdfDataset dataset) {
+	public synchronized void removeRefback(DerivedSailDataset dataset) {
 		if (refbacks != null) {
 			refbacks.remove(dataset);
 		}

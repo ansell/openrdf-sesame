@@ -46,10 +46,10 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.DerivedTripleSource;
-import org.openrdf.sail.derived.RdfBranch;
-import org.openrdf.sail.derived.RdfDataset;
-import org.openrdf.sail.derived.UnionRdfBranch;
+import org.openrdf.sail.base.DerivedTripleSource;
+import org.openrdf.sail.base.SailBranch;
+import org.openrdf.sail.base.SailDataset;
+import org.openrdf.sail.base.UnionSailBranch;
 
 /**
  * Unit Test for {@link TripleSource}
@@ -72,9 +72,9 @@ public class MemTripleSourceTest {
 
 	private ValueFactory f;
 
-	private RdfDataset snapshot;
+	private SailDataset snapshot;
 
-	private RdfBranch source;
+	private SailBranch source;
 
 	/**
 	 * @throws java.lang.Exception
@@ -1138,7 +1138,7 @@ public class MemTripleSourceTest {
 	 */
 	private TripleSource getTripleSourceCommitted() throws SailException {
 		IsolationLevel level = store.getDefaultIsolationLevel();
-		source = new UnionRdfBranch(store.getRdfStore().getExplicitRdfSource(level).fork(), store.getRdfStore().getInferredRdfSource(level).fork());
+		source = new UnionSailBranch(store.getSailStore().getExplicitSailSource(level).fork(), store.getSailStore().getInferredSailSource(level).fork());
 		snapshot = source.dataset(level);
 		return new DerivedTripleSource(store.getValueFactory(), snapshot);
 	}

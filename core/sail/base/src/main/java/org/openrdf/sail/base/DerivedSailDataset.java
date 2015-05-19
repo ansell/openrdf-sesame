@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,33 +38,33 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.sail.SailException;
 
 /**
- * A view of an {@link RdfBranch} that is based on a backing {@link RdfSource}.
+ * A view of an {@link SailBranch} that is based on a backing {@link SailSource}.
  * 
  * @author James Leigh
  */
-class DerivedRdfDataset implements RdfDataset {
+class DerivedSailDataset implements SailDataset {
 
 	/**
-	 * {@link RdfDataset} of the backing {@link RdfSource}.
+	 * {@link SailDataset} of the backing {@link SailSource}.
 	 */
-	private final RdfDataset derivedFrom;
+	private final SailDataset derivedFrom;
 
 	/**
-	 * Changes that have not yet been {@link RdfBranch#flush()}ed to the backing
-	 * {@link RdfDataset}.
+	 * Changes that have not yet been {@link SailBranch#flush()}ed to the backing
+	 * {@link SailDataset}.
 	 */
 	private final Changeset changes;
 
 	/**
 	 * Create a derivative dataset that applies the given changeset. The life
-	 * cycle of this and the given {@link RdfDataset} are bound.
+	 * cycle of this and the given {@link SailDataset} are bound.
 	 * 
 	 * @param derivedFrom
 	 *        will be released when this object is released
 	 * @param changes
 	 *        changeset to be observed with the given dataset
 	 */
-	public DerivedRdfDataset(RdfDataset derivedFrom, Changeset changes) {
+	public DerivedSailDataset(SailDataset derivedFrom, Changeset changes) {
 		this.derivedFrom = derivedFrom;
 		this.changes = changes;
 		changes.addRefback(this);
@@ -96,12 +96,12 @@ class DerivedRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Namespace> getNamespaces()
+	public SailIteration<? extends Namespace> getNamespaces()
 		throws SailException
 	{
-		final RdfIteration<? extends Namespace> namespaces;
+		final SailIteration<? extends Namespace> namespaces;
 		if (changes.isNamespaceCleared()) {
-			namespaces = EmptyRdfIteration.emptyIteration();
+			namespaces = EmptySailIteration.emptyIteration();
 		}
 		else {
 			namespaces = derivedFrom.getNamespaces();
@@ -119,7 +119,7 @@ class DerivedRdfDataset implements RdfDataset {
 			return namespaces;
 		final Iterator<Map.Entry<String, String>> addedIter = added;
 		final Set<String> removedSet = removed;
-		return new RdfIteration<Namespace>() {
+		return new SailIteration<Namespace>() {
 
 			Namespace next;
 
@@ -168,10 +168,10 @@ class DerivedRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Resource> getContextIDs()
+	public SailIteration<? extends Resource> getContextIDs()
 		throws SailException
 	{
-		final RdfIteration<? extends Resource> contextIDs = derivedFrom.getContextIDs();
+		final SailIteration<? extends Resource> contextIDs = derivedFrom.getContextIDs();
 		Iterator<Resource> added = null;
 		Set<Resource> removed = null;
 		synchronized (this) {
@@ -188,7 +188,7 @@ class DerivedRdfDataset implements RdfDataset {
 			return contextIDs;
 		final Iterator<Resource> addedIter = added;
 		final Set<Resource> removedSet = removed;
-		return new RdfIteration<Resource>() {
+		return new SailIteration<Resource>() {
 
 			Resource next;
 
@@ -237,11 +237,11 @@ class DerivedRdfDataset implements RdfDataset {
 	}
 
 	@Override
-	public RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		Set<Resource> deprecatedContexts = changes.getDeprecatedContexts();
-		RdfIteration<? extends Statement> iter;
+		SailIteration<? extends Statement> iter;
 		if (changes.isStatementCleared() || contexts == null && deprecatedContexts != null
 				&& deprecatedContexts.contains(null) || contexts.length > 0 && deprecatedContexts != null
 				&& deprecatedContexts.containsAll(Arrays.asList(contexts)))
@@ -264,21 +264,21 @@ class DerivedRdfDataset implements RdfDataset {
 		if (approved != null && iter != null) {
 			return union(iter, approved.filter(subj, pred, obj, contexts));
 		} else if (approved != null) {
-			return ClosingRdfIteration.close(approved.filter(subj, pred, obj, contexts).iterator());
+			return ClosingSailIteration.close(approved.filter(subj, pred, obj, contexts).iterator());
 		} else if (iter != null) {
 			return iter;
 		} else {
-			return EmptyRdfIteration.emptyIteration();
+			return EmptySailIteration.emptyIteration();
 		}
 	}
 
-	private RdfIteration<? extends Statement> difference(RdfIteration<? extends Statement> result,
+	private SailIteration<? extends Statement> difference(SailIteration<? extends Statement> result,
 			final Model excluded)
 	{
 		if (excluded.isEmpty()) {
 			return result;
 		}
-		return new FilterRdfIteration<Statement>(result) {
+		return new FilterSailIteration<Statement>(result) {
 
 			protected boolean accept(Statement stmt) {
 				return !excluded.contains(stmt);
@@ -286,14 +286,14 @@ class DerivedRdfDataset implements RdfDataset {
 		};
 	}
 
-	private RdfIteration<? extends Statement> union(RdfIteration<? extends Statement> result, Model included) {
+	private SailIteration<? extends Statement> union(SailIteration<? extends Statement> result, Model included) {
 		if (included.isEmpty()) {
 			return result;
 		}
 		final Iterator<Statement> iter = included.iterator();
 		CloseableIteration<Statement, SailException> incl;
 		incl = new CloseableIteratorIteration<Statement, SailException>(iter);
-		return new UnionRdfIteration<Statement>(incl, result);
+		return new UnionSailIteration<Statement>(incl, result);
 	}
 
 }

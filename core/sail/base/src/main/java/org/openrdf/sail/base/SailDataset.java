@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.derived;
+package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
@@ -25,19 +25,19 @@ import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 
 /**
- * A state of an {@link RdfSource} at a point in time that will remain
+ * A state of an {@link SailSource} at a point in time that will remain
  * consistent until {@link #close()} is called. The life cycle follows that of
  * a read operation.
  * 
  * @author James Leigh
  */
-public interface RdfDataset extends RdfClosable {
+public interface SailDataset extends SailClosable {
 
 	/**
-	 * Called when this {@link RdfDataset} is no longer is used, such as when a
+	 * Called when this {@link SailDataset} is no longer is used, such as when a
 	 * read operation is complete. An isolation level compatible with
 	 * {@link IsolationLevels#SNAPSHOT} will ensure the state of this
-	 * {@link RdfDataset} dose not change between the first call to this object
+	 * {@link SailDataset} dose not change between the first call to this object
 	 * until {@link #release()} is called.
 	 */
 	void close()
@@ -52,7 +52,7 @@ public interface RdfDataset extends RdfClosable {
 	 *         If this object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	RdfIteration<? extends Namespace> getNamespaces()
+	SailIteration<? extends Namespace> getNamespaces()
 		throws SailException;
 
 	/**
@@ -79,7 +79,7 @@ public interface RdfDataset extends RdfClosable {
 	 * @return An iterator over the context identifiers, should not contain any
 	 *         duplicates.
 	 */
-	RdfIteration<? extends Resource> getContextIDs()
+	SailIteration<? extends Resource> getContextIDs()
 		throws SailException;
 
 	/**
@@ -102,7 +102,7 @@ public interface RdfDataset extends RdfClosable {
 	 * @throws SailException
 	 *         If the triple source failed to get the statements.
 	 */
-	RdfIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException;
 
 }

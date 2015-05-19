@@ -32,9 +32,9 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverC
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.derived.RdfModelFactory;
-import org.openrdf.sail.derived.RdfStore;
-import org.openrdf.sail.derived.SnapshotRdfStore;
+import org.openrdf.sail.base.SailModelFactory;
+import org.openrdf.sail.base.SailStore;
+import org.openrdf.sail.base.SnapshotSailStore;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.NotifyingSailBase;
 
@@ -73,7 +73,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 
 	private volatile int namespaceIDCacheSize = ValueStore.NAMESPACE_ID_CACHE_SIZE;
 
-	private RdfStore store;
+	private SailStore store;
 
 	/**
 	 * Data directory lock.
@@ -229,19 +229,19 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			if (!VERSION.equals(version) && upgradeStore(dataDir, version)) {
 				FileUtils.writeStringToFile(versionFile, VERSION);
 			}
-			NativeRdfStore master = new NativeRdfStore(dataDir, tripleIndexes, forceSync, valueCacheSize,
+			NativeSailStore master = new NativeSailStore(dataDir, tripleIndexes, forceSync, valueCacheSize,
 					valueIDCacheSize, namespaceCacheSize, namespaceIDCacheSize);
-			this.store = new SnapshotRdfStore(master, new RdfModelFactory() {
+			this.store = new SnapshotSailStore(master, new SailModelFactory() {
 
 				@Override
 				public Model createEmptyModel() {
 					return new MemoryOverflowModel() {
 
 						@Override
-						protected RdfStore createRdfStore(File dataDir)
+						protected SailStore createSailStore(File dataDir)
 							throws IOException, SailException
 						{
-							return new NativeRdfStore(dataDir, getTripleIndexes());
+							return new NativeSailStore(dataDir, getTripleIndexes());
 						}
 					};
 				}
@@ -297,7 +297,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		return store.getValueFactory();
 	}
 
-	RdfStore getRdfStore() {
+	SailStore getSailStore() {
 		return store;
 	}
 
