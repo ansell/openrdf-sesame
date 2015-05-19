@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.base;
 
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
@@ -26,8 +28,8 @@ import org.openrdf.sail.SailException;
 
 /**
  * A state of an {@link SailSource} at a point in time that will remain
- * consistent until {@link #close()} is called. The life cycle follows that of
- * a read operation.
+ * consistent until {@link #close()} is called. The life cycle follows that of a
+ * read operation.
  * 
  * @author James Leigh
  */
@@ -52,7 +54,7 @@ public interface SailDataset extends SailClosable {
 	 *         If this object encountered an error or unexpected situation
 	 *         internally.
 	 */
-	SailIteration<? extends Namespace> getNamespaces()
+	CloseableIteration<? extends Namespace, SailException> getNamespaces()
 		throws SailException;
 
 	/**
@@ -79,7 +81,7 @@ public interface SailDataset extends SailClosable {
 	 * @return An iterator over the context identifiers, should not contain any
 	 *         duplicates.
 	 */
-	SailIteration<? extends Resource> getContextIDs()
+	CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException;
 
 	/**
@@ -102,7 +104,8 @@ public interface SailDataset extends SailClosable {
 	 * @throws SailException
 	 *         If the triple source failed to get the statements.
 	 */
-	SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
+			Resource... contexts)
 		throws SailException;
 
 }

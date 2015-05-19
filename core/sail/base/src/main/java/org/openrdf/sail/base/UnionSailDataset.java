@@ -18,6 +18,9 @@ package org.openrdf.sail.base;
 
 import java.util.Arrays;
 
+import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.UnionIteration;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -61,10 +64,11 @@ class UnionSailDataset implements SailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Namespace> getNamespaces()
+	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
 		throws SailException
 	{
-		SailIteration<? extends Namespace>[] result = new SailIteration[datasets.length];
+		CloseableIteration<? extends Namespace, SailException>[] result;
+		result = new CloseableIteration[datasets.length];
 		for (int i = 0; i < datasets.length; i++) {
 			result[i] = datasets[i].getNamespaces();
 		}
@@ -85,10 +89,11 @@ class UnionSailDataset implements SailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Resource> getContextIDs()
+	public CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
-		SailIteration<? extends Resource>[] result = new SailIteration[datasets.length];
+		CloseableIteration<? extends Resource, SailException>[] result;
+		result = new CloseableIteration[datasets.length];
 		for (int i = 0; i < datasets.length; i++) {
 			result[i] = datasets[i].getContextIDs();
 		}
@@ -96,18 +101,22 @@ class UnionSailDataset implements SailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
+			Resource... contexts)
 		throws SailException
 	{
-		SailIteration<? extends Statement>[] result = new SailIteration[datasets.length];
+		CloseableIteration<? extends Statement, SailException>[] result;
+		result = new CloseableIteration[datasets.length];
 		for (int i = 0; i < datasets.length; i++) {
 			result[i] = datasets[i].get(subj, pred, obj, contexts);
 		}
 		return union(result);
 	}
 
-	private <T> SailIteration<? extends T> union(SailIteration<? extends T>[] items) {
-		return new UnionSailIteration<T>(items);
+	private <T> CloseableIteration<? extends T, SailException> union(
+			CloseableIteration<? extends T, SailException>[] items)
+	{
+		return new UnionIteration<T, SailException>(items);
 	}
 
 }

@@ -30,12 +30,14 @@ import info.aduna.concurrent.locks.LockingIteration;
 import info.aduna.concurrent.locks.ReadPrefReadWriteLockManager;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.EmptyIteration;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -44,11 +46,9 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.ClosingSailIteration;
 import org.openrdf.sail.base.DerivedSailBranch;
 import org.openrdf.sail.base.SailBranch;
 import org.openrdf.sail.base.SailDataset;
-import org.openrdf.sail.base.SailIteration;
 import org.openrdf.sail.base.SailSink;
 import org.openrdf.sail.base.SailSource;
 import org.openrdf.sail.base.SailStore;
@@ -61,7 +61,8 @@ import org.openrdf.sail.memory.model.MemValue;
 import org.openrdf.sail.memory.model.MemValueFactory;
 
 /**
- * An implementation of {@link SailStore} that keeps committed statements in a {@link MemStatementList}.
+ * An implementation of {@link SailStore} that keeps committed statements in a
+ * {@link MemStatementList}.
  * 
  * @author James Leigh
  */
@@ -376,7 +377,7 @@ class MemorySailStore implements SailStore {
 	}
 
 	private final class MemorySailSink implements SailSink {
-	
+
 		private boolean explicit;
 
 		private final int serializable;
@@ -406,12 +407,14 @@ class MemorySailStore implements SailStore {
 			StringBuilder sb = new StringBuilder();
 			if (explicit) {
 				sb.append("explicit ");
-			} else {
+			}
+			else {
 				sb.append("inferred ");
 			}
 			if (txnLock) {
 				sb.append("snapshot ").append(nextSnapshot);
-			} else {
+			}
+			else {
 				sb.append(super.toString());
 			}
 			return sb.toString();
@@ -442,7 +445,8 @@ class MemorySailStore implements SailStore {
 							MemStatement st = iter.next();
 							int since = st.getSinceSnapshot();
 							int till = st.getTillSnapshot();
-							if (serializable < since && since < nextSnapshot || serializable < till && till < nextSnapshot)
+							if (serializable < since && since < nextSnapshot || serializable < till
+									&& till < nextSnapshot)
 							{
 								throw new SailConflictException("Observed State has Changed");
 							}
@@ -516,8 +520,8 @@ class MemorySailStore implements SailStore {
 			}
 			else {
 				for (Resource ctx : contexts) {
-					observations.add(new StatementPattern(new Var("s", subj), new Var("p", pred), new Var("o", obj),
-							new Var("g", ctx)));
+					observations.add(new StatementPattern(new Var("s", subj), new Var("p", pred),
+							new Var("o", obj), new Var("g", ctx)));
 				}
 			}
 		}
@@ -656,12 +660,14 @@ class MemorySailStore implements SailStore {
 			StringBuilder sb = new StringBuilder();
 			if (explicit) {
 				sb.append("explicit ");
-			} else {
+			}
+			else {
 				sb.append("inferred ");
 			}
 			if (snapshot >= 0) {
 				sb.append("snapshot ").append(snapshot);
-			} else {
+			}
+			else {
 				sb.append(super.toString());
 			}
 			return sb.toString();
@@ -683,12 +689,12 @@ class MemorySailStore implements SailStore {
 		}
 
 		@Override
-		public SailIteration<? extends Namespace> getNamespaces() {
-			return ClosingSailIteration.close(namespaceStore.iterator());
+		public CloseableIteration<? extends Namespace, SailException> getNamespaces() {
+			return new CloseableIteratorIteration<Namespace, SailException>(namespaceStore.iterator());
 		}
 
 		@Override
-		public SailIteration<? extends Resource> getContextIDs()
+		public CloseableIteration<? extends Resource, SailException> getContextIDs()
 			throws SailException
 		{
 			// Note: we can't do this in a streaming fashion due to concurrency
@@ -722,19 +728,20 @@ class MemorySailStore implements SailStore {
 				stLock.release();
 			}
 
-			return ClosingSailIteration.close(contextIDs.iterator());
+			return new CloseableIteratorIteration<MemResource, SailException>(contextIDs.iterator());
 		}
 
 		@Override
-		public SailIteration<MemStatement> get(Resource subj, URI pred,
-				Value obj, Resource... contexts)
+		public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
+				Resource... contexts)
 			throws SailException
 		{
 			boolean releaseLock = true;
 			Lock stLock = openStatementsReadLock();
 			try {
-				SailIteration<MemStatement> ret = ClosingSailIteration.close(new LockingIteration<MemStatement, SailException>(
-						stLock, createStatementIterator(subj, pred, obj, explicit, getCurrentSnapshot(), contexts)));
+				CloseableIteration<? extends Statement, SailException> ret;
+				ret = createStatementIterator(subj, pred, obj, explicit, getCurrentSnapshot(), contexts);
+				ret = new LockingIteration<Statement, SailException>(stLock, ret);
 				releaseLock = false;
 				return ret;
 			}

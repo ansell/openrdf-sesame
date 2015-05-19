@@ -28,11 +28,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DistinctIteration;
+import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.FilterIteration;
 import info.aduna.iteration.ReducedIteration;
+import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFUtil;
@@ -44,15 +47,11 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.ClosingSailIteration;
-import org.openrdf.sail.base.EmptySailIteration;
 import org.openrdf.sail.base.SailBranch;
 import org.openrdf.sail.base.SailDataset;
-import org.openrdf.sail.base.SailIteration;
 import org.openrdf.sail.base.SailSink;
 import org.openrdf.sail.base.SailSource;
 import org.openrdf.sail.base.SailStore;
-import org.openrdf.sail.base.UnionSailIteration;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 import org.openrdf.sail.nativerdf.model.NativeValue;
 
@@ -186,7 +185,7 @@ class NativeSailStore implements SailStore {
 	 * @return A StatementIterator that can be used to iterate over the
 	 *         statements that match the specified pattern.
 	 */
-	SailIteration<? extends Statement> createStatementIterator(Resource subj, URI pred, Value obj,
+	CloseableIteration<? extends Statement, SailException> createStatementIterator(Resource subj, URI pred, Value obj,
 			boolean explicit, Resource... contexts)
 		throws IOException
 	{
@@ -194,7 +193,7 @@ class NativeSailStore implements SailStore {
 		if (subj != null) {
 			subjID = valueStore.getID(subj);
 			if (subjID == NativeValue.UNKNOWN_ID) {
-				return EmptySailIteration.emptyIteration();
+				return new EmptyIteration<Statement, SailException>();
 			}
 		}
 
@@ -202,7 +201,7 @@ class NativeSailStore implements SailStore {
 		if (pred != null) {
 			predID = valueStore.getID(pred);
 			if (predID == NativeValue.UNKNOWN_ID) {
-				return EmptySailIteration.emptyIteration();
+				return new EmptyIteration<Statement, SailException>();
 			}
 		}
 
@@ -210,7 +209,7 @@ class NativeSailStore implements SailStore {
 		if (obj != null) {
 			objID = valueStore.getID(obj);
 			if (objID == NativeValue.UNKNOWN_ID) {
-				return EmptySailIteration.emptyIteration();
+				return new EmptyIteration<Statement, SailException>();
 			}
 		}
 
@@ -246,7 +245,7 @@ class NativeSailStore implements SailStore {
 			return perContextIterList.get(0);
 		}
 		else {
-			return new UnionSailIteration<Statement>(perContextIterList);
+			return new UnionIteration<Statement, SailException>(perContextIterList);
 		}
 	}
 
@@ -578,12 +577,12 @@ class NativeSailStore implements SailStore {
 		}
 
 		@Override
-		public SailIteration<? extends Namespace> getNamespaces() {
-			return ClosingSailIteration.close(namespaceStore.iterator());
+		public CloseableIteration<? extends Namespace, SailException> getNamespaces() {
+			return new CloseableIteratorIteration<Namespace, SailException>(namespaceStore.iterator());
 		}
 
 		@Override
-		public SailIteration<? extends Resource> getContextIDs()
+		public CloseableIteration<? extends Resource, SailException> getContextIDs()
 			throws SailException
 		{
 			// Which resources are used as context identifiers is not stored
@@ -625,9 +624,7 @@ class NativeSailStore implements SailStore {
 					ctxIter = new ReducedIteration<Resource, SailException>(ctxIter);
 				}
 
-				return ClosingSailIteration.close(new ExceptionConvertingIteration<Resource, SailException>(
-						ctxIter)
-				{
+				return new ExceptionConvertingIteration<Resource, SailException>(ctxIter) {
 
 					@Override
 					protected SailException convert(Exception e) {
@@ -644,7 +641,7 @@ class NativeSailStore implements SailStore {
 							throw new IllegalArgumentException("Unexpected exception type: " + e.getClass());
 						}
 					}
-				});
+				};
 			}
 			catch (IOException e) {
 				throw new SailException(e);
@@ -652,7 +649,7 @@ class NativeSailStore implements SailStore {
 		}
 
 		@Override
-		public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+		public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj, Resource... contexts)
 			throws SailException
 		{
 			try {

@@ -146,7 +146,8 @@ public class SailSourceModel extends AbstractModel {
 	public synchronized int size() {
 		if (size < 0) {
 			try {
-				SailIteration<? extends Statement> iter = dataset().get(null, null, null);
+				CloseableIteration<? extends Statement, SailException> iter;
+				iter = dataset().get(null, null, null);
 				try {
 					while (iter.hasNext()) {
 						iter.next();
@@ -172,7 +173,8 @@ public class SailSourceModel extends AbstractModel {
 	public Set<Namespace> getNamespaces() {
 		Set<Namespace> set = new LinkedHashSet<Namespace>();
 		try {
-			SailIteration<? extends Namespace> spaces = dataset().getNamespaces();
+			CloseableIteration<? extends Namespace, SailException> spaces;
+			spaces = dataset().getNamespaces();
 			try {
 				while (spaces.hasNext()) {
 					set.add(spaces.next());
@@ -276,7 +278,8 @@ public class SailSourceModel extends AbstractModel {
 		try {
 			if (contains(subj, pred, obj, contexts)) {
 				size = -1;
-				SailIteration<? extends Statement> stmts = dataset().get(subj, pred, obj, contexts);
+				CloseableIteration<? extends Statement, SailException> stmts;
+				stmts = dataset().get(subj, pred, obj, contexts);
 				try {
 					while (stmts.hasNext()) {
 						Statement st = stmts.next();
@@ -314,7 +317,8 @@ public class SailSourceModel extends AbstractModel {
 			public int size() {
 				if (subj == null && pred == null && obj == null) {
 					try {
-						SailIteration<? extends Statement> iter = dataset().get(null, null, null);
+						CloseableIteration<? extends Statement, SailException> iter;
+						iter = dataset().get(null, null, null);
 						try {
 							long size = 0;
 							while (iter.hasNext()) {
@@ -360,7 +364,8 @@ public class SailSourceModel extends AbstractModel {
 			Resource... contexts)
 	{
 		try {
-			SailIteration<? extends Statement> stmts = dataset().get(subj, pred, obj, contexts);
+			CloseableIteration<? extends Statement, SailException> stmts;
+			stmts = dataset().get(subj, pred, obj, contexts);
 			try {
 				while (stmts.hasNext()) {
 					Statement st = stmts.next();
@@ -409,7 +414,8 @@ public class SailSourceModel extends AbstractModel {
 		if (dataset == null) {
 			return false;
 		}
-		SailIteration<? extends Statement> stmts = dataset.get(subj, pred, obj, contexts);
+		CloseableIteration<? extends Statement, SailException> stmts;
+		stmts = dataset.get(subj, pred, obj, contexts);
 		try {
 			return stmts.hasNext();
 		}

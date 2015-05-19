@@ -26,16 +26,13 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.SailIteration;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
 /**
  * A statement iterator that wraps a RecordIterator containing statement records
  * and translates these records to {@link Statement} objects.
  */
-class NativeStatementIterator extends LookAheadIteration<Statement, SailException> implements
-		SailIteration<Statement>
-{
+class NativeStatementIterator extends LookAheadIteration<Statement, SailException> {
 
 	/*-----------*
 	 * Variables *

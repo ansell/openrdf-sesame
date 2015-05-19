@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.base;
 
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -65,7 +67,7 @@ class ObservingSailDataset extends DelegatingSailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Resource> getContextIDs()
+	public CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
 		observer.observe(null, null, null);
@@ -73,7 +75,8 @@ class ObservingSailDataset extends DelegatingSailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
+			Resource... contexts)
 		throws SailException
 	{
 		observer.observe(subj, pred, obj, contexts);

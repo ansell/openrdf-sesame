@@ -27,6 +27,9 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
+import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.FilterIteration;
+import info.aduna.iteration.UnionIteration;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -96,12 +99,12 @@ class DerivedSailDataset implements SailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Namespace> getNamespaces()
+	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
 		throws SailException
 	{
-		final SailIteration<? extends Namespace> namespaces;
+		final CloseableIteration<? extends Namespace, SailException> namespaces;
 		if (changes.isNamespaceCleared()) {
-			namespaces = EmptySailIteration.emptyIteration();
+			namespaces = new EmptyIteration<Namespace, SailException>();
 		}
 		else {
 			namespaces = derivedFrom.getNamespaces();
@@ -119,7 +122,7 @@ class DerivedSailDataset implements SailDataset {
 			return namespaces;
 		final Iterator<Map.Entry<String, String>> addedIter = added;
 		final Set<String> removedSet = removed;
-		return new SailIteration<Namespace>() {
+		return new CloseableIteration<Namespace, SailException>() {
 
 			Namespace next;
 
@@ -168,10 +171,11 @@ class DerivedSailDataset implements SailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Resource> getContextIDs()
+	public CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
-		final SailIteration<? extends Resource> contextIDs = derivedFrom.getContextIDs();
+		final CloseableIteration<? extends Resource, SailException> contextIDs;
+		contextIDs = derivedFrom.getContextIDs();
 		Iterator<Resource> added = null;
 		Set<Resource> removed = null;
 		synchronized (this) {
@@ -188,7 +192,7 @@ class DerivedSailDataset implements SailDataset {
 			return contextIDs;
 		final Iterator<Resource> addedIter = added;
 		final Set<Resource> removedSet = removed;
-		return new SailIteration<Resource>() {
+		return new CloseableIteration<Resource, SailException>() {
 
 			Resource next;
 
@@ -237,11 +241,11 @@ class DerivedSailDataset implements SailDataset {
 	}
 
 	@Override
-	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		Set<Resource> deprecatedContexts = changes.getDeprecatedContexts();
-		SailIteration<? extends Statement> iter;
+		CloseableIteration<? extends Statement, SailException> iter;
 		if (changes.isStatementCleared() || contexts == null && deprecatedContexts != null
 				&& deprecatedContexts.contains(null) || contexts.length > 0 && deprecatedContexts != null
 				&& deprecatedContexts.containsAll(Arrays.asList(contexts)))
@@ -263,22 +267,26 @@ class DerivedSailDataset implements SailDataset {
 		Model approved = changes.getApproved();
 		if (approved != null && iter != null) {
 			return union(iter, approved.filter(subj, pred, obj, contexts));
-		} else if (approved != null) {
-			return ClosingSailIteration.close(approved.filter(subj, pred, obj, contexts).iterator());
-		} else if (iter != null) {
+		}
+		else if (approved != null) {
+			Iterator<Statement> i = approved.filter(subj, pred, obj, contexts).iterator();
+			return new CloseableIteratorIteration<Statement, SailException>(i);
+		}
+		else if (iter != null) {
 			return iter;
-		} else {
-			return EmptySailIteration.emptyIteration();
+		}
+		else {
+			return new EmptyIteration<Statement, SailException>();
 		}
 	}
 
-	private SailIteration<? extends Statement> difference(SailIteration<? extends Statement> result,
-			final Model excluded)
+	private CloseableIteration<? extends Statement, SailException> difference(
+			CloseableIteration<? extends Statement, SailException> result, final Model excluded)
 	{
 		if (excluded.isEmpty()) {
 			return result;
 		}
-		return new FilterSailIteration<Statement>(result) {
+		return new FilterIteration<Statement, SailException>(result) {
 
 			protected boolean accept(Statement stmt) {
 				return !excluded.contains(stmt);
@@ -286,14 +294,16 @@ class DerivedSailDataset implements SailDataset {
 		};
 	}
 
-	private SailIteration<? extends Statement> union(SailIteration<? extends Statement> result, Model included) {
+	private CloseableIteration<? extends Statement, SailException> union(
+			CloseableIteration<? extends Statement, SailException> result, Model included)
+	{
 		if (included.isEmpty()) {
 			return result;
 		}
 		final Iterator<Statement> iter = included.iterator();
 		CloseableIteration<Statement, SailException> incl;
 		incl = new CloseableIteratorIteration<Statement, SailException>(iter);
-		return new UnionSailIteration<Statement>(incl, result);
+		return new UnionIteration<Statement, SailException>(incl, result);
 	}
 
 }

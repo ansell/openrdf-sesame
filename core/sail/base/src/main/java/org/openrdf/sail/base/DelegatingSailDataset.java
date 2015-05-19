@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.base;
 
+import info.aduna.iteration.CloseableIteration;
+
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -52,7 +54,7 @@ abstract class DelegatingSailDataset implements SailDataset {
 		delegate.close();
 	}
 
-	public SailIteration<? extends Namespace> getNamespaces()
+	public CloseableIteration<? extends Namespace, SailException> getNamespaces()
 		throws SailException
 	{
 		return delegate.getNamespaces();
@@ -64,13 +66,14 @@ abstract class DelegatingSailDataset implements SailDataset {
 		return delegate.getNamespace(prefix);
 	}
 
-	public SailIteration<? extends Resource> getContextIDs()
+	public CloseableIteration<? extends Resource, SailException> getContextIDs()
 		throws SailException
 	{
 		return delegate.getContextIDs();
 	}
 
-	public SailIteration<? extends Statement> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
+			Resource... contexts)
 		throws SailException
 	{
 		return delegate.get(subj, pred, obj, contexts);

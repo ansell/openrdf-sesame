@@ -24,14 +24,14 @@ import info.aduna.iteration.CloseableIteratorIteration;
 import org.openrdf.sail.SailException;
 
 /**
- * An {@link SailIteration} that holds on to a {@link SailClosable} until the
+ * An {@link ClosingIteration} that holds on to a {@link SailClosable} until the
  * Iteration is closed. Upon closing, the underlying Iteration is closed before
  * the lock is released. This iterator closes itself as soon as all elements
  * have been read.
  * 
  * @author James Leigh
  */
-public class ClosingSailIteration<E> extends ClosingIteration<E, SailException> implements SailIteration<E> {
+public class ClosingSailIteration<E> extends ClosingIteration<E, SailException> {
 
 	public static <E> ClosingSailIteration<E> close(CloseableIteration<? extends E, SailException> iter,
 			SailClosable... closes)
@@ -53,7 +53,8 @@ public class ClosingSailIteration<E> extends ClosingIteration<E, SailException> 
 	 *        The {@link SailClosable}s to {@link SailClosable#close()} when the
 	 *        itererator is closed.
 	 */
-	protected ClosingSailIteration(CloseableIteration<? extends E, SailException> iter, SailClosable... closes) {
+	protected ClosingSailIteration(CloseableIteration<? extends E, SailException> iter, SailClosable... closes)
+	{
 		super(iter, closes);
 	}
 
