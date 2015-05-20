@@ -21,6 +21,7 @@ import static org.openrdf.http.protocol.Protocol.QUERY_PARAM_NAME;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.View;
 
 import info.aduna.lang.FileFormat;
+
+import org.openrdf.http.server.repository.transaction.ActiveTransactionRegistry;
 
 /**
  * Base class for rendering query results.
@@ -58,9 +61,39 @@ public abstract class QueryResultView implements View {
 	 */
 	public static final String FILENAME_HINT_KEY = "filenameHint";
 
-	
+	/**
+	 * Key by which the id of the current transaction is stored in the model. If
+	 * this is present, the QueryResultView will take care to release the
+	 * connection back to the
+	 * {@link org.openrdf.http.server.repository.transaction.ActiveTransactionRegistry}
+	 * after processing the query result.
+	 * 
+	 * @since 2.8.4
+	 */
+	public static final String TRANSACTION_ID_KEY = "transactionID";
+
 	public static final String HEADERS_ONLY = "headersOnly";
-	
+
+	@SuppressWarnings("rawtypes")
+	public final void render(Map model, HttpServletRequest request, HttpServletResponse response)
+		throws IOException
+	{
+		UUID txnId = null; 
+		try {
+			txnId = (UUID)model.get(TRANSACTION_ID_KEY);
+			renderInternal(model, request, response);
+		}
+		finally {
+			if (txnId != null) {
+				ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(txnId);
+			}
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	protected abstract void renderInternal(Map model, HttpServletRequest request, HttpServletResponse response)
+		throws IOException;
+
 	protected void setContentType(HttpServletResponse response, FileFormat fileFormat)
 		throws IOException
 	{
@@ -97,4 +130,5 @@ public abstract class QueryResultView implements View {
 			logger.info("Request for query {} is finished", qryCode);
 		}
 	}
+
 }
