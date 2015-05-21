@@ -44,13 +44,13 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
 
-
 /**
- *
  * @author James Leigh
  */
 public class TestNativeStoreUpgrade {
+
 	private static final String ZIP_2_7_15 = "/nativerdf-2.7.15.zip";
+
 	private static final String ZIP_2_7_15_INCONSISTENT = "/nativerdf-inconsistent-2.7.15.zip";
 
 	private File dataDir;
@@ -71,7 +71,9 @@ public class TestNativeStoreUpgrade {
 	}
 
 	@Test
-	public void testDevel() throws IOException, SailException {
+	public void testDevel()
+		throws IOException, SailException
+	{
 		NativeStore store = new NativeStore(dataDir);
 		try {
 			store.initialize();
@@ -81,10 +83,12 @@ public class TestNativeStoreUpgrade {
 				con.begin();
 				con.addStatement(RDF.VALUE, RDFS.LABEL, vf.createLiteral("value"));
 				con.commit();
-			} finally {
+			}
+			finally {
 				con.close();
 			}
-		} finally {
+		}
+		finally {
 			store.shutDown();
 		}
 		new File(dataDir, "nativerdf.ver").delete();
@@ -93,7 +97,9 @@ public class TestNativeStoreUpgrade {
 	}
 
 	@Test
-	public void test2715() throws IOException, SailException {
+	public void test2715()
+		throws IOException, SailException
+	{
 		extractZipResource(ZIP_2_7_15, dataDir);
 		assertFalse(new File(dataDir, "nativerdf.ver").exists());
 		assertValue(dataDir);
@@ -101,20 +107,21 @@ public class TestNativeStoreUpgrade {
 	}
 
 	@Test
-	public void test2715Inconsistent() throws IOException, SailException {
+	public void test2715Inconsistent()
+		throws IOException, SailException
+	{
 		extractZipResource(ZIP_2_7_15_INCONSISTENT, dataDir);
 		assertFalse(new File(dataDir, "nativerdf.ver").exists());
+		NativeStore store = new NativeStore(dataDir);
 		try {
-			NativeStore store = new NativeStore(dataDir);
-			try {
-				store.initialize();
-				fail();
-			} finally {
-				store.shutDown();
-			}
-		} catch (SailException e) {
-			// inconsistent
+			store.initialize();
+			// we expect init to still succeed, but the store not to be marked as upgraded. See SES-2244.
+			assertFalse(new File(dataDir, "nativerdf.ver").exists());
 		}
+		finally {
+			store.shutDown();
+		}
+
 	}
 
 	public void assertValue(File dataDir)
@@ -130,13 +137,16 @@ public class TestNativeStoreUpgrade {
 				iter = con.getStatements(RDF.VALUE, RDFS.LABEL, vf.createLiteral("value"), false);
 				try {
 					assertTrue(iter.hasNext());
-				} finally {
+				}
+				finally {
 					iter.close();
 				}
-			} finally {
+			}
+			finally {
 				con.close();
 			}
-		} finally {
+		}
+		finally {
 			store.shutDown();
 		}
 	}
@@ -155,7 +165,8 @@ public class TestNativeStoreUpgrade {
 				ch.transferFrom(Channels.newChannel(zip), 0, entry.getSize());
 				zip.closeEntry();
 			}
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
