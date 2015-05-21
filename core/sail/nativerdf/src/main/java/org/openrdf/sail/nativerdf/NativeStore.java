@@ -561,9 +561,9 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			}
 			catch (SailException e) {
 				// valueStore is not consistent - possibly contains two entries for
-				// string-literals with the same
-				// lexical value (e.g. "foo" and "foo"^^xsd:string. Log an error and
-				// then indicate upgrade should not be executed.
+				// string-literals with the same lexical value (e.g. "foo" and
+				// "foo"^^xsd:string). Log an error and indicate upgrade should
+				// not be executed.
 				logger.error(
 						"VALUE INCONSISTENCY: could not automatically upgrade native store to RDF 1.1-compatibility: {}. Failure to upgrade may result in inconsistent query results when comparing literal values.",
 						e.getMessage());
