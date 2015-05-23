@@ -189,7 +189,7 @@ public class EvaluationStatistics {
 		 * but also the other vars (e.g. the predicate value might determine an object subset). 
 		 */
 		protected double getObjectCardinality(StatementPattern sp) {
-			return getObjectCardinality(sp.getPredicateVar());
+			return getObjectCardinality(sp.getObjectVar());
 		}
 
 		protected double getObjectCardinality(Var var) {
@@ -201,7 +201,7 @@ public class EvaluationStatistics {
 		 * but also the other vars (e.g. the subject value might determine a context subset). 
 		 */
 		protected double getContextCardinality(StatementPattern sp) {
-			return getContextCardinality(sp.getPredicateVar());
+			return getContextCardinality(sp.getContextVar());
 		}
 
 		protected double getContextCardinality(Var var) {
@@ -209,7 +209,7 @@ public class EvaluationStatistics {
 		}
 
 		protected double getCardinality(double varCardinality, Var var) {
-			return var.hasValue() ? 1.0 : varCardinality;
+			return (var == null || var.hasValue()) ? 1.0 : varCardinality;
 		}
 
 		protected double getCardinality(double varCardinality, Collection<Var> vars) {
