@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -49,10 +50,26 @@ public class JoinIteratorTest {
 	 */
 	@Test
 	public void testBindingSetAssignmentJoin() throws QueryEvaluationException {
+		testBindingSetAssignmentJoin(5, 5, EmptyBindingSet.getInstance());
+
+		{
+			QueryBindingSet b = new QueryBindingSet();
+			b.addBinding("a", vf.createLiteral(2));
+			testBindingSetAssignmentJoin(1, 5, b);
+		}
+
+		{
+			QueryBindingSet b = new QueryBindingSet();
+			b.addBinding("x", vf.createLiteral("foo"));
+			testBindingSetAssignmentJoin(5, 5, b);
+		}
+	}
+
+	private void testBindingSetAssignmentJoin(int expectedSize, int n, BindingSet bindings) throws QueryEvaluationException {
 		BindingSetAssignment left = new BindingSetAssignment();
 		{
 			List<BindingSet> leftb = new ArrayList<BindingSet>();
-			for(int i=0; i<5; i++)
+			for(int i=0; i<n; i++)
 			{
 				QueryBindingSet b = new QueryBindingSet();
 				b.addBinding("a", vf.createLiteral(i));
@@ -64,7 +81,7 @@ public class JoinIteratorTest {
 		BindingSetAssignment right = new BindingSetAssignment();
 		{
 			List<BindingSet> rightb = new ArrayList<BindingSet>();
-			for(int i=5; i>=0; i--)
+			for(int i=n; i>=0; i--)
 			{
 				QueryBindingSet b = new QueryBindingSet();
 				b.addBinding("a", vf.createLiteral(i));
@@ -73,11 +90,21 @@ public class JoinIteratorTest {
 			right.setBindingSets(rightb);
 		}
 
-		JoinIterator iter = new JoinIterator(evaluator, new Join(left, right), EmptyBindingSet.getInstance());
-		List<BindingSet> lr = Iterations.asList(iter);
-		iter = new JoinIterator(evaluator, new Join(right, left), EmptyBindingSet.getInstance());
-		List<BindingSet> rl = Iterations.asList(iter);
+		JoinIterator lrIter = new JoinIterator(evaluator, new Join(left, right), bindings);
+		Set<BindingSet> lr = Iterations.asSet(lrIter);
+		assertEquals(expectedSize, lr.size());
+
+		JoinIterator rlIter = new JoinIterator(evaluator, new Join(right, left), bindings);
+		Set<BindingSet> rl = Iterations.asSet(rlIter);
+		assertEquals(expectedSize, rl.size());
 
 		assertEquals(lr, rl);
+
+		// check bindings
+		for(BindingSet b : lr) {
+			for(String name : bindings.getBindingNames()) {
+				assertEquals(bindings.getValue(name), b.getValue(name));
+			}
+		}
 	}
 }
