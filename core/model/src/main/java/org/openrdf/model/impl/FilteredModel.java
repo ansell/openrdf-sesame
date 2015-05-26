@@ -38,13 +38,13 @@ public abstract class FilteredModel extends AbstractModel {
 
 	private static final long serialVersionUID = -2353344619836326934L;
 
-	private Resource subj;
+	protected Resource subj;
 
-	private URI pred;
+	protected URI pred;
 
-	private Value obj;
+	protected Value obj;
 
-	private Resource[] contexts;
+	protected Resource[] contexts;
 
 	public FilteredModel(AbstractModel model, Resource subj, URI pred, Value obj, Resource... contexts) {
 		OpenRDFUtil.verifyContextNotNull(contexts);
@@ -100,10 +100,10 @@ public abstract class FilteredModel extends AbstractModel {
 	@Override
 	public boolean add(Resource s, URI p, Value o, Resource... c) {
 		if (s == null) {
-			s = (Resource)subj;
+			s = subj;
 		}
 		if (p == null) {
-			p = (URI)pred;
+			p = pred;
 		}
 		if (o == null) {
 			o = obj;
@@ -181,10 +181,10 @@ public abstract class FilteredModel extends AbstractModel {
 	public final void removeTermIteration(Iterator<Statement> iter, Resource s, URI p, Value o, Resource... c)
 	{
 		if (s == null) {
-			s = (Resource)subj;
+			s = subj;
 		}
 		if (p == null) {
-			p = (URI)pred;
+			p = pred;
 		}
 		if (o == null) {
 			o = obj;
