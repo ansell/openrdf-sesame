@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.openrdf.util.iterators.Iterators;
+
 /**
  * @author MJAHale
  */
@@ -61,6 +63,7 @@ public class UnionIterator<E> extends LookAheadIterator<E> {
 	 * Constructors *
 	 *--------------*/
 
+	@Override
 	protected E getNextElement()
 	{
 		if (currentIter.hasNext()) {
@@ -68,7 +71,7 @@ public class UnionIterator<E> extends LookAheadIterator<E> {
 		}
 
 		// Current Iterator exhausted, continue with the next one
-		closeSilently(currentIter);
+		Iterators.closeSilently(currentIter);
 
 		if (argIter.hasNext()) {
 			currentIter = argIter.next().iterator();
@@ -89,6 +92,6 @@ public class UnionIterator<E> extends LookAheadIterator<E> {
 		// getNextElement() again
 		super.handleClose();
 
-		close(currentIter);
+		Iterators.close(currentIter);
 	}
 }
