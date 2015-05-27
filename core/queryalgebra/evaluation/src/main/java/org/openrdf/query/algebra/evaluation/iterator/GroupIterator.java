@@ -20,14 +20,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.NavigableSet;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -171,15 +170,17 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		throws QueryEvaluationException
 	{
 		super.handleClose();
-		this.db.close();
+		if (this.db != null) {
+			this.db.close();
+		}
 	}
 
-	private <T> NavigableSet<T> createSet(String setName) {
+	private <T> Set<T> createSet(String setName) {
 		if (db != null) {
-			return db.getTreeSet(setName);
+			return db.getHashSet(setName);
 		}
 		else {
-			return new TreeSet<T>();
+			return new HashSet<T>();
 		}
 	}
 
