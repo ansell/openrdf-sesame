@@ -42,6 +42,8 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
@@ -75,7 +77,9 @@ import org.openrdf.sail.memory.model.ReadMode;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class MemoryStoreConnection extends NotifyingSailConnectionBase implements InferencerConnection {
+public class MemoryStoreConnection extends NotifyingSailConnectionBase implements InferencerConnection,
+		FederatedServiceResolverClient
+{
 
 	/*-----------*
 	 * Variables *
@@ -102,6 +106,11 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	 */
 	private volatile Lock txnStLock;
 
+	/**
+	 * Connection specific resolver.
+	 */
+	private FederatedServiceResolver federatedServiceResolver;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -114,6 +123,16 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		if (federatedServiceResolver == null)
+			return store.getFederatedServiceResolver();
+		return federatedServiceResolver;
+	}
+
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		this.federatedServiceResolver = resolver;
+	}
 
 	@Override
 	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
@@ -204,7 +223,7 @@ public class MemoryStoreConnection extends NotifyingSailConnectionBase implement
 	}
 
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
-		return new EvaluationStrategyImpl(tripleSource, dataset, store.getFederatedServiceResolver(), store.getIterationCacheSyncThreshold());
+		return new EvaluationStrategyImpl(tripleSource, dataset, getFederatedServiceResolver(), store.getIterationCacheSyncThreshold());
 	}
 
 	@Override

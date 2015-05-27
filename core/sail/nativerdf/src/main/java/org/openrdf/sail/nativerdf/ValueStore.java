@@ -18,6 +18,7 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import info.aduna.concurrent.locks.Lock;
 import info.aduna.concurrent.locks.ReadWriteLockManager;
@@ -34,7 +35,9 @@ import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.impl.ValueFactoryBase;
 import org.openrdf.model.util.Literals;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.nativerdf.datastore.DataStore;
 import org.openrdf.sail.nativerdf.model.NativeBNode;
 import org.openrdf.sail.nativerdf.model.NativeLiteral;
@@ -75,8 +78,6 @@ public class ValueStore extends ValueFactoryBase {
 	public static final int NAMESPACE_ID_CACHE_SIZE = 32;
 
 	private static final String FILENAME_PREFIX = "values";
-
-	private static final byte VALUE_TYPE_MASK = 0x3; // 0000 0011
 
 	private static final byte URI_VALUE = 0x1; // 0000 0001
 
@@ -267,8 +268,16 @@ public class ValueStore extends ValueFactoryBase {
 		// ID not cached, search in file
 		byte[] data = value2data(value, false);
 
+		if (data == null && value instanceof Literal) {
+			data = literal2legacy((Literal) value);
+		}
+
 		if (data != null) {
 			int id = dataStore.getID(data);
+
+			if (id == NativeValue.UNKNOWN_ID && value instanceof Literal) {
+				id = dataStore.getID(literal2legacy((Literal) value));
+			}
 
 			if (id != NativeValue.UNKNOWN_ID) {
 				if (isOwnValue) {
@@ -410,6 +419,57 @@ public class ValueStore extends ValueFactoryBase {
 	}
 
 	/**
+	 * Checks that every value has exactly one ID.
+	 *
+	 * @throws IOException
+	 */
+	public void checkConsistency()
+		throws SailException, IOException
+	{
+		int maxID = dataStore.getMaxID();
+		for (int id = 1; id <= maxID; id++) {
+			byte[] data = dataStore.getData(id);
+			if (isNamespaceData(data)) {
+				String namespace = data2namespace(data);
+				try {
+					if (id == getNamespaceID(namespace, false)
+							&& java.net.URI.create(namespace + "part").isAbsolute())
+					{
+						continue;
+					}
+				}
+				catch (IllegalArgumentException e) {
+					// throw SailException
+				}
+				throw new SailException("Store must be manually exported and imported to fix namespaces like "
+						+ namespace);
+			}
+			else {
+				Value value = this.data2value(id, data);
+				if (id != this.getID(copy(value))) {
+					throw new SailException("Store must be manually exported and imported to merge values like "
+							+ value);
+				}
+			}
+		}
+	}
+
+	private Value copy(Value value) {
+		if (value instanceof URI) {
+			return createURI(value.stringValue());
+		} else if (value instanceof Literal) {
+			Literal lit = (Literal) value;
+			if (Literals.isLanguageLiteral(lit)) {
+				return createLiteral(value.stringValue(), lit.getLanguage());
+			} else {
+				return createLiteral(value.stringValue(), lit.getDatatype());
+			}
+		} else {
+			return createBNode(value.stringValue());
+		}
+	}
+
+	/**
 	 * Checks if the supplied Value object is a NativeValue object that has been
 	 * created by this ValueStore.
 	 */
@@ -479,14 +539,29 @@ public class ValueStore extends ValueFactoryBase {
 	private byte[] literal2data(Literal literal, boolean create)
 		throws IOException
 	{
+		return literal2data(literal.getLabel(), literal.getLanguage(), literal.getDatatype(), create);
+	}
+
+	private byte[] literal2legacy(Literal literal)
+		throws IOException
+	{
+		URI dt = literal.getDatatype();
+		if (XMLSchema.STRING.equals(dt) || RDF.LANGSTRING.equals(dt))
+			return literal2data(literal.getLabel(), literal.getLanguage(), null, false);
+		return literal2data(literal.getLabel(), literal.getLanguage(), dt, false);
+	}
+
+	private byte[] literal2data(String label, String lang, URI dt, boolean create)
+		throws IOException, UnsupportedEncodingException
+	{
 		// Get datatype ID
 		int datatypeID = NativeValue.UNKNOWN_ID;
 
 		if (create) {
-			datatypeID = storeValue(literal.getDatatype());
+			datatypeID = storeValue(dt);
 		}
-		else {
-			datatypeID = getID(literal.getDatatype());
+		else if (dt != null) {
+			datatypeID = getID(dt);
 
 			if (datatypeID == NativeValue.UNKNOWN_ID) {
 				// Unknown datatype means unknown literal
@@ -497,13 +572,13 @@ public class ValueStore extends ValueFactoryBase {
 		// Get language tag in UTF-8
 		byte[] langData = null;
 		int langDataLength = 0;
-		if (Literals.isLanguageLiteral(literal)) {
-			langData = literal.getLanguage().getBytes("UTF-8");
+		if (lang != null) {
+			langData = lang.getBytes("UTF-8");
 			langDataLength = langData.length;
 		}
 
 		// Get label in UTF-8
-		byte[] labelData = literal.getLabel().getBytes("UTF-8");
+		byte[] labelData = label.getBytes("UTF-8");
 
 		// Combine parts in a single byte array
 		byte[] literalData = new byte[6 + langDataLength + labelData.length];
@@ -518,10 +593,14 @@ public class ValueStore extends ValueFactoryBase {
 		return literalData;
 	}
 
+	private boolean isNamespaceData(byte[] data) {
+		return data[0] != URI_VALUE && data[0] != BNODE_VALUE && data[0] != LITERAL_VALUE;
+	}
+
 	private NativeValue data2value(int id, byte[] data)
 		throws IOException
 	{
-		switch ((data[0] & VALUE_TYPE_MASK)) {
+		switch (data[0]) {
 			case URI_VALUE:
 				return data2uri(id, data);
 			case BNODE_VALUE:
@@ -529,7 +608,8 @@ public class ValueStore extends ValueFactoryBase {
 			case LITERAL_VALUE:
 				return data2literal(id, data);
 			default:
-				throw new IllegalArgumentException("data does not specify a known value type");
+				throw new IllegalArgumentException("Namespaces cannot be converted into values: "
+						+ data2namespace(data));
 		}
 	}
 
@@ -582,6 +662,12 @@ public class ValueStore extends ValueFactoryBase {
 		}
 	}
 
+	private String data2namespace(byte[] data)
+		throws UnsupportedEncodingException
+	{
+		return new String(data, "UTF-8");
+	}
+
 	private int getNamespaceID(String namespace, boolean create)
 		throws IOException
 	{
@@ -615,7 +701,7 @@ public class ValueStore extends ValueFactoryBase {
 
 		if (namespace == null) {
 			byte[] namespaceData = dataStore.getData(id);
-			namespace = new String(namespaceData, "UTF-8");
+			namespace = data2namespace(namespaceData);
 
 			namespaceCache.put(cacheID, namespace);
 		}
@@ -760,8 +846,14 @@ public class ValueStore extends ValueFactoryBase {
 
 		int maxID = valueStore.dataStore.getMaxID();
 		for (int id = 1; id <= maxID; id++) {
-			Value value = valueStore.getValue(id);
-			System.out.println("[" + id + "] " + value.toString());
+			byte[] data = valueStore.dataStore.getData(id);
+			if (valueStore.isNamespaceData(data)) {
+				String ns = valueStore.data2namespace(data);
+				System.out.println("[" + id + "] " + ns);
+			} else {
+				Value value = valueStore.data2value(id, data);
+				System.out.println("[" + id + "] " + value.toString());
+			}
 		}
 	}
 }

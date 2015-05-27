@@ -40,6 +40,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextException;
@@ -122,7 +123,7 @@ public class StatementsController extends AbstractController {
 				logger.info("POST transaction to repository");
 				result = getTransactionResultResult(repository, request, response);
 			}
-			else if (request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME)) {
+			else if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType) || request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME)) {
 				logger.info("POST SPARQL update request to repository");
 				result = getSparqlUpdateResult(repository, request, response);
 			}
@@ -153,7 +154,22 @@ public class StatementsController extends AbstractController {
 	{
 		ProtocolUtil.logRequestParameters(request);
 
-		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
+		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
+		
+		String sparqlUpdateString;
+		if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType)) {
+			// The query should be the entire body
+			try {
+				sparqlUpdateString = IOUtils.toString(request.getReader());
+			}
+			catch (IOException e) {
+				throw new ClientHTTPException(SC_BAD_REQUEST, "Error reading request message body", e);
+			}
+			if (sparqlUpdateString.isEmpty()) sparqlUpdateString = null;
+		}
+		else {
+			sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
+		}
 
 		// default query language is SPARQL
 		QueryLanguage queryLn = QueryLanguage.SPARQL;

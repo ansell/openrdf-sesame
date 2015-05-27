@@ -21,10 +21,8 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryFactory;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.repository.sail.ProxyRepository;
-import org.openrdf.repository.sail.config.RepositoryResolver;
-import org.openrdf.repository.sail.config.RepositoryResolverClient;
 
-public class ProxyRepositoryFactory implements RepositoryFactory, RepositoryResolverClient {
+public class ProxyRepositoryFactory implements RepositoryFactory {
 
 	/**
 	 * The type of repositories that are created by this factory.
@@ -32,13 +30,6 @@ public class ProxyRepositoryFactory implements RepositoryFactory, RepositoryReso
 	 * @see RepositoryFactory#getRepositoryType()
 	 */
 	public static final String REPOSITORY_TYPE = "openrdf:ProxyRepository";
-
-	private RepositoryResolver resolver;
-
-	@Override
-	public void setRepositoryResolver(RepositoryResolver resolver) {
-		this.resolver = resolver;
-	}
 
 	@Override
 	public String getRepositoryType() {
@@ -57,8 +48,7 @@ public class ProxyRepositoryFactory implements RepositoryFactory, RepositoryReso
 		ProxyRepository result = null;
 
 		if (config instanceof ProxyRepositoryConfig) {
-			assert resolver != null : "Expected resolver to be set.";
-			result = new ProxyRepository(resolver, ((ProxyRepositoryConfig)config).getProxiedRepositoryID());
+			result = new ProxyRepository(((ProxyRepositoryConfig)config).getProxiedRepositoryID());
 		}
 		else {
 			throw new RepositoryConfigException("Invalid configuration class: " + config.getClass());

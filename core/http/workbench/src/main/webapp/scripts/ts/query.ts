@@ -54,8 +54,9 @@ module workbench {
             workbench.query.updateYasqe();
         }
         /**
-         * After confirming with the user, clears the query text and loads the current
-         * repository and query language name space declarations.
+         * Invoked by the "clear" button. After confirming with the user,
+         * clears the query text and loads the current repository and query
+         * language name space declarations.
          */
         export function resetNamespaces() {
             if (confirm('Click OK to clear the current query text and replace' +
@@ -150,6 +151,12 @@ module workbench {
             });
         }
 
+        /**
+         * Invoked by form submission.
+         *
+         * @returns {boolean} true if a form POST is performed, false if
+         *          a GET is instead performed
+         */
         export function doSubmit() {
             //if yasqe is instantiated, make sure we save the value to the textarea
             if (yasqe) yasqe.save();
@@ -218,7 +225,7 @@ module workbench {
             workbench.yasqeHelper.setupCompleters(sparqlNamespaces);
             
             yasqe = YASQE.fromTextArea(<HTMLTextAreaElement>document.getElementById('query'), {
-                consumeShareLink: null,//don't try to parse the url args. this is already done by the addLoad function below
+                consumeShareLink: null//don't try to parse the url args. this is already done by the addLoad function below
             });
             //some styling conflicts. Could add my own css file, but not a lot of things need changing, so just do this programmatically
             //first, set the font size (otherwise font is as small as menu, which is too small)

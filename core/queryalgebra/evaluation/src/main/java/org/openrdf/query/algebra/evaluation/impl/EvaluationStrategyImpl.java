@@ -24,7 +24,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIterationBase;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DelayedIteration;
 import info.aduna.iteration.DistinctIteration;
@@ -130,11 +129,11 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.function.datetime.Now;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
-import org.openrdf.query.algebra.evaluation.iterator.BottomUpJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.DescribeIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ExtensionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.FilterIterator;
 import org.openrdf.query.algebra.evaluation.iterator.GroupIterator;
+import org.openrdf.query.algebra.evaluation.iterator.HashJoinIteration;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.LeftJoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.MultiProjectionIterator;
@@ -153,7 +152,6 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.repository.RepositoryException;
 
 /**
  * Default evaluation strategy for Sesame queries, to evaluate one
@@ -849,7 +847,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 
 		if (TupleExprs.containsProjection(join.getRightArg())) {
-			return new BottomUpJoinIterator(this, join, bindings);
+			return new HashJoinIteration(this, join, bindings);
 		}
 		else {
 			return new JoinIterator(this, join, bindings);

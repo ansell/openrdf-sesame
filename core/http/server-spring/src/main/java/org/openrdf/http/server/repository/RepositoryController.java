@@ -35,6 +35,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,8 +108,26 @@ public class RepositoryController extends AbstractController {
 	{
 		String reqMethod = request.getMethod();
 		String queryStr = request.getParameter(QUERY_PARAM_NAME);
-
-		if (METHOD_DELETE.equals(reqMethod)) {
+		
+		if (METHOD_POST.equals(reqMethod)) {
+			String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
+			
+			if (!(Protocol.FORM_MIME_TYPE.equals(mimeType) || Protocol.SPARQL_QUERY_MIME_TYPE.equals(mimeType))) {
+				throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType);
+			}
+			
+			if (Protocol.SPARQL_QUERY_MIME_TYPE.equals(mimeType)) {
+				// The query should be the entire body
+				try {
+					queryStr = IOUtils.toString(request.getReader());
+				}
+				catch (IOException e) {
+					throw new HTTPException(HttpStatus.SC_BAD_REQUEST, "Error reading request message body", e);
+				}
+				if (queryStr.isEmpty()) queryStr = null;
+			}
+		}
+		else if (METHOD_DELETE.equals(reqMethod)) {
 			String repId = RepositoryInterceptor.getRepositoryID(request);
 			logger.info("DELETE request invoked for repository '" + repId + "'");
 
@@ -166,11 +185,6 @@ public class RepositoryController extends AbstractController {
 		}
 		else if (METHOD_POST.equals(reqMethod)) {
 			logger.info("POST query {}", qryCode);
-
-			String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
-			if (!Protocol.FORM_MIME_TYPE.equals(mimeType)) {
-				throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType);
-			}
 		}
 
 		logger.debug("query {} = {}", qryCode, queryStr);

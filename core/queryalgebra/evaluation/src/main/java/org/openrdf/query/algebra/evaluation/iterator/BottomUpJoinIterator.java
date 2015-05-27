@@ -39,7 +39,9 @@ import org.openrdf.query.impl.EmptyBindingSet;
  * the join arguments are subselects).
  * 
  * @author jeen
+ * @deprecated replaced by HashJoinIteration
  */
+@Deprecated
 public class BottomUpJoinIterator extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 	/*-----------*

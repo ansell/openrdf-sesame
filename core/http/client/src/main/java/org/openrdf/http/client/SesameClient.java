@@ -16,12 +16,19 @@
  */
 package org.openrdf.http.client;
 
+import org.apache.http.client.HttpClient;
+
 /**
  * Manages remote HTP connections.
  * 
  * @author James Leigh
  */
 public interface SesameClient {
+
+	/**
+	 * @return Returns the httpClient.
+	 */
+	HttpClient getHttpClient();
 
 	/**
 	 * Creates a new session to the remote SPARQL endpoint to manage the auth

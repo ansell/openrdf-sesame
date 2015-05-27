@@ -9,15 +9,14 @@ workbench.addLoad(function () {
     var suffix = '_' + query;
     var limitParam = workbench.paging.LIMIT + suffix;
     var limitElement = $(workbench.paging.LIM_ID + suffix);
-
     function setElement(num) {
         limitElement.val(String(parseInt(0 + num, 10)));
     }
-
-    setElement(workbench.paging.hasQueryParameter(limitParam) ? workbench.paging.getQueryParameter(limitParam) : workbench.getCookie(limitParam));
+    setElement(workbench.paging.hasQueryParameter(limitParam) ?
+        workbench.paging.getQueryParameter(limitParam) :
+        workbench.getCookie(limitParam));
     workbench.paging.correctButtons(query);
-    var limit = workbench.paging.getLimit(query);
-
+    var limit = workbench.paging.getLimit(query); // Number
     // Modify title to reflect total_result_count cookie
     if (limit > 0) {
         var h1 = document.getElementById('title_heading');

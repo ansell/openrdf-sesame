@@ -58,7 +58,7 @@ public class QueryPrologLexer {
 	private static final Pattern PREFIX_PATTERN = Pattern.compile("^prefix([^:]+):", Pattern.CASE_INSENSITIVE);
 
 //	private static final Pattern COMMENT_PATTERN = Pattern.compile("^#([^\n]+/)");
-	private static final Pattern COMMENT_PATTERN = Pattern.compile("^(#.*(\r)?\n|(\r)?\n*)*");
+	private static final Pattern COMMENT_PATTERN = Pattern.compile("^(#.*((\r)?\n|(\r)?\n*))*");
 
 	public static class Token {
 
@@ -205,11 +205,21 @@ public class QueryPrologLexer {
 		return result;
 	}
 
+	/**
+	 * Reads the first comment line from the input, and returns
+	 * the comment line (including the line break character) without
+	 * the leading "#". 
+	 * @param input
+	 * @param index
+	 * @return
+	 */
 	private static String readComment(String input, int index) {
 		String comment = null;
 		Matcher matcher = COMMENT_PATTERN.matcher(input.substring(index));
 		if (matcher.find()) {
 			comment = matcher.group(1);
+			// the regex group includes the # => just remove it
+			comment = comment.substring(1);
 		}
 		return comment;
 	}

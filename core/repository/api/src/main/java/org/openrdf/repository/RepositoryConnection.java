@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
-import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
 
 import org.openrdf.IsolationLevel;
@@ -38,33 +37,36 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.UnsupportedRDFormatException;
 
 /**
  * Main interface for updating data in and performing queries on a Sesame
- * repository. By default, a RepositoryConnection is in auto-commit mode,
- * meaning that each operation corresponds to a single transaction on the
- * underlying store. Auto-commit can be {@link #begin() switched off} in which
- * case it is up to the user to handle transaction {@link #commit() commit}/
- * {@link #rollback() rollback}. Note that care should be taking to always
- * properly close a RepositoryConnection after one is finished with it, to free
- * up resources and avoid unnecessary locks.
+ * {@link Repository}. By default, a RepositoryConnection is in auto-commit
+ * mode, meaning that each operation corresponds to a single transaction on the
+ * underlying store. Multiple operations can be bundled in a single transaction
+ * by using {@link #begin()} and {@link #commit() commit}/ {@link #rollback()
+ * rollback}. Care should be taking to always properly close a
+ * RepositoryConnection after one is finished with it, to free up resources and
+ * avoid unnecessary locks.
  * <p>
- * Several methods take a vararg argument that optionally specifies a (set of)
- * context(s) on which the method should operate. Note that a vararg parameter
- * is optional, it can be completely left out of the method call, in which case
- * a method either operates on a provided statements context (if one of the
- * method parameters is a statement or collection of statements), or operates on
- * the repository as a whole, completely ignoring context. A vararg argument may
- * also be 'null' (cast to Resource) meaning that the method operates on those
- * statements which have no associated context only.
+ * RepositoryConnection is not guaranteed to be thread-safe. The recommended
+ * access pattern in a multithreaded application is to ensure that each thread
+ * creates/uses its own RepositoryConnections (which can be obtained from a
+ * shared {@link Repository}).
+ * <p>
+ * Several methods take a vararg argument that optionally specifies one or more
+ * contexts (named graphs) on which the method should operate. A vararg
+ * parameter is optional, it can be completely left out of the method call, in
+ * which case a method either operates on a provided statements context (if one
+ * of the method parameters is a statement or collection of statements), or
+ * operates on the repository as a whole, completely ignoring context. A vararg
+ * argument may also be 'null' (cast to Resource) meaning that the method
+ * operates on those statements which have no associated context only.
  * <p>
  * Examples:
  * 
@@ -567,7 +569,8 @@ public interface RepositoryConnection {
 		throws IllegalStateException;
 
 	/**
-	 * Retrieves the current transaction isolation level of the connection.
+	 * Retrieves the current {@link IsolationLevel transaction isolation level}
+	 * of the connection.
 	 * 
 	 * @return the current transaction isolation level.
 	 * @since 2.8.0
@@ -575,35 +578,51 @@ public interface RepositoryConnection {
 	public IsolationLevel getIsolationLevel();
 
 	/**
-	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
-	 * be called to end the transaction.
+	 * Begins a new transaction, requiring {@link #commit()} or
+	 * {@link #rollback()} to be called to end the transaction. The transaction
+	 * will use the currently set {@link IsolationLevel isolation level} for this
+	 * connection.
 	 * 
 	 * @throws RepositoryException
-	 *         If the connection could not start the transaction.
+	 *         If the connection could not start the transaction. One possible
+	 *         reason this may happen is if a transaction is already
+	 *         {@link #isActive() active} on the current connection.
+	 * @see #begin(IsolationLevel)
 	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()
+	 * @see #setIsolationLevel(IsolationLevel)
 	 * @since 2.7.0
 	 */
 	public void begin()
 		throws RepositoryException;
 
 	/**
-	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
-	 * be called to end the transaction.
+	 * Begins a new transaction with the supplied {@link IsolationLevel},
+	 * requiring {@link #commit()} or {@link #rollback()} to be called to end the
+	 * transaction.
 	 * 
 	 * @param level
 	 *        The {@link IsolationLevel} at which this transaction will operate.
 	 *        If set to <code>null</code> the default isolation level of the
-	 *        underlying store will be used.
+	 *        underlying store will be used. If the specified isolation level is
+	 *        not supported by the underlying store, it will attempt to use a
+	 *        supported {@link IsolationLevel#isCompatibleWith(IsolationLevel)
+	 *        compatible level} instead.
 	 * @throws RepositoryException
-	 *         If the connection could not start the transaction. One possible
-	 *         reason this may happen is if the specified {@link IsolationLevel}
-	 *         is not supported by the store, and no compatible level could be
-	 *         found.
+	 *         If the connection could not start the transaction. Possible
+	 *         reasons this may happen are:
+	 *         <ul>
+	 *         <li>a transaction is already {@link #isActive() active} on the
+	 *         current connection.
+	 *         <li>the specified {@link IsolationLevel} is not supported by the
+	 *         store, and no compatible level could be found.
+	 *         </ul>
+	 * @see #begin()
 	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()
+	 * @see #setIsolationLevel()
 	 * @since 2.8.0
 	 */
 	public void begin(IsolationLevel level)
