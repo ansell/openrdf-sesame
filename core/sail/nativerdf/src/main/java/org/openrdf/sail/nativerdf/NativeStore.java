@@ -203,7 +203,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 * the given resolver is not shutDown when this instance is.
 	 * 
 	 * @param resolver
-	 *        The SERVICE reslover to set.
+	 *        The SERVICE resolver to set.
 	 */
 	public synchronized void setFederatedServiceResolver(FederatedServiceResolver resolver) {
 		this.serviceResolver = resolver;
