@@ -375,17 +375,22 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 		{
 			TupleExpr result = null;
 
-			double lowestCardinality = Double.MAX_VALUE;
-			for (TupleExpr tupleExpr : expressions) {
-				// Calculate a score for this tuple expression
-				double cardinality = getTupleExprCardinality(tupleExpr, cardinalityMap, varsMap, varFreqMap,
-						boundVars);
+			if(expressions.size() > 1) {
+				double lowestCardinality = Double.INFINITY;
+				for (TupleExpr tupleExpr : expressions) {
+					// Calculate a score for this tuple expression
+					double cardinality = getTupleExprCardinality(tupleExpr, cardinalityMap, varsMap, varFreqMap,
+							boundVars);
 
-				if (cardinality < lowestCardinality) {
-					// More specific path expression found
-					lowestCardinality = cardinality;
-					result = tupleExpr;
+					if (cardinality <= lowestCardinality) {
+						// More specific path expression found
+						lowestCardinality = cardinality;
+						result = tupleExpr;
+					}
 				}
+			}
+			else {
+				result = expressions.get(0);
 			}
 
 			return result;
@@ -417,7 +422,9 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				// Prefer patterns that bind variables from other tuple expressions
 				int foreignVarFreq = getForeignVarFreq(unboundVars, varFreqMap);
 				if (foreignVarFreq > 0) {
+// WHY isn't foreignVarFreq = 1 more preferable than foreignVarFreq = 0?
 					cardinality /= foreignVarFreq;
+					//cardinality /= 1 + foreignVarFreq;
 				}
 			}
 
