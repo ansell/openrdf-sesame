@@ -244,7 +244,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		flush();
 		SailBranch branch = branch(false);
 		SailDataset snapshot = branch.dataset(getIsolationLevel());
-		return ClosingSailIteration.close(snapshot.getContextIDs(), snapshot, branch);
+		return SailClosingIteration.close(snapshot.getContextIDs(), snapshot, branch);
 	}
 
 	@Override
@@ -255,7 +255,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 		flush();
 		SailBranch branch = branch(includeInferred);
 		SailDataset snapshot = branch.dataset(getIsolationLevel());
-		return ClosingSailIteration.close(snapshot.get(subj, pred, obj, contexts), snapshot, branch);
+		return SailClosingIteration.close(snapshot.get(subj, pred, obj, contexts), snapshot, branch);
 	}
 
 	@Override
@@ -287,7 +287,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	{
 		SailBranch branch = branch(false);
 		SailDataset snapshot = branch.dataset(getIsolationLevel());
-		return ClosingSailIteration.close(snapshot.getNamespaces(), snapshot, branch);
+		return SailClosingIteration.close(snapshot.getNamespaces(), snapshot, branch);
 	}
 
 	@Override
@@ -737,7 +737,7 @@ public abstract class DerivedSailConnection extends NotifyingSailConnectionBase 
 	private <T, X extends Exception> CloseableIteration<T, QueryEvaluationException> interlock(
 			CloseableIteration<T, QueryEvaluationException> iter, SailClosable... closes)
 	{
-		return new ClosingIteration<T, QueryEvaluationException>(iter, closes) {
+		return new SailClosingIteration<T, QueryEvaluationException>(iter, closes) {
 
 			protected void handleSailException(SailException e)
 				throws QueryEvaluationException

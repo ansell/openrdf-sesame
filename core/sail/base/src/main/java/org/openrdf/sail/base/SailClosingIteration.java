@@ -32,7 +32,30 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public abstract class ClosingIteration<T, X extends Exception> extends IterationWrapper<T, X> {
+abstract class SailClosingIteration<T, X extends Exception> extends IterationWrapper<T, X> {
+
+	/**
+	 * Creates a new {@link Iteration} that automatically closes the given
+	 * {@link SailClosable}s.
+	 * @param iter
+	 *        The underlying Iteration, must not be <tt>null</tt>.
+	 * @param closes
+	 *        The {@link SailClosable}s to {@link SailClosable#close()} when the
+	 *        itererator is closed.
+	 * @return a {@link CloseableIteration} that closes the given {@link SailClosable}
+	 */
+	public static <E> SailClosingIteration<E, SailException> close(
+			CloseableIteration<? extends E, SailException> iter, SailClosable... closes)
+	{
+		return new SailClosingIteration<E, SailException>(iter, closes) {
+
+			protected void handleSailException(SailException e)
+				throws SailException
+			{
+				throw e;
+			}
+		};
+	}
 
 	/*-----------*
 	 * Variables *
@@ -57,7 +80,7 @@ public abstract class ClosingIteration<T, X extends Exception> extends Iteration
 	 *        The {@link SailClosable}s to {@link SailClosable#close()} when the
 	 *        itererator is closed.
 	 */
-	public ClosingIteration(CloseableIteration<? extends T, X> iter, SailClosable... closes) {
+	public SailClosingIteration(CloseableIteration<? extends T, X> iter, SailClosable... closes) {
 		super(iter);
 		this.closes = closes;
 	}
