@@ -25,7 +25,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public class SailNotBranchedSource implements SailBranch {
+class SailNotBranchedSource implements SailBranch {
 
 	/**
 	 * Target {@link SailSource} for calls to this {@link SailBranch}.

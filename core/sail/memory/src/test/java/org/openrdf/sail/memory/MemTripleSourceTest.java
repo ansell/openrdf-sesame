@@ -29,12 +29,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
@@ -46,10 +48,8 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.DerivedTripleSource;
 import org.openrdf.sail.base.SailBranch;
 import org.openrdf.sail.base.SailDataset;
-import org.openrdf.sail.base.UnionSailBranch;
 
 /**
  * Unit Test for {@link TripleSource}
@@ -1136,11 +1136,38 @@ public class MemTripleSourceTest {
 	 * @return
 	 * @throws SailException 
 	 */
-	private TripleSource getTripleSourceCommitted() throws SailException {
+	private TripleSource getTripleSourceCommitted()
+		throws SailException
+	{
 		IsolationLevel level = store.getDefaultIsolationLevel();
-		source = new UnionSailBranch(store.getSailStore().getExplicitSailSource().fork(), store.getSailStore().getInferredSailSource().fork());
+		source = store.getSailStore().getExplicitSailSource().fork();
 		snapshot = source.dataset(level);
-		return new DerivedTripleSource(store.getValueFactory(), snapshot);
+		final ValueFactory vf = store.getValueFactory();
+		return new TripleSource() {
+
+			public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(
+					Resource subj, URI pred, Value obj, Resource... contexts)
+				throws QueryEvaluationException
+			{
+				try {
+					return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(snapshot.get(
+							subj, pred, obj, contexts))
+					{
+
+						protected QueryEvaluationException convert(Exception e) {
+							return new QueryEvaluationException(e);
+						}
+					};
+				}
+				catch (SailException e) {
+					throw new QueryEvaluationException(e);
+				}
+			}
+
+			public ValueFactory getValueFactory() {
+				return vf;
+			}
+		};
 	}
 
 }

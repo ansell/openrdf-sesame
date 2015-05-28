@@ -25,7 +25,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public class UnionSailBranch implements SailBranch {
+class UnionSailBranch implements SailBranch {
 
 	/**
 	 * The branch that will be used in calls to {@link #sink(IsolationLevel)}.

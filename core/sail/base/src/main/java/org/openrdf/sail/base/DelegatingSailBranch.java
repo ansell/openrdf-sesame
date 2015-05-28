@@ -26,7 +26,7 @@ import org.openrdf.sail.SailException;
  * 
  * @author James Leigh
  */
-public class DelegatingSailBranch implements SailBranch {
+class DelegatingSailBranch implements SailBranch {
 
 	private final SailBranch delegate;
 

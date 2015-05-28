@@ -32,7 +32,7 @@ import org.openrdf.sail.SailException;
 /**
  * Implementation of the TripleSource interface using {@link SailDataset}
  */
-public class DerivedTripleSource implements TripleSource {
+class DerivedTripleSource implements TripleSource {
 
 	private final ValueFactory vf;
 
