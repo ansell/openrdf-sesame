@@ -8,20 +8,16 @@
 		<version>2.8.4-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-model</artifactId>
+	<artifactId>sesame-model-api</artifactId>
 
-	<name>OpenRDF Sesame: Model implementations</name>
-	<description>RDF model implementations.</description>
+	<name>OpenRDF Sesame: Model API</name>
+	<description>RDF model interfaces.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-model-api</artifactId>
+			<artifactId>sesame-util</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
 
