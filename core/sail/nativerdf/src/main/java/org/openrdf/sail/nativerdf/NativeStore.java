@@ -65,7 +65,8 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 * Variables *
 	 *-----------*/
 
-	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-sail-nativerdf", "devel");
+	private static final String VERSION = MavenUtil.loadVersion("org.openrdf.sesame", "sesame-sail-nativerdf",
+			"devel");
 
 	/**
 	 * Specifies which triple indexes this native store must use.
@@ -201,7 +202,8 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 * Overrides the {@link FederatedServiceResolver} used by this instance, but
 	 * the given resolver is not shutDown when this instance is.
 	 * 
-	 * @param resolver The SERVICE reslover to set.
+	 * @param resolver
+	 *        The SERVICE resolver to set.
 	 */
 	public synchronized void setFederatedServiceResolver(FederatedServiceResolver resolver) {
 		this.serviceResolver = resolver;
@@ -346,7 +348,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			throw new SailException(e);
 		}
 	}
-	
+
 	protected Lock tryTransactionLock() {
 		return txnLockManager.tryExclusiveLock();
 	}
@@ -556,6 +558,16 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			try {
 				valueStore.checkConsistency();
 				return true; // good enough
+			}
+			catch (SailException e) {
+				// valueStore is not consistent - possibly contains two entries for
+				// string-literals with the same lexical value (e.g. "foo" and
+				// "foo"^^xsd:string). Log an error and indicate upgrade should
+				// not be executed.
+				logger.error(
+						"VALUE INCONSISTENCY: could not automatically upgrade native store to RDF 1.1-compatibility: {}. Failure to upgrade may result in inconsistent query results when comparing literal values.",
+						e.getMessage());
+				return false;
 			}
 			finally {
 				valueStore.close();
