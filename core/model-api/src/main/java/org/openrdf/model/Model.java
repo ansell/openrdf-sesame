@@ -66,6 +66,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Sets the prefix for a namespace.
+	 * This will replace any existing namespace associated to the prefix.
 	 * 
 	 * @param prefix
 	 *        The new prefix.
@@ -77,6 +78,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Sets the prefix for a namespace.
+	 * This will replace any existing namespace associated to the prefix.
 	 * 
 	 * @param namespace
 	 *        A {@link Namespace} object to use in this Model.
@@ -155,6 +157,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If this Model cannot accept any statements, because it is filtered
 	 *         to the empty set.
 	 */
+	@Override
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts);
 
 	/**
