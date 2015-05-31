@@ -21,7 +21,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-inferencer</artifactId>
+			<artifactId>sesame-sail-inferencer-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
