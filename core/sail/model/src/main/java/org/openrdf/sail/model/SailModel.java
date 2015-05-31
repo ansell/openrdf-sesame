@@ -16,16 +16,16 @@
  */
 package org.openrdf.sail.model;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Set;
-
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 import info.aduna.iterator.CloseableIterationIterator;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -194,6 +194,10 @@ public class SailModel extends AbstractModel {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * The returned Iterator implements Closeable.
+	 * If it is not exhausted then it should be explicitly closed.
+	 */
 	@Override
 	public Iterator<Statement> iterator() {
 		return iterator(null, null, null);

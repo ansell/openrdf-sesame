@@ -41,11 +41,11 @@ public class CloseableIterationIterator<E> implements Iterator<E>, Closeable {
 
 	@Override
 	public boolean hasNext() {
-		boolean isMore = iteration.hasNext();
-		if(!isMore) {
+		boolean hasMore = iteration.hasNext();
+		if(!hasMore) {
 			Iterators.closeSilently(this);
 		}
-		return isMore;
+		return hasMore;
 	}
 
 	@Override
