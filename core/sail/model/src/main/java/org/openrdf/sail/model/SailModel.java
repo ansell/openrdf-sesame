@@ -24,8 +24,11 @@ import info.aduna.iterator.CloseableIterationIterator;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.UUID;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
@@ -37,19 +40,23 @@ import org.openrdf.model.impl.AbstractModel;
 import org.openrdf.model.impl.FilteredModel;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.NonSerializables;
 import org.openrdf.sail.AdvancedSailConnection;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
 
 /**
- *
+ * Model implementation for a {@link org.openrdf.sail.SailConnection}.
+ * All {@link org.openrdf.sail.SailException}s are wrapped in a {@link org.openrdf.model.util.ModelException}.
+ * Not thread-safe.
  * @author Mark
  */
 public class SailModel extends AbstractModel {
 	private static final long serialVersionUID = -2104886971549374410L;
 
 	private transient SailConnection conn;
+	private UUID connKey;
 	private boolean includeInferred;
 
 	public SailModel(SailConnection conn, boolean includeInferred) {
@@ -63,12 +70,20 @@ public class SailModel extends AbstractModel {
 
 	@Override
 	public Set<Namespace> getNamespaces() {
+		Set<Namespace> namespaces;
 		try {
-			return Iterations.asSet(conn.getNamespaces());
+			CloseableIteration<? extends Namespace,SailException> iter = conn.getNamespaces();
+			try {
+				namespaces = Iterations.asSet(conn.getNamespaces());
+			}
+			finally {
+				iter.close();
+			}
 		}
 		catch (SailException e) {
 			throw new ModelException(e);
 		}
+		return namespaces;
 	}
 
 	@Override
@@ -140,6 +155,8 @@ public class SailModel extends AbstractModel {
 
 	@Override
 	public boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
+		if (subj == null || pred == null || obj == null)
+			throw new UnsupportedOperationException("Incomplete statement");
 		boolean exists = contains(subj, pred, obj, contexts);
 		if(!exists) {
 			try {
@@ -167,6 +184,20 @@ public class SailModel extends AbstractModel {
 	}
 
 	@Override
+	public boolean clear(Resource... contexts) {
+		boolean exists = contains(null, null, null, contexts);
+		if(exists) {
+			try {
+				conn.clear(contexts);
+			}
+			catch (SailException e) {
+				throw new ModelException(e);
+			}
+		}
+		return exists;
+	}
+
+	@Override
 	public Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
 		return new FilteredModel(this, subj, pred, obj, contexts) {
 			private static final long serialVersionUID = -3834026632361358191L;
@@ -180,8 +211,7 @@ public class SailModel extends AbstractModel {
 			protected void removeFilteredTermIteration(Iterator<Statement> iter, Resource subj, URI pred,
 					Value obj, Resource... contexts)
 			{
-				// TODO Auto-generated method stub
-				throw new UnsupportedOperationException();
+				SailModel.this.removeTermIteration(iter, subj, pred, obj, contexts);
 			}
 		};
 	}
@@ -190,8 +220,12 @@ public class SailModel extends AbstractModel {
 	public void removeTermIteration(Iterator<Statement> iter, Resource subj, URI pred, Value obj,
 			Resource... contexts)
 	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		try {
+			conn.removeStatements(subj, pred, obj, contexts);
+		}
+		catch (SailException e) {
+			throw new ModelException(e);
+		}
 	}
 
 	/**
@@ -208,6 +242,23 @@ public class SailModel extends AbstractModel {
 			Iteration<? extends Statement,?> iter = conn.getStatements(subj, pred, obj, includeInferred, contexts);
 			return new CloseableIterationIterator<Statement>(new ExceptionConvertingIteration<Statement,ModelException>(iter)
 			{
+				private Statement last;
+
+				@Override
+				public Statement next() {
+					last = super.next();
+					return last;
+				}
+
+				@Override
+				public void remove() {
+					if(last == null) {
+						throw new IllegalStateException("next() not yet called");
+					}
+					SailModel.this.remove(last);
+					last = null;
+				}
+
 				@Override
 				protected ModelException convert(Exception e) {
 					throw new ModelException(e);
@@ -238,27 +289,38 @@ public class SailModel extends AbstractModel {
 
 	@Override
 	public int size() {
+		long lsize;
 		if(!includeInferred) {
 			try {
-				return (int) conn.size();
+				lsize = conn.size();
 			}
 			catch(SailException e) {
 				throw new ModelException(e);
 			}
 		}
 		else {
+			lsize = 0L;
 			Iterator<Statement> iter = iterator();
 			try {
-				int size = 0;
 				while (iter.hasNext()) {
-					size++;
+					lsize++;
 					iter.next();
 				}
-				return size;
 			}
 			finally {
 				closeIterator(iter);
 			}
 		}
+		return (lsize < Integer.MAX_VALUE) ? (int) lsize : Integer.MAX_VALUE;
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		this.connKey = NonSerializables.register(this.conn);
+		out.defaultWriteObject();
+	}
+
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
+		this.conn = SailConnection.class.cast(NonSerializables.get(this.connKey));
 	}
 }

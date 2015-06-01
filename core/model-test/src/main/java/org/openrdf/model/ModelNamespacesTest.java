@@ -27,7 +27,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.RDF;
@@ -90,11 +89,23 @@ public abstract class ModelNamespacesTest {
 	}
 
 	/**
+	 * Test method for {@link org.openrdf.model.Model#setNamespaces(String, String)}.
+	 */
+	@Test
+	public final void testSetNamespaceSingle() {
+		Namespace returnedNamespace = testModel.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
+
+		assertNotNull("Returned namespace must not be null", returnedNamespace);
+		assertEquals(RDF.PREFIX, returnedNamespace.getPrefix());
+		assertEquals(RDF.NAMESPACE, returnedNamespace.getName());
+	}
+
+	/**
 	 * Test method for {@link org.openrdf.model.Model#getNamespaces()}.
 	 */
 	@Test
 	public final void testGetNamespacesSingle() {
-		testModel.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
+		Namespace setNs = testModel.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
 
 		Set<Namespace> namespaces = testModel.getNamespaces();
 
@@ -102,6 +113,11 @@ public abstract class ModelNamespacesTest {
 		assertFalse(namespaces.isEmpty());
 		assertEquals(1, namespaces.size());
 
+		// check given Namespace impl
+		assertTrue("Did not find the expected namespace in the set",
+				namespaces.contains(setNs));
+
+		// check default Namespace impl
 		assertTrue("Did not find the expected namespace in the set",
 				namespaces.contains(new NamespaceImpl(RDF.PREFIX, RDF.NAMESPACE)));
 	}
@@ -111,11 +127,11 @@ public abstract class ModelNamespacesTest {
 	 */
 	@Test
 	public final void testGetNamespacesMultiple() {
-		testModel.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
-		testModel.setNamespace(RDFS.PREFIX, RDFS.NAMESPACE);
-		testModel.setNamespace(DC.PREFIX, DC.NAMESPACE);
-		testModel.setNamespace(SKOS.PREFIX, SKOS.NAMESPACE);
-		testModel.setNamespace(SESAME.PREFIX, SESAME.NAMESPACE);
+		Namespace rdfNs = testModel.setNamespace(RDF.PREFIX, RDF.NAMESPACE);
+		Namespace rdfsNs = testModel.setNamespace(RDFS.PREFIX, RDFS.NAMESPACE);
+		Namespace dcNs = testModel.setNamespace(DC.PREFIX, DC.NAMESPACE);
+		Namespace skosNs = testModel.setNamespace(SKOS.PREFIX, SKOS.NAMESPACE);
+		Namespace sesNs = testModel.setNamespace(SESAME.PREFIX, SESAME.NAMESPACE);
 
 		Set<Namespace> namespaces = testModel.getNamespaces();
 
@@ -123,6 +139,14 @@ public abstract class ModelNamespacesTest {
 		assertFalse(namespaces.isEmpty());
 		assertEquals(5, namespaces.size());
 
+		// check given Namespace impl
+		assertTrue(namespaces.contains(rdfNs));
+		assertTrue(namespaces.contains(rdfsNs));
+		assertTrue(namespaces.contains(dcNs));
+		assertTrue(namespaces.contains(skosNs));
+		assertTrue(namespaces.contains(sesNs));
+
+		// check default Namespace impl
 		assertTrue(namespaces.contains(new NamespaceImpl(RDF.PREFIX, RDF.NAMESPACE)));
 		assertTrue(namespaces.contains(new NamespaceImpl(RDFS.PREFIX, RDFS.NAMESPACE)));
 		assertTrue(namespaces.contains(new NamespaceImpl(DC.PREFIX, DC.NAMESPACE)));

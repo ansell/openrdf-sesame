@@ -21,6 +21,7 @@ import junit.framework.Test;
 import org.openrdf.model.Model;
 import org.openrdf.model.TestModel;
 import org.openrdf.model.util.ModelException;
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.MemoryStore;
@@ -30,6 +31,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * @author Mark
  */
 public class TestSailModel extends TestModel {
+	private Sail sail;
 	private SailConnection conn;
 
 	public static Test suite() throws Exception {
@@ -42,9 +44,11 @@ public class TestSailModel extends TestModel {
 
 	@Override
 	public Model makeEmptyModel() {
-		MemoryStore sail = new MemoryStore();
+		sail = new MemoryStore();
 		try {
+			sail.initialize();
 			conn = sail.getConnection();
+			conn.begin();
 			return new SailModel(conn, false);
 		} catch (SailException e) {
 			throw new ModelException(e);
@@ -57,6 +61,10 @@ public class TestSailModel extends TestModel {
 			conn.commit();
 			conn.close();
 			conn = null;
+		}
+		if(sail != null) {
+			sail.shutDown();
+			sail = null;
 		}
 		super.tearDown();
 	}
