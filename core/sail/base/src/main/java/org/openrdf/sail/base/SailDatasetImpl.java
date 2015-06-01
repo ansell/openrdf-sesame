@@ -241,7 +241,7 @@ class SailDatasetImpl implements SailDataset {
 	}
 
 	@Override
-	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj, Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
 		Set<Resource> deprecatedContexts = changes.getDeprecatedContexts();
@@ -255,10 +255,10 @@ class SailDatasetImpl implements SailDataset {
 		else if (contexts.length > 0 && deprecatedContexts != null) {
 			List<Resource> remaining = new ArrayList<Resource>(Arrays.asList(contexts));
 			remaining.removeAll(deprecatedContexts);
-			iter = derivedFrom.get(subj, pred, obj, contexts);
+			iter = derivedFrom.getStatements(subj, pred, obj, contexts);
 		}
 		else {
-			iter = derivedFrom.get(subj, pred, obj, contexts);
+			iter = derivedFrom.getStatements(subj, pred, obj, contexts);
 		}
 		Model deprecated = changes.getDeprecated();
 		if (deprecated != null && iter != null) {

@@ -1150,8 +1150,8 @@ public class MemTripleSourceTest {
 				throws QueryEvaluationException
 			{
 				try {
-					return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(snapshot.get(
-							subj, pred, obj, contexts))
+					return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(
+							snapshot.getStatements(subj, pred, obj, contexts))
 					{
 
 						protected QueryEvaluationException convert(Exception e) {

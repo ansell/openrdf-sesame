@@ -75,12 +75,12 @@ class ObservingSailDataset extends DelegatingSailDataset {
 	}
 
 	@Override
-	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+			Value obj, Resource... contexts)
 		throws SailException
 	{
 		observer.observe(subj, pred, obj, contexts);
-		return super.get(subj, pred, obj, contexts);
+		return super.getStatements(subj, pred, obj, contexts);
 	}
 
 }

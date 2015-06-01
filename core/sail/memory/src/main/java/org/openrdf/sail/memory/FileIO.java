@@ -249,9 +249,9 @@ class FileIO {
 		throws IOException, SailException
 	{
 		// write explicit only statements
-		writeStatement(explicit.get(null, null, null), EXPL_TRIPLE_MARKER, EXPL_QUAD_MARKER, dataOut);
+		writeStatement(explicit.getStatements(null, null, null), EXPL_TRIPLE_MARKER, EXPL_QUAD_MARKER, dataOut);
 		// write inferred only statements
-		writeStatement(inferred.get(null, null, null), INF_TRIPLE_MARKER, INF_QUAD_MARKER, dataOut);
+		writeStatement(inferred.getStatements(null, null, null), INF_TRIPLE_MARKER, INF_QUAD_MARKER, dataOut);
 	}
 
 	public void writeStatement(CloseableIteration<? extends Statement, SailException> stIter,

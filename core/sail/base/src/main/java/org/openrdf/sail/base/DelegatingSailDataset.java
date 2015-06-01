@@ -72,10 +72,10 @@ abstract class DelegatingSailDataset implements SailDataset {
 		return delegate.getContextIDs();
 	}
 
-	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+			Value obj, Resource... contexts)
 		throws SailException
 	{
-		return delegate.get(subj, pred, obj, contexts);
+		return delegate.getStatements(subj, pred, obj, contexts);
 	}
 }

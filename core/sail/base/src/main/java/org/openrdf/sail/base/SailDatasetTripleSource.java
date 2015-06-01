@@ -52,7 +52,7 @@ class SailDatasetTripleSource implements TripleSource {
 		throws QueryEvaluationException
 	{
 		try {
-			return new Eval(dataset.get(subj, pred, obj, contexts));
+			return new Eval(dataset.getStatements(subj, pred, obj, contexts));
 		}
 		catch (SailException e) {
 			throw new QueryEvaluationException(e);

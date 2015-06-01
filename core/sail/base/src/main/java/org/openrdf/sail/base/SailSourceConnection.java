@@ -255,7 +255,8 @@ public abstract class SailSourceConnection extends NotifyingSailConnectionBase i
 		flush();
 		SailSource branch = branch(includeInferred);
 		SailDataset snapshot = branch.dataset(getIsolationLevel());
-		return SailClosingIteration.makeClosable(snapshot.get(subj, pred, obj, contexts), snapshot, branch);
+		return SailClosingIteration.makeClosable(snapshot.getStatements(subj, pred, obj, contexts), snapshot,
+				branch);
 	}
 
 	@Override
@@ -572,7 +573,7 @@ public abstract class SailSourceConnection extends NotifyingSailConnectionBase i
 	{
 		boolean statementsRemoved = false;
 		CloseableIteration<? extends Statement, SailException> iter;
-		iter = dataset.get(subj, pred, obj, contexts);
+		iter = dataset.getStatements(subj, pred, obj, contexts);
 		try {
 			while (iter.hasNext()) {
 				Statement st = iter.next();
@@ -751,7 +752,7 @@ public abstract class SailSourceConnection extends NotifyingSailConnectionBase i
 		throws SailException
 	{
 		CloseableIteration<? extends Statement, SailException> iter;
-		iter = dataset.get(subj, pred, obj, ctx);
+		iter = dataset.getStatements(subj, pred, obj, ctx);
 		try {
 			return iter.hasNext();
 		}

@@ -101,14 +101,14 @@ class UnionSailDataset implements SailDataset {
 	}
 
 	@Override
-	public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
-			Resource... contexts)
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+			Value obj, Resource... contexts)
 		throws SailException
 	{
 		CloseableIteration<? extends Statement, SailException>[] result;
 		result = new CloseableIteration[datasets.length];
 		for (int i = 0; i < datasets.length; i++) {
-			result[i] = datasets[i].get(subj, pred, obj, contexts);
+			result[i] = datasets[i].getStatements(subj, pred, obj, contexts);
 		}
 		return union(result);
 	}

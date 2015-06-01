@@ -649,7 +649,8 @@ class NativeSailStore implements SailStore {
 		}
 
 		@Override
-		public CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj, Resource... contexts)
+		public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred,
+				Value obj, Resource... contexts)
 			throws SailException
 		{
 			try {

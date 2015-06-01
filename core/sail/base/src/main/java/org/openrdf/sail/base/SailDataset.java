@@ -104,7 +104,7 @@ public interface SailDataset extends SailClosable {
 	 * @throws SailException
 	 *         If the triple source failed to get the statements.
 	 */
-	CloseableIteration<? extends Statement, SailException> get(Resource subj, URI pred, Value obj,
+	CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, URI pred, Value obj,
 			Resource... contexts)
 		throws SailException;
 
