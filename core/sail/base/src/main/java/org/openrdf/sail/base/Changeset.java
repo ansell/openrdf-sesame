@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Model;
+import org.openrdf.model.ModelFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -33,22 +34,22 @@ import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
 
 /**
- * Set of changes applied to an {@link DerivedSailBranch} awaiting to be flushed
+ * Set of changes applied to an {@link SailSourceBranch} awaiting to be flushed
  * into its backing {@link SailSource}.
  * 
  * @author James Leigh
  */
-abstract class Changeset implements SailSink {
+abstract class Changeset implements SailSink, ModelFactory {
 
 	/**
 	 * Set of {@link SailDataset}s that are currently using this {@link Changeset}
-	 * to derive the state of the {@link SailBranch}.
+	 * to derive the state of the {@link SailSource}.
 	 */
-	private Set<DerivedSailDataset> refbacks;
+	private Set<SailDatasetImpl> refbacks;
 
 	/**
 	 * {@link Changeset}s that have been {@link #flush()}ed to the same
-	 * {@link DerivedSailBranch}, since this object was {@link #flush()}ed.
+	 * {@link SailSourceBranch}, since this object was {@link #flush()}ed.
 	 */
 	private Set<Changeset> prepend;
 
@@ -138,14 +139,14 @@ abstract class Changeset implements SailSink {
 		}
 	}
 
-	public synchronized void addRefback(DerivedSailDataset dataset) {
+	public synchronized void addRefback(SailDatasetImpl dataset) {
 		if (refbacks == null) {
-			refbacks = new HashSet<DerivedSailDataset>();
+			refbacks = new HashSet<SailDatasetImpl>();
 		}
 		refbacks.add(dataset);
 	}
 
-	public synchronized void removeRefback(DerivedSailDataset dataset) {
+	public synchronized void removeRefback(SailDatasetImpl dataset) {
 		if (refbacks != null) {
 			refbacks.remove(dataset);
 		}
@@ -364,6 +365,4 @@ abstract class Changeset implements SailSink {
 	public synchronized boolean isNamespaceCleared() {
 		return namespaceCleared;
 	}
-
-	protected abstract Model createEmptyModel();
 }

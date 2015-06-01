@@ -47,7 +47,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.SailBranch;
+import org.openrdf.sail.base.BackingSailSource;
 import org.openrdf.sail.base.SailDataset;
 import org.openrdf.sail.base.SailSink;
 import org.openrdf.sail.base.SailSource;
@@ -287,7 +287,7 @@ class NativeSailStore implements SailStore {
 		return tripleStore.cardinality(subjID, predID, objID, contextID);
 	}
 
-	private final class NativeSailSource implements SailSource {
+	private final class NativeSailSource extends BackingSailSource {
 
 		private final boolean explicit;
 
@@ -296,7 +296,7 @@ class NativeSailStore implements SailStore {
 		}
 
 		@Override
-		public SailBranch fork() {
+		public SailSource fork() {
 			throw new UnsupportedOperationException("This store does not support multiple datasets");
 		}
 

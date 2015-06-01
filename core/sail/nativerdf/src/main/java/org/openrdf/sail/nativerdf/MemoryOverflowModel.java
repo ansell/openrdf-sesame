@@ -52,7 +52,6 @@ import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.FilteredModel;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.SailSourceModel;
 import org.openrdf.sail.base.SailStore;
 
 /**
@@ -64,7 +63,7 @@ import org.openrdf.sail.base.SailStore;
  * @author James Leigh
  * 
  */
-public abstract class MemoryOverflowModel extends AbstractModel {
+abstract class MemoryOverflowModel extends AbstractModel {
 	private static final long serialVersionUID = 4119844228099208169L;
 	private static final Runtime RUNTIME = Runtime.getRuntime();
 	private static final int LARGE_BLOCK = 10000;

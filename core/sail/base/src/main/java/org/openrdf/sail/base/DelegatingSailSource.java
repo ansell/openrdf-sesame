@@ -20,78 +20,70 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
- * Combines two branches to act as a single {@link SailBranch}. This is useful to
- * provide a combined view of both explicit and inferred statements.
+ * A wrapper around an {@link SailSource} that can suppress the call to
+ * {@link #close()}. This is useful when the a shared branch is sometimes to be
+ * used and other times a dedicated branch is to be used.
  * 
  * @author James Leigh
  */
-class UnionSailBranch implements SailBranch {
+class DelegatingSailSource implements SailSource {
+
+	private final SailSource delegate;
+
+	private final boolean releasing;
 
 	/**
-	 * The branch that will be used in calls to {@link #sink(IsolationLevel)}.
-	 */
-	private final SailBranch primary;
-
-	/**
-	 * Additional statements that should be included in {@link SailDataset}s.
-	 */
-	private final SailBranch additional;
-
-	/**
-	 * An {@link SailBranch} that combines two other {@link SailBranch}es.
+	 * Wraps this {@link SailSource}, delegating all calls to it unless
+	 * <code>closing</code> is false, in which case {@link #close()} will not be
+	 * delegated.
 	 * 
-	 * @param primary delegates all calls to the given {@link SailBranch}.
-	 * @param additional delegate all call except {@link #sink(IsolationLevel)}.
+	 * @param delegate
+	 * @param closing
+	 *        if {@link #close()} should be delegated
 	 */
-	public UnionSailBranch(SailBranch primary, SailBranch additional) {
-		super();
-		this.primary = primary;
-		this.additional = additional;
+	public DelegatingSailSource(SailSource delegate, boolean closing) {
+		assert delegate != null;
+		this.delegate = delegate;
+		this.releasing = closing;
 	}
 
 	public String toString() {
-		return primary.toString() + "\n" + additional.toString();
+		return delegate.toString();
 	}
 
-	@Override
 	public void close()
 		throws SailException
 	{
-		primary.close();
-		additional.close();
+		if (releasing) {
+			delegate.close();
+		}
 	}
 
-	@Override
-	public SailBranch fork() {
-		return new UnionSailBranch(primary.fork(), additional.fork());
+	public SailSource fork() {
+		return delegate.fork();
 	}
 
 	public void prepare()
 		throws SailException
 	{
-		primary.prepare();
-		additional.prepare();
+		delegate.prepare();
 	}
 
 	public void flush()
 		throws SailException
 	{
-		primary.flush();
-		additional.flush();
+		delegate.flush();
 	}
 
-	@Override
 	public SailSink sink(IsolationLevel level)
 		throws SailException
 	{
-		return primary.sink(level);
+		return delegate.sink(level);
 	}
 
-	@Override
 	public SailDataset dataset(IsolationLevel level)
 		throws SailException
 	{
-		return new UnionSailDataset(primary.dataset(level), additional.dataset(level));
+		return delegate.dataset(level);
 	}
-
 }

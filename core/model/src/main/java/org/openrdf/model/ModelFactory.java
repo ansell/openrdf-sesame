@@ -14,23 +14,18 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.base;
-
-import org.openrdf.model.Model;
-import org.openrdf.model.impl.TreeModel;
+package org.openrdf.model;
 
 /**
- * Abstraction to allow an {@link SailStore} to use a different {@link Model} to
- * store statement changes.
+ * Factory to create empty {@link Model} implementations.
  * 
  * @author James Leigh
  */
-public class SailModelFactory {
+public interface ModelFactory {
 
 	/**
 	 * @return a newly created {@link Model}
 	 */
-	public Model createEmptyModel() {
-		return new TreeModel();
-	}
+	Model createEmptyModel();
+
 }

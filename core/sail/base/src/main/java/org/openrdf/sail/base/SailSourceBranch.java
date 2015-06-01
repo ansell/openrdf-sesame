@@ -26,21 +26,23 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Model;
+import org.openrdf.model.ModelFactory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.TreeModelFactory;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 
 /**
- * An {@link SailBranch} that keeps a delta of its state from a backing
+ * An {@link SailSource} that keeps a delta of its state from a backing
  * {@link SailSource}.
  * 
  * @author James Leigh
  */
-public class DerivedSailBranch implements SailBranch {
+class SailSourceBranch implements SailSource {
 
 	/**
 	 * Used to prevent changes to this object's field from multiple threads.
@@ -48,24 +50,24 @@ public class DerivedSailBranch implements SailBranch {
 	private final ReentrantLock semaphore = new ReentrantLock();
 
 	/**
-	 * The difference between this {@link SailBranch} and the backing
+	 * The difference between this {@link SailSource} and the backing
 	 * {@link SailSource}.
 	 */
 	private final LinkedList<Changeset> changes = new LinkedList<Changeset>();
 
 	/**
 	 * {@link SailSink} that have been created, but not yet
-	 * {@link SailSink#flush()}ed to this {@link SailBranch}.
+	 * {@link SailSink#flush()}ed to this {@link SailSource}.
 	 */
 	private final Collection<Changeset> pending = new LinkedList<Changeset>();
 
 	/**
-	 * Set of open {@link SailDataset} for this {@link SailBranch}.
+	 * Set of open {@link SailDataset} for this {@link SailSource}.
 	 */
 	private final Collection<SailDataset> observers = new LinkedList<SailDataset>();
 
 	/**
-	 * The underly {@link SailSource} this {@link SailBranch} is derived from.
+	 * The underly {@link SailSource} this {@link SailSource} is derived from.
 	 */
 	private final SailSource backingSource;
 
@@ -74,10 +76,10 @@ public class DerivedSailBranch implements SailBranch {
 	 * {@link SailSink#approve(Resource, URI, Value, Resource)} and
 	 * {@link SailSink#deprecate(Resource, URI, Value, Resource)} statements.
 	 */
-	private final SailModelFactory modelFactory;
+	private final ModelFactory modelFactory;
 
 	/**
-	 * If this {@link SailBranch} should be flushed to the backing
+	 * If this {@link SailSource} should be flushed to the backing
 	 * {@link SailSource} when it is not in use.
 	 */
 	private final boolean autoFlush;
@@ -98,27 +100,27 @@ public class DerivedSailBranch implements SailBranch {
 	private SailSink prepared;
 
 	/**
-	 * Creates a new in-memory {@link SailBranch} derived from the given
+	 * Creates a new in-memory {@link SailSource} derived from the given
 	 * {@link SailSource}.
 	 * 
 	 * @param backingSource
 	 */
-	public DerivedSailBranch(SailSource backingSource) {
-		this(backingSource, new SailModelFactory(), false);
+	public SailSourceBranch(SailSource backingSource) {
+		this(backingSource, new TreeModelFactory(), false);
 	}
 
 	/**
-	 * Creates a new {@link SailBranch} derived from the given {@link SailSource}.
+	 * Creates a new {@link SailSource} derived from the given {@link SailSource}.
 	 * 
 	 * @param backingSource
 	 * @param modelFactory
 	 */
-	public DerivedSailBranch(SailSource backingSource, SailModelFactory modelFactory) {
+	public SailSourceBranch(SailSource backingSource, ModelFactory modelFactory) {
 		this(backingSource, modelFactory, false);
 	}
 
 	/**
-	 * Creates a new {@link SailBranch} derived from the given {@link SailSource}
+	 * Creates a new {@link SailSource} derived from the given {@link SailSource}
 	 * and if <code>autoFlush</code> is true, will automatically call
 	 * {@link #flush()} when not in use.
 	 * 
@@ -126,7 +128,7 @@ public class DerivedSailBranch implements SailBranch {
 	 * @param modelFactory
 	 * @param autoFlush
 	 */
-	public DerivedSailBranch(SailSource backingSource, SailModelFactory modelFactory, boolean autoFlush) {
+	public SailSourceBranch(SailSource backingSource, ModelFactory modelFactory, boolean autoFlush) {
 		this.backingSource = backingSource;
 		this.modelFactory = modelFactory;
 		this.autoFlush = autoFlush;
@@ -203,7 +205,7 @@ public class DerivedSailBranch implements SailBranch {
 			}
 
 			@Override
-			protected Model createEmptyModel() {
+			public Model createEmptyModel() {
 				return modelFactory.createEmptyModel();
 			}
 		};
@@ -250,8 +252,8 @@ public class DerivedSailBranch implements SailBranch {
 	}
 
 	@Override
-	public SailBranch fork() {
-		return new DerivedSailBranch(this, modelFactory);
+	public SailSource fork() {
+		return new SailSourceBranch(this, modelFactory);
 	}
 
 	@Override
@@ -443,7 +445,7 @@ public class DerivedSailBranch implements SailBranch {
 			}
 			Iterator<Changeset> iter = changes.iterator();
 			while (iter.hasNext()) {
-				derivedFrom = new DerivedSailDataset(derivedFrom, iter.next());
+				derivedFrom = new SailDatasetImpl(derivedFrom, iter.next());
 			}
 			return derivedFrom;
 		}

@@ -46,8 +46,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailConflictException;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.DerivedSailBranch;
-import org.openrdf.sail.base.SailBranch;
+import org.openrdf.sail.base.BackingSailSource;
 import org.openrdf.sail.base.SailDataset;
 import org.openrdf.sail.base.SailSink;
 import org.openrdf.sail.base.SailSource;
@@ -343,17 +342,12 @@ class MemorySailStore implements SailStore {
 		}
 	}
 
-	private final class MemorySailSource implements SailSource {
+	private final class MemorySailSource extends BackingSailSource {
 
 		private final boolean explicit;
 
 		public MemorySailSource(boolean explicit) {
 			this.explicit = explicit;
-		}
-
-		@Override
-		public SailBranch fork() {
-			return new DerivedSailBranch(this);
 		}
 
 		@Override

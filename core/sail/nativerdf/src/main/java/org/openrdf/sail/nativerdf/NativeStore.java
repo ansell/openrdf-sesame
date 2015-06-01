@@ -29,13 +29,13 @@ import info.aduna.io.MavenUtil;
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.Model;
+import org.openrdf.model.ModelFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.SailModelFactory;
 import org.openrdf.sail.base.SailSource;
 import org.openrdf.sail.base.SailStore;
 import org.openrdf.sail.base.SnapshotSailStore;
@@ -252,7 +252,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			}
 			final NativeSailStore master = new NativeSailStore(dataDir, tripleIndexes, forceSync,
 					valueCacheSize, valueIDCacheSize, namespaceCacheSize, namespaceIDCacheSize);
-			this.store = new SnapshotSailStore(master, new SailModelFactory() {
+			this.store = new SnapshotSailStore(master, new ModelFactory() {
 
 				@Override
 				public Model createEmptyModel() {

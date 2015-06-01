@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.base;
+package org.openrdf.sail.nativerdf;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,13 +37,17 @@ import org.openrdf.model.impl.FilteredModel;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.base.SailDataset;
+import org.openrdf.sail.base.SailSink;
+import org.openrdf.sail.base.SailSource;
+import org.openrdf.sail.base.SailStore;
 
 /**
  * A {@link Model} that keeps the {@link Statement}s in an {@link SailSource}.
  * 
  * @author James Leigh
  */
-public class SailSourceModel extends AbstractModel {
+class SailSourceModel extends AbstractModel {
 
 	private final class StatementIterator implements Iterator<Statement> {
 

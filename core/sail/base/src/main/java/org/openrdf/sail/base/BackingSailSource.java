@@ -16,46 +16,19 @@
  */
 package org.openrdf.sail.base;
 
-import org.openrdf.IsolationLevel;
 import org.openrdf.sail.SailException;
 
 /**
- * Allows an {@link SailSource} to be used as an {@link SailBranch}. Calls to
- * {@link #close()}, {@link #prepare()}, and {@link #flush()} are ignored.
+ * A Backing {@link SailSource} that does not respond to {@link #close()}
+ * {@link #prepare()} or {@link #flush()}. These methods have no effect.
  * 
  * @author James Leigh
  */
-class SailNotBranchedSource implements SailBranch {
+public abstract class BackingSailSource implements SailSource {
 
-	/**
-	 * Target {@link SailSource} for calls to this {@link SailBranch}.
-	 */
-	private final SailSource source;
-
-	/**
-	 * Wraps an {@link SailSource} with the {@link SailBranch} interface. All
-	 * applicable calls are delegated, others are ignored.
-	 * 
-	 * @param source
-	 */
-	public SailNotBranchedSource(SailSource source) {
-		this.source = source;
-	}
-
-	public SailBranch fork() {
-		return source.fork();
-	}
-
-	public SailSink sink(IsolationLevel level)
-		throws SailException
-	{
-		return source.sink(level);
-	}
-
-	public SailDataset dataset(IsolationLevel level)
-		throws SailException
-	{
-		return source.dataset(level);
+	@Override
+	public SailSource fork() {
+		return new SailSourceBranch(this);
 	}
 
 	@Override
@@ -78,4 +51,5 @@ class SailNotBranchedSource implements SailBranch {
 	{
 		// no-op
 	}
+
 }

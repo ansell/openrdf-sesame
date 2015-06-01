@@ -20,7 +20,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 
 /**
- * A high level interface used by {@link DerivedSailConnection} to access
+ * A high level interface used by {@link SailSourceConnection} to access
  * {@link SailSource}.
  * 
  * @author James Leigh
@@ -35,7 +35,7 @@ public interface SailStore extends SailClosable {
 	ValueFactory getValueFactory();
 
 	/**
-	 * Used by {@link DerivedSailConnection} to determine query join order.
+	 * Used by {@link SailSourceConnection} to determine query join order.
 	 * 
 	 * @return a {@link EvaluationStatistics} that is aware of the data
 	 *         distribution of this {@link SailStore}.

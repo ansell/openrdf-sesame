@@ -17,6 +17,7 @@
 package org.openrdf.sail.base;
 
 import org.openrdf.IsolationLevels;
+import org.openrdf.model.ModelFactory;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
 import org.openrdf.sail.SailException;
@@ -36,16 +37,16 @@ public class SnapshotSailStore implements SailStore {
 	private final SailStore backingStore;
 
 	/**
-	 * {@link SailBranch} of {@link SailStore#getExplicitSailSource()}
+	 * {@link SailSource} of {@link SailStore#getExplicitSailSource()}
 	 * .
 	 */
-	private final DerivedSailBranch explicitAutoFlush;
+	private final SailSourceBranch explicitAutoFlush;
 
 	/**
-	 * {@link SailBranch} of {@link SailStore#getInferredSailSource()}
+	 * {@link SailSource} of {@link SailStore#getInferredSailSource()}
 	 * .
 	 */
-	private final DerivedSailBranch inferredAutoFlush;
+	private final SailSourceBranch inferredAutoFlush;
 
 	/**
 	 * Wraps an {@link SailStore}, tracking changes in {@link SailModelFactory}
@@ -54,10 +55,10 @@ public class SnapshotSailStore implements SailStore {
 	 * @param backingStore
 	 * @param modelFactory
 	 */
-	public SnapshotSailStore(SailStore backingStore, SailModelFactory modelFactory) {
+	public SnapshotSailStore(SailStore backingStore, ModelFactory modelFactory) {
 		this.backingStore = backingStore;
-		explicitAutoFlush = new DerivedSailBranch(backingStore.getExplicitSailSource(), modelFactory, true);
-		inferredAutoFlush = new DerivedSailBranch(backingStore.getInferredSailSource(), modelFactory, true);
+		explicitAutoFlush = new SailSourceBranch(backingStore.getExplicitSailSource(), modelFactory, true);
+		inferredAutoFlush = new SailSourceBranch(backingStore.getInferredSailSource(), modelFactory, true);
 	}
 
 	@Override

@@ -48,8 +48,8 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.base.SailBranch;
 import org.openrdf.sail.base.SailDataset;
+import org.openrdf.sail.base.SailSource;
 
 /**
  * Unit Test for {@link TripleSource}
@@ -74,7 +74,7 @@ public class MemTripleSourceTest {
 
 	private SailDataset snapshot;
 
-	private SailBranch source;
+	private SailSource source;
 
 	/**
 	 * @throws java.lang.Exception

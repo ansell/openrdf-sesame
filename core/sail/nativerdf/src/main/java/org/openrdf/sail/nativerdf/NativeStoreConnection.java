@@ -25,13 +25,13 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
-import org.openrdf.sail.base.DerivedSailConnection;
+import org.openrdf.sail.base.SailSourceConnection;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
 
 /**
  * @author Arjohn Kampman
  */
-public class NativeStoreConnection extends DerivedSailConnection {
+public class NativeStoreConnection extends SailSourceConnection {
 
 	/*-----------*
 	 * Constants *

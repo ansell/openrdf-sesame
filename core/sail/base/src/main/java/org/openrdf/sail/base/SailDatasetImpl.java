@@ -41,11 +41,11 @@ import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.sail.SailException;
 
 /**
- * A view of an {@link SailBranch} that is based on a backing {@link SailSource}.
+ * A view of an {@link SailSource} that is derived from a backing {@link SailDataset}.
  * 
  * @author James Leigh
  */
-class DerivedSailDataset implements SailDataset {
+class SailDatasetImpl implements SailDataset {
 
 	/**
 	 * {@link SailDataset} of the backing {@link SailSource}.
@@ -53,7 +53,7 @@ class DerivedSailDataset implements SailDataset {
 	private final SailDataset derivedFrom;
 
 	/**
-	 * Changes that have not yet been {@link SailBranch#flush()}ed to the backing
+	 * Changes that have not yet been {@link SailSource#flush()}ed to the backing
 	 * {@link SailDataset}.
 	 */
 	private final Changeset changes;
@@ -67,7 +67,7 @@ class DerivedSailDataset implements SailDataset {
 	 * @param changes
 	 *        changeset to be observed with the given dataset
 	 */
-	public DerivedSailDataset(SailDataset derivedFrom, Changeset changes) {
+	public SailDatasetImpl(SailDataset derivedFrom, Changeset changes) {
 		this.derivedFrom = derivedFrom;
 		this.changes = changes;
 		changes.addRefback(this);
