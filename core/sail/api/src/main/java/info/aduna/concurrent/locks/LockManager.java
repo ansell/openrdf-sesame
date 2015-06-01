@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,8 @@ public class LockManager {
 	 */
 	private static final int INITIAL_WAIT_TO_COLLECT = 10000;
 	private static final int MAX_WAIT_TO_COLLECT = 90 * 60 * 1000;
+
+	private static final AtomicLong seq = new AtomicLong();
 
 	private static class WeakLockReference {
 
@@ -170,7 +173,7 @@ public class LockManager {
 		weak.acquiredName = Thread.currentThread().getName();
 		weak.acquiredId = Thread.currentThread().getId();
 		if (trackLocks) {
-			weak.stack = new Throwable();
+			weak.stack = new Throwable(alias + " lock " + seq.incrementAndGet() + " acquired in " + weak.acquiredName);
 		}
 		Lock lock = new Lock() {
 
@@ -185,6 +188,15 @@ public class LockManager {
 					if (activeLocks.remove(weak)) {
 						activeLocks.notifyAll();
 					}
+				}
+			}
+
+			@Override
+			public String toString() {
+				if (weak.stack == null) {
+					return weak.alias + " lock acquired in " + weak.acquiredName;
+				} else {
+					return weak.stack.getMessage();
 				}
 			}
 		};
