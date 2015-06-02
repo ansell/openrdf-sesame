@@ -23,12 +23,16 @@ import java.util.Iterator;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.util.iterators.Iterators;
+
 
 /**
- *
+ * Wraps an Iteration as an Iterator.
+ * If the Iteration is a CloseableIteration then this.close() will close it
+ * and it will also be automatically closed when this Iterator is exhausted. 
  * @author Mark
  */
-public class CloseableIterationIterator<E> implements Iterator<E>, Iteration<E,RuntimeException>, Closeable {
+public class CloseableIterationIterator<E> implements Iterator<E>, Closeable {
 	private final Iteration<? extends E, ? extends RuntimeException> iteration;
 
 	public CloseableIterationIterator(Iteration<? extends E, ? extends RuntimeException> iteration) {
@@ -37,12 +41,21 @@ public class CloseableIterationIterator<E> implements Iterator<E>, Iteration<E,R
 
 	@Override
 	public boolean hasNext() {
-		return iteration.hasNext();
+		boolean hasMore = iteration.hasNext();
+		if(!hasMore) {
+			Iterators.closeSilently(this);
+		}
+		return hasMore;
 	}
 
 	@Override
 	public E next() {
 		return iteration.next();
+	}
+
+	@Override
+	public void remove() {
+		iteration.remove();
 	}
 
 	@Override
