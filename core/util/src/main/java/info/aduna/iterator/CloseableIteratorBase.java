@@ -22,12 +22,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import info.aduna.iteration.Iteration;
-
 /**
  * @author MJAHale
  */
-public abstract class CloseableIteratorBase<E> implements Iterator<E>, Iteration<E,RuntimeException>, Closeable {
+public abstract class CloseableIteratorBase<E> implements Iterator<E>, Closeable {
 
 	/*-----------*
 	 * Variables *
