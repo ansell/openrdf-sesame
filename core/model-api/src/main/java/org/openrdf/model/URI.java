@@ -16,8 +16,6 @@
  */
 package org.openrdf.model;
 
-import org.openrdf.model.util.URIUtil;
-
 /**
  * A URI. A URI consists of a namespace and a local name, which are derived from
  * a URI string by splitting it in two using the following algorithm:
@@ -39,6 +37,7 @@ public interface URI extends Resource {
 	 * 
 	 * @return The String-representation of this URI.
 	 */
+	@Override
 	public String toString();
 
 	/**
@@ -66,6 +65,7 @@ public interface URI extends Resource {
 	 *         and their String-representations are equal, <tt>false</tt>
 	 *         otherwise.
 	 */
+	@Override
 	public boolean equals(Object o);
 
 	/**
@@ -74,5 +74,6 @@ public interface URI extends Resource {
 	 * 
 	 * @return A hash code for the URI.
 	 */
+	@Override
 	public int hashCode();
 }

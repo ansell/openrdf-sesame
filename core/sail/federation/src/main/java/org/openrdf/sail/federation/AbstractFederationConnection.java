@@ -51,6 +51,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
@@ -383,7 +384,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase implement
 		throws SailException
 	{
 		TripleSource tripleSource = new FederationTripleSource(inf);
-		EvaluationStrategyImpl strategy = new FederationStrategy(federation, tripleSource, dataset,
+		EvaluationStrategy strategy = federation.createEvaluationStrategy(tripleSource, dataset,
 				getFederatedServiceResolver());
 		TupleExpr qry = optimize(query, dataset, bindings, strategy);
 		try {
@@ -428,7 +429,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase implement
 	}
 
 	private TupleExpr optimize(TupleExpr parsed, Dataset dataset, BindingSet bindings,
-			EvaluationStrategyImpl strategy)
+			EvaluationStrategy strategy)
 		throws SailException
 	{
 		LOGGER.trace("Incoming query model:\n{}", parsed);
