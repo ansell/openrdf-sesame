@@ -24,6 +24,7 @@
 		<module>rdbms</module>
 		<module>fts</module>
 		<module>model</module>
+		<module>spin</module>
 	</modules>
 
 </project>
