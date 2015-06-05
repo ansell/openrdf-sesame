@@ -17,6 +17,8 @@
 package org.openrdf.repository.event;
 
 import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
 
 /**
  *
@@ -47,5 +49,34 @@ public interface NotifyingRepository extends Repository {
 	 * repository.
 	 */
 	public void removeRepositoryConnectionListener(RepositoryConnectionListener listener);
+
+	/**
+	 * Opens a connection to this repository that can be used for querying and
+	 * updating the contents of the repository. Created connections need to be
+	 * closed to make sure that any resources they keep hold of are released. The
+	 * best way to do this is to use a try-finally-block as follows:
+	 * 
+	 * <pre>
+	 * Connection con = repository.getConnection();
+	 * try {
+	 * 	// perform operations on the connection
+	 * }
+	 * finally {
+	 * 	con.close();
+	 * }
+	 * </pre>
+	 * 
+	 * Note that {@link RepositoryConnection} is not guaranteed to be
+	 * thread-safe! The recommended pattern for repository access in a
+	 * multithreaded application is to share the Repository object between
+	 * threads, but have each thread create and use its own
+	 * {@link RepositoryConnection}s.
+	 * 
+	 * @return A connection that allows operations on this repository.
+	 * @throws RepositoryException
+	 *         If something went wrong during the creation of the Connection.
+	 */
+	public NotifyingRepositoryConnection getConnection()
+		throws RepositoryException;
 
 }
