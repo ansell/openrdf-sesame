@@ -1,7 +1,6 @@
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,7 +9,6 @@ import org.junit.Test;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResultHandlerBase;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLParser;
 
 /* 
@@ -50,7 +48,7 @@ public class SPARQLResultsXMLParserTest {
 	}
 
 	private int countSolutions(String name)
-		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
+		throws Exception
 	{
 		final AtomicInteger counter = new AtomicInteger();
 		SPARQLResultsXMLParser parser = new SPARQLResultsXMLParser();
@@ -65,7 +63,7 @@ public class SPARQLResultsXMLParserTest {
 		InputStream in = SPARQLResultsXMLParserTest.class.getClassLoader().getResourceAsStream(name);
 		assertNotNull(name + " is missing", in);
 		try {
-			parser.parse(in);
+			parser.parseQueryResult(in);
 		} finally {
 			in.close();
 		}
