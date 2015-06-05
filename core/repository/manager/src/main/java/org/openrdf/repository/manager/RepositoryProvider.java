@@ -199,8 +199,9 @@ public class RepositoryProvider {
 
 	private static String normalizeDirectory(String url) throws IllegalArgumentException {
 		try {
-			if (!url.endsWith("/"))
+			if (!url.endsWith("/")) {
 				return normalizeDirectory(url + '/');
+			}
 			URI norm = URI.create(url);
 			if (!norm.isAbsolute()) {
 				norm = new File(".").toURI().resolve(url);
