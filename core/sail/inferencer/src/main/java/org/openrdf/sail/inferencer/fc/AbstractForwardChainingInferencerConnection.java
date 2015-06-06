@@ -47,7 +47,7 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 	private boolean statementsRemoved;
 
 	/**
-	 * Contains the statements that have been reported by the base Sail as
+	 * Contains the statements that have been reported by the base Sail as new.
 	 */
 	private Model newStatements;
 
