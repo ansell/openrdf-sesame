@@ -223,3 +223,4 @@ public abstract class AbstractRDFInserter extends RDFHandlerBase {
 		return result;
 	}
 }
+
