@@ -18,7 +18,7 @@ public class SPINSail extends NotifyingSailWrapper
 	public SPINSailConnection getConnection() throws SailException {
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new SPINSailConnection(con);
+			return new SPINSailConnection(con, getValueFactory());
 		}
 		catch (ClassCastException e) {
 			throw new SailException(e.getMessage(), e);
