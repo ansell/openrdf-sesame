@@ -109,6 +109,7 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 			doInferencing();
 
 			newStatements = null;
+			statementsRemoved = false;
 		}
 	}
 
