@@ -87,8 +87,8 @@ public class RepositoryProvider {
 
 	/**
 	 * Creates a RepositoryManager, if not already created, that will be shutdown
-	 * when the JVM exits cleanly. The parameter must be a URL of the form
-	 * http://host:port/path or file:///path.
+	 * when the JVM exits cleanly. The parameter should be a URL of the form
+	 * http://host:port/path/ or file:///path/.
 	 */
 	public static RepositoryManager getRepositoryManager(String url)
 		throws RepositoryConfigException, RepositoryException
