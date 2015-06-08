@@ -33,6 +33,8 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -55,7 +57,7 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
  * @author James Leigh
  * 
  */
-public class RdbmsConnection extends SailConnectionBase {
+public class RdbmsConnection extends SailConnectionBase implements FederatedServiceResolverClient {
 
 	private RdbmsStore sail;
 
@@ -94,6 +96,14 @@ public class RdbmsConnection extends SailConnectionBase {
 
 	public void setLockManager(ExclusiveLockManager lock) {
 		this.lockManager = lock;
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		return factory.getFederatedServiceResolver();
+	}
+
+	public void setFederatedServiceResolver(FederatedServiceResolver reslover) {
+		factory.setFederatedServiceResolver(reslover);
 	}
 
 	@Override

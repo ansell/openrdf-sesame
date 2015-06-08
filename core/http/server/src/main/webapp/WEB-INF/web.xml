@@ -9,6 +9,17 @@
 	<description>OpenRDF Sesame</description>
 
 	<filter>
+		<filter-name>CompressingFilter</filter-name>
+		<filter-class>
+			com.github.ziplet.filter.compression.CompressingFilter
+		</filter-class>
+		<init-param>
+			<param-name>excludeContentTypes</param-name>
+			<param-value>application/x-binary-rdf,application/x-binary-rdf-results-table</param-value>
+		</init-param>
+	</filter>
+
+	<filter>
 		<filter-name>PathFilter</filter-name>
 		<filter-class>
 			info.aduna.webapp.filters.PathFilter
@@ -29,6 +40,11 @@
 			<param-value>false</param-value>
 		</init-param>
 	</filter>
+
+	<filter-mapping>
+		<filter-name>CompressingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>UrlRewriteFilter</filter-name>

@@ -16,6 +16,8 @@
  */
 package org.openrdf.repository.http;
 
+import static org.openrdf.rio.RDFFormat.NTRIPLES;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,10 +33,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.http.client.HttpClient;
+
 import info.aduna.iteration.CloseableIteratorIteration;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.Protocol.Action;
@@ -82,8 +87,6 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
-import static org.openrdf.rio.RDFFormat.NTRIPLES;
-
 /**
  * RepositoryConnection that communicates with a server using the HTTP protocol.
  * Methods in this class may throw the specific RepositoryException subclasses
@@ -95,7 +98,7 @@ import static org.openrdf.rio.RDFFormat.NTRIPLES;
  * @author Arjohn Kampman
  * @author Herko ter Horst
  */
-class HTTPRepositoryConnection extends RepositoryConnectionBase {
+class HTTPRepositoryConnection extends RepositoryConnectionBase implements HttpClientDependent {
 
 	/*-----------*
 	 * Variables *
@@ -136,6 +139,14 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase {
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public HttpClient getHttpClient() {
+		return client.getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		client.setHttpClient(httpClient);
+	}
 
 	@Override
 	public void setParserConfig(ParserConfig parserConfig) {

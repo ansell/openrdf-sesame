@@ -16,22 +16,25 @@
  */
 package org.openrdf.sail.memory.model;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
 import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 
-import junit.framework.TestCase;
-
 /**
  * Unit tests for class {@link MemIRI}.
- * 
+ *
  * @author Arjohn Kampman
  */
-public class MemURITest extends TestCase {
+public class MemURITest {
 
 	/**
 	 * Verifies that MemURI's hash code is the same as the hash code of an
 	 * equivalent URIImpl.
 	 */
+	@Test
 	public void testEqualsAndHash()
 		throws Exception
 	{

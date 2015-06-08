@@ -12,7 +12,6 @@ var workbench;
             }
         };
     }
-
     // Note that the way this is currently constructed, functions added with
     // addLoad() will be executed in the order that they were added.
     //
@@ -21,18 +20,17 @@ var workbench;
     // @param fn
     // function to add
     function addLoad(fn) {
-        window.onload = typeof (window.onload) == 'function' ? chain([window.onload, fn]) : fn;
+        window.onload = typeof (window.onload) == 'function' ? chain([
+            window.onload, fn]) : fn;
     }
     workbench.addLoad = addLoad;
-
     /**
-    * Retrieves the value of the cookie with the given name.
-    *
-    * @param {String}
-    *            name The name of the cookie to retrieve.
-    * @returns {String} The value of the given cookie, or an empty string if it
-    *          doesn't exist.
-    */
+     * Retrieves the value of the cookie with the given name.
+     *
+     * @param {String} name The name of the cookie to retrieve.
+     * @returns {String} The value of the given cookie, or an empty string if it
+     *          doesn't exist.
+     */
     function getCookie(name) {
         var cookies = document.cookie.split(';');
         var rval = '';
@@ -47,41 +45,40 @@ var workbench;
         return rval;
     }
     workbench.getCookie = getCookie;
-
     /**
-    * Parses workbench URL query strings into processable arrays.
-    *
-    * @returns an array of the 'name=value' substrings of the URL query string
-    */
+     * Parses workbench URL query strings into processable arrays.
+     *
+     * @returns an array of the 'name=value' substrings of the URL query string
+     */
     function getQueryStringElements() {
         var href = document.location.href;
         return href.substring(href.indexOf('?') + 1).split(decodeURIComponent('%26'));
     }
     workbench.getQueryStringElements = getQueryStringElements;
-
     /**
-    * Utility method for assembling the query string for a request URL.
-    *
-    * @param sb
-    *            string buffer, actually an array of strings to be joined later
-    * @param id
-    *            name of parameter to add, also the id of the document element
-    *            to get the value from
-    */
+     * Utility method for assembling the query string for a request URL.
+     *
+     * @param sb
+     *            string buffer, actually an array of strings to be joined later
+     * @param id
+     *            name of parameter to add, also the id of the document element
+     *            to get the value from
+     */
     function addParam(sb, id) {
         sb[sb.length] = id + '=';
         var tag = document.getElementById(id);
-        sb[sb.length] = tag.type == 'checkbox' ? String(tag.checked) : encodeURIComponent(tag.value);
+        sb[sb.length] = tag.type == 'checkbox' ? String(tag.checked) :
+            encodeURIComponent(tag.value);
         sb[sb.length] = '&';
     }
     workbench.addParam = addParam;
 })(workbench || (workbench = {}));
-
 /**
-* Code to run when the document loads: eliminate the 'noscript' warning
-* message, and display an unauthenticated user properly.
-*/
-workbench.addLoad(function () {
+ * Code to run when the document loads: eliminate the 'noscript' warning
+ * message, and display an unauthenticated user properly.
+ */
+workbench
+    .addLoad(function () {
     document.getElementById('noscript-message').style.display = 'none';
     var user = workbench.getCookie('server-user');
     if (user.length == 0 || user == '""') {

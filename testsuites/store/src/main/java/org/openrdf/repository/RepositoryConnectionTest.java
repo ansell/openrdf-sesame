@@ -57,6 +57,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -67,6 +68,7 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.IsolationLevels;
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
@@ -80,6 +82,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
+import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -111,8 +114,8 @@ public abstract class RepositoryConnectionTest {
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */
-//	@Rule
-//	public Timeout to = new Timeout(60000);
+	// @Rule
+	// public Timeout to = new Timeout(60000);
 
 	private static final String URN_TEST_OTHER = "urn:test:other";
 
@@ -1497,7 +1500,7 @@ public abstract class RepositoryConnectionTest {
 		testCon.add(alice, name, nameAlice);
 
 		RepositoryResult<Statement> statements = testCon.getStatements(null, null, null, true);
-		Model	graph = Iterations.addAll(statements, new LinkedHashModel());
+		Model graph = Iterations.addAll(statements, new LinkedHashModel());
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(baos);
@@ -1510,7 +1513,7 @@ public abstract class RepositoryConnectionTest {
 		in.close();
 
 		assertThat(deserializedGraph.isEmpty(), is(equalTo(false)));
-		
+
 		for (Statement st : deserializedGraph) {
 			assertThat(graph, hasItem(st));
 			System.out.println(st);
@@ -1597,13 +1600,9 @@ public abstract class RepositoryConnectionTest {
 
 	@Test
 	public void testAddRemove()
-		throws Exception
+		throws OpenRDFException
 	{
-		IRI FOAF_PERSON = vf.createIRI("http://xmlns.com/foaf/0.1/Person");
-		final Statement stmt = vf.createStatement(bob, name, nameBob);
-
-		testCon.add(bob, RDF.TYPE, FOAF_PERSON);
-
+		final Statement stmt = vf.createStatement(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1));
 		testCon.begin();
 		testCon.add(stmt);
 		testCon.remove(stmt);
@@ -1618,6 +1617,136 @@ public abstract class RepositoryConnectionTest {
 				assertThat(st, is(not(equalTo(stmt))));
 			}
 		});
+	}
+
+	@Test
+	public void testAddDelete()
+		throws OpenRDFException
+	{
+		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.begin();
+		testCon.add(stmt);
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.commit();
+
+		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+
+			@Override
+			public void handleStatement(Statement st)
+				throws RDFHandlerException
+			{
+				assertThat(st, is(not(equalTo(stmt))));
+			}
+		});
+	}
+
+	@Test
+	public final void testInsertRemove()
+		throws OpenRDFException
+	{
+		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.begin();
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.remove(stmt);
+		testCon.commit();
+
+		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+
+			@Override
+			public void handleStatement(Statement st)
+				throws RDFHandlerException
+			{
+				assertThat(st, is(not(equalTo(stmt))));
+			}
+		});
+	}
+
+	@Test
+	public void testInsertDelete()
+		throws OpenRDFException
+	{
+		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.begin();
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.commit();
+
+		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+
+			@Override
+			public void handleStatement(Statement st)
+				throws RDFHandlerException
+			{
+				assertThat(st, is(not(equalTo(stmt))));
+			}
+		});
+	}
+
+	@Test
+	public void testAddRemoveAdd()
+		throws OpenRDFException
+	{
+		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.add(stmt);
+		testCon.begin();
+		testCon.remove(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.add(stmt);
+		testCon.commit();
+		Assert.assertFalse(testCon.isEmpty());
+	}
+
+	@Test
+	public void testAddDeleteAdd()
+		throws OpenRDFException
+	{
+		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.add(stmt);
+		testCon.begin();
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.add(stmt);
+		testCon.commit();
+		Assert.assertFalse(testCon.isEmpty());
+	}
+
+	@Test
+	public void testAddRemoveInsert()
+		throws OpenRDFException
+	{
+		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.add(stmt);
+		testCon.begin();
+		testCon.remove(stmt);
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.commit();
+		Assert.assertFalse(testCon.isEmpty());
+	}
+
+	@Test
+	public  void testAddDeleteInsert()
+		throws OpenRDFException
+	{
+		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		testCon.begin();
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.commit();
+		Assert.assertFalse(testCon.isEmpty());
+	}
+
+	@Test
+	public void testQueryInTransaction()
+		throws Exception
+	{
+		testCon.add(bob, RDF.TYPE, FOAF.PERSON);
+
+		testCon.begin();
+		String query = "SELECT * where {?x a ?y }";
+		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
+		
+		// test verifies that query as part of transaction executes and returns a result
+		assertNotNull(result);
+		assertTrue(result.hasNext());
+		testCon.commit();
 	}
 
 	@Test
@@ -1758,30 +1887,31 @@ public abstract class RepositoryConnectionTest {
 			tqr.close();
 		}
 	}
-	
+
 	@Test
-	public void testSES2172ChineseChars() throws Exception
+	public void testSES2172ChineseChars()
+		throws Exception
 	{
 		String updateString = "INSERT DATA { <urn:subject1> rdfs:label \"\\u8BBE\\u5907\". }";
-		
+
 		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, updateString);
 		update.execute();
-		
+
 		assertFalse(testCon.isEmpty());
-		
+
 		String queryString = "SELECT ?o WHERE { <urn:subject1> rdfs:label ?o . }";
-		
+
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = query.evaluate();
-		
+
 		assertNotNull(result);
-		
+
 		final String expected = "设备";
 		while (result.hasNext()) {
 			Value o = result.next().getValue("o");
 
 			System.out.println("o = " + o);
-			
+
 			assertEquals(expected, o.stringValue());
 		}
 	}

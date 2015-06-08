@@ -40,6 +40,21 @@ public interface ValueFactory {
 	public IRI createIRI(String iri);
 
 	/**
+	 * Creates a new URI from the supplied string-representation.
+	 * 
+	 * @param uri
+	 *        A string-representation of a URI.
+	 * @return An object representing the URI.
+	 * @throws IlllegalArgumentException
+	 *         If the supplied string does not resolve to a legal (absolute) URI.
+	 * @deprecated since 4.0. Use {{@link #createIRI(String)} instead.
+	 */
+	@Deprecated
+	public default URI createURI(String uri) {
+		return createIRI(uri);
+	}
+	
+	/**
 	 * Creates a new IRI from the supplied namespace and local name. Calling this
 	 * method is funtionally equivalent to calling {@link #createIRI(String)
 	 * createIRI(namespace+localName)}, but allows the ValueFactory to reuse
@@ -58,6 +73,21 @@ public interface ValueFactory {
 	 */
 	public IRI createIRI(String namespace, String localName);
 
+	/**
+	 * Creates a new URI from the supplied namespace and local name. 
+	 * 
+	 * @param uri
+	 *        A string-representation of a URI.
+	 * @return An object representing the URI.
+	 * @throws IlllegalArgumentException
+	 *         If the supplied string does not resolve to a legal (absolute) URI.
+	 * @deprecated since 4.0. Use {{@link #createIRI(String, String)} instead.
+	 */
+	@Deprecated
+	public default URI createURI(String namespace, String localName) {
+		return createIRI(namespace, localName);
+	}
+	
 	/**
 	 * Creates a new bNode.
 	 * 
@@ -206,6 +236,23 @@ public interface ValueFactory {
 	public Statement createStatement(Resource subject, IRI predicate, Value object);
 
 	/**
+	 * Creates a new statement with the supplied subject, predicate and object.
+	 * 
+	 * @param subject
+	 *        The statement's subject.
+	 * @param predicate
+	 *        The statement's predicate.
+	 * @param object
+	 *        The statement's object.
+	 * @return The created statement.
+	 * @deprecated since 4.0. Use {@link #createStatement(Resource, IRI, Value)} instead.
+	 */
+	@Deprecated
+	public default Statement createStatement(Resource subject, URI predicate, Value object) {
+		return createStatement(subject, (IRI)predicate, object);
+	}
+	
+	/**
 	 * Creates a new statement with the supplied subject, predicate and object
 	 * and associated context.
 	 * 
@@ -220,4 +267,22 @@ public interface ValueFactory {
 	 * @return The created statement.
 	 */
 	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context);
+
+
+	/**
+	 * Creates a new statement with the supplied subject, predicate and object and associated context.
+	 * 
+	 * @param subject
+	 *        The statement's subject.
+	 * @param predicate
+	 *        The statement's predicate.
+	 * @param object
+	 *        The statement's object.
+	 * @return The created statement.
+	 * @deprecated since 4.0. Use {@link #createStatement(Resource, IRI, Value, Resource)} instead.
+	 */
+	@Deprecated
+	public default Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {
+		return createStatement(subject, (IRI)predicate, object, context);
+	}
 }

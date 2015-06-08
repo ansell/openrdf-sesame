@@ -16,22 +16,25 @@
  */
 package org.openrdf.sail.federation;
 
+import static org.junit.Assert.fail;
 import static org.openrdf.query.QueryLanguage.SPARQL;
-import info.aduna.iteration.Iterations;
-import info.aduna.text.StringUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import info.aduna.iteration.Iterations;
+import info.aduna.text.StringUtil;
+
 import org.openrdf.OpenRDFException;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -51,7 +54,14 @@ import org.openrdf.sail.memory.MemoryStore;
  * @author James Leigh
  */
 @RunWith(Parameterized.class)
-public class FederationQueryTest extends TestCase {
+public class FederationQueryTest {
+
+	@Rule public TestName name = new TestName();
+
+	private String getName()
+	{
+		return name.getMethodName();
+	}
 
 	@Parameters(name = "{index}:{0}")
 	public static Iterable<Object[]> data() {

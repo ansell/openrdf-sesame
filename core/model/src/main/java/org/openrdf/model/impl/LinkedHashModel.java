@@ -29,11 +29,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.openrdf.model.IRI;
 import org.openrdf.model.Model;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.PatternIterator;
 
@@ -129,21 +129,17 @@ public class LinkedHashModel extends AbstractModel {
 	}
 
 	@Override
-	public Optional<Namespace> setNamespace(String prefix, String name) {
-		Optional<Namespace> result = getNamespace(prefix);
-		if (!result.isPresent() || !result.get().getName().equals(name)) {
-			result = Optional.of(new SimpleNamespace(prefix, name));
-			namespaces.add(result.get());
-		}
+	public Namespace setNamespace(String prefix, String name) {
+		removeNamespace(prefix);
+		Namespace result = new SimpleNamespace(prefix, name);
+		namespaces.add(result);
 		return result;
 	}
 
 	@Override
 	public void setNamespace(Namespace namespace) {
-		Optional<Namespace> existing = getNamespace(namespace.getPrefix());
-		if (!existing.isPresent() || !existing.get().getName().equals(namespace.getName())) {
-			namespaces.add(namespace);
-		}
+		removeNamespace(namespace.getPrefix());
+		namespaces.add(namespace);
 	}
 
 	@Override

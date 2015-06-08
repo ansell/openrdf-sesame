@@ -52,7 +52,7 @@ class UnmodifiableModel extends AbstractModel {
 	}
 
 	@Override
-	public Optional<Namespace> setNamespace(String prefix, String name) {
+	public Namespace setNamespace(String prefix, String name) {
 		throw new UnsupportedOperationException();
 	}
 

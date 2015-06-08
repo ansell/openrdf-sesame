@@ -18,6 +18,7 @@ package org.openrdf.model.impl;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
 /**
@@ -28,8 +29,7 @@ import org.openrdf.model.Value;
 public class StatementImpl extends SimpleStatement {
 
 	@Deprecated
-	public StatementImpl(Resource subject, IRI predicate, Value object) {
-		super(subject, predicate, object);
+	public StatementImpl(Resource subject, URI predicate, Value object) {
+		super(subject, (IRI)predicate, object);
 	}
-
 }

@@ -21,7 +21,7 @@
 		<module>memory</module>
 		<module>nativerdf</module>
 		<module>rdbms</module>
-		<module>lucene</module>
+		<module>fts</module>
 	</modules>
 
 </project>

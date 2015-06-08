@@ -16,7 +16,14 @@
  */
 package org.openrdf.model.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -32,10 +39,10 @@ import org.openrdf.model.vocabulary.RDFS;
 
 /**
  * Unit tests on {@link Models} utility methods.
- * 
+ *
  * @author Jeen Broekstra
  */
-public class ModelsTest extends TestCase {
+public class ModelsTest {
 
 	private Model model1;
 
@@ -49,8 +56,8 @@ public class ModelsTest extends TestCase {
 	
 	private BNode baz;
 
-	@Override
-	protected void setUp() {
+	@Before
+	public void setUp() {
 		model1 = new LinkedHashModel();
 		model2 = new LinkedHashModel();
 
@@ -59,6 +66,7 @@ public class ModelsTest extends TestCase {
 		baz = VF.createBNode();
 	}
 
+	@Test
 	public void testModelsIsomorphic() {
 
 		// two identical statements, no bnodes
@@ -103,6 +111,7 @@ public class ModelsTest extends TestCase {
 
 	}
 
+	@Test
 	public void testIsSubset() {
 
 		// two empty sets
@@ -206,7 +215,7 @@ public class ModelsTest extends TestCase {
 		assertNotNull(result);
 		assertTrue(result.equals(bar) || result.equals(foo) || result.equals(baz));
 	}
-	
+
 	public void testSubjectURI() {
 		model1.add(foo, bar, foo);
 		model1.add(foo, foo, foo);
@@ -229,6 +238,7 @@ public class ModelsTest extends TestCase {
 		assertTrue(result.equals(baz));
 	}
 
+	@Test
 	public void testSetProperty() {
 		Literal lit1 = VF.createLiteral(1.0);
 		model1.add(foo, bar, lit1);
@@ -246,6 +256,7 @@ public class ModelsTest extends TestCase {
 
 	}
 
+	@Test
 	public void testSetPropertyWithContext1() {
 		Literal lit1 = VF.createLiteral(1.0);
 		IRI graph1 = VF.createIRI("urn:g1");
@@ -268,6 +279,7 @@ public class ModelsTest extends TestCase {
 		assertTrue(model1.contains(foo, bar, lit2));
 	}
 
+	@Test
 	public void testSetPropertyWithContext2() {
 		Literal lit1 = VF.createLiteral(1.0);
 		IRI graph1 = VF.createIRI("urn:g1");

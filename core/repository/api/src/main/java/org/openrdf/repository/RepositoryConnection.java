@@ -22,14 +22,14 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 
-import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
 
 import org.openrdf.IsolationLevel;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
@@ -38,33 +38,36 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.UnsupportedRDFormatException;
 
 /**
  * Main interface for updating data in and performing queries on a Sesame
- * repository. By default, a RepositoryConnection is in auto-commit mode,
- * meaning that each operation corresponds to a single transaction on the
- * underlying store. Auto-commit can be {@link #begin() switched off} in which
- * case it is up to the user to handle transaction {@link #commit() commit}/
- * {@link #rollback() rollback}. Note that care should be taking to always
- * properly close a RepositoryConnection after one is finished with it, to free
- * up resources and avoid unnecessary locks.
+ * {@link Repository}. By default, a RepositoryConnection is in auto-commit
+ * mode, meaning that each operation corresponds to a single transaction on the
+ * underlying store. Multiple operations can be bundled in a single transaction
+ * by using {@link #begin()} and {@link #commit() commit}/ {@link #rollback()
+ * rollback}. Care should be taking to always properly close a
+ * RepositoryConnection after one is finished with it, to free up resources and
+ * avoid unnecessary locks.
  * <p>
- * Several methods take a vararg argument that optionally specifies a (set of)
- * context(s) on which the method should operate. Note that a vararg parameter
- * is optional, it can be completely left out of the method call, in which case
- * a method either operates on a provided statements context (if one of the
- * method parameters is a statement or collection of statements), or operates on
- * the repository as a whole, completely ignoring context. A vararg argument may
- * also be 'null' (cast to Resource) meaning that the method operates on those
- * statements which have no associated context only.
+ * RepositoryConnection is not guaranteed to be thread-safe. The recommended
+ * access pattern in a multithreaded application is to ensure that each thread
+ * creates/uses its own RepositoryConnections (which can be obtained from a
+ * shared {@link Repository}).
+ * <p>
+ * Several methods take a vararg argument that optionally specifies one or more
+ * contexts (named graphs) on which the method should operate. A vararg
+ * parameter is optional, it can be completely left out of the method call, in
+ * which case a method either operates on a provided statements context (if one
+ * of the method parameters is a statement or collection of statements), or
+ * operates on the repository as a whole, completely ignoring context. A vararg
+ * argument may also be 'null' (cast to Resource) meaning that the method
+ * operates on those statements which have no associated context only.
  * <p>
  * Examples:
  * 
@@ -568,7 +571,8 @@ public interface RepositoryConnection extends AutoCloseable {
 		throws IllegalStateException;
 
 	/**
-	 * Retrieves the current transaction isolation level of the connection.
+	 * Retrieves the current {@link IsolationLevel transaction isolation level}
+	 * of the connection.
 	 * 
 	 * @return the current transaction isolation level.
 	 * @since 2.8.0
@@ -576,35 +580,51 @@ public interface RepositoryConnection extends AutoCloseable {
 	public IsolationLevel getIsolationLevel();
 
 	/**
-	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
-	 * be called to end the transaction.
+	 * Begins a new transaction, requiring {@link #commit()} or
+	 * {@link #rollback()} to be called to end the transaction. The transaction
+	 * will use the currently set {@link IsolationLevel isolation level} for this
+	 * connection.
 	 * 
 	 * @throws RepositoryException
-	 *         If the connection could not start the transaction.
+	 *         If the connection could not start the transaction. One possible
+	 *         reason this may happen is if a transaction is already
+	 *         {@link #isActive() active} on the current connection.
+	 * @see #begin(IsolationLevel)
 	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()
+	 * @see #setIsolationLevel(IsolationLevel)
 	 * @since 2.7.0
 	 */
 	public void begin()
 		throws RepositoryException;
 
 	/**
-	 * Begins a transaction requiring {@link #commit()} or {@link #rollback()} to
-	 * be called to end the transaction.
+	 * Begins a new transaction with the supplied {@link IsolationLevel},
+	 * requiring {@link #commit()} or {@link #rollback()} to be called to end the
+	 * transaction.
 	 * 
 	 * @param level
 	 *        The {@link IsolationLevel} at which this transaction will operate.
 	 *        If set to <code>null</code> the default isolation level of the
-	 *        underlying store will be used.
+	 *        underlying store will be used. If the specified isolation level is
+	 *        not supported by the underlying store, it will attempt to use a
+	 *        supported {@link IsolationLevel#isCompatibleWith(IsolationLevel)
+	 *        compatible level} instead.
 	 * @throws RepositoryException
-	 *         If the connection could not start the transaction. One possible
-	 *         reason this may happen is if the specified {@link IsolationLevel}
-	 *         is not supported by the store, and no compatible level could be
-	 *         found.
+	 *         If the connection could not start the transaction. Possible
+	 *         reasons this may happen are:
+	 *         <ul>
+	 *         <li>a transaction is already {@link #isActive() active} on the
+	 *         current connection.
+	 *         <li>the specified {@link IsolationLevel} is not supported by the
+	 *         store, and no compatible level could be found.
+	 *         </ul>
+	 * @see #begin()
 	 * @see #isActive()
 	 * @see #commit()
 	 * @see #rollback()
+	 * @see #setIsolationLevel()
 	 * @since 2.8.0
 	 */
 	public void begin(IsolationLevel level)
@@ -798,6 +818,36 @@ public interface RepositoryConnection extends AutoCloseable {
 		throws RepositoryException;
 
 	/**
+	 * Adds a statement with the specified subject, predicate and object to this
+	 * repository, optionally to one or more named contexts.
+	 * 
+	 * @param subject
+	 *        The statement's subject.
+	 * @param predicate
+	 *        The statement's predicate.
+	 * @param object
+	 *        The statement's object.
+	 * @param contexts
+	 *        The contexts to add the data to. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are specified, the
+	 *        data is added to any context specified in the actual data file, or
+	 *        if the data contains no context, it is added without context. If
+	 *        one or more contexts are specified the data is added to these
+	 *        contexts, ignoring any context information in the data itself.
+	 * @throws RepositoryException
+	 *         If the data could not be added to the repository, for example
+	 *         because the repository is not writable.
+	 * @deprecated since 4.0. Use {@link #add(Resource, IRI, Value, Resource...)}
+	 *             instead.
+	 */
+	@Deprecated
+	public default void add(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		this.add(subject, (IRI)predicate, object, contexts);
+	}
+
+	/**
 	 * Adds the supplied statement to this repository, optionally to one or more
 	 * named contexts.
 	 * 
@@ -882,6 +932,33 @@ public interface RepositoryConnection extends AutoCloseable {
 	 */
 	public void remove(Resource subject, IRI predicate, Value object, Resource... contexts)
 		throws RepositoryException;
+
+	/**
+	 * Removes the statement(s) with the specified subject, predicate and object
+	 * from the repository, optionally restricted to the specified contexts.
+	 * 
+	 * @param subject
+	 *        The statement's subject, or <tt>null</tt> for a wildcard.
+	 * @param predicate
+	 *        The statement's predicate, or <tt>null</tt> for a wildcard.
+	 * @param object
+	 *        The statement's object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) to remove the data from. Note that this parameter is
+	 *        a vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @throws RepositoryException
+	 *         If the statement(s) could not be removed from the repository, for
+	 *         example because the repository is not writable.
+	 * @deprecated since 4.0. Use
+	 *             {@link #remove(Resource, IRI, Value, Resource...)} instead.
+	 */
+	@Deprecated
+	public default void remove(Resource subject, URI predicate, Value object, Resource... contexts)
+		throws RepositoryException
+	{
+		this.remove(subject, (IRI)predicate, object, contexts);
+	}
 
 	/**
 	 * Removes the supplied statement from the specified contexts in the

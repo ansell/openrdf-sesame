@@ -1,17 +1,22 @@
 /// <reference path="template.ts" />
 /// <reference path="jquery.d.ts" />
 /// <reference path="paging.ts" />
-// WARNING: Do not edit the *.js version of this file. Instead, always edit the
-// corresponding *.ts source in the ts subfolder, and then invoke the
+// WARNING: Do not edit the *.js version of this file. Instead, always edit
+// the corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 workbench.addLoad(function () {
-    if (workbench.paging.hasQueryParameter(workbench.paging.LIMIT)) {
-        var limit = parseInt(0 + workbench.paging.getQueryParameter(workbench.paging.LIMIT), 10);
-        $(workbench.paging.LIM_ID).val(String(limit));
+    var query = 'query';
+    var suffix = '_' + query;
+    var limitParam = workbench.paging.LIMIT + suffix;
+    var limitElement = $(workbench.paging.LIM_ID + suffix);
+    function setElement(num) {
+        limitElement.val(String(parseInt(0 + num, 10)));
     }
-    workbench.paging.correctButtons();
-    limit = workbench.paging.getLimit(); // Number
-
+    setElement(workbench.paging.hasQueryParameter(limitParam) ?
+        workbench.paging.getQueryParameter(limitParam) :
+        workbench.getCookie(limitParam));
+    workbench.paging.correctButtons(query);
+    var limit = workbench.paging.getLimit(query); // Number
     // Modify title to reflect total_result_count cookie
     if (limit > 0) {
         var h1 = document.getElementById('title_heading');

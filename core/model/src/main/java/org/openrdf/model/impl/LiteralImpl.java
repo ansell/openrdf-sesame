@@ -16,13 +16,27 @@
  */
 package org.openrdf.model.impl;
 
-import java.util.Objects;
+import org.openrdf.model.IRI;
+import org.openrdf.model.URI;
 /**
  * @author Jeen Broekstra
  * @deprecated since 4.0. Use {@link SimpleLiteral} instead.
-		this.language = language;
  */
 @Deprecated
 public class LiteralImpl extends SimpleLiteral {
 
+	@Deprecated
+	public LiteralImpl(String label) {
+		super(label);
+	}
+	
+	@Deprecated
+	public LiteralImpl(String label, String language) {
+		super(label, language);
+	}
+	
+	@Deprecated
+	public LiteralImpl(String label, URI datatype) {
+		super(label, (IRI)datatype);
+	}
 }

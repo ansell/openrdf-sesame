@@ -16,19 +16,24 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.impl.SimpleBNode;
 import org.openrdf.model.impl.SimpleIRI;
 
-public class LongIdSequenceTest extends TestCase {
+public class LongIdSequenceTest {
 
 	private IdSequence ids;
 
 	private long STEP;
 
+	@Test
 	public void testStep()
 		throws Exception
 	{
@@ -38,6 +43,7 @@ public class LongIdSequenceTest extends TestCase {
 		assertEquals("10" + x60('0'), Long.toBinaryString(STEP * 2));
 	}
 
+	@Test
 	public void testMinMax()
 		throws Exception
 	{
@@ -46,6 +52,7 @@ public class LongIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDecode()
 		throws Exception
 	{
@@ -57,6 +64,7 @@ public class LongIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMin()
 		throws Exception
 	{
@@ -71,6 +79,7 @@ public class LongIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMax()
 		throws Exception
 	{
@@ -80,6 +89,7 @@ public class LongIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEncode()
 		throws Exception
 	{
@@ -88,6 +98,7 @@ public class LongIdSequenceTest extends TestCase {
 				"urn:The quick brown fox jumps over the lazy dog"))));
 	}
 
+	@Test
 	public void testBNode()
 		throws Exception
 	{
@@ -95,19 +106,13 @@ public class LongIdSequenceTest extends TestCase {
 		assertEquals(2859030200227941027l, ids.hashOf(new SimpleBNode("node13459o4d6x1")));
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		ids = new LongIdSequence();
 		ids.init();
 		STEP = ids.minId(ValueType.values()[1]).longValue();
-	}
-
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
 	}
 
 	private String x60(char c) {

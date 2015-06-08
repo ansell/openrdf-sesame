@@ -16,6 +16,8 @@
  */
 package org.openrdf.query.algebra.evaluation.util;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +25,8 @@ import java.util.List;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.ValueFactory;
@@ -31,11 +34,11 @@ import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * 
+ *
  * @author james
- * 
+ *
  */
-public class LiteralComparatorTest extends TestCase {
+public class LiteralComparatorTest {
 
 	private ValueFactory vf = new SimpleValueFactory();
 
@@ -69,6 +72,7 @@ public class LiteralComparatorTest extends TestCase {
 
 	private ValueComparator cmp = new ValueComparator();
 
+	@Test
 	public void testNumeric()
 		throws Exception
 	{
@@ -78,6 +82,7 @@ public class LiteralComparatorTest extends TestCase {
 		assertTrue(cmp.compare(ten, ten) == 0);
 	}
 
+	@Test
 	public void testString()
 		throws Exception
 	{
@@ -87,6 +92,7 @@ public class LiteralComparatorTest extends TestCase {
 		assertTrue(cmp.compare(b, b) == 0);
 	}
 
+	@Test
 	public void testSameLanguage()
 		throws Exception
 	{
@@ -96,12 +102,14 @@ public class LiteralComparatorTest extends TestCase {
 		assertTrue(cmp.compare(lb, lb) == 0);
 	}
 
+	@Test
 	public void testDifferentLanguage()
 		throws Exception
 	{
 		cmp.compare(la, lf);
 	}
 
+	@Test
 	public void testBoolean()
 		throws Exception
 	{
@@ -111,6 +119,7 @@ public class LiteralComparatorTest extends TestCase {
 		assertTrue(cmp.compare(t, t) == 0);
 	}
 
+	@Test
 	public void testDateTime()
 		throws Exception
 	{
@@ -120,6 +129,7 @@ public class LiteralComparatorTest extends TestCase {
 		assertTrue(cmp.compare(date2, date2) == 0);
 	}
 
+	@Test
 	public void testBothSimple()
 		throws Exception
 	{
@@ -129,18 +139,21 @@ public class LiteralComparatorTest extends TestCase {
 		assertTrue(cmp.compare(simple2, simple2) == 0);
 	}
 
+	@Test
 	public void testLeftSimple()
 		throws Exception
 	{
 		assertTrue(cmp.compare(simple1, typed1) == 0);
 	}
 
+	@Test
 	public void testRightSimple()
 		throws Exception
 	{
 		assertTrue(cmp.compare(typed1, simple1) == 0);
 	}
 
+	@Test
 	public void testOrder()
 		throws Exception
 	{
@@ -154,8 +167,8 @@ public class LiteralComparatorTest extends TestCase {
 		assertTrue(list.indexOf(nine) < list.indexOf(ten));
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		DatatypeFactory factory = DatatypeFactory.newInstance();

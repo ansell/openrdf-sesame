@@ -73,6 +73,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 
 	/**
 	 * Sets the prefix for a namespace.
+	 * This will replace any existing namespace associated to the prefix.
 	 * 
 	 * @param prefix
 	 *        The new prefix.
@@ -80,17 +81,18 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *        The namespace name that the prefix maps to.
 	 * @return The {@link Namespace} object for the given namespace.
 	 */
-	public default Optional<Namespace> setNamespace(String prefix, String name) {
-		Optional<Namespace> result = getNamespace(prefix);
+	public default Namespace setNamespace(String prefix, String name) {
+		Optional<? extends Namespace> result = getNamespace(prefix);
 		if (!result.isPresent() || !result.get().getName().equals(name)) {
 			result = Optional.of(new SimpleNamespace(prefix, name));
 			setNamespace(result.get());
 		}
-		return result;
+		return result.get();
 	}
 
 	/**
 	 * Sets the prefix for a namespace.
+	 * This will replace any existing namespace associated to the prefix.
 	 * 
 	 * @param namespace
 	 *        A {@link Namespace} object to use in this Model.
@@ -170,6 +172,7 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 *         If this Model cannot accept any statements, because it is filtered
 	 *         to the empty set.
 	 */
+	@Override
 	public boolean add(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	/**

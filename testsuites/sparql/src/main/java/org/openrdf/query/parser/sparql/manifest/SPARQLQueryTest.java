@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -107,6 +108,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 	protected final boolean checkOrder;
 
+	protected final String[] ignoredTests;
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -118,13 +120,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 	 *--------------*/
 
 	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet, boolean laxCardinality)
+			Dataset dataSet, boolean laxCardinality, String... ignoredTests)
 	{
 		this(testURI, name, queryFileURL, resultFileURL, dataSet, laxCardinality, false);
 	}
 
 	public SPARQLQueryTest(String testURI, String name, String queryFileURL, String resultFileURL,
-			Dataset dataSet, boolean laxCardinality, boolean checkOrder)
+			Dataset dataSet, boolean laxCardinality, boolean checkOrder, String... ignoredTests)
 	{
 		super(name.replaceAll("\\(", " ").replaceAll("\\)", " "));
 
@@ -134,6 +136,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 		this.dataset = dataSet;
 		this.laxCardinality = laxCardinality;
 		this.checkOrder = checkOrder;
+		this.ignoredTests = ignoredTests;
 	}
 
 	/*---------*
@@ -196,6 +199,14 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
+		// FIXME this reports a test error because we still rely on JUnit 3 here.
+		//org.junit.Assume.assumeFalse(Arrays.asList(ignoredTests).contains(this.getName()));
+		// FIXME temporary fix is to report as succeeded and just ignore.
+		if (Arrays.asList(ignoredTests).contains(this.getName())) {
+			logger.warn("Query test ignored: " + this.getName());
+			return;
+		}
+		
 		RepositoryConnection con = dataRep.getConnection();
 		// Some SPARQL Tests have non-XSD datatypes that must pass for the test
 		// suite to complete successfully

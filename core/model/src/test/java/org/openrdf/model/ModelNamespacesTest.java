@@ -16,7 +16,11 @@
  */
 package org.openrdf.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
@@ -196,6 +200,23 @@ public abstract class ModelNamespacesTest {
 
 	/**
 	 * Test method for
+	 * {@link org.openrdf.model.Model#setNamespace(java.lang.String, java.lang.String)}.
+	 */
+	@Test
+	public final void testSetNamespaceSamePrefix() {
+		testModel.setNamespace("r", RDF.NAMESPACE);
+		testModel.setNamespace("r", RDFS.NAMESPACE);
+		
+		Set<Namespace> namespaces = testModel.getNamespaces();
+		
+		assertNotNull("Namespaces set must not be null", namespaces);
+		assertEquals(1, namespaces.size());
+		
+		assertEquals(new SimpleNamespace("r", RDFS.NAMESPACE), testModel.getNamespace("r").orElse(null));
+	}
+
+	/**
+	 * Test method for
 	 * {@link org.openrdf.model.Model#setNamespace(org.openrdf.model.Namespace)}.
 	 */
 	@Test
@@ -218,6 +239,23 @@ public abstract class ModelNamespacesTest {
 		assertEquals(new SimpleNamespace(SKOS.PREFIX, SKOS.NAMESPACE), testModel.getNamespace(SKOS.PREFIX).get());
 		assertEquals(new SimpleNamespace(SESAME.PREFIX, SESAME.NAMESPACE),
 				testModel.getNamespace(SESAME.PREFIX).get());
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.openrdf.model.Model#setNamespace(org.openrdf.model.Namespace)}.
+	 */
+	@Test
+	public final void testSetNamespaceNamespaceSamePrefix() {
+		testModel.setNamespace(new SimpleNamespace("r", RDF.NAMESPACE));
+		testModel.setNamespace(new SimpleNamespace("r", RDFS.NAMESPACE));
+		
+		Set<Namespace> namespaces = testModel.getNamespaces();
+		
+		assertNotNull("Namespaces set must not be null", namespaces);
+		assertEquals(1, namespaces.size());
+		
+		assertEquals(new SimpleNamespace("r", RDFS.NAMESPACE), testModel.getNamespace("r").orElse(null));
 	}
 
 	/**

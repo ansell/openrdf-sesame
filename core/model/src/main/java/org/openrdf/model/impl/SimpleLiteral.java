@@ -77,7 +77,8 @@ public class SimpleLiteral implements Literal {
 	 *        The label for the literal, must not be <tt>null</tt>.
 	 */
 	public SimpleLiteral(String label) {
-		this(label, null, XMLSchema.STRING);
+		setLabel(label);
+		setDatatype(XMLSchema.STRING);
 	}
 
 	/**
@@ -89,7 +90,8 @@ public class SimpleLiteral implements Literal {
 	 *        The language tag for the literal, must not be <tt>null</tt>.
 	 */
 	public SimpleLiteral(String label, String language) {
-		this(label, language, RDF.LANGSTRING);
+		setLabel(label);
+		setLanguage(language);
 	}
 
 	/**
@@ -101,24 +103,14 @@ public class SimpleLiteral implements Literal {
 	 *        The datatype for the literal.
 	 */
 	public SimpleLiteral(String label, IRI datatype) {
-		this(label, null, datatype);
-	}
-
-	/**
-	 * Creates a new Literal object, initializing the variables with the supplied
-	 * parameters.
-	 */
-	private SimpleLiteral(String label, String language, IRI datatype) {
 		setLabel(label);
-		if (language != null) {
-			setLanguage(language.toLowerCase());
+		if (RDF.LANGSTRING.equals(datatype)) {
+			throw new IllegalArgumentException("datatype rdf:langString requires a language tag");
 		}
 		else if (datatype == null) {
-			setDatatype(XMLSchema.STRING);
+			datatype = XMLSchema.STRING;
 		}
-		else {
-			setDatatype(datatype);
-		}
+		setDatatype(datatype);
 	}
 
 	/*---------*
@@ -126,10 +118,7 @@ public class SimpleLiteral implements Literal {
 	 *---------*/
 
 	protected void setLabel(String label) {
-		if (label == null) {
-			throw new IllegalArgumentException("Literal label cannot be null");
-		}
-
+		Objects.requireNonNull(label, "Literal label cannot be null");
 		this.label = label;
 	}
 

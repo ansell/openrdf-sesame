@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
@@ -68,8 +68,9 @@
 						<td>
 							<xsl:call-template name="limit-select">
 								<xsl:with-param name="onchange">
-									workbench.paging.addLimit();
+									workbench.paging.addLimit('query');
 								</xsl:with-param>
+                                <xsl:with-param name="limit_id">limit_query</xsl:with-param>
 							</xsl:call-template>
 						</td>
 						<td id="result-limited">
@@ -85,11 +86,11 @@
 						</th>
 						<td>
 							<input id="previousX" type="button" value="{$previousX.label}"
-								onclick="workbench.paging.previousOffset();" />
+								onclick="workbench.paging.previousOffset('query');" />
 						</td>
 						<td>
 							<input id="nextX" type="button" value="{$nextX.label}"
-								onclick="workbench.paging.nextOffset();" />
+								onclick="workbench.paging.nextOffset('query');" />
 						</td>
 					</tr>
 					<tr>

@@ -23,4 +23,9 @@ package org.openrdf.model.impl;
 @Deprecated
 public class URIImpl extends SimpleIRI {
 
+	@Deprecated
+	public URIImpl(String uriString) {
+		super(uriString);
+	}
+	
 }

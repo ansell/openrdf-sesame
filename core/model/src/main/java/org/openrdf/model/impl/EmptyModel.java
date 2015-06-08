@@ -58,7 +58,7 @@ public class EmptyModel extends AbstractModel {
 	}
 
 	@Override
-	public Optional<Namespace> setNamespace(String prefix, String name) {
+	public Namespace setNamespace(String prefix, String name) {
 		return this.model.setNamespace(prefix, name);
 	}
 

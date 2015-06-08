@@ -17,7 +17,9 @@
 package org.openrdf.model.impl;
 
 import org.openrdf.model.IRI;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
 /**
@@ -28,8 +30,8 @@ import org.openrdf.model.Value;
 public class ContextStatementImpl extends ContextStatement {
 
 	@Deprecated
-	public ContextStatementImpl(Resource subject, IRI predicate, Value object, Resource context) {
-		super(subject, predicate, object, context);
+	public ContextStatementImpl(Resource subject, URI predicate, Value object, Resource context) {
+		super(subject, (IRI)predicate, object, context);
 	}
 
 }

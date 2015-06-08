@@ -1,5 +1,7 @@
 package org.openrdf.repository.contextaware;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.openrdf.query.QueryLanguage.SERQL;
 import static org.openrdf.query.QueryLanguage.SPARQL;
 
@@ -9,7 +11,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.impl.SimpleIRI;
@@ -30,7 +32,7 @@ import org.openrdf.repository.base.RepositoryConnectionWrapper;
 import org.openrdf.repository.base.RepositoryWrapper;
 import org.openrdf.rio.RDFHandler;
 
-public class ContextAwareConnectionTest extends TestCase {
+public class ContextAwareConnectionTest {
 	static class GraphQueryStub extends AbstractQuery implements
 			GraphQuery {
 		public GraphQueryResult evaluate() {
@@ -83,6 +85,7 @@ public class ContextAwareConnectionTest extends TestCase {
 
 	String queryString = "SELECT ?o WHERE { ?s ?p ?o}";
 
+	@Test
 	public void testGraphQuery() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub() {
 			@Override
@@ -108,6 +111,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		con.prepareGraphQuery(SPARQL, queryString, null);
 	}
 
+	@Test
 	public void testQuery() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub() {
 			@Override
@@ -133,6 +137,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		con.prepareQuery(SPARQL, queryString, null);
 	}
 
+	@Test
 	public void testTupleQuery() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub() {
 			@Override
@@ -158,6 +163,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		con.prepareTupleQuery(SPARQL, queryString, null);
 	}
 
+	@Test
 	public void testIncludeInferred() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -168,6 +174,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertTrue(a.isIncludeInferred());
 	}
 
+	@Test
 	public void testMaxQueryTime() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -178,6 +185,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertEquals(1, a.getMaxQueryTime());
 	}
 
+	@Test
 	public void testQueryLanguage() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -188,6 +196,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertEquals(QueryLanguage.SERQL, a.getQueryLanguage());
 	}
 
+	@Test
 	public void testBaseURI() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -198,6 +207,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertEquals("http://example.com/", a.getBaseURI());
 	}
 
+	@Test
 	public void testReadContexts() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -208,6 +218,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertEquals(context, a.getReadContexts()[0]);
 	}
 
+	@Test
 	public void testRemoveContexts() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -218,6 +229,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertEquals(context, a.getRemoveContexts()[0]);
 	}
 
+	@Test
 	public void testAddContexts() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -228,6 +240,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertEquals(context, a.getAddContexts()[0]);
 	}
 
+	@Test
 	public void testArchiveContexts() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();
@@ -238,6 +251,7 @@ public class ContextAwareConnectionTest extends TestCase {
 		assertEquals(context, a.getArchiveContexts()[0]);
 	}
 
+	@Test
 	public void testInsertContexts() throws Exception {
 		RepositoryConnection stub = new RepositoryConnectionStub();
 		Repository repo = stub.getRepository();

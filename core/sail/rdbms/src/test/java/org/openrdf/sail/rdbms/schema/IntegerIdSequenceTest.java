@@ -16,20 +16,25 @@
  */
 package org.openrdf.sail.rdbms.schema;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.openrdf.model.impl.SimpleBNode;
 import org.openrdf.model.impl.SimpleIRI;
 
-public class IntegerIdSequenceTest extends TestCase {
+public class IntegerIdSequenceTest {
 
 	private IdSequence ids;
 
 	private int STEP;
 
+	@Test
 	public void testStep()
 		throws Exception
 	{
@@ -39,6 +44,7 @@ public class IntegerIdSequenceTest extends TestCase {
 		assertEquals("10" + x28('0'), Integer.toBinaryString(STEP * 2));
 	}
 
+	@Test
 	public void testMinMax()
 		throws Exception
 	{
@@ -47,6 +53,7 @@ public class IntegerIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testDecode()
 		throws Exception
 	{
@@ -58,6 +65,7 @@ public class IntegerIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMin()
 		throws Exception
 	{
@@ -72,6 +80,7 @@ public class IntegerIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMax()
 		throws Exception
 	{
@@ -81,6 +90,7 @@ public class IntegerIdSequenceTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEncode()
 		throws Exception
 	{
@@ -89,6 +99,7 @@ public class IntegerIdSequenceTest extends TestCase {
 				"urn:The quick brown fox jumps over the lazy dog"))));
 	}
 
+	@Test
 	public void testBNode()
 		throws Exception
 	{
@@ -96,6 +107,7 @@ public class IntegerIdSequenceTest extends TestCase {
 		assertEquals(2859030200227941027l, ids.hashOf(new SimpleBNode("node13459o4d6x1")));
 	}
 
+	@Test
 	public void testAtomicInteger()
 		throws Exception
 	{
@@ -103,19 +115,13 @@ public class IntegerIdSequenceTest extends TestCase {
 		assertEquals(48, seq.incrementAndGet());
 	}
 
-	@Override
-	protected void setUp()
+	@Before
+	public void setUp()
 		throws Exception
 	{
 		ids = new IntegerIdSequence();
 		ids.init();
 		STEP = ids.minId(ValueType.values()[1]).intValue();
-	}
-
-	@Override
-	protected void tearDown()
-		throws Exception
-	{
 	}
 
 	private String x28(char c) {

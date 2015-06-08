@@ -31,6 +31,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -155,6 +162,48 @@ public class ProtocolTest {
 		TupleQueryResult queryResult = evaluateTupleQuery(TestServer.REPOSITORY_URL, "select * from {X} P {Y}",
 				QueryLanguage.SERQL);
 		QueryResultIO.write(queryResult, TupleQueryResultFormat.SPARQL, System.out);
+	}
+	
+	/**
+	 * Checks that the server accepts a direct POST with a content type of "application/sparql-query".
+	 */
+	@Test
+	public void testQueryDirect_POST() throws Exception
+	{
+		String query = "DESCRIBE <monkey:pod>";
+		String location = TestServer.REPOSITORY_URL;
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		HttpPost post = new HttpPost(location);
+		HttpEntity entity = new StringEntity(query, ContentType.create(Protocol.SPARQL_QUERY_MIME_TYPE));
+		post.setEntity(entity);
+		
+		CloseableHttpResponse response = httpclient.execute(post);
+
+		System.out.println("Query Direct POST Status: " + response.getStatusLine());
+		int statusCode = response.getStatusLine().getStatusCode();
+		assertEquals(true, statusCode >= 200 && statusCode < 400);
+	}
+	
+	/**
+	 * Checks that the server accepts a direct POST with a content type of "application/sparql-update".
+	 */
+	@Test
+	public void testUpdateDirect_POST() throws Exception
+	{
+		String query = "delete where { <monkey:pod> ?p ?o }";
+		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		HttpPost post = new HttpPost(location);
+		HttpEntity entity = new StringEntity(query, ContentType.create(Protocol.SPARQL_UPDATE_MIME_TYPE));
+		post.setEntity(entity);
+		
+		CloseableHttpResponse response = httpclient.execute(post);
+
+		System.out.println("Update Direct Post Status: " + response.getStatusLine());
+		int statusCode = response.getStatusLine().getStatusCode();
+		assertEquals(true, statusCode >= 200 && statusCode < 400);
 	}
 
 	/**

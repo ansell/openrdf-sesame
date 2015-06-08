@@ -65,7 +65,7 @@ public class QueryServlet extends TransformationServlet {
 
 	protected static final String REF = "ref";
 
-	private static final String LIMIT = "limit";
+	protected static final String LIMIT = "limit_query";
 
 	private static final String QUERY_LN = "queryLn";
 

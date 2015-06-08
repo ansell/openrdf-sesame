@@ -4,13 +4,12 @@ import static org.openrdf.query.QueryLanguage.SPARQL;
 
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
@@ -21,7 +20,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 @RunWith(Parameterized.class)
-public class SPARQLBuilderTest extends TestCase {
+public class SPARQLBuilderTest {
 
 	@Parameters(name = "{index}({0})-{2}:{3}")
 	public static Iterable<Object[]> data() {

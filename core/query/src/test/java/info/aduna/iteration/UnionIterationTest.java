@@ -16,6 +16,10 @@
  */
 package info.aduna.iteration;
 
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 public class UnionIterationTest extends CloseableIterationTest {
 
 	@Override
@@ -30,6 +34,7 @@ public class UnionIterationTest extends CloseableIterationTest {
 		return stringList1.size() + stringList2.size();
 	}
 
+	@Test
 	public void testArgumentsClosed()
 		throws Exception
 	{

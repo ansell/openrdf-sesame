@@ -50,6 +50,17 @@ public abstract class AbstractValueFactory implements ValueFactory {
 		return lastBNodePrefixUID = Math.max(System.currentTimeMillis(), lastBNodePrefixUID + 1);
 	}
 
+	private static final DatatypeFactory datatypeFactory;
+
+	static {
+		try {
+			datatypeFactory = DatatypeFactory.newInstance();
+		}
+		catch (DatatypeConfigurationException e) {
+			throw new Error("Could not instantiate javax.xml.datatype.DatatypeFactory", e);
+		}
+	}
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -214,12 +225,8 @@ public abstract class AbstractValueFactory implements ValueFactory {
 	public Literal createLiteral(Date date) {
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(date);
-		try {
-			XMLGregorianCalendar xmlGregCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-			return createLiteral(xmlGregCalendar);
-		}
-		catch (DatatypeConfigurationException e) {
-			throw new RuntimeException("Could not instantiate javax.xml.datatype.DatatypeFactory", e);
-		}
+		
+		XMLGregorianCalendar xmlGregCalendar = datatypeFactory.newXMLGregorianCalendar(c);
+		return createLiteral(xmlGregCalendar);
 	}
 }

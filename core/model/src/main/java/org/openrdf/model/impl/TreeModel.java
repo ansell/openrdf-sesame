@@ -118,21 +118,17 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 	}
 
 	@Override
-	public Optional<Namespace> setNamespace(String prefix, String name) {
-		Optional<Namespace> result = getNamespace(prefix);
-		if (!result.isPresent() || !result.get().getName().equals(name)) {
-			result = Optional.of(new SimpleNamespace(prefix, name));
-			namespaces.add(result.get());
-		}
+	public Namespace setNamespace(String prefix, String name) {
+		removeNamespace(prefix);
+		Namespace result = new SimpleNamespace(prefix, name);
+		namespaces.add(result);
 		return result;
 	}
 
 	@Override
 	public void setNamespace(Namespace namespace) {
-		Optional<Namespace> existing = getNamespace(namespace.getPrefix());
-		if (!existing.isPresent() || !existing.get().getName().equals(namespace.getName())) {
-			namespaces.add(namespace);
-		}
+		removeNamespace(namespace.getPrefix());
+		namespaces.add(namespace);
 	}
 
 	@Override
@@ -332,8 +328,6 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 		}
 		else if (contexts != null && contexts.length == 1 && contexts[0] != null) {
 			return new FilteredModel(this, subj, pred, obj, contexts) {
-
-				private static final long serialVersionUID = 396293781006255959L;
 
 				@Override
 				public Iterator<Statement> iterator() {
@@ -766,7 +760,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return model.getNamespaces();
 		}
 
-		public Optional<Namespace> setNamespace(String prefix, String name) {
+		public Namespace setNamespace(String prefix, String name) {
 			return model.setNamespace(prefix, name);
 		}
 
@@ -812,6 +806,7 @@ public class TreeModel extends AbstractModel implements SortedSet<Statement> {
 			return subSet().lower(e);
 		}
 
+		@Override
 		public boolean isEmpty() {
 			return subSet().isEmpty();
 		}

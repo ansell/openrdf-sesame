@@ -19,19 +19,39 @@ module workbench {
 
         var AMP = decodeURIComponent('%26');
 
+        function addCookieToUrlQueryIfPresent(url: string, name: string){
+            var value = workbench.getCookie(name);
+            if (value) {
+                url = url + AMP + name + '=' + value;
+            }
+            return url;
+        }
+
         /**
          * Invoked in graph.xsl and tuple.xsl for download functionality. Takes a
          * document element by name, and creates a request with it as a parameter.
          */
         export function addGraphParam(name: string) {
-            var value = $('#' + name).val();
+            var value = encodeURIComponent($('#' + name).val());
             var url = document.location.href;
+            var ref = workbench.getCookie('ref');
+            if (url.match(/query$/)) { // looking at POST query results?
+                if ('id' == ref) {
+                    url = url + ';ref=id' + AMP + 'action=exec';
+                    url = addCookieToUrlQueryIfPresent(url, 'query');
+                    url = addCookieToUrlQueryIfPresent(url, 'queryLn');
+                    url = addCookieToUrlQueryIfPresent(url, 'infer');
+                    url = addCookieToUrlQueryIfPresent(url, 'limit_query');
+                } else {
+                    alert("Can't put query in URL, since it might be too long for your browser.\n" +
+                    "Save your query on the server, then execute it from the 'Saved Queries' page.");
+                    return;
+                }
+            }
             if (url.indexOf('?') + 1 || url.indexOf(';') + 1) {
-                document.location.href = url + decodeURIComponent('%26') + name
-                + '=' + encodeURIComponent(value);
+                document.location.href = url + AMP + name + '=' + value;
             } else {
-                document.location.href = url + ';' + name + '='
-                + encodeURIComponent(value);
+                document.location.href = url + ';' + name + '=' + value;
             }
         }
         
@@ -43,10 +63,9 @@ module workbench {
          * Scans the given URI for duplicate query parameter names, and removes
          * all but the last occurrence for any duplicate case.
          * 
-         * @param {String}
-         *            href The URI to simplify.
-         * @returns {String} The URI with only the last occurrence of any given
-         *          parameter name remaining.
+         * @param {String} href The URI to simplify.
+         * @returns {String} The URI with only the last occurrence of any
+         *          given parameter name remaining.
          */
         function simplifyParameters(href: string) {
             var params:StringMap = {};
@@ -72,14 +91,13 @@ module workbench {
 
 
         /**
-         * First, adds the given parameter to the URL query string. Second, adds a
-         * 'know_total' parameter if its current value is 'false' or non-existent.
-         * Third, simplifies the URL. Fourth, sends the browser to the modified URL.
+         * First, adds the given parameter to the URL query string. Second,
+         * adds a 'know_total' parameter if its current value is 'false' or
+         * non-existent. Third, simplifies the URL. Fourth, sends the browser
+         * to the modified URL.
          * 
-         * @param {String}
-         *            name The name of the query parameter.
-         * @param {number
-         *            or string} value The value of the query parameter.
+         * @param {String} name The name of the query parameter.
+         * @param {number} value The value of the query parameter.
          */
         export function addPagingParam(name: string, value: number) {
             var url = document.location.href;
@@ -97,25 +115,28 @@ module workbench {
         }
 
         /**
-         * Invoked in tuple.xsl and explore.xsl. Changes the limit query parameter,
-         * and navigates to the new URL.
+         * Invoked in tuple.xsl and explore.xsl. Changes the limit query
+         * parameter and navigates to the new URL.
          */
-        export function addLimit() {
-            addPagingParam(LIMIT, $(LIM_ID).val());
+        export function addLimit(page: string) {
+            var suffix = '_' + page;
+            addPagingParam(LIMIT + suffix, $(LIM_ID + suffix).val());
         }
 
         /**
-         * Increments the offset query parameter, and navigates to the new URL.
+         * Invoked in tuple.xsl and explore.xsl. Increments the offset query
+         * parameter, and navigates to the new URL.
          */
-        export function nextOffset() {
-            addPagingParam(OFFSET, getOffset() + getLimit());
+        export function nextOffset(page: string) {
+            addPagingParam(OFFSET, getOffset() + getLimit(page));
         }
 
         /**
-         * Decrements the offset query parameter, and navigates to the new URL.
+         * Invoked in tuple.xsl and explore.xsl. Decrements the offset query
+         * parameter and navigates to the new URL.
          */
-        export function previousOffset() {
-            addPagingParam(OFFSET, Math.max(0, getOffset() - getLimit()));
+        export function previousOffset(page: string) {
+            addPagingParam(OFFSET, Math.max(0, getOffset() - getLimit(page)));
         }
 
         /**
@@ -129,19 +150,18 @@ module workbench {
         /**
          * @returns {number} The value of the limit query parameter.
          */
-        export function getLimit() {
-            return parseInt($(LIM_ID).val(), 10);
+        export function getLimit(page: string): number {
+            return parseInt($(LIM_ID + '_' + page).val(), 10);
         }
 
         /**
          * Retrieves the URL query parameter with the given name.
          * 
-         * @param {String}
-         *            name The name of the parameter to retrieve.
-         * @returns {String} The value of the given parameter, or an empty string if
-         *          it doesn't exist.
+         * @param {String} name The name of the parameter to retrieve.
+         * @returns {String} The value of the given parameter, or an empty
+         *          string if it doesn't exist.
          */
-        export function getQueryParameter(name: string) {
+        export function getQueryParameter(name: string): string {
             var rval = '';
             var elements = getQueryString(document.location.href).split(decodeURIComponent('%26'));
             for (var i = 0; elements.length - i; i++) {
@@ -158,8 +178,7 @@ module workbench {
         /**
          * Gets whether a URL query parameter with the given name is present.
          * 
-         * @param {String}
-         *            name The name of the parameter to retrieve.
+         * @param {String} name The name of the parameter to retrieve.
          * @returns {Boolean} True, if a parameter with the given name is in
          *                    the URL. Otherwise, false.
          */
@@ -177,17 +196,16 @@ module workbench {
         }
 
         /**
-         * Convenience function for returning the tail of a string after a given
-         * character.
+         * Convenience function for returning the tail of a string after a
+         * given character.
          *   
-         * @param {String}
-         *            value The string to get the tail of.
+         * @param {String} value The string to get the tail of.
          * @param split
          *            character to give tail after
          * @returns The substring after the 'split' character, or the original
          *          string if 'split' is not found.
          */
-        function tailAfter(value: string, split: string) {
+        function tailAfter(value: string, split: string): string {
             return value.substring(value.indexOf(split) + 1);
         }
 
@@ -200,12 +218,12 @@ module workbench {
          * Next and Previous buttons. Makes use of RegExp to preserve any
          * localization.
          */
-        export function correctButtons() {
+        export function correctButtons(page: string) {
             var buttonWordPattern = /^[A-z]+\s+/;
             var nextButton = $('#nextX');
             var oldNext = nextButton.val();
             var count = parseInt(/\d+$/.exec(oldNext)[0], 10);
-            var limit = workbench.paging.getLimit();
+            var limit = workbench.paging.getLimit(page);
             nextButton.val(buttonWordPattern.exec(oldNext)[0] + limit);
             var previousButton = $('#previousX');
             previousButton

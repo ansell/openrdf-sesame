@@ -182,17 +182,16 @@ public class RDFParserHelperTest {
 	 * SES-1803 : Temporary decision to ensure RDF-1.0 backwards compatibility
 	 * for Literals created by this method in cases where {@link RDF#LANGSTRING}
 	 * is given and there is NO given language.
+	 * <p>
+	 * SES-2203 : This was inconsistent, so has been changed to verify failure.
 	 */
 	@Test
 	public final void testCreateLiteralLabelNoLanguageWithRDFLangString()
 		throws Exception
 	{
-		Literal literal = RDFParserHelper.createLiteral(LABEL_TESTA, null, RDF.LANGSTRING, parserConfig,
+		thrown.expect(RDFParseException.class);
+		RDFParserHelper.createLiteral(LABEL_TESTA, null, RDF.LANGSTRING, parserConfig,
 				errListener, valueFactory);
-
-		assertEquals(LABEL_TESTA, literal.getLabel());
-		assertFalse(literal.getLanguage().isPresent());
-		assertEquals(RDF.LANGSTRING, literal.getDatatype());
 	}
 
 	@Test

@@ -31,6 +31,7 @@ import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -50,7 +51,7 @@ import org.openrdf.repository.sail.config.RepositoryResolver;
  * 
  * @author Arjohn Kampman
  */
-public abstract class RepositoryManager implements RepositoryResolver {
+public abstract class RepositoryManager implements RepositoryResolver, HttpClientDependent {
 
 	/*-----------*
 	 * Constants *

@@ -68,7 +68,7 @@ public abstract class FilteredModel extends AbstractModel {
 	}
 
 	@Override
-	public Optional<Namespace> setNamespace(String prefix, String name) {
+	public Namespace setNamespace(String prefix, String name) {
 		return model.setNamespace(prefix, name);
 	}
 

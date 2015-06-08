@@ -16,17 +16,20 @@
  */
 package org.openrdf.sail.nativerdf;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import info.aduna.io.FileUtil;
 
-public class DefaultIndexTest extends TestCase {
+public class DefaultIndexTest {
 
+	@Test
 	public void testDefaultIndex() throws Exception {
 		File dir = FileUtil.createTempDir("nativerdf");
 		TripleStore store = new TripleStore(dir, null);
@@ -36,6 +39,7 @@ public class DefaultIndexTest extends TestCase {
 		FileUtil.deleteDir(dir);
 	}
 
+	@Test
 	public void testExistingIndex() throws Exception {
 		File dir = FileUtil.createTempDir("nativerdf");
 		// set a non-default index

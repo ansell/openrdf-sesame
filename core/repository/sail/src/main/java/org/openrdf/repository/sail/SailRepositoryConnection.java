@@ -16,33 +16,44 @@
  */
 package org.openrdf.repository.sail;
 
+import org.apache.http.client.HttpClient;
+
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.http.client.HttpClientDependent;
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryConnectionOptimizations;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.UnknownTransactionStateException;
 import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.repository.sail.config.RepositoryResolver;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.sail.AdvancedSailConnection;
 import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailConnectionOptimizations;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 
@@ -53,7 +64,10 @@ import org.openrdf.sail.SailReadOnlyException;
  * @author Jeen Broekstra
  * @author Arjohn Kampman
  */
-public class SailRepositoryConnection extends RepositoryConnectionBase {
+public class SailRepositoryConnection extends RepositoryConnectionBase implements
+		RepositoryConnectionOptimizations, FederatedServiceResolverClient, RepositoryResolverClient,
+		HttpClientDependent, SesameClientDependent
+{
 
 	/*-----------*
 	 * Variables *
@@ -87,6 +101,52 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 	 */
 	public SailConnection getSailConnection() {
 		return sailConnection;
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		if (sailConnection instanceof FederatedServiceResolverClient) {
+			((FederatedServiceResolverClient)sailConnection).setFederatedServiceResolver(resolver);
+		}
+	}
+
+	@Override
+	public void setRepositoryResolver(RepositoryResolver resolver) {
+		if (sailConnection instanceof RepositoryResolverClient) {
+			((RepositoryResolverClient)sailConnection).setRepositoryResolver(resolver);
+		}
+	}
+
+	@Override
+	public SesameClient getSesameClient() {
+		if (sailConnection instanceof SesameClientDependent) {
+			return ((SesameClientDependent)sailConnection).getSesameClient();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public void setSesameClient(SesameClient client) {
+		if (sailConnection instanceof SesameClientDependent) {
+			((SesameClientDependent)sailConnection).setSesameClient(client);
+		}
+	}
+
+	@Override
+	public HttpClient getHttpClient() {
+		if (sailConnection instanceof HttpClientDependent) {
+			return ((HttpClientDependent)sailConnection).getHttpClient();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public void setHttpClient(HttpClient client) {
+		if (sailConnection instanceof HttpClientDependent) {
+			((HttpClientDependent)sailConnection).setHttpClient(client);
+		}
 	}
 
 	@Override
@@ -215,6 +275,23 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		ParsedUpdate parsedUpdate = QueryParserUtil.parseUpdate(ql, update, baseURI);
 
 		return new SailUpdate(parsedUpdate, this);
+	}
+
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws RepositoryException
+	{
+		if(sailConnection instanceof AdvancedSailConnection) {
+			try {
+				return ((AdvancedSailConnection)sailConnection).hasStatement(subj, pred, obj, includeInferred, contexts);
+			}
+			catch(SailException e) {
+				throw new RepositoryException("Unable to find statement in Sail", e);
+			}
+		}
+		else {
+			return super.hasStatement(subj, pred, obj, includeInferred, contexts);
+		}
 	}
 
 	@Override
@@ -446,4 +523,14 @@ public class SailRepositoryConnection extends RepositoryConnectionBase {
 		}
 	}
 
+	public boolean isHasStatementOptimized()
+	{
+		return (sailConnection instanceof SailConnectionOptimizations) ? ((SailConnectionOptimizations)sailConnection).isHasStatementOptimized() : true;
+	}
+
+	@Override
+	public String toString()
+	{
+		return getSailConnection().toString();
+	}
 }

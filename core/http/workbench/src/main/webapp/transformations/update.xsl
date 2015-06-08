@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:sparql="http://www.w3.org/2005/sparql-results#" xmlns="http://www.w3.org/1999/xhtml">
 
 	<xsl:include href="../locale/messages.xsl" />
@@ -12,7 +12,7 @@
 	<xsl:include href="template.xsl" />
 
 	<xsl:template match="sparql:sparql">
-		<form action="update" method="POST" onsubmit="return workbench.update.doSubmit()">
+		<form action="update" method="post" onsubmit="return workbench.update.doSubmit()">
 			<table class="dataentry">
 				<tbody>
 					<tr>
@@ -44,14 +44,13 @@
 		</form>
 		<script type="text/javascript">
         var namespaces = {
-          <xsl:for-each
+            <xsl:for-each
                 select="document(//sparql:link[@href='namespaces']/@href)//sparql:results/sparql:result">
                 <xsl:value-of
                     select="concat('&quot;', sparql:binding[@name='prefix']/sparql:literal, ':&quot;:&quot;', sparql:binding[@name='namespace']/sparql:literal, '&quot;,')" />
                 <xsl:text>
                 </xsl:text>
             </xsl:for-each>
-        
         };
         </script>
 		<script src="../../scripts/codemirror.4.5.0.min.js" type="text/javascript"></script>
