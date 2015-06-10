@@ -87,13 +87,13 @@ public class RepositoryProvider {
 
 	/**
 	 * Creates a RepositoryManager, if not already created, that will be shutdown
-	 * when the JVM exits cleanly. The parameter must be a URL of the form
-	 * http://host:port/path or file:///path.
+	 * when the JVM exits cleanly. The parameter should be a URL of the form
+	 * http://host:port/path/ or file:///path/.
 	 */
 	public static RepositoryManager getRepositoryManager(String url)
 		throws RepositoryConfigException, RepositoryException
 	{
-		String uri = normalize(url);
+		String uri = normalizeDirectory(url);
 		SynchronizedManager sync = null;
 		synchronized (managers) {
 			Iterator<SynchronizedManager> iter = managers.values().iterator();
@@ -140,10 +140,7 @@ public class RepositoryProvider {
 		}
 		int idx = url.lastIndexOf(REPOSITORIES);
 		String server = url.substring(0, idx);
-		if (server.endsWith("/")) {
-			server = server.substring(0, server.length() - 1);
-		}
-		else if (server.length() == 0) {
+		if (server.length() == 0) {
 			server = ".";
 		}
 		return getRepositoryManager(server);
@@ -200,8 +197,11 @@ public class RepositoryProvider {
 		return new File(uri);
 	}
 
-	private static String normalize(String url) throws IllegalArgumentException {
+	private static String normalizeDirectory(String url) throws IllegalArgumentException {
 		try {
+			if (!url.endsWith("/")) {
+				return normalizeDirectory(url + '/');
+			}
 			URI norm = URI.create(url);
 			if (!norm.isAbsolute()) {
 				norm = new File(".").toURI().resolve(url);
@@ -213,26 +213,13 @@ public class RepositoryProvider {
 			String sch = norm.getScheme();
 			String host = norm.getAuthority();
 			String path = norm.getPath();
-			String qs = norm.getRawQuery();
-			String frag = norm.getRawFragment();
 			if (sch != null) {
 				sch = sch.toLowerCase();
 			}
 			if (host != null) {
 				host = host.toLowerCase();
 			}
-			String uri = new URI(sch, host, path, null, null).toASCIIString();
-			if (qs == null && frag == null)
-				return uri;
-			StringBuilder sb = new StringBuilder(uri);
-			if (qs != null) {
-				sb.append('?').append(qs);
-			}
-			if (frag != null) {
-				sb.append('#').append(frag);
-			}
-			sb.append(uri);
-			return sb.toString();
+			return new URI(sch, host, path, null, null).toASCIIString();
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e);
 		}
