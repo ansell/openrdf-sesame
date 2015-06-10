@@ -143,14 +143,23 @@ public interface RepositoryConnection extends AutoCloseable {
 	/**
 	 * Closes the connection, freeing resources. If a {@link #begin()
 	 * transaction} is {@link #isActive() active} on the connection, all
-	 * non-committed operations will be lost.
+	 * non-committed operations will be lost by actively calling
+	 * {@link #rollback()} on any active transactions.
+	 * <p>
+	 * Implementation note: All implementations must override this method if they
+	 * have any resources that they need to free.
 	 * 
 	 * @throws RepositoryException
 	 *         If the connection could not be closed.
 	 */
 	@Override
-	public void close()
-		throws RepositoryException;
+	public default void close()
+		throws RepositoryException
+	{
+		if (isOpen() && isActive()) {
+			rollback();
+		}
+	}
 
 	/**
 	 * Prepares a query for evaluation on this repository (optional operation).

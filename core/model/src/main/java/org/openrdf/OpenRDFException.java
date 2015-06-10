@@ -17,12 +17,12 @@
 package org.openrdf;
 
 /**
- * General superclass of all checked exceptions that parts of OpenRDF Sesame can
- * throw.
+ * General superclass of all unchecked exceptions that parts of OpenRDF Sesame
+ * can throw.
  * 
  * @author jeen
  */
-public abstract class OpenRDFException extends Exception {
+public abstract class OpenRDFException extends RuntimeException {
 
 	private static final long serialVersionUID = 8913366826930181397L;
 
