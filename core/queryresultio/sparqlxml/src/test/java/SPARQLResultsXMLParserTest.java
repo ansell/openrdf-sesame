@@ -50,16 +50,9 @@ public class SPARQLResultsXMLParserTest {
 	private int countSolutions(String name)
 		throws Exception
 	{
-		final AtomicInteger counter = new AtomicInteger();
 		SPARQLResultsXMLParser parser = new SPARQLResultsXMLParser();
-		parser.setTupleQueryResultHandler(new TupleQueryResultHandlerBase() {
-
-			public void handleSolution(BindingSet bindingSet)
-				throws TupleQueryResultHandlerException
-			{
-				counter.incrementAndGet();
-			}
-		});
+		CountingTupleQueryResultHandler countingHandler = new CountingTupleQueryResultHandler();
+		parser.setTupleQueryResultHandler(countingHandler);
 		InputStream in = SPARQLResultsXMLParserTest.class.getClassLoader().getResourceAsStream(name);
 		assertNotNull(name + " is missing", in);
 		try {
@@ -67,7 +60,22 @@ public class SPARQLResultsXMLParserTest {
 		} finally {
 			in.close();
 		}
-		return counter.get();
+		return countingHandler.getCount();
 	}
 
+	static class CountingTupleQueryResultHandler extends TupleQueryResultHandlerBase
+	{
+		private int counter;
+
+		public int getCount()
+		{
+			return count;
+		}
+
+		public void handleSolution(BindingSet bindingSet)
+			throws TupleQueryResultHandlerException
+		{
+			counter++;
+		}
+	}
 }
