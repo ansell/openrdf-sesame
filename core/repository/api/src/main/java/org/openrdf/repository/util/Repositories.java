@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository;
+package org.openrdf.repository.util;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,6 +26,10 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.Repository;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.UnknownTransactionStateException;
 
 /**
  * Utility for dealing with {@link Repository} and {@link RepositoryConnection}
