@@ -26,10 +26,12 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.UnknownTransactionStateException;
+import org.openrdf.rio.RDFHandler;
 
 /**
  * Utility for dealing with {@link Repository} and {@link RepositoryConnection}
@@ -258,6 +260,36 @@ public final class Repositories {
 	}
 
 	/**
+	 * Performs a SPARQL Select query on the given Repository and passes the
+	 * results to the given {@link TupleQueryResultHandler}.
+	 * 
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param query
+	 *        The SPARQL Select query to execute.
+	 * @param handler
+	 *        A {@link TupleQueryResultHandler} that consumes the results.
+	 * @throws RepositoryException
+	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
+	 * @throws MalformedQueryException
+	 *         If the supplied query is malformed
+	 * @throws QueryEvaluationException
+	 *         If there was an error evaluating the query
+	 */
+	public static void tupleQuery(Repository repository, String query, TupleQueryResultHandler handler)
+		throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
+		QueryEvaluationException
+	{
+		consume(repository, conn -> {
+			TupleQuery preparedQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+			preparedQuery.evaluate(handler);
+		});
+	}
+
+	/**
 	 * Performs a SPARQL Construct or Describe query on the given Repository and
 	 * passes the results to the given {@link Function} with the result from the
 	 * function returned by the method.
@@ -292,6 +324,36 @@ public final class Repositories {
 			try (GraphQueryResult queryResult = preparedQuery.evaluate();) {
 				return processFunction.apply(queryResult);
 			}
+		});
+	}
+
+	/**
+	 * Performs a SPARQL Construct or Describe query on the given Repository and
+	 * passes the results to the given {@link RDFHandler}.
+	 * 
+	 * @param repository
+	 *        The {@link Repository} to open a connection to.
+	 * @param query
+	 *        The SPARQL Construct or Describe query to execute.
+	 * @param handler
+	 *        An {@link RDFHandler} that consumes the results.
+	 * @throws RepositoryException
+	 *         If there was an exception dealing with the Repository.
+	 * @throws UnknownTransactionStateException
+	 *         If the transaction state was not properly recognised. (Optional
+	 *         specific exception)
+	 * @throws MalformedQueryException
+	 *         If the supplied query is malformed
+	 * @throws QueryEvaluationException
+	 *         If there was an error evaluating the query
+	 */
+	public static void graphQuery(Repository repository, String query, RDFHandler handler)
+		throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
+		QueryEvaluationException
+	{
+		consume(repository, conn -> {
+			GraphQuery preparedQuery = conn.prepareGraphQuery(QueryLanguage.SPARQL, query);
+			preparedQuery.evaluate(handler);
 		});
 	}
 
