@@ -65,7 +65,7 @@ public class SPARQLResultsXMLParserTest {
 
 	static class CountingTupleQueryResultHandler extends TupleQueryResultHandlerBase
 	{
-		private int counter;
+		private int count;
 
 		public int getCount()
 		{
@@ -75,7 +75,7 @@ public class SPARQLResultsXMLParserTest {
 		public void handleSolution(BindingSet bindingSet)
 			throws TupleQueryResultHandlerException
 		{
-			counter++;
+			count++;
 		}
 	}
 }
