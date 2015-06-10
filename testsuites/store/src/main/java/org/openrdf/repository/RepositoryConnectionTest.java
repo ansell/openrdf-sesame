@@ -60,17 +60,18 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -92,7 +93,6 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
@@ -109,7 +109,13 @@ import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
 
+@RunWith(Parameterized.class)
 public abstract class RepositoryConnectionTest {
+
+	@Parameters(name="{0}")
+	public static final IsolationLevel[] parameters() {
+		return IsolationLevels.values();
+	}
 
 	/**
 	 * Timeout all individual tests after 1 minute.
@@ -197,6 +203,12 @@ public abstract class RepositoryConnectionTest {
 
 	protected Literal Александър;
 
+	protected IsolationLevel level;
+
+	public RepositoryConnectionTest(IsolationLevel level) {
+		this.level = level;
+	}
+
 	@Before
 	public void setUp()
 		throws Exception
@@ -207,8 +219,10 @@ public abstract class RepositoryConnectionTest {
 		testCon = testRepository.getConnection();
 		testCon.clear();
 		testCon.clearNamespaces();
+		testCon.setIsolationLevel(level);
 
 		testCon2 = testRepository.getConnection();
+		testCon2.setIsolationLevel(level);
 
 		vf = testRepository.getValueFactory();
 
@@ -303,6 +317,9 @@ public abstract class RepositoryConnectionTest {
 	public void testTransactionIsolation()
 		throws Exception
 	{
+		if (IsolationLevels.READ_UNCOMMITTED.isCompatibleWith(level)) {
+			return;
+		}
 		testCon.begin();
 		testCon.add(bob, name, nameBob);
 		assertThat(testCon.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
@@ -512,6 +529,9 @@ public abstract class RepositoryConnectionTest {
 	public void testRollback()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 
@@ -1525,6 +1545,9 @@ public abstract class RepositoryConnectionTest {
 	public void testEmptyRollback()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.begin();
@@ -1540,6 +1563,9 @@ public abstract class RepositoryConnectionTest {
 	public void testEmptyCommit()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.begin();
@@ -1566,6 +1592,9 @@ public abstract class RepositoryConnectionTest {
 	public void testSizeRollback()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.size(), is(equalTo(0L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.begin();
@@ -1584,6 +1613,9 @@ public abstract class RepositoryConnectionTest {
 	public void testSizeCommit()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.size(), is(equalTo(0L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.begin();

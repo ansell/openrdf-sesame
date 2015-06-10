@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import info.aduna.io.ResourceUtil;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
@@ -31,6 +32,10 @@ import org.openrdf.sail.inferencer.fc.CustomGraphQueryInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class CustomGraphQueryInferencerMemoryRepositoryConnectionTest extends RepositoryConnectionTest {
+
+	public CustomGraphQueryInferencerMemoryRepositoryConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	protected Repository createRepository()

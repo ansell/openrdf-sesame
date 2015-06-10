@@ -18,6 +18,7 @@ package org.openrdf.sail.helpers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -365,6 +366,18 @@ public abstract class SailBase implements Sail {
 	 */
 	protected void setSupportedIsolationLevels(List<IsolationLevel> supportedIsolationLevels) {
 		this.supportedIsolationLevels = supportedIsolationLevels;
+	}
+
+	/**
+	 * Sets the list of supported {@link IsolationLevels}s for this SAIL. The
+	 * list is expected to be ordered in increasing complexity.
+	 * 
+	 * @param supportedIsolationLevels
+	 *        a list of supported isolation levels.
+	 * @since 2.8.3
+	 */
+	protected void setSupportedIsolationLevels(IsolationLevel... supportedIsolationLevels) {
+		this.supportedIsolationLevels = Arrays.asList(supportedIsolationLevels);
 	}
 
 	@Override

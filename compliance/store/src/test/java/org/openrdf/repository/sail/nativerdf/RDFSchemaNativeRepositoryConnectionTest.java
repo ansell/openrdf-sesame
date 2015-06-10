@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import info.aduna.io.FileUtil;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.repository.RDFSchemaRepositoryConnectionTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.sail.SailRepository;
@@ -30,6 +31,10 @@ import org.openrdf.sail.nativerdf.NativeStore;
 public class RDFSchemaNativeRepositoryConnectionTest extends RDFSchemaRepositoryConnectionTest {
 
 	private File dataDir;
+
+	public RDFSchemaNativeRepositoryConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	protected Repository createRepository()

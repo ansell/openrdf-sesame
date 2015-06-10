@@ -25,6 +25,8 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 import info.aduna.text.ASCIIUtil;
 
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -36,6 +38,7 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.UnknownSailTransactionStateException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 
@@ -59,6 +62,8 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	/*-----------*
 	 * Variables *
 	 *-----------*/
+
+	private final Sail sail;
 
 	/**
 	 * true if the base Sail reported removed statements.
@@ -93,8 +98,10 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 	 * Constructors *
 	 *--------------*/
 
-	public ForwardChainingRDFSInferencerConnection(InferencerConnection con) {
+	public ForwardChainingRDFSInferencerConnection(Sail sail, InferencerConnection con)
+	{
 		super(con);
+		this.sail = sail;
 		con.addConnectionListener(this);
 	}
 
@@ -113,6 +120,30 @@ class ForwardChainingRDFSInferencerConnection extends InferencerConnectionWrappe
 			newStatements = new GraphImpl();
 		}
 		newStatements.add(st);
+	}
+
+	@Override
+	public void begin()
+		throws SailException
+	{
+		this.begin(null);
+	}
+
+	@Override
+	public void begin(IsolationLevel level)
+		throws SailException
+	{
+		if (level == null) {
+			level = sail.getDefaultIsolationLevel();
+		}
+
+		IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(level,
+				sail.getSupportedIsolationLevels());
+		if (compatibleLevel == null) {
+			throw new UnknownSailTransactionStateException("Isolation level " + level
+					+ " not compatible with this Sail");
+		}
+		super.begin(compatibleLevel);
 	}
 
 	// Called by base sail
