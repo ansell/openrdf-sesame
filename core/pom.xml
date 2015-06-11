@@ -15,8 +15,6 @@
 
 	<modules>
 		<module>util</module>
-		<module>model-api</module>
-		<module>model-test</module>
 		<module>model</module>
 		<module>rio</module>
 		<module>queryresultio</module>

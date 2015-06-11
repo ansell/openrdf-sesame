@@ -14,29 +14,29 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.model.util;
+package org.openrdf.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Set;
 
 import org.junit.Test;
-
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.util.Models;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
  * @author Arjohn Kampman
  */
-public class ModelEqualityTest {
+public abstract class ModelEqualityTest {
 
 	public static final String TESTCASES_DIR = "/testcases/model/equality/";
 
@@ -108,7 +108,7 @@ public class ModelEqualityTest {
 		URL modelURL = this.getClass().getResource(TESTCASES_DIR + fileName);
 		assertNotNull("Test file not found: " + fileName, modelURL);
 
-		Model model = new LinkedHashModel();
+		Model model = createEmptyModel();
 		
 		RDFFormat rdfFormat = Rio.getParserFormatForFileName(fileName);
 		assertNotNull("Unable to determine RDF format for file: " + fileName, rdfFormat);
@@ -127,4 +127,6 @@ public class ModelEqualityTest {
 			in.close();
 		}
 	}
+
+	protected abstract Model createEmptyModel();
 }
