@@ -108,8 +108,8 @@ public abstract class RepositoryConnectionTest {
 	/**
 	 * Timeout all individual tests after 1 minute.
 	 */
-	@Rule
-	public Timeout to = new Timeout(60000);
+//	@Rule
+//	public Timeout to = new Timeout(60000);
 
 	private static final String URN_TEST_OTHER = "urn:test:other";
 
@@ -429,6 +429,38 @@ public abstract class RepositoryConnectionTest {
 			testCon.rollback();
 		}
 
+	}
+
+	@Test
+	public void testTransactionIsolationForReadWithDeleteOperation()
+		throws Exception
+	{
+		try {
+			testCon.begin();
+			testCon.add(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			testCon.commit();
+
+			testCon.begin();
+			// Remove but do not commit
+			testCon.remove(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			assertFalse("Should not see removed statement on same connection",
+					testCon.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			assertTrue("Statement should not be removed for different connection",
+					testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			testCon2.begin();
+			try {
+				assertTrue("Statement should not be removed for different connection inside transaction",
+						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+			}
+			finally {
+				testCon2.rollback();
+			}
+		}
+		finally {
+			testCon.rollback();
+		}
 	}
 
 	@Test
@@ -1840,30 +1872,31 @@ public abstract class RepositoryConnectionTest {
 			tqr.close();
 		}
 	}
-	
+
 	@Test
-	public void testSES2172ChineseChars() throws Exception
+	public void testSES2172ChineseChars()
+		throws Exception
 	{
 		String updateString = "INSERT DATA { <urn:subject1> rdfs:label \"\\u8BBE\\u5907\". }";
-		
+
 		Update update = testCon.prepareUpdate(QueryLanguage.SPARQL, updateString);
 		update.execute();
-		
+
 		assertFalse(testCon.isEmpty());
-		
+
 		String queryString = "SELECT ?o WHERE { <urn:subject1> rdfs:label ?o . }";
-		
+
 		TupleQuery query = testCon.prepareTupleQuery(QueryLanguage.SPARQL, queryString);
 		TupleQueryResult result = query.evaluate();
-		
+
 		assertNotNull(result);
-		
+
 		final String expected = "设备";
 		while (result.hasNext()) {
 			Value o = result.next().getValue("o");
 
 			System.out.println("o = " + o);
-			
+
 			assertEquals(expected, o.stringValue());
 		}
 	}
