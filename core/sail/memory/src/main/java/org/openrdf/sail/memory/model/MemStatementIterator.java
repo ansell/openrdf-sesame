@@ -169,8 +169,10 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 					TxnStatus txnStatus = st.getTxnStatus();
 
 					if (TxnStatus.DEPRECATED.equals(txnStatus) || TxnStatus.ZOMBIE.equals(txnStatus)) {
-						// Statement scheduled for removal, skip it
-						continue;
+						if (st.getTillSnapshot() <= snapshot) {
+							// Statement scheduled for removal, skip it
+							continue;
+						}
 					}
 
 					if (explicitOnly) {

@@ -633,17 +633,20 @@ public class MemoryStore extends NotifyingSailBase {
 		if (txnStatus == TxnStatus.NEUTRAL && st.isExplicit() == explicit) {
 			// Remove explicit statement
 			st.setTxnStatus(TxnStatus.DEPRECATED);
+			st.setTillSnapshot(currentSnapshot + 1);
 			statementsRemoved = true;
 		}
 		else if (txnStatus == TxnStatus.NEW && st.isExplicit() == explicit) {
 			// Statement was added and now removed in the same transaction
 			st.setTxnStatus(TxnStatus.ZOMBIE);
+			st.setTillSnapshot(currentSnapshot + 1);
 			statementsRemoved = true;
 		}
 		else if (txnStatus == TxnStatus.INFERRED && st.isExplicit() && !explicit) {
 			// Explicit statement was replaced by inferred statement and this
 			// inferred statement is now removed
 			st.setTxnStatus(TxnStatus.DEPRECATED);
+			st.setTillSnapshot(currentSnapshot + 1);
 			statementsRemoved = true;
 		}
 		else if (txnStatus == TxnStatus.EXPLICIT && !st.isExplicit() && explicit) {
