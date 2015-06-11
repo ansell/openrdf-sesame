@@ -164,9 +164,12 @@ public class SimpleLiteral implements Literal {
 				return false;
 			}
 
-			// Compare language tags
-			if (!getLanguage().equals(other.getLanguage())) {
-					return false;
+			if (getLanguage().isPresent() && other.getLanguage().isPresent()) {
+				return getLanguage().get().equalsIgnoreCase(other.getLanguage().get());
+			}
+			// If only one has a language, then return false
+			else if (getLanguage().isPresent() || other.getLanguage().isPresent()) {
+				return false;
 			}
 
 			return true;
