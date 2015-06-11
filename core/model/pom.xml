@@ -10,13 +10,13 @@
 
 	<artifactId>sesame-model</artifactId>
 
-	<name>OpenRDF Sesame: Model implementations</name>
-	<description>RDF model implementations.</description>
+	<name>OpenRDF Sesame: Model</name>
+	<description>RDF model interfaces and implementations.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-model-api</artifactId>
+			<artifactId>sesame-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
