@@ -26,6 +26,7 @@ import java.util.concurrent.BlockingQueue;
 
 import info.aduna.iteration.LookAheadIteration;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.query.QueryEvaluationException;
 
 /**
@@ -35,8 +36,7 @@ import org.openrdf.query.QueryEvaluationException;
  * 
  * @author James Leigh
  */
-public class QueueCursor<E> extends
-		LookAheadIteration<E, QueryEvaluationException> {
+public class QueueCursor<E> extends LookAheadIteration<E, QueryEvaluationException> {
 
 	private volatile boolean done;
 
@@ -51,7 +51,7 @@ public class QueueCursor<E> extends
 	 * default access policy.
 	 * 
 	 * @param capacity
-	 *            the capacity of this queue
+	 *        the capacity of this queue
 	 */
 	public QueueCursor(int capacity) {
 		this(capacity, false);
@@ -62,11 +62,11 @@ public class QueueCursor<E> extends
 	 * specified access policy.
 	 * 
 	 * @param capacity
-	 *            the capacity of this queue
+	 *        the capacity of this queue
 	 * @param fair
-	 *            if <tt>true</tt> then queue accesses for threads blocked on
-	 *            insertion or removal, are processed in FIFO order; if
-	 *            <tt>false</tt> the access order is unspecified.
+	 *        if <tt>true</tt> then queue accesses for threads blocked on
+	 *        insertion or removal, are processed in FIFO order; if
+	 *        <tt>false</tt> the access order is unspecified.
 	 */
 	public QueueCursor(int capacity, boolean fair) {
 		this.queue = new ArrayBlockingQueue<E>(capacity, fair);
@@ -86,7 +86,9 @@ public class QueueCursor<E> extends
 	/**
 	 * Adds another item to the queue, blocking while the queue is full.
 	 */
-	public void put(E item) throws InterruptedException {
+	public void put(E item)
+		throws InterruptedException
+	{
 		if (!done) {
 			queue.put(item);
 		}
@@ -100,7 +102,8 @@ public class QueueCursor<E> extends
 		done = true;
 		try {
 			queue.add(afterLast);
-		} catch (IllegalStateException e) {
+		}
+		catch (IllegalStateException e) {
 			// no thread is waiting on this queue anyway
 		}
 	}
@@ -109,13 +112,16 @@ public class QueueCursor<E> extends
 	 * Returns the next item in the queue or throws an exception.
 	 */
 	@Override
-	public E getNextElement() throws QueryEvaluationException {
+	public E getNextElement()
+		throws QueryEvaluationException
+	{
 		try {
 			checkException();
 			E take;
 			if (done) {
 				take = queue.poll();
-			} else {
+			}
+			else {
 				take = queue.take();
 				if (done) {
 					done(); // in case the queue was full before
@@ -127,46 +133,57 @@ public class QueueCursor<E> extends
 				return null;
 			}
 			return take;
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			checkException();
 			throw new QueryEvaluationException(e);
 		}
 	}
 
 	@Override
-	public void handleClose() throws QueryEvaluationException {
+	public void handleClose()
+		throws QueryEvaluationException
+	{
 		done = true;
 		do {
 			queue.clear(); // ensure extra room is available
-		} while (!queue.offer(afterLast));
+		}
+		while (!queue.offer(afterLast));
 		checkException();
 	}
 
-	public void checkException() throws QueryEvaluationException {
+	public void checkException()
+		throws QueryEvaluationException
+	{
 		synchronized (exceptions) {
 			if (!exceptions.isEmpty()) {
 				try {
 					throw exceptions.remove();
-				} catch (QueryEvaluationException e) {
+				}
+				catch (OpenRDFException e) {
+					if (e instanceof QueryEvaluationException) {
+						List<StackTraceElement> stack = new ArrayList<StackTraceElement>();
+						stack.addAll(Arrays.asList(e.getStackTrace()));
+						StackTraceElement[] thisStack = new Throwable().getStackTrace();
+						stack.addAll(Arrays.asList(thisStack).subList(1, thisStack.length));
+						e.setStackTrace(stack.toArray(new StackTraceElement[stack.size()]));
+						throw e;
+					}
+					else {
+						throw new QueryEvaluationException(e);
+					}
+				}
+				catch (RuntimeException e) {
+					// any RuntimeException that is not an OpenRDFException should be
+					// reported as-is
 					List<StackTraceElement> stack = new ArrayList<StackTraceElement>();
 					stack.addAll(Arrays.asList(e.getStackTrace()));
-					StackTraceElement[] thisStack = new Throwable()
-							.getStackTrace();
-					stack.addAll(Arrays.asList(thisStack).subList(1,
-							thisStack.length));
-					e.setStackTrace(stack.toArray(new StackTraceElement[stack
-							.size()]));
-					throw e;
-				} catch (RuntimeException e) {
-					List<StackTraceElement> stack = new ArrayList<StackTraceElement>();
-					stack.addAll(Arrays.asList(e.getStackTrace()));
-					StackTraceElement[] thisStack = new Throwable()
-							.getStackTrace();
+					StackTraceElement[] thisStack = new Throwable().getStackTrace();
 					stack.addAll(Arrays.asList(thisStack));
-					e.setStackTrace(stack.toArray(new StackTraceElement[stack
-							.size()]));
+					e.setStackTrace(stack.toArray(new StackTraceElement[stack.size()]));
 					throw e;
-				} catch (Throwable e) {
+				}
+				catch (Throwable e) {
 					throw new QueryEvaluationException(e);
 				}
 			}
@@ -179,7 +196,7 @@ public class QueueCursor<E> extends
 
 	@SuppressWarnings("unchecked")
 	private E createAfterLast() {
-		return (E) new Object();
+		return (E)new Object();
 	}
 
 }
