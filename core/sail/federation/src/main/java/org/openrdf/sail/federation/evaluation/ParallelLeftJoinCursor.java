@@ -100,9 +100,6 @@ public class ParallelLeftJoinCursor extends LookAheadIteration<BindingSet, Query
 		catch (RuntimeException e) {
 			rightQueue.toss(e);
 		}
-		catch (QueryEvaluationException e) {
-			rightQueue.toss(e);
-		}
 		catch (InterruptedException e) {
 			// stop
 		}
