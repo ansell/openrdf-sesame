@@ -356,7 +356,7 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		System.err.println("temporarily disabled testTransactionIsolationForRead() for SPARQLRepository");
 	}
 	
-	@Ignore
+	@Ignore("temporarily disabled for SPARQLRepository")
 	@Test
 	@Override
 	public void testTransactionIsolationForReadWithDeleteOperation()

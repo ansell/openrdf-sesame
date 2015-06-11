@@ -86,7 +86,7 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 		System.err.println("temporarily disabled testTransactionIsolationForRead() for HTTPRepository");
 	}
 	
-	@Ignore
+	@Ignore("temporarily disabled for HTTPRepository")
 	@Test
 	@Override
 	public void testTransactionIsolationForReadWithDeleteOperation()
