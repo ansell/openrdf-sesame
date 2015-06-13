@@ -319,27 +319,21 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	}
 
 	/**
-	 * Utility methods to clear-up in case not using in-memory cache
-	 * 
-	 * @return map
+	 * Utility methods to clear-up in case not using in-memory cache.
 	 */
 	protected void disposeCache(Iterator<BindingSet> iter)
 	{
 	}
 
 	/**
-	 * Utility methods to clear-up in case not using in-memory hash table
-	 * 
-	 * @return map
+	 * Utility methods to clear-up in case not using in-memory hash table.
 	 */
 	protected void disposeHashTable(Map<BindingSetHashKey, List<BindingSet>> map)
 	{
 	}
 
 	/**
-	 * Utility methods to clear-up in case not using in-memory hash table
-	 * 
-	 * @return map
+	 * Utility methods to clear-up in case not using in-memory hash table.
 	 */
 	protected <E> void closeHashValue(Iterator<E> iter)
 	{

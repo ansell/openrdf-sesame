@@ -135,6 +135,9 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		clusterName = node.settings().get("cluster.name");
 		client = node.client();
 
+		// give elasticsearch threads a chance to initialize themselves
+		Thread.yield();
+
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 		if(!exists) {
 			createIndex();

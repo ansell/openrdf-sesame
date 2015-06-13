@@ -1021,6 +1021,45 @@ public abstract class AbstractLuceneSailTest {
 		testComplexQueryTwo();
 	}
 
+	@Test
+	public void testPropertyVar()
+			throws MalformedQueryException, RepositoryException, QueryEvaluationException
+	{
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("SELECT \n");
+		buffer.append("  Resource, Property \n");
+		buffer.append("FROM \n");
+		buffer.append("  {Resource} <" + MATCHES + "> {} ");
+		buffer.append("    <" + QUERY + "> {\"one\"}; ");
+		buffer.append("    <" + PROPERTY + "> {Property} ");
+		String q = buffer.toString();
+
+		// fire the query
+		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, q);
+		TupleQueryResult result = query.evaluate();
+
+		int results = 0;
+		Map<URI,URI> expectedSubject = new HashMap<URI,URI>();
+		expectedSubject.put(SUBJECT_1, PREDICATE_1);
+		expectedSubject.put(SUBJECT_2, PREDICATE_1);
+		expectedSubject.put(SUBJECT_3, PREDICATE_2);
+		while (result.hasNext()) {
+			results++;
+			BindingSet bindings = result.next();
+
+			// the resource should be among the set of expected subjects, if so,
+			// remove it from the set
+			Value subject = bindings.getValue("Resource");
+			URI expectedProperty = expectedSubject.remove(subject);
+			assertEquals("For subject "+subject, expectedProperty, bindings.getValue("Property"));
+		}
+
+		// there should have been 3 results
+		assertEquals(3, results);
+
+		result.close();
+	}
+
 	protected void assertQueryResult(String literal, URI predicate, Resource resultUri)
 		throws Exception
 	{

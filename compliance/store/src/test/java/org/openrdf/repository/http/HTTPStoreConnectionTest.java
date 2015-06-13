@@ -25,6 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.query.QueryLanguage;
@@ -36,6 +37,10 @@ import org.openrdf.rio.RDFFormat;
 public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 	private static HTTPMemServer server;
+
+	public HTTPStoreConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@BeforeClass
 	public static void startServer()

@@ -16,6 +16,7 @@
 
 	<modules>
 		<module>api</module>
+		<module>base</module>
 		<module>inferencer</module>
 		<module>federation</module>
 		<module>memory</module>

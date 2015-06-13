@@ -14,32 +14,33 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.memory.model;
+package org.openrdf.sail;
+
+import org.openrdf.IsolationLevels;
 
 /**
- * A type-safe enumeration for read modes for MemStatementIterator.
- *
- * @see MemStatementIterator
+ * An exception thrown by some methods in Sail to indicate that a requested
+ * isolation level could not be fulfilled. Such as when multiple conflicting
+ * {@link IsolationLevels#SERIALIZABLE} transactions overlap in time.
  */
-public enum ReadMode  {
-	
-	/**
-	 * Constant indicating that only committed statements should be read.
-	 * Statements that have been added but not yet committed will be skipped.
-	 */
-	COMMITTED, 
-	
-	/**
-	 * Constant indicating that statements should be treated as if the currently
-	 * active transaction has been committed. Statements that have been
-	 * scheduled for removal will be skipped.
-	 */
-	TRANSACTION, 
-	
-	/**
-	 * Constant indicating that statements should be read no matter what their
-	 * transaction status is.
-	 */
-	RAW;
-}
+public class SailConflictException extends SailException {
 
+	private static final long serialVersionUID = 8616609700552763681L;
+
+	public SailConflictException() {
+		super();
+	}
+
+	public SailConflictException(String msg) {
+		super(msg);
+	}
+
+	public SailConflictException(String msg, Throwable t) {
+		super(msg, t);
+	}
+
+	public SailConflictException(Throwable t) {
+		super(t);
+	}
+
+}
