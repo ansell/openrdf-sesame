@@ -4,13 +4,13 @@ import junit.framework.Test;
 
 import org.openrdf.model.impl.LinkedHashModel;
 
-public class TestLinkedHashModel extends TestModel {
+public class LinkedHashModelTest extends ModelTest {
 
 	public static Test suite() throws Exception {
-		return TestModel.suite(TestLinkedHashModel.class);
+		return ModelTest.suite(LinkedHashModelTest.class);
 	}
 
-	public TestLinkedHashModel(String name) {
+	public LinkedHashModelTest(String name) {
 		super(name);
 	}
 
