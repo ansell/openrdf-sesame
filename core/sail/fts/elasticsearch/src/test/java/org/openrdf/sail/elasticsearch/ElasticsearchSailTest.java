@@ -32,8 +32,11 @@ public class ElasticsearchSailTest extends AbstractLuceneSailTest {
 	{
 		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticsearchIndex.class.getName());
 		sail.setParameter(LuceneSail.LUCENE_DIR_KEY, DATA_DIR);
+		sail.setParameter(ElasticsearchIndex.WAIT_FOR_STATUS_KEY, "green");
+		sail.setParameter(ElasticsearchIndex.WAIT_FOR_NODES_KEY, ">=1");
 	}
 
+	@Override
 	public void tearDown() throws IOException, RepositoryException
 	{
 		super.tearDown();
