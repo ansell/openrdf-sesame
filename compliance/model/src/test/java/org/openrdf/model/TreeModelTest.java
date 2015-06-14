@@ -4,13 +4,13 @@ import junit.framework.Test;
 
 import org.openrdf.model.impl.TreeModel;
 
-public class TestTreeModel extends TestModel {
+public class TreeModelTest extends ModelTest {
 
 	public static Test suite() throws Exception {
-		return TestModel.suite(TestTreeModel.class);
+		return ModelTest.suite(TreeModelTest.class);
 	}
 
-	public TestTreeModel(String name) {
+	public TreeModelTest(String name) {
 		super(name);
 	}
 
