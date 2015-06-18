@@ -375,6 +375,7 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
+	@Ignore("this test is no longer generally applicable, since the outcome depends on the transaction isolation level selected by the store")
 	public void testTransactionIsolationForReadWithDeleteOperation()
 		throws Exception
 	{
