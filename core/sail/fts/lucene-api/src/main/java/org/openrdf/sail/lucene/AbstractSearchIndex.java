@@ -17,6 +17,7 @@
 package org.openrdf.sail.lucene;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.spatial4j.core.context.SpatialContext;
 
 public abstract class AbstractSearchIndex implements SearchIndex {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -55,6 +58,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
 	}
 
+	protected final SpatialContext geoContext = SpatialContext.GEO;
 	protected int maxDocs;
 
 	@Override
@@ -421,6 +425,20 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			return;
 		String field = statement.getPredicate().toString();
 		document.addProperty(field, text);
+
+		Value object = statement.getObject();
+		if (object instanceof Literal) {
+			Literal lit = (Literal) object;
+			URI datatype = lit.getDatatype();
+			if(GEO.WKT_LITERAL.equals(datatype)) {
+				try {
+					document.addShape(field, geoContext.readShapeFromWkt(lit.getLabel()));
+				}
+				catch (ParseException e) {
+					// ignore property
+				}
+			}
+		}
 	}
 
 

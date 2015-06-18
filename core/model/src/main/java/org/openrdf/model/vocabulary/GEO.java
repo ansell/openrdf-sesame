@@ -14,25 +14,28 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.model.vocabulary;
 
-import java.util.Collection;
-import java.util.List;
+import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
 
-import com.spatial4j.core.shape.Shape;
+/**
+ * @since 2.8.14
+ * @version 1.0
+ * @see http://www.opengeospatial.org/standards/geosparql
+ */
+public class GEO {
 
-public interface SearchDocument
-{
-	String getId();
-	String getResource();
-	String getContext();
-	Collection<String> getPropertyNames();
-	void addProperty(String name);
-	void addProperty(String name, String value);
-	void addShape(String field, Shape shape);
-	/**
-	 * Checks whether a field occurs with a specified value in a Document.
-	 */
-	boolean hasProperty(String name, String value);
-	List<String> getProperty(String name);
+	private static String NAMESPACE = "http://www.opengis.net/ont/geosparql#";
+
+	public static URI AS_WKT;
+
+	public static URI WKT_LITERAL;
+
+	static {
+		ValueFactory factory = ValueFactoryImpl.getInstance();
+		AS_WKT = factory.createURI(NAMESPACE, "asWKT");
+		WKT_LITERAL = factory.createURI(NAMESPACE, "wktLiteral");
+	}
 }

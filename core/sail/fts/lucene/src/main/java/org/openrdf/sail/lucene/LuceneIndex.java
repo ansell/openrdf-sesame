@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -60,6 +61,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTreeFactory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
@@ -111,6 +114,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
+	private SpatialPrefixTree spt;
+
 	public LuceneIndex()
 	{}
 
@@ -142,6 +147,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
+		// slightly hacky cast to cope with the fact that Properties is Map<Object,Object>
+		// even though it is effectively Map<String,String>
+		this.spt = SpatialPrefixTreeFactory.makeSPT((Map<String,String>)(Map<?,?>)parameters, Thread.currentThread().getContextClassLoader(), geoContext);
 
 		postInit();
 	}
@@ -280,7 +288,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document) : null;
+		return (document != null) ? new LuceneDocument(document, spt) : null;
 	}
 
 	@Override
@@ -290,7 +298,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		{
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc);
+				return new LuceneDocument(doc, spt);
 			}
 		});
 	}
@@ -298,7 +306,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new LuceneDocument(id, resourceId, context);
+		return new LuceneDocument(id, resourceId, context, spt);
 	}
 
 	@Override
@@ -311,7 +319,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (IndexableField oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument);
+		return new LuceneDocument(newDocument, spt);
 	}
 
 	@Override

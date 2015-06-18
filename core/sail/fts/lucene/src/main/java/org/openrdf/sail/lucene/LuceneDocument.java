@@ -21,27 +21,34 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.spatial4j.core.shape.Shape;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.spatial.SpatialStrategy;
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 
 
 public class LuceneDocument implements SearchDocument
 {
 	private final Document doc;
+	private final SpatialPrefixTree grid;
 
-	public LuceneDocument()
+	public LuceneDocument(SpatialPrefixTree tree)
 	{
-		this(new Document());
+		this(new Document(), tree);
 	}
 
-	public LuceneDocument(Document doc)
+	public LuceneDocument(Document doc, SpatialPrefixTree grid)
 	{
 		this.doc = doc;
+		this.grid = grid;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context)
+	public LuceneDocument(String id, String resourceId, String context, SpatialPrefixTree grid)
 	{
-		this();
+		this(grid);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -131,5 +138,13 @@ public class LuceneDocument implements SearchDocument
 	@Override
 	public List<String> getProperty(String name) {
 		return Arrays.asList(doc.getValues(name));
+	}
+
+	@Override
+	public void addShape(String field, Shape shape) {
+		SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, field);
+		for(IndexableField f : geoStrategy.createIndexableFields(shape)) {
+			doc.add(f);
+		}
 	}
 }
