@@ -54,12 +54,6 @@
 									Native Java Store Custom
 									Graph Query Inference
 								</option>
-								<option value="mysql">
-									MySql RDF Store
-								</option>
-								<option value="pgsql">
-									PostgreSQL RDF Store
-								</option>
 								<option value="remote">
 									Remote RDF Store
 								</option>
