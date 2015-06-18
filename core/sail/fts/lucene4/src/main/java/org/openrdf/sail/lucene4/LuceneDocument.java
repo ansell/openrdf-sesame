@@ -23,10 +23,14 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-
+import org.apache.lucene.spatial.SpatialStrategy;
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
+
+import com.spatial4j.core.shape.Shape;
 
 
 /**
@@ -36,20 +40,22 @@ import org.openrdf.sail.lucene.SearchFields;
 public class LuceneDocument implements SearchDocument
 {
 	private final Document doc;
+	private final SpatialPrefixTree grid;
 
-	public LuceneDocument()
+	public LuceneDocument(SpatialPrefixTree grid)
 	{
-		this(new Document());
+		this(new Document(), grid);
 	}
 
-	public LuceneDocument(Document doc)
+	public LuceneDocument(Document doc, SpatialPrefixTree grid)
 	{
 		this.doc = doc;
+		this.grid = grid;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context)
+	public LuceneDocument(String id, String resourceId, String context, SpatialPrefixTree grid)
 	{
-		this();
+		this(grid);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -139,5 +145,13 @@ public class LuceneDocument implements SearchDocument
 	@Override
 	public List<String> getProperty(String name) {
 		return Arrays.asList(doc.getValues(name));
+	}
+
+	@Override
+	public void addShape(String field, Shape shape) {
+		SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, field);
+		for(IndexableField f : geoStrategy.createIndexableFields(shape)) {
+			doc.add(f);
+		}
 	}
 }

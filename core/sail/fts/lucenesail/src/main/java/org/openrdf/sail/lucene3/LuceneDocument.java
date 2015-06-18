@@ -22,12 +22,17 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
-
+import org.apache.lucene.spatial.tier.projections.CartesianTierPlotter;
+import org.apache.lucene.spatial.tier.projections.IProjector;
+import org.apache.lucene.util.NumericUtils;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
 
 /**
  *
@@ -35,6 +40,23 @@ import org.openrdf.sail.lucene.SearchFields;
  */
 public class LuceneDocument implements SearchDocument
 {
+	private static final IProjector projector = new FixedSinusoidalProjector();
+	private static final CartesianTierPlotter[] plotters;
+	private static final double maxMiles = 25.0;
+	private static final double minMiles = 1.0;
+
+	static {
+		String fieldPrefix = CartesianTierPlotter.DEFALT_FIELD_PREFIX;
+		CartesianTierPlotter ctp = new CartesianTierPlotter(0, projector, fieldPrefix);
+		int startTier = ctp.bestFit(maxMiles);
+		int endTier = ctp.bestFit(minMiles);
+		plotters = new CartesianTierPlotter[endTier-startTier+1];
+		for(int tier = startTier; tier <= endTier; tier++)
+		{
+			plotters[tier-startTier] = new CartesianTierPlotter(tier, projector, fieldPrefix);
+		}
+	}
+
 	private final Document doc;
 
 	public LuceneDocument()
@@ -140,5 +162,17 @@ public class LuceneDocument implements SearchDocument
 	@Override
 	public List<String> getProperty(String name) {
 		return Arrays.asList(doc.getValues(name));
+	}
+
+	@Override
+	public void addShape(String field, Shape shape) {
+		if(shape instanceof Point)
+		{
+			Point p = (Point) shape;
+			for(CartesianTierPlotter ctp : plotters) {
+				double boxId = ctp.getTierBoxId(p.getY(), p.getX());
+				doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+			}
+		}
 	}
 }
