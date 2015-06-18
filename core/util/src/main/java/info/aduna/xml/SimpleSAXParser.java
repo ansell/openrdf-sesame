@@ -294,7 +294,7 @@ public class SimpleSAXParser {
 			}
 
 			// Make current tag new deferred start tag
-			deferredStartTag = qName;
+			deferredStartTag = localName;
 
 			// Copy attributes to deferredAttributes
 			int attCount = attributes.getLength();
@@ -339,7 +339,7 @@ public class SimpleSAXParser {
 			}
 
 			// Report the end tag
-			listener.endTag(qName);
+			listener.endTag(localName);
 
 			// Clear character buffer
 			charBuf.setLength(0);

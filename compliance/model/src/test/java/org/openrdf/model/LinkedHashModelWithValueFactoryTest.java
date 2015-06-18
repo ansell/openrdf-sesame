@@ -11,13 +11,13 @@ import org.openrdf.model.impl.LinkedHashModel;
  * 
  * @author James Leigh
  */
-public class TestLinkedHashModelWithValueFactory extends TestModel {
+public class LinkedHashModelWithValueFactoryTest extends ModelTest {
 
 	public static Test suite() throws Exception {
-		return TestModel.suite(TestLinkedHashModelWithValueFactory.class);
+		return ModelTest.suite(LinkedHashModelWithValueFactoryTest.class);
 	}
 
-	public TestLinkedHashModelWithValueFactory(String name) {
+	public LinkedHashModelWithValueFactoryTest(String name) {
 		super(name);
 	}
 

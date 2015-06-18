@@ -12,6 +12,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>model</module>
 		<module>queryresultio</module>
 		<module>rio</module>
 		<module>serql</module>

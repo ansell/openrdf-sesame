@@ -19,9 +19,9 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.vocabulary.RDF;
 
-public abstract class TestModel extends TestCase {
+public abstract class ModelTest extends TestCase {
 
-	public static Test suite(Class<? extends TestModel> theClass)
+	public static Test suite(Class<? extends ModelTest> theClass)
 			throws Exception {
 		TestSuite suite = new TestSuite(theClass);
 		if (suite.testCount() == 1
@@ -58,7 +58,7 @@ public abstract class TestModel extends TestCase {
 		return names;
 	}
 
-	public TestModel(String name) {
+	public ModelTest(String name) {
 		super(name);
 	}
 
