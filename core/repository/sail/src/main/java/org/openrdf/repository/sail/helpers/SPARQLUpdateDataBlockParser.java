@@ -173,6 +173,7 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 				if (c == '}' || c == -1) {
 					readCodePoint();
 					setContext(null);
+					skipOptionalPeriod();
 					return;
 				}
 				else if (checkGraphKeyword(true)) {
@@ -188,6 +189,9 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		if (c == '}') {
 			setContext(null);
 		}
+		
+		skipOptionalPeriod();
+
 	}
 
 	@Override
@@ -229,4 +233,11 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		this.allowBlankNodes = allowBlankNodes;
 	}
 
+	private void skipOptionalPeriod() throws RDFHandlerException, IOException {
+		skipWSC();
+		int c = peekCodePoint();
+		if (c == '.') {
+			readCodePoint();
+		}
+	}
 }
