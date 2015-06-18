@@ -16,6 +16,8 @@
  */
 package org.openrdf.http.protocol.transaction.operations;
 
+import java.io.Serializable;
+
 import info.aduna.lang.ObjectUtil;
 
 import org.openrdf.repository.RepositoryConnection;
@@ -27,8 +29,13 @@ import org.openrdf.repository.RepositoryException;
  * @author Arjohn Kampman
  * @author Leo Sauermann
  */
-public class RemoveNamespaceOperation implements TransactionOperation {
+public class RemoveNamespaceOperation implements TransactionOperation, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3227597422508894927L;
+	
 	private String prefix;
 
 	public RemoveNamespaceOperation() {

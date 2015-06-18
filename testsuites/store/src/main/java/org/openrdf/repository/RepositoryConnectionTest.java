@@ -375,6 +375,38 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
+	public void testTransactionIsolationForReadWithDeleteOperation()
+		throws Exception
+	{
+		try {
+			testCon.begin();
+			testCon.add(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			testCon.commit();
+
+			testCon.begin();
+			// Remove but do not commit
+			testCon.remove(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			assertFalse("Should not see removed statement on same connection",
+					testCon.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			assertTrue("Statement should not be removed for different connection",
+					testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			testCon2.begin();
+			try {
+				assertTrue("Statement should not be removed for different connection inside transaction",
+						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+			}
+			finally {
+				testCon2.rollback();
+			}
+		}
+		finally {
+			testCon.rollback();
+		}
+	}
+
+	@Test
 	public void testAddReader()
 		throws Exception
 	{
