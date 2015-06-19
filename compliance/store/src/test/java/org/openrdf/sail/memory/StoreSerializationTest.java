@@ -66,6 +66,45 @@ public class StoreSerializationTest extends TestCase {
 		FileUtil.deleteDir(dataDir);
 	}
 
+	public void testShortLiterals()
+		throws Exception
+	{
+		MemoryStore store = new MemoryStore(dataDir);
+		store.initialize();
+
+		ValueFactory factory = store.getValueFactory();
+		URI foo = factory.createURI("http://www.foo.example/foo");
+
+		StringBuilder sb = new StringBuilder(4);
+		for (int i = 0; i < 4; i++) {
+			sb.append('a');
+		}
+
+		Literal longLiteral = factory.createLiteral(sb.toString());
+
+		SailConnection con = store.getConnection();
+		con.begin();
+		con.addStatement(foo, RDF.VALUE, longLiteral);
+		con.commit();
+
+		con.close();
+		store.shutDown();
+
+		store = new MemoryStore(dataDir);
+		store.initialize();
+
+		con = store.getConnection();
+
+		CloseableIteration<? extends Statement, SailException> iter = con.getStatements(foo, RDF.VALUE, null,
+				false);
+		assertTrue(iter.hasNext());
+		iter.next();
+		iter.close();
+
+		con.close();
+		store.shutDown();		
+	}
+
 	public void testSerialization()
 		throws Exception
 	{
@@ -142,7 +181,7 @@ public class StoreSerializationTest extends TestCase {
 
 		SailConnection con = store.getConnection();
 		con.begin();
-		con.addStatement(foo, RDF.TYPE, longLiteral);
+		con.addStatement(foo, RDF.VALUE, longLiteral);
 		con.commit();
 
 		con.close();
@@ -153,7 +192,7 @@ public class StoreSerializationTest extends TestCase {
 
 		con = store.getConnection();
 
-		CloseableIteration<? extends Statement, SailException> iter = con.getStatements(foo, RDF.TYPE, null,
+		CloseableIteration<? extends Statement, SailException> iter = con.getStatements(foo, RDF.VALUE, null,
 				false);
 		assertTrue(iter.hasNext());
 		iter.next();

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+
+<!--
+  Example copied from http://rdfweb.org/topic/AdvancedFoafExamples
+-->
+
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"  
+        xmlns:foaf="http://xmlns.com/foaf/0.1/"  
+        xmlns:fc="http://xmlns.com/foaf/corp#"  
+        xmlns:dc="http://purl.org/dc/elements/1.1/" >  
+  
+  <foaf:Document rdf:about="http://www.american-buddha.com/north.memo.htm#MEMORANDUM%20FROM%20JOHN%20POINDEXTER%20TO%20WILLIAM%20CASEY">  
+    <foaf:depicts> <!-- perhaps an extended sense of depicts? to discuss... -->  
+      <foaf:Document>  
+        <dc:type>Letter</dc:type>  
+        <dc:date>1986-05-27</dc:date>  
+        <dc:creator>  
+          <foaf:Person>  
+            <!-- here we say that a creator of the depicted document was a person who was a topic of this guardian article: -->  
+            <foaf:name>John Poindexter</foaf:name>  
+            <foaf:phone rdf:resource="tel:+1.301.424.6613"/>  
+            <foaf:page>  
+              <foaf:Document rdf:about="http://www.guardian.co.uk/Archive/Article/0,4273,4358017,00.html">  
+                <dc:title>No more Mr Scrupulous Guy</dc:title>  
+                <dc:description>How one of the two brains behind the Iran-Contra scandal this week became one of America's most powerful men.</dc:description>  
+              </foaf:Document>  
+            </foaf:page>  
+  
+            <!-- and here we mention other pages about him, without providing detailed description of it: -->  
+            <foaf:page rdf:resource="http://www.warblogging.com/tia/poindexter.php"/>  
+            <foaf:page rdf:resource="http://www.cnn.com/SPECIALS/cold.war/episodes/18/archive/"/>  
+            <foaf:depiction>  
+              <foaf:Image rdf:about="http://www.warblogging.com/illustrations/poindexter.jpg">  
+                <foaf:depicts> 
+                     <!-- this illustrates how foaf:depiction and foaf:depicts work as inverses, we have said that   
+                      there is a document that depicts a document that depicts a person that has a depiction which is   
+                      this image which depicts a person who is... -->  
+                  <foaf:Person>  
+                    <foaf:name>Ronald Reagan</foaf:name>  
+                  </foaf:Person>  
+                </foaf:depicts>  
+              </foaf:Image>  
+            </foaf:depiction>  
+          </foaf:Person>  
+        </dc:creator>  
+        <foaf:topic>  
+          <foaf:Person>  
+            <foaf:name>Oliver North</foaf:name>  
+          </foaf:Person>  
+        </foaf:topic>  
+        <foaf:topic>  
+           <foaf:Person>  
+             <foaf:name>Robert Hunt</foaf:name>  
+           </foaf:Person>  
+        </foaf:topic>  
+  
+      </foaf:Document>  
+    </foaf:depicts>  
+  </foaf:Document>  
+  
+</rdf:RDF>  

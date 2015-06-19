@@ -234,14 +234,6 @@
          mf:result  <test027-out.ttl> ;
          tck:entailment "RDF"
       ]
-      [  mf:name    "test-028: DISTINCT and LIMIT" ;
-         rdfs:label "test-028" ;
-         mf:action
-            [ qt:query  <test028-query.serql> ;
-              qt:data   <test028-in.ttl> ] ;
-         mf:result  <test028-out.ttl> ;
-         tck:entailment "RDF"
-      ]
       [  mf:name    "test-029: compare literals with cast" ;
          rdfs:label "test-029" ;
          mf:action

@@ -21,8 +21,6 @@ import java.math.BigInteger;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.openrdf.model.vocabulary.RDF;
-
 /**
  * An RDF literal consisting of a label (the value) and optionally a language
  * tag or a datatype (but not both).
@@ -63,6 +61,7 @@ public interface Literal extends Value {
 	 *         {@link Literal} and if their labels, language tags and datatypes
 	 *         are equal.
 	 */
+	@Override
 	public boolean equals(Object other);
 
 	/**
@@ -71,6 +70,7 @@ public interface Literal extends Value {
 	 * 
 	 * @return A hash code for the literal.
 	 */
+	@Override
 	public int hashCode();
 
 	/**

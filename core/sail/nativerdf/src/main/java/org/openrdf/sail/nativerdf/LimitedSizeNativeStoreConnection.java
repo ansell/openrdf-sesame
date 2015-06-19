@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.limited.LimitedSizeEvaluationStrategy;
 
 /**
@@ -48,7 +49,7 @@ public class LimitedSizeNativeStoreConnection extends NativeStoreConnection {
 	}
 
 	@Override
-	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, NativeTripleSource tripleSource) {
+	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
 		return new LimitedSizeEvaluationStrategy(tripleSource, dataset, maxCollectionsSize, getFederatedServiceResolver());
 	}
 }

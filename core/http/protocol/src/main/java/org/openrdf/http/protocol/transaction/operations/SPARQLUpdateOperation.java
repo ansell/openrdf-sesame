@@ -16,6 +16,8 @@
  */
 package org.openrdf.http.protocol.transaction.operations;
 
+import java.io.Serializable;
+
 import org.openrdf.query.Binding;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -31,7 +33,12 @@ import org.openrdf.repository.RepositoryException;
  * @author Jeen Broekstra
  * @since 2.7.0
  */
-public class SPARQLUpdateOperation implements TransactionOperation {
+public class SPARQLUpdateOperation implements TransactionOperation, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4432275498318918582L;
 
 	private String updateString;
 
