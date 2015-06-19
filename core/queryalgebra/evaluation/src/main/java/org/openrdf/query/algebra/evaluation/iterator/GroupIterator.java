@@ -219,7 +219,6 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		iter = strategy.evaluate(group.getArg(), parentBindings);
 
 		try {
-			// Map<Key, Entry> entries = db.getTreeMap("entries");
 			Map<Key, Entry> entries = new LinkedHashMap<Key, Entry>();
 
 			if (!iter.hasNext()) {
@@ -244,10 +243,6 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 				if (entry == null) {
 					entry = new Entry(sol);
 					entries.put(key, entry);
-					// count++;
-					// if (count % 10000L == 0) {
-					// db.commit();
-					// }
 				}
 
 				entry.addSolution(sol);
@@ -429,7 +424,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 			final boolean result = distinctValues.add(value);
 			if (db != null && distinctValues.size() % iterationCacheSyncThreshold == 0) {
-				// write to disk every 10000 items
+				// write to disk every $iterationCacheSyncThreshold items
 				db.commit();
 			}
 
