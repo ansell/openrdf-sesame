@@ -25,6 +25,13 @@
 			<artifactId>sesame-model-testsuite</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- needed for SailModelTest -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-sail-memory</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
