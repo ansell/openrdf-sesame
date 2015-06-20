@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -58,9 +55,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
@@ -73,6 +67,11 @@ import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.SearchQuery;
 import org.openrdf.sail.lucene.SimpleBulkUpdater;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -113,6 +112,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
+	private CartesianTiers geoTiers;
+
 	public LuceneIndex()
 	{}
 
@@ -133,6 +134,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		this.directory = directory;
 		this.analyzer = analyzer;
+		this.geoTiers = new CartesianTiers();
 
 		postInit();
 	}
@@ -144,6 +146,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
+		String minMileProp = parameters.getProperty("minMiles");
+		String maxMileProp = parameters.getProperty("maxMiles");
+		int maxTier = (minMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(minMileProp)) : CartesianTiers.DEFAULT_MAX_TIER;
+		int minTier = (maxMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(maxMileProp)) : CartesianTiers.DEFAULT_MIN_TIER;
+		this.geoTiers = new CartesianTiers(minTier, maxTier);
 
 		postInit();
 	}
@@ -207,6 +214,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
+	}
+
+	public CartesianTiers getCartesianTiers() {
+		return geoTiers;		
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -289,7 +300,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document) : null;
+		return (document != null) ? new LuceneDocument(document, geoTiers) : null;
 	}
 
 	@Override
@@ -299,7 +310,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		{
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc);
+				return new LuceneDocument(doc, geoTiers);
 			}
 		});
 	}
@@ -307,7 +318,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new LuceneDocument(id, resourceId, context);
+		return new LuceneDocument(id, resourceId, context, geoTiers);
 	}
 
 	@Override
@@ -320,7 +331,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (Fieldable oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument);
+		return new LuceneDocument(newDocument, geoTiers);
 	}
 
 	@Override

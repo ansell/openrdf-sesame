@@ -22,14 +22,13 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -60,14 +59,13 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTreeFactory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
@@ -80,6 +78,11 @@ import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.SearchQuery;
 import org.openrdf.sail.lucene.SimpleBulkUpdater;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -120,6 +123,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
+	private SpatialPrefixTree spt;
+
 	public LuceneIndex()
 	{}
 
@@ -136,10 +141,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *         When the Directory could not be unlocked.
 	 */
 	public LuceneIndex(Directory directory, Analyzer analyzer)
-		throws IOException
+			throws IOException
 	{
 		this.directory = directory;
 		this.analyzer = analyzer;
+		this.spt = SpatialPrefixTreeFactory.makeSPT(Collections.<String,String>emptyMap(), Thread.currentThread().getContextClassLoader(), geoContext);
 
 		postInit();
 	}
@@ -151,6 +157,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
+		// slightly hacky cast to cope with the fact that Properties is Map<Object,Object>
+		// even though it is effectively Map<String,String>
+		this.spt = SpatialPrefixTreeFactory.makeSPT((Map<String,String>)(Map<?,?>)parameters, Thread.currentThread().getContextClassLoader(), geoContext);
 
 		postInit();
 	}
@@ -207,6 +216,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
+	}
+
+	public SpatialPrefixTree getSpatialPrefixTree()
+	{
+		return spt;
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -289,7 +303,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document) : null;
+		return (document != null) ? new LuceneDocument(document, spt) : null;
 	}
 
 	@Override
@@ -299,7 +313,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		{
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc);
+				return new LuceneDocument(doc, spt);
 			}
 		});
 	}
@@ -307,7 +321,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new LuceneDocument(id, resourceId, context);
+		return new LuceneDocument(id, resourceId, context, spt);
 	}
 
 	@Override
@@ -320,7 +334,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (IndexableField oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument);
+		return new LuceneDocument(newDocument, spt);
 	}
 
 	@Override

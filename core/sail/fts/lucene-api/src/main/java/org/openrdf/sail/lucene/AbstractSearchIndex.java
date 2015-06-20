@@ -58,8 +58,18 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
 	}
 
-	protected final SpatialContext geoContext = SpatialContext.GEO;
+	protected final SpatialContext geoContext;
 	protected int maxDocs;
+
+	protected AbstractSearchIndex()
+	{
+		this(SpatialContext.GEO);
+	}
+
+	protected AbstractSearchIndex(SpatialContext context)
+	{
+		this.geoContext = context;
+	}
 
 	@Override
 	public void initialize(Properties parameters)

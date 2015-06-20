@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -136,6 +137,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		this.directory = directory;
 		this.analyzer = analyzer;
+		this.spt = SpatialPrefixTreeFactory.makeSPT(Collections.<String,String>emptyMap(), Thread.currentThread().getContextClassLoader(), geoContext);
 
 		postInit();
 	}
@@ -206,6 +208,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
+	}
+
+	public SpatialPrefixTree getSpatialPrefixTree()
+	{
+		return spt;
 	}
 
 	// //////////////////////////////// Methods for controlled index access
