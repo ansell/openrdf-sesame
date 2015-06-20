@@ -107,16 +107,16 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 			clearInferred();
 			addAxiomStatements();
 
-			newStatements = new SailModel(getWrappedConnection(), false);
+			newStatements = new SailModel(getWrappedConnection(), true);
 
 			statementsRemoved = false;
 		}
 
 		if(hasNewStatements()) {
 			doInferencing();
-
-			newStatements = null;
 		}
+
+		newStatements = null;
 	}
 
 	@Override
