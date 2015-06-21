@@ -339,6 +339,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-geosparql-compliance</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-store-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -363,6 +368,11 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sparql-testsuite</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-geosparql-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
