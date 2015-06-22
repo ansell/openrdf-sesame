@@ -64,3 +64,6 @@ License: https://github.com/mockito/mockito/blob/master/LICENSE
 
 Parts of this product use software developed by FasterXML, LLC
 (https://fasterxml.com). License: http://www.apache.org/licenses/LICENSE-2.0
+
+Parts of this product use software developed by the Spatial4j project
+(https://github.com/spatial4j/spatial4j/). License: https://github.com/spatial4j/spatial4j/blob/master/LICENSE.txt
