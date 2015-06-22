@@ -16,17 +16,20 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
+import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.TreeMap;
+
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DelayedIteration;
@@ -56,6 +59,17 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 
 	private final boolean distinct;
 
+	private final File tempFile;
+
+	private final DB db;
+
+	/**
+	 * Number of items cached before internal collection is synced to disk. If
+	 * set to 0, no disk-syncing is done and all internal caching is kept in
+	 * memory.
+	 */
+	private final long iterationSyncThreshold;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -69,22 +83,52 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
 			Comparator<BindingSet> comparator, long limit, boolean distinct)
 	{
+		this(iter, comparator, limit, distinct, 0);
+	}
+
+	public OrderIterator(CloseableIteration<BindingSet, QueryEvaluationException> iter,
+			Comparator<BindingSet> comparator, long limit, boolean distinct, long iterationSyncThreshold)
+	{
 		this.iter = iter;
 		this.comparator = comparator;
 		this.limit = limit;
 		this.distinct = distinct;
+		this.iterationSyncThreshold = iterationSyncThreshold;
+
+		if (iterationSyncThreshold > 0) {
+			try {
+				this.tempFile = File.createTempFile("order-eval", null);
+			}
+			catch (IOException e) {
+				throw new IOError(e);
+			}
+			this.db = DBMaker.newFileDB(tempFile).deleteFilesAfterClose().closeOnJvmShutdown().make();
+		}
+		else {
+			this.tempFile = null;
+			this.db = null;
+		}
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
 
+	protected NavigableMap<BindingSet, Integer> makeOrderedMap() {
+		if (db == null) {
+			// no disk-syncing - we use a simple in-memory TreeMap instead.
+			return new TreeMap<BindingSet, Integer>(comparator);
+		}
+		else {
+			return db.createTreeMap("iteration").comparator(comparator).makeOrGet();
+		}
+	}
+
 	protected Iteration<BindingSet, QueryEvaluationException> createIteration()
 		throws QueryEvaluationException
 	{
-		NavigableMap<BindingSet, Collection<BindingSet>> map = makeOrderedMap(comparator);
-
-		int size = 0;
+		final NavigableMap<BindingSet, Integer> map = makeOrderedMap();
+		long size = 0;
 
 		try {
 			while (iter.hasNext()) {
@@ -93,30 +137,36 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 				// Add this binding set if the limit hasn't been reached yet, or if
 				// it is sorted before the current lowest value
 				if (size < limit || comparator.compare(next, map.lastKey()) < 0) {
-					Collection<BindingSet> list = map.get(next);
-					if (list == null) {
-						list = distinct ? makeOrderedSet() : makeList();
-						put(map, next, list);
+
+					Integer count = map.get(next);
+
+					if (count == null) {
+						map.put(next, 1);
+						size++;
+					}
+					else if (!distinct) {
+						map.put(next, ++count);
+						size++;
 					}
 
-					if (add(next, list)) {
-						size++;
+					if (db != null && size % iterationSyncThreshold == 0L) {
+						// sync collection to disk every X new entries (where X is a
+						// multiple of the cache size)
+						db.commit();
 					}
 
 					if (size > limit) {
 						// Discard binding set that is currently sorted last
 						BindingSet lastKey = map.lastKey();
-						Collection<BindingSet> lastResults = map.get(lastKey);
 
-						assert !lastResults.isEmpty();
-
-						removeLast(lastResults);
-
-						size--;
-
-						if (lastResults.isEmpty()) {
-							remove(map, lastKey);
+						Integer lastCount = map.get(lastKey);
+						if (lastCount > 1) {
+							map.put(lastKey, --lastCount);
 						}
+						else {
+							map.remove(lastKey);
+						}
+						size--;
 					}
 				}
 			}
@@ -125,43 +175,39 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 			iter.close();
 		}
 
-		final Iterator<Collection<BindingSet>> values = map.values().iterator();
-
 		return new LookAheadIteration<BindingSet, QueryEvaluationException>() {
 
-			// Initialize with empty iteration so that var is never null
-			private volatile Iterator<BindingSet> iterator = Collections.<BindingSet> emptyList().iterator();
+			private volatile Iterator<BindingSet> iterator = map.keySet().iterator();
+
+			private volatile BindingSet currentBindingSet = null;
+
+			private volatile int count = 0;
 
 			protected BindingSet getNextElement() {
-				while (!iterator.hasNext() && values.hasNext()) {
-					iterator = values.next().iterator();
+
+				if (count == 0 && iterator.hasNext()) {
+					currentBindingSet = iterator.next();
+					count = map.get(currentBindingSet);
 				}
-				if (iterator.hasNext()) {
-					return iterator.next();
+
+				if (count > 0) {
+					count--;
+					return currentBindingSet;
 				}
+
 				return null;
 			}
 		};
 	}
 
-	protected List<BindingSet> makeList() {
-		return new LinkedList<BindingSet>();
-	}
-
-	/**
-	 * This is used when distinct is set too true.
-	 * @return a new Set may be store specific.
-	 */
-	protected Set<BindingSet> makeOrderedSet() {
-		return new LinkedHashSet<BindingSet>();
-	}
-
 	protected void removeLast(Collection<BindingSet> lastResults) {
 		if (lastResults instanceof LinkedList<?>) {
 			((LinkedList<BindingSet>)lastResults).removeLast();
-		} else if (lastResults instanceof List<?>){
+		}
+		else if (lastResults instanceof List<?>) {
 			((List<BindingSet>)lastResults).remove(lastResults.size() - 1);
-		} else {
+		}
+		else {
 			Iterator<BindingSet> iter = lastResults.iterator();
 			while (iter.hasNext()) {
 				iter.next();
@@ -189,11 +235,6 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		return map.put(next, list);
 	}
 
-	protected NavigableMap<BindingSet, Collection<BindingSet>> makeOrderedMap(Comparator<BindingSet> comparator2)
-	{
-		return new TreeMap<BindingSet, Collection<BindingSet>>(comparator);
-	}
-
 	@Override
 	public void remove()
 		throws QueryEvaluationException
@@ -206,6 +247,9 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		throws QueryEvaluationException
 	{
 		iter.close();
+		if (db != null) {
+			this.db.close();
+		}
 		super.handleClose();
 	}
 }

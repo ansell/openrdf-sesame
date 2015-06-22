@@ -220,7 +220,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 	 * Overrides the {@link FederatedServiceResolver} used by this instance, but
 	 * the given resolver is not shutDown when this instance is.
 	 * 
-	 * @param reslover The SERVICE resolver to set.
+	 * @param reslover
+	 *        The SERVICE resolver to set.
 	 */
 	public synchronized void setFederatedServiceResolver(FederatedServiceResolver reslover) {
 		this.serviceResolver = reslover;
@@ -274,7 +275,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					catch (IOException e) {
 						logger.error("Failed to read data file", e);
 						throw new SailException(e);
-					} finally {
+					}
+					finally {
 						explicit.prepare();
 						explicit.flush();
 						explicit.close();
@@ -303,10 +305,11 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					SailDataset inferred = store.getInferredSailSource().dataset(IsolationLevels.SNAPSHOT);
 					try {
 						new FileIO(store.getValueFactory()).write(explicit, inferred, syncFile, dataFile);
-					} finally {
+					}
+					finally {
 						explicit.close();
 						inferred.close();
-					
+
 					}
 					logger.debug("Data file initialized");
 				}
@@ -455,7 +458,8 @@ public class MemoryStore extends NotifyingSailBase implements FederatedServiceRe
 					SailDataset inferred = store.getInferredSailSource().dataset(level);
 					try {
 						new FileIO(store.getValueFactory()).write(explicit, inferred, syncFile, dataFile);
-					} finally {
+					}
+					finally {
 						explicit.close();
 						inferred.close();
 					}

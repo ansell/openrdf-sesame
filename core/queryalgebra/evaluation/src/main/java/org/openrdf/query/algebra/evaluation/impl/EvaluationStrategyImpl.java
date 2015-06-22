@@ -142,6 +142,7 @@ import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ZeroLengthPathIteration;
+import org.openrdf.query.algebra.evaluation.util.EvaluationStrategies;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
@@ -179,6 +180,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	// SES-869.
 	private Value sharedValueOfNow;
 
+	private final long iterationCacheSyncThreshold;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -190,21 +193,29 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset,
 			FederatedServiceResolver serviceResolver)
 	{
+		this(tripleSource, dataset, serviceResolver, 0);
+	}
+
+	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset,
+			FederatedServiceResolver serviceResolver, long iterationCacheSyncTreshold)
+	{
 		this.tripleSource = tripleSource;
 		this.dataset = dataset;
 		this.serviceResolver = serviceResolver;
-	}
+		this.iterationCacheSyncThreshold = iterationCacheSyncTreshold;
 
-	@Override
-	public FederatedService getService(String serviceUrl)
-		throws QueryEvaluationException
-	{
-		return serviceResolver.getService(serviceUrl);
+		EvaluationStrategies.register(this);
 	}
 
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public FederatedService getService(String serviceUrl)
+		throws QueryEvaluationException
+	{
+		return serviceResolver.getService(serviceUrl);
+	}
 
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
@@ -374,8 +385,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 
 			// otherwise: perform a SELECT query
-			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars, bindings,
-					baseUri);
+			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars,
+					bindings, baseUri);
 
 			if (service.isSilent())
 				return new SilentIteration(result);
@@ -792,7 +803,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Group node, BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		return new GroupIterator(this, node, bindings);
+		return new GroupIterator(this, node, bindings, iterationCacheSyncThreshold);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Order node, BindingSet bindings)
@@ -802,7 +813,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
 		boolean reduced = isReducedOrDistinct(node);
 		long limit = getLimit(node);
-		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced);
+		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced, iterationCacheSyncThreshold);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,
