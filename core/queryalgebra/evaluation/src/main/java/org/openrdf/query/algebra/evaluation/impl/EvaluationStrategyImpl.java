@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DelayedIteration;
 import info.aduna.iteration.DistinctIteration;
@@ -216,6 +217,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return serviceResolver.getService(serviceUrl);
 	}
 
+	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
 			BindingSet bindings)
 		throws QueryEvaluationException
@@ -308,6 +310,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new ZeroLengthPathIteration(this, subjectVar, objVar, subj, obj, contextVar, bindings);
 	}
 
+	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
 			String serviceUri, CloseableIteration<BindingSet, QueryEvaluationException> bindings)
 		throws QueryEvaluationException
@@ -668,9 +671,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> result;
-
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
+		if(bindings.size() == 0) { // empty binding set
+			return new CloseableIteratorIteration<BindingSet, QueryEvaluationException>(iter);
+		}
+
+		CloseableIteration<BindingSet, QueryEvaluationException> result;
 
 		final QueryBindingSet b = new QueryBindingSet(bindings);
 
@@ -681,24 +687,28 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				throws QueryEvaluationException
 			{
 				QueryBindingSet result = null;
-				if (iter.hasNext()) {
-					result = new QueryBindingSet(b);
+				while(result == null && iter.hasNext()) {
 					final BindingSet assignedBindings = iter.next();
 					for (String name : assignedBindings.getBindingNames()) {
-						final Binding assignedBinding = assignedBindings.getBinding(name);
-						if (assignedBinding != null) { // can be null if set to UNDEF
+						final Value assignedValue = assignedBindings.getValue(name);
+						if (assignedValue != null) { // can be null if set to UNDEF
 							// check that the binding assignment does not overwrite
 							// existing bindings.
-							if (b.hasBinding(name)) {
-								if (!assignedBinding.getValue().equals(b.getValue(name))) {
-									// if values are not equal there is no compatible
-									// merge and we should return no next element.
-									return null;
+							Value bValue = b.getValue(name);
+							if (bValue == null || assignedValue.equals(bValue)) {
+								if(result == null) {
+									result = new QueryBindingSet(b);
+								}
+								if(bValue == null) {
+									// we are not overwriting an existing binding.
+									result.addBinding(name, assignedValue);
 								}
 							}
 							else {
-								// we are not overwriting an existing binding.
-								result.addBinding(assignedBinding);
+								// if values are not equal there is no compatible
+								// merge and we should return no next element.
+								result = null;
+								break;
 							}
 						}
 					}
@@ -986,6 +996,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return external.evaluate(bindings);
 	}
 
+	@Override
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
@@ -1919,6 +1930,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
+	@Override
 	public boolean isTrue(ValueExpr expr, BindingSet bindings)
 		throws QueryEvaluationException
 	{
