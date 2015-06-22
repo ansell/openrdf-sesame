@@ -35,6 +35,6 @@ public class Buffer implements Function {
 
 		Shape buffered = geom.getBuffered(radiusDegs, geoContext);
 
-		return FunctionArguments.createWktLiteral(geoContext.getGeometryFrom(buffered), valueFactory);
+		return JTSHelper.createWktLiteral(geoContext.getGeometryFrom(buffered), valueFactory);
 	}
 }

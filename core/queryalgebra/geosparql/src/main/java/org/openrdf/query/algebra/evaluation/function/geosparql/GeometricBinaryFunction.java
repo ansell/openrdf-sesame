@@ -22,7 +22,7 @@ public abstract class GeometricBinaryFunction implements Function {
 		Shape geom2 = FunctionArguments.getShape(this, args[1], geoContext);
 		Geometry result = operation(geoContext.getGeometryFrom(geom1), geoContext.getGeometryFrom(geom2));
 
-		return FunctionArguments.createWktLiteral(result, valueFactory);
+		return JTSHelper.createWktLiteral(result, valueFactory);
 	}
 
 	protected abstract Geometry operation(Geometry g1, Geometry g2);

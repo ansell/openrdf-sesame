@@ -21,7 +21,7 @@ public abstract class GeometricUnaryFunction implements Function {
 		Shape geom = FunctionArguments.getShape(this, args[0], geoContext);
 		Geometry result = operation(geoContext.getGeometryFrom(geom));
 
-		return FunctionArguments.createWktLiteral(result, valueFactory);
+		return JTSHelper.createWktLiteral(result, valueFactory);
 	}
 
 	protected abstract Geometry operation(Geometry g);

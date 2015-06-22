@@ -5,7 +5,6 @@ import java.text.ParseException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -16,8 +15,6 @@ import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.distance.DistanceUtils;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
 
 public class FunctionArguments {
 	private FunctionArguments() {}
@@ -108,11 +105,5 @@ public class FunctionArguments {
 			throw new ValueExprEvaluationException("Invalid unit of measurement: "+units);
 		}
 		return degs;
-	}
-
-	public static Literal createWktLiteral(Geometry geom, ValueFactory vf) {
-		WKTWriter writer = new WKTWriter();
-		String wkt = writer.write(geom);
-		return vf.createLiteral(wkt, GEO.WKT_LITERAL);
 	}
 }
