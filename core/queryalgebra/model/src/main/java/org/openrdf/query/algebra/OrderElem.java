@@ -25,6 +25,11 @@ public class OrderElem extends QueryModelNodeBase {
 	 * Variables *
 	 *-----------*/
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6573481604435459287L;
+
 	private ValueExpr expr;
 
 	private boolean ascending = true;

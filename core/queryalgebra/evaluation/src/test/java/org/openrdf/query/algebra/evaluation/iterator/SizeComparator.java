@@ -14,33 +14,21 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.config;
+package org.openrdf.query.algebra.evaluation.iterator;
 
-import org.openrdf.model.Graph;
-import org.openrdf.model.Resource;
+import java.io.Serializable;
+import java.util.Comparator;
 
-/**
- * @author Arjohn Kampman
- */
-public interface SailImplConfig {
+import org.openrdf.query.BindingSet;
 
-	public String getType();
-	
-	public long getIterationCacheSyncThreshold();
+class SizeComparator implements Comparator<BindingSet>, Serializable {
 
 	/**
-	 * Validates this configuration. A {@link SailConfigException} is thrown when
-	 * the configuration is invalid. The exception should contain an error
-	 * message that indicates why the configuration is invalid.
 	 * 
-	 * @throws SailConfigException
-	 *         If the configuration is invalid.
 	 */
-	public void validate()
-		throws SailConfigException;
+	private static final long serialVersionUID = 1L;
 
-	public Resource export(Graph graph);
-
-	public void parse(Graph graph, Resource implNode)
-		throws SailConfigException;
+	public int compare(BindingSet o1, BindingSet o2) {
+		return Integer.valueOf(o1.size()).compareTo(Integer.valueOf(o2.size()));
+	}
 }
