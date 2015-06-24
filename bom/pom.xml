@@ -342,6 +342,11 @@
 
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-model-testsuite</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
