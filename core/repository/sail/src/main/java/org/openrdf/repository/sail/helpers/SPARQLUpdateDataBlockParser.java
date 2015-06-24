@@ -84,118 +84,12 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		return null;
 	}
 
-	/**
-	 * Checks for the GRAPH keyword and optionally reads it away.
-	 * 
-	 * @param verifyOnly
-	 *        if set to <code>true</code> the method does not read away the graph
-	 *        keyword, but only verifies its presence. If <code>false</code> it
-	 *        also reads away the keyword.
-	 * @return <code>true</code> if the GRAPH keyword was detected,
-	 *         <code>false<code> otherwise.
-	 * @throws IOException
-	 * @throws RDFParseException
-	 * @throws RDFHandlerException
-	 */
-	private boolean checkGraphKeyword(boolean verifyOnly)
-		throws IOException, RDFParseException, RDFHandlerException
-	{
-		boolean isGraphKeyword = false;
-		int c = peekCodePoint();
-		if (c == 'g' || c == 'G') {
-			StringBuilder sb = new StringBuilder(5);
-			do {
-				c = readCodePoint();
-				if (c == -1 || TurtleUtil.isWhitespace(c)) {
-					unread(c);
-					break;
-				}
-
-				sb.append(Character.toChars(c));
-			}
-			while (sb.length() < 5);
-
-			isGraphKeyword = sb.toString().equalsIgnoreCase("GRAPH");
-
-			if (verifyOnly || !isGraphKeyword) {
-				unread(sb.toString());
-			}
-		}
-		return isGraphKeyword;
-	}
-
-	/*
 	@Override
-	protected void parseGraph()
-		throws IOException, RDFParseException, RDFHandlerException
-	{
-		if (checkGraphKeyword(false)) {
-			if (getContext() != null) {
-				reportFatalError("nested named graph not allowed.");
-			}
-			skipWSC();
-			int c = readCodePoint();
-			final int c2 = peekCodePoint();
-
-			if (c == '<' || TurtleUtil.isPrefixStartChar(c) || (c == ':' && c2 != '-')
-					|| (c == '_' && c2 == ':'))
-			{
-				unread(c);
-
-				Value value = parseValue();
-
-				if (value instanceof Resource) {
-					setContext((Resource)value);
-				}
-				else {
-					reportFatalError("Illegal graph name: " + value);
-				}
-			}
-			else {
-				reportFatalError("Missing graph name.");
-			}
-		}
-
-		int c = skipWSC();
-
-		if (c == '{') {
-			readCodePoint();
-			c = skipWSC();
-		}
-
-		if (c != '}') {
-			parseTriples();
-			c = skipWSC();
-
-			while (c == '.') {
-				readCodePoint();
-				c = skipWSC();
-
-				if (c == '}' || c == -1) {
-					readCodePoint();
-					setContext(null);
-					skipOptionalPeriod();
-					return;
-				}
-				else if (checkGraphKeyword(true)) {
-					return;
-				}
-
-				parseTriples();
-				c = skipWSC();
-			}
-		}
-		
-		c = readCodePoint();
-		if (c == '}') {
-			setContext(null);
-		}
-		
+	protected void parseGraph() throws RDFParseException, RDFHandlerException, IOException {
+		super.parseGraph();
 		skipOptionalPeriod();
-
 	}
-	*/
-
+	
 	@Override
 	protected Resource parseImplicitBlank()
 		throws IOException, RDFParseException, RDFHandlerException
@@ -235,7 +129,9 @@ public class SPARQLUpdateDataBlockParser extends TriGParser {
 		this.allowBlankNodes = allowBlankNodes;
 	}
 
-	private void skipOptionalPeriod() throws RDFHandlerException, IOException {
+	private void skipOptionalPeriod()
+		throws RDFHandlerException, IOException
+	{
 		skipWSC();
 		int c = peekCodePoint();
 		if (c == '.') {
