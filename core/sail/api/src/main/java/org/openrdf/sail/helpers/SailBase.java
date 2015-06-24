@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
-import org.openrdf.sail.Sail;
+import org.openrdf.sail.AdvancedSail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 
@@ -43,7 +43,7 @@ import org.openrdf.sail.SailException;
  * @author jeen
  * @author Arjohn Kampman
  */
-public abstract class SailBase implements Sail {
+public abstract class SailBase implements AdvancedSail {
 
 	/*-----------*
 	 * Constants *
@@ -177,7 +177,7 @@ public abstract class SailBase implements Sail {
 	 * @return <tt>true</tt> if the Sail has been initialized, <tt>false</tt>
 	 *         otherwise.
 	 */
-	protected boolean isInitialized() {
+	public boolean isInitialized() {
 		return initialized;
 	}
 
