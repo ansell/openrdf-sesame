@@ -17,11 +17,11 @@
 package org.openrdf.sail.elasticsearch;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.elasticsearch.search.SearchHit;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -88,7 +88,7 @@ public class ElasticsearchDocument implements SearchDocument {
 	}
 
 	@Override
-	public Collection<String> getPropertyNames() {
+	public Set<String> getPropertyNames() {
 		return ElasticsearchIndex.getPropertyFields(fields.keySet());
 	}
 

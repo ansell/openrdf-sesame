@@ -16,10 +16,10 @@
  */
 package org.openrdf.sail.lucene3;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -98,9 +98,9 @@ public class LuceneDocument implements SearchDocument
 	}
 
 	@Override
-	public Collection<String> getPropertyNames() {
+	public Set<String> getPropertyNames() {
 		List<Fieldable> fields = doc.getFields();
-		List<String> names = new ArrayList<String>(fields.size());
+		Set<String> names = new HashSet<String>();
 		for(Fieldable field : fields) {
 			String name = field.name();
 			if (SearchFields.isPropertyField(name))

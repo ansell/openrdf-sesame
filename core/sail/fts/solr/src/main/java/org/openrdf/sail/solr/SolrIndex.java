@@ -17,11 +17,10 @@
 package org.openrdf.sail.solr;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -89,7 +88,7 @@ public class SolrIndex extends AbstractSearchIndex {
 		throws IOException
 	{
 		if(client != null) {
-			client.shutdown();
+			client.close();
 			client = null;
 		}
 	}
@@ -225,8 +224,8 @@ public class SolrIndex extends AbstractSearchIndex {
 	/**
 	 * Filters the given list of fields, retaining all property fields.
 	 */
-	public static List<String> getPropertyFields(Collection<String> fields) {
-		List<String> result = new ArrayList<String>(fields.size());
+	public static Set<String> getPropertyFields(Set<String> fields) {
+		Set<String> result = new HashSet<String>(fields.size());
 		for (String field : fields) {
 			if (SearchFields.isPropertyField(field))
 				result.add(field);

@@ -16,8 +16,8 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import com.spatial4j.core.shape.Shape;
 
@@ -26,10 +26,16 @@ public interface SearchDocument
 	String getId();
 	String getResource();
 	String getContext();
-	Collection<String> getPropertyNames();
+	Set<String> getPropertyNames();
+	/**
+	 * Adds/creates a new property with the given name.
+	 */
 	void addProperty(String name);
+	/**
+	 * Adds a value to the property with the given name.
+	 */
 	void addProperty(String name, String value);
-	void addShape(String field, Shape shape);
+	void addShape(String name, Shape shape);
 	/**
 	 * Checks whether a field occurs with a specified value in a Document.
 	 */

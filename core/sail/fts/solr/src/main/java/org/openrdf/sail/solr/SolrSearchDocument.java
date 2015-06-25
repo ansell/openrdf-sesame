@@ -17,10 +17,10 @@
 package org.openrdf.sail.solr;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.solr.common.SolrDocument;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -68,7 +68,7 @@ public class SolrSearchDocument implements SearchDocument {
 	}
 
 	@Override
-	public Collection<String> getPropertyNames() {
+	public Set<String> getPropertyNames() {
 		return SolrIndex.getPropertyFields(doc.keySet());
 	}
 

@@ -17,14 +17,13 @@
 package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
@@ -326,8 +325,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	/**
 	 * Filters the given list of fields, retaining all property fields.
 	 */
-	public static List<String> getPropertyFields(Collection<String> fields) {
-		List<String> result = new ArrayList<String>(fields.size());
+	public static Set<String> getPropertyFields(Set<String> fields) {
+		Set<String> result = new HashSet<String>(fields.size());
 		for (String field : fields) {
 			if (SearchFields.isPropertyField(field))
 				result.add(field);

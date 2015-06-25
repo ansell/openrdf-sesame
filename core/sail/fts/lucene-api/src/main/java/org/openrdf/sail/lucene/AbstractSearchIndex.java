@@ -111,13 +111,12 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		throws IOException
 	{
 		// determine stuff to store
-		Value object = statement.getObject();
-		if (!(object instanceof Literal)) {
+		Literal lit = SearchFields.getLiteralPropertyValue(statement);
+		if (lit == null) {
 			return;
 		}
 
 		String field = statement.getPredicate().toString();
-		String text = ((Literal)object).getLabel();
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
@@ -129,21 +128,21 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		if (document == null) {
 			// there is no such Document: create one now
 			document = newDocument(id, resourceId, contextId);
-			document.addProperty(field, text);
+			addProperty(field, lit, document);
 
 			// add it to the index
 			addDocument(document);
 		}
 		else {
 			// update this Document when this triple has not been stored already
-			if (!document.hasProperty(field, text)) {
+			if (!document.hasProperty(field, lit.getLabel())) {
 				// create a copy of the old document; updating the retrieved
 				// Document instance works ok for stored properties but indexed data
-				// gets lots when doing an IndexWriter.updateDocument with it
+				// gets lost when doing an IndexWriter.updateDocument with it
 				SearchDocument newDocument = copyDocument(document);
 
 				// add the new triple to the cloned document
-				newDocument.addProperty(field, text);
+				addProperty(field, lit, newDocument);
 
 				// update the index with the cloned document
 				updateDocument(newDocument);
@@ -155,8 +154,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	public final synchronized void removeStatement(Statement statement)
 		throws IOException
 	{
-		Value object = statement.getObject();
-		if (!(object instanceof Literal)) {
+		Literal lit = SearchFields.getLiteralPropertyValue(statement);
+		if (lit == null) {
 			return;
 		}
 
@@ -169,7 +168,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		if (document != null) {
 			// determine the values used in the index for this triple
 			String fieldName = statement.getPredicate().toString();
-			String text = ((Literal)object).getLabel();
+			String text = lit.getLabel();
 
 			// see if this triple occurs in this Document
 			if (document.hasProperty(fieldName, text)) {
@@ -183,20 +182,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					// there are more triples encoded in this Document: remove the
 					// document and add a new Document without this triple
 					SearchDocument newDocument = newDocument(id, resourceId, contextId);
-
-					for (String oldFieldName : document.getPropertyNames()) {
-						newDocument.addProperty(oldFieldName);
-						List<String> oldValues = document.getProperty(oldFieldName);
-						if(oldValues != null) {
-							boolean isField = fieldName.equals(oldFieldName);
-							for(String oldValue : oldValues) {
-								if (!(isField && text.equals(oldValue))) {
-									newDocument.addProperty(oldFieldName, oldValue);
-								}
-							}
-						}
-					}
-
+					copyDocument(newDocument, document, Collections.singletonMap(fieldName, Collections.singleton(text)));
 					updateDocument(newDocument);
 				}
 			}
@@ -280,66 +266,45 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				else {
 					// update the Document
 
-					// create a copy of the old document; updating the retrieved
-					// Document instance works ok for stored properties but indexed
-					// data
-					// gets lots when doing an IndexWriter.updateDocument with it
-					SearchDocument newDocument = newDocument(id, resourceId, contextId);
-					// track if newDocument is actually different from document
-					boolean mutated = false;
-
 					// buffer the removed literal statements
-					SetMultimap<String, String> removedOfResource = null;
+					Map<String, Set<String>> removedOfResource = null;
 					{
 						List<Statement> removedStatements = stmtsToRemove.get(contextId);
 						if (removedStatements != null && !removedStatements.isEmpty()) {
-							removedOfResource = HashMultimap.create();
+							removedOfResource = new HashMap<String,Set<String>>();
 							for (Statement r : removedStatements) {
-								if (r.getObject() instanceof Literal) {
+								Literal lit = SearchFields.getLiteralPropertyValue(r);
+								if (lit != null) {
 									// remove value from both property field and the
 									// corresponding text field
-									String label = ((Literal)r.getObject()).getLabel();
-									removedOfResource.put(r.getPredicate().toString(), label);
+									String field = r.getPredicate().toString();
+									Set<String> removedValues = removedOfResource.get(field);
+									if(removedValues == null)
+									{
+										removedValues = new HashSet<String>();
+										removedOfResource.put(field, removedValues);
+									}
+									removedValues.add(lit.getLabel());
 								}
 							}
 						}
 					}
 
-					// add all existing property fields
-					// but without adding the removed ones
-					// keep the predicate/value pairs to ensure that the statement
-					// cannot be added twice
-					SetMultimap<String, String> copiedProperties = HashMultimap.create();
-					for (String oldFieldName : document.getPropertyNames()) {
-						newDocument.addProperty(oldFieldName);
-						// which fields were removed?
-						Set<String> objectsRemoved = (removedOfResource != null) ? removedOfResource.get(oldFieldName) : null;
-
-						List<String> oldValues = document.getProperty(oldFieldName);
-						if(oldValues != null) {
-							for(String oldValue : oldValues) {
-								// do not copy removed statements to the new version of the
-								// document
-								if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
-									mutated = true;
-									continue;
-								}
-								newDocument.addProperty(oldFieldName, oldValue);
-								copiedProperties.put(oldFieldName, oldValue);
-							}
-						}
-					}
+					SearchDocument newDocument = newDocument(id, resourceId, contextId);
+					boolean mutated = copyDocument(newDocument, document, removedOfResource);
 
 					// add all statements to this document, except for those which
 					// are already there
 					{
 						List<Statement> addedToResource = stmtsToAdd.get(contextId);
-						String val;
+						Literal val;
 						if (addedToResource != null && !addedToResource.isEmpty()) {
+							PropertyCache propertyCache = new PropertyCache(newDocument);
 							for (Statement s : addedToResource) {
-								val = SearchFields.getLiteralPropertyValueAsString(s);
+								val = SearchFields.getLiteralPropertyValue(s);
 								if (val != null) {
-									if (!copiedProperties.containsEntry(s.getPredicate().stringValue(), val)) {
+									String field = s.getPredicate().toString();
+									if (!propertyCache.hasProperty(field, val.getLabel())) {
 										addProperty(s, newDocument);
 										mutated = true;
 									}
@@ -365,10 +330,38 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		updater.end();
 	}
 
+	/**
+	 * Creates a copy of the old document; updating the retrieved
+	 * Document instance works ok for stored properties but indexed data
+	 * gets lost when doing an IndexWriter.updateDocument with it.
+	 */
+	private boolean copyDocument(SearchDocument newDocument, SearchDocument document, Map<String,Set<String>> removedProperties)
+	{
+		// track if newDocument is actually different from document
+		boolean mutated = false;
+		for (String oldFieldName : document.getPropertyNames()) {
+			newDocument.addProperty(oldFieldName);
+			List<String> oldValues = document.getProperty(oldFieldName);
+			if(oldValues != null) {
+				// which fields were removed?
+				Set<String> objectsRemoved = (removedProperties != null) ? removedProperties.get(oldFieldName) : null;
+				for(String oldValue : oldValues) {
+					// do not copy removed properties to the new version of the document
+					if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
+						mutated = true;
+					} else {
+						newDocument.addProperty(oldFieldName, oldValue);
+					}
+				}
+			}
+		}
+		return mutated;
+	}
+
 	private static int countPropertyValues(SearchDocument document)
 	{
 		int numValues = 0;
-		Collection<String> propertyNames = document.getPropertyNames();
+		Set<String> propertyNames = document.getPropertyNames();
 		for(String propertyName : propertyNames) {
 			List<String> propertyValues = document.getProperty(propertyName);
 			if(propertyValues != null) {
@@ -430,23 +423,25 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	 *        the document to add to
 	 */
 	private void addProperty(Statement statement, SearchDocument document) {
-		String text = SearchFields.getLiteralPropertyValueAsString(statement);
-		if (text == null)
+		Literal lit = SearchFields.getLiteralPropertyValue(statement);
+		if (lit == null) {
 			return;
+		}
 		String field = statement.getPredicate().toString();
-		document.addProperty(field, text);
+		addProperty(field, lit, document);
+	}
 
-		Value object = statement.getObject();
-		if (object instanceof Literal) {
-			Literal lit = (Literal) object;
-			URI datatype = lit.getDatatype();
-			if(GEO.WKT_LITERAL.equals(datatype)) {
-				try {
-					document.addShape(field, geoContext.readShapeFromWkt(lit.getLabel()));
-				}
-				catch (ParseException e) {
-					// ignore property
-				}
+	private void addProperty(String field, Literal lit, SearchDocument document) {
+		String value = lit.getLabel();
+		document.addProperty(field, value);
+
+		URI datatype = lit.getDatatype();
+		if(GEO.WKT_LITERAL.equals(datatype)) {
+			try {
+				document.addShape(field, geoContext.readShapeFromWkt(value));
+			}
+			catch (ParseException e) {
+				// ignore property
 			}
 		}
 	}
@@ -561,10 +556,10 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				if (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null) {
 					if (hit.isHighlighted()) {
 						// limit to the queried field, if there was one
-						Collection<String> fields;
+						Set<String> fields;
 						if (query.getPropertyURI() != null) {
 							String fieldname = query.getPropertyURI().toString();
-							fields = Collections.singletonList(fieldname);
+							fields = Collections.singleton(fieldname);
 						}
 						else {
 							fields = doc.getPropertyNames();
