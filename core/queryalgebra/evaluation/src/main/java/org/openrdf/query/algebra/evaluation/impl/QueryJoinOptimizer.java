@@ -60,6 +60,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 	 * 
 	 * @param tupleExpr
 	 */
+	@Override
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(new JoinVisitor());
 	}
@@ -376,7 +377,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 			TupleExpr result = null;
 
 			if(expressions.size() > 1) {
-				double lowestCardinality = Double.INFINITY;
+				double lowestCardinality = Double.POSITIVE_INFINITY;
 				for (TupleExpr tupleExpr : expressions) {
 					// Calculate a score for this tuple expression
 					double cardinality = getTupleExprCardinality(tupleExpr, cardinalityMap, varsMap, varFreqMap,
