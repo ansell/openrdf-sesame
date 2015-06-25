@@ -20,20 +20,18 @@ import java.io.IOException;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.trig.TriGParser;
-import org.openrdf.rio.turtle.TurtleUtil;
 
 /**
  * An extension of {@link TriGParser} that processes data in the format
  * specified in the SPARQL 1.1 grammar for Quad data (assuming no variables, as
  * is the case for INSERT DATA and DELETE DATA operations). This format is
- * almost completely compatible with TriG, except for three differentces:
+ * almost completely compatible with TriG, except for three differences:
  * <ul>
  * <li>it introduces the 'GRAPH' keyword in front of each named graph identifier
  * <li>it does not allow the occurrence of blank nodes.
