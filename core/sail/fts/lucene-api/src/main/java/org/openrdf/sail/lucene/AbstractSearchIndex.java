@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import com.spatial4j.core.context.SpatialContext;
 
 public abstract class AbstractSearchIndex implements SearchIndex {
@@ -60,6 +61,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 	protected final SpatialContext geoContext;
 	protected int maxDocs;
+	protected Set<String> wktFields;
 
 	protected AbstractSearchIndex()
 	{
@@ -77,6 +79,11 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	{
 		String maxDocParam = parameters.getProperty(LuceneSail.MAX_DOCUMENTS_KEY);
 		maxDocs = (maxDocParam != null) ? Integer.parseInt(maxDocParam) : -1;
+
+		String wktFieldParam = parameters.getProperty(LuceneSail.WKT_FIELDS);
+		if(wktFieldParam != null) {
+			wktFields = Sets.newHashSet(wktFieldParam.split("\\s+"));
+		}
 	}
 
 	/**
@@ -111,8 +118,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		throws IOException
 	{
 		// determine stuff to store
-		Literal lit = SearchFields.getLiteralPropertyValue(statement);
-		if (lit == null) {
+		String text = SearchFields.getLiteralPropertyValueAsString(statement);
+		if (text == null) {
 			return;
 		}
 
@@ -128,21 +135,21 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		if (document == null) {
 			// there is no such Document: create one now
 			document = newDocument(id, resourceId, contextId);
-			addProperty(field, lit, document);
+			addProperty(field, text, document);
 
 			// add it to the index
 			addDocument(document);
 		}
 		else {
 			// update this Document when this triple has not been stored already
-			if (!document.hasProperty(field, lit.getLabel())) {
+			if (!document.hasProperty(field, text)) {
 				// create a copy of the old document; updating the retrieved
 				// Document instance works ok for stored properties but indexed data
 				// gets lost when doing an IndexWriter.updateDocument with it
 				SearchDocument newDocument = copyDocument(document);
 
 				// add the new triple to the cloned document
-				addProperty(field, lit, newDocument);
+				addProperty(field, text, newDocument);
 
 				// update the index with the cloned document
 				updateDocument(newDocument);
@@ -154,8 +161,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	public final synchronized void removeStatement(Statement statement)
 		throws IOException
 	{
-		Literal lit = SearchFields.getLiteralPropertyValue(statement);
-		if (lit == null) {
+		String text = SearchFields.getLiteralPropertyValueAsString(statement);
+		if (text == null) {
 			return;
 		}
 
@@ -168,7 +175,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		if (document != null) {
 			// determine the values used in the index for this triple
 			String fieldName = statement.getPredicate().toString();
-			String text = lit.getLabel();
 
 			// see if this triple occurs in this Document
 			if (document.hasProperty(fieldName, text)) {
@@ -182,8 +188,10 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					// there are more triples encoded in this Document: remove the
 					// document and add a new Document without this triple
 					SearchDocument newDocument = newDocument(id, resourceId, contextId);
-					copyDocument(newDocument, document, Collections.singletonMap(fieldName, Collections.singleton(text)));
-					updateDocument(newDocument);
+					boolean mutated = copyDocument(newDocument, document, Collections.singletonMap(fieldName, Collections.singleton(text)));
+					if(mutated) {
+						updateDocument(newDocument);
+					}
 				}
 			}
 		}
@@ -273,8 +281,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 						if (removedStatements != null && !removedStatements.isEmpty()) {
 							removedOfResource = new HashMap<String,Set<String>>();
 							for (Statement r : removedStatements) {
-								Literal lit = SearchFields.getLiteralPropertyValue(r);
-								if (lit != null) {
+								String val = SearchFields.getLiteralPropertyValueAsString(r);
+								if (val != null) {
 									// remove value from both property field and the
 									// corresponding text field
 									String field = r.getPredicate().toString();
@@ -284,7 +292,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 										removedValues = new HashSet<String>();
 										removedOfResource.put(field, removedValues);
 									}
-									removedValues.add(lit.getLabel());
+									removedValues.add(val);
 								}
 							}
 						}
@@ -297,14 +305,14 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					// are already there
 					{
 						List<Statement> addedToResource = stmtsToAdd.get(contextId);
-						Literal val;
+						String val;
 						if (addedToResource != null && !addedToResource.isEmpty()) {
 							PropertyCache propertyCache = new PropertyCache(newDocument);
 							for (Statement s : addedToResource) {
-								val = SearchFields.getLiteralPropertyValue(s);
+								val = SearchFields.getLiteralPropertyValueAsString(s);
 								if (val != null) {
 									String field = s.getPredicate().toString();
-									if (!propertyCache.hasProperty(field, val.getLabel())) {
+									if (!propertyCache.hasProperty(field, val)) {
 										addProperty(s, newDocument);
 										mutated = true;
 									}
@@ -350,7 +358,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
 						mutated = true;
 					} else {
-						newDocument.addProperty(oldFieldName, oldValue);
+						addProperty(oldFieldName, oldValue, newDocument);
 					}
 				}
 			}
@@ -423,20 +431,18 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	 *        the document to add to
 	 */
 	private void addProperty(Statement statement, SearchDocument document) {
-		Literal lit = SearchFields.getLiteralPropertyValue(statement);
-		if (lit == null) {
+		String value = SearchFields.getLiteralPropertyValueAsString(statement);
+		if (value == null) {
 			return;
 		}
 		String field = statement.getPredicate().toString();
-		addProperty(field, lit, document);
+		addProperty(field, value, document);
 	}
 
-	private void addProperty(String field, Literal lit, SearchDocument document) {
-		String value = lit.getLabel();
+	private void addProperty(String field, String value, SearchDocument document) {
 		document.addProperty(field, value);
 
-		URI datatype = lit.getDatatype();
-		if(GEO.WKT_LITERAL.equals(datatype)) {
+		if(wktFields != null && wktFields.contains(field)) {
 			try {
 				document.addShape(field, geoContext.readShapeFromWkt(value));
 			}

@@ -104,10 +104,10 @@ public final class SearchFields {
 		}
 	}
 
-	public static Literal getLiteralPropertyValue(Statement statement) {
+	public static String getLiteralPropertyValueAsString(Statement statement) {
 		Value object = statement.getObject();
 		if(object instanceof Literal) {
-			return (Literal) object;
+			return ((Literal) object).getLabel();
 		}
 		else {
 			return null;
