@@ -83,6 +83,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.spatial4j.core.context.SpatialContext;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -123,6 +124,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
+	private SpatialContext geoContext;
 	private SpatialPrefixTree spt;
 
 	public LuceneIndex()
@@ -145,6 +147,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		this.directory = directory;
 		this.analyzer = analyzer;
+		this.geoContext = SpatialContext.GEO;
 		this.spt = SpatialPrefixTreeFactory.makeSPT(Collections.<String,String>emptyMap(), Thread.currentThread().getContextClassLoader(), geoContext);
 
 		postInit();
@@ -157,6 +160,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
+		this.geoContext = SpatialContext.GEO;
 		// slightly hacky cast to cope with the fact that Properties is Map<Object,Object>
 		// even though it is effectively Map<String,String>
 		this.spt = SpatialPrefixTreeFactory.makeSPT((Map<String,String>)(Map<?,?>)parameters, Thread.currentThread().getContextClassLoader(), geoContext);
@@ -216,6 +220,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
+	}
+
+	public SpatialContext getSpatialContext()
+	{
+		return geoContext;
 	}
 
 	public SpatialPrefixTree getSpatialPrefixTree()
@@ -303,7 +312,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document, spt) : null;
+		return (document != null) ? new LuceneDocument(document, geoContext, spt) : null;
 	}
 
 	@Override
@@ -313,7 +322,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		{
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc, spt);
+				return new LuceneDocument(doc, geoContext, spt);
 			}
 		});
 	}
@@ -321,7 +330,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new LuceneDocument(id, resourceId, context, spt);
+		return new LuceneDocument(id, resourceId, context, geoContext, spt);
 	}
 
 	@Override
@@ -334,7 +343,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (IndexableField oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument, spt);
+		return new LuceneDocument(newDocument, geoContext, spt);
 	}
 
 	@Override

@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.lucene4;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
+import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
 
 
@@ -40,22 +42,24 @@ import com.spatial4j.core.shape.Shape;
 public class LuceneDocument implements SearchDocument
 {
 	private final Document doc;
+	private final SpatialContext geoContext;
 	private final SpatialPrefixTree grid;
 
-	public LuceneDocument(SpatialPrefixTree grid)
+	public LuceneDocument(SpatialContext ctx, SpatialPrefixTree grid)
 	{
-		this(new Document(), grid);
+		this(new Document(), ctx, grid);
 	}
 
-	public LuceneDocument(Document doc, SpatialPrefixTree grid)
+	public LuceneDocument(Document doc, SpatialContext ctx, SpatialPrefixTree grid)
 	{
 		this.doc = doc;
+		this.geoContext = ctx;
 		this.grid = grid;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, SpatialPrefixTree grid)
+	public LuceneDocument(String id, String resourceId, String context, SpatialContext ctx, SpatialPrefixTree grid)
 	{
-		this(grid);
+		this(ctx, grid);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -148,7 +152,13 @@ public class LuceneDocument implements SearchDocument
 	}
 
 	@Override
-	public void addShape(String field, Shape shape) {
+	public void addGeoProperty(String field, String value) {
+		Shape shape;
+		try {
+			shape = geoContext.readShapeFromWkt(value);
+		} catch (ParseException e) {
+			throw new IllegalArgumentException("Invalid WKT: "+value, e);
+		}
 		SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, field);
 		for(IndexableField f : geoStrategy.createIndexableFields(shape)) {
 			doc.add(f);
