@@ -19,8 +19,6 @@ package org.openrdf.sail.lucene;
 import java.util.List;
 import java.util.Set;
 
-import com.spatial4j.core.shape.Shape;
-
 public interface SearchDocument
 {
 	String getId();
@@ -35,7 +33,7 @@ public interface SearchDocument
 	 * Adds a value to the property with the given name.
 	 */
 	void addProperty(String name, String value);
-	void addGeoProperty(String name, String value, Shape shape);
+	void addGeoProperty(String name, String value);
 	/**
 	 * Checks whether a field occurs with a specified value in a Document.
 	 */

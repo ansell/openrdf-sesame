@@ -17,7 +17,6 @@
 package org.openrdf.sail.lucene;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,8 +47,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import com.spatial4j.core.context.SpatialContext;
-import com.spatial4j.core.shape.Shape;
 
 public abstract class AbstractSearchIndex implements SearchIndex {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -60,19 +57,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		REJECTED_DATATYPES.add("http://www.w3.org/2001/XMLSchema#float");
 	}
 
-	protected final SpatialContext geoContext;
 	protected int maxDocs;
 	protected Set<String> wktFields = Collections.singleton(GEO.AS_WKT.toString());
-
-	protected AbstractSearchIndex()
-	{
-		this(SpatialContext.GEO);
-	}
-
-	protected AbstractSearchIndex(SpatialContext context)
-	{
-		this.geoContext = context;
-	}
 
 	@Override
 	public void initialize(Properties parameters)
@@ -442,13 +428,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 	private void addProperty(String field, String value, SearchDocument document) {
 		if(wktFields != null && wktFields.contains(field)) {
-			try {
-				Shape shape = geoContext.readShapeFromWkt(value);
-				document.addGeoProperty(field, value, shape);
-			}
-			catch (ParseException e) {
-				// ignore property
-			}
+			document.addGeoProperty(field, value);
 		}
 		else {
 			document.addProperty(field, value);
