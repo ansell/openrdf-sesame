@@ -26,8 +26,6 @@ import org.apache.solr.common.SolrDocument;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
-import com.spatial4j.core.shape.Shape;
-
 public class SolrSearchDocument implements SearchDocument {
 	private final SolrDocument doc;
 
@@ -83,6 +81,12 @@ public class SolrSearchDocument implements SearchDocument {
 	public void addProperty(String name, String text) {
 		addField(name, text, doc);
 		addField(SearchFields.TEXT_FIELD_NAME, text, doc);
+	}
+
+	@Override
+	public void addGeoProperty(String name, String text) {
+		addField(name, text, doc); // stored
+		addField(SolrIndex.GEO_FIELD_PREFIX+name, text, doc); // indexed
 	}
 
 	@Override
@@ -144,10 +148,5 @@ public class SolrSearchDocument implements SearchDocument {
 			l = Collections.singletonList((String) value);
 		}
 		return l;
-	}
-
-	@Override
-	public void addShape(String name, Shape shape) {
-		// don't need to index, Solr will do that for you based on the field type
 	}
 }

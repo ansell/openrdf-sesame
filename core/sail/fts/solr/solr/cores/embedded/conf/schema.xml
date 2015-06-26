@@ -41,7 +41,9 @@
    <field name="uri" type="string" required="true"/>
    <field name="context" type="string" required="false" default="null"/>
    <field name="text" type="text"/>
+   <field name="http://www.opengis.net/ont/geosparql#asWKT" type="string" indexed="false" required="false"/>
 
+   <dynamicField name="_geo_*" type="geo" required="false"/>
    <dynamicField name="*" type="text"/>
 
    <uniqueKey>id</uniqueKey>
@@ -64,6 +66,9 @@
         -->
        <filter class="solr.LowerCaseFilterFactory"/>
      </analyzer>
+   </fieldType>
+
+   <fieldType name="geo" class="solr.SpatialRecursivePrefixTreeFieldType" distanceUnits="kilometers">
    </fieldType>
 
    <fieldType name="int" class="solr.TrieIntField" precisionStep="0" positionIncrementGap="0"/>

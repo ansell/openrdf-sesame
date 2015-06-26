@@ -53,6 +53,8 @@ public class SolrIndex extends AbstractSearchIndex {
 
 	public static final String SERVER_KEY = "server";
 
+	public static final String GEO_FIELD_PREFIX = "_geo_";
+
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private SolrClient client;
