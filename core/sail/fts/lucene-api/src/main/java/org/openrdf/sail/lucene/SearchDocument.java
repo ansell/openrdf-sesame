@@ -35,7 +35,7 @@ public interface SearchDocument
 	 * Adds a value to the property with the given name.
 	 */
 	void addProperty(String name, String value);
-	void addShape(String name, Shape shape);
+	void addGeoProperty(String name, String value, Shape shape);
 	/**
 	 * Checks whether a field occurs with a specified value in a Document.
 	 */

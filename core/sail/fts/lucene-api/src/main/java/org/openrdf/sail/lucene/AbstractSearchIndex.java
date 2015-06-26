@@ -49,6 +49,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Shape;
 
 public abstract class AbstractSearchIndex implements SearchIndex {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -61,7 +62,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 	protected final SpatialContext geoContext;
 	protected int maxDocs;
-	protected Set<String> wktFields;
+	protected Set<String> wktFields = Collections.singleton(GEO.AS_WKT.toString());
 
 	protected AbstractSearchIndex()
 	{
@@ -440,15 +441,17 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	}
 
 	private void addProperty(String field, String value, SearchDocument document) {
-		document.addProperty(field, value);
-
 		if(wktFields != null && wktFields.contains(field)) {
 			try {
-				document.addShape(field, geoContext.readShapeFromWkt(value));
+				Shape shape = geoContext.readShapeFromWkt(value);
+				document.addGeoProperty(field, value, shape);
 			}
 			catch (ParseException e) {
 				// ignore property
 			}
+		}
+		else {
+			document.addProperty(field, value);
 		}
 	}
 
