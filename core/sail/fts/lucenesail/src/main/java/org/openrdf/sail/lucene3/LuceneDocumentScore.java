@@ -54,7 +54,7 @@ public class LuceneDocumentScore implements DocumentScore
 				// don't require all fields
 				doc = index.getDocument(scoreDoc.doc, Collections.singleton(SearchFields.URI_FIELD_NAME));
 			}
-			fullDoc = new LuceneDocument(doc, index.getCartesianTiers());
+			fullDoc = new LuceneDocument(doc, index.getSpatialContext(), index.getCartesianTiers());
 		}
 		return fullDoc;
 	}

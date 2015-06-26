@@ -72,6 +72,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.spatial4j.core.context.SpatialContext;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -112,6 +113,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
+	private SpatialContext geoContext;
 	private CartesianTiers geoTiers;
 
 	public LuceneIndex()
@@ -134,6 +136,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		this.directory = directory;
 		this.analyzer = analyzer;
+		this.geoContext = SpatialContext.GEO;
 		this.geoTiers = new CartesianTiers();
 
 		postInit();
@@ -146,6 +149,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
+		this.geoContext = SpatialContext.GEO;
 		String minMileProp = parameters.getProperty("minMiles");
 		String maxMileProp = parameters.getProperty("maxMiles");
 		int maxTier = (minMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(minMileProp)) : CartesianTiers.DEFAULT_MAX_TIER;
@@ -214,6 +218,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
+	}
+
+	public SpatialContext getSpatialContext()
+	{
+		return geoContext;
 	}
 
 	public CartesianTiers getCartesianTiers() {
@@ -300,7 +309,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document, geoTiers) : null;
+		return (document != null) ? new LuceneDocument(document, geoContext, geoTiers) : null;
 	}
 
 	@Override
@@ -310,7 +319,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		{
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc, geoTiers);
+				return new LuceneDocument(doc, geoContext, geoTiers);
 			}
 		});
 	}
@@ -318,7 +327,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new LuceneDocument(id, resourceId, context, geoTiers);
+		return new LuceneDocument(id, resourceId, context, geoContext, geoTiers);
 	}
 
 	@Override
@@ -331,7 +340,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (Fieldable oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument, geoTiers);
+		return new LuceneDocument(newDocument, geoContext, geoTiers);
 	}
 
 	@Override

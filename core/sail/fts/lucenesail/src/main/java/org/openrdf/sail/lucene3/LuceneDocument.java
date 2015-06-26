@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.lucene3;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
+import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
@@ -40,22 +42,24 @@ import com.spatial4j.core.shape.Shape;
 public class LuceneDocument implements SearchDocument
 {
 	private final Document doc;
+	private final SpatialContext geoContext;
 	private final CartesianTiers tiers;
 
-	public LuceneDocument(CartesianTiers tiers)
+	public LuceneDocument(SpatialContext ctx, CartesianTiers tiers)
 	{
-		this(new Document(), tiers);
+		this(new Document(), ctx, tiers);
 	}
 
-	public LuceneDocument(Document doc, CartesianTiers tiers)
+	public LuceneDocument(Document doc, SpatialContext ctx, CartesianTiers tiers)
 	{
 		this.doc = doc;
+		this.geoContext = ctx;
 		this.tiers = tiers;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, CartesianTiers tiers)
+	public LuceneDocument(String id, String resourceId, String context, SpatialContext ctx, CartesianTiers tiers)
 	{
-		this(tiers);
+		this(ctx, tiers);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -149,14 +153,19 @@ public class LuceneDocument implements SearchDocument
 	}
 
 	@Override
-	public void addShape(String field, Shape shape) {
-		if(shape instanceof Point)
-		{
-			Point p = (Point) shape;
-			for(CartesianTierPlotter ctp : tiers.getPlotters()) {
-				double boxId = ctp.getTierBoxId(p.getY(), p.getX());
-				doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+	public void addGeoProperty(String field, String value) {
+		try {
+			Shape shape = geoContext.readShapeFromWkt(value);
+			if(shape instanceof Point)
+			{
+				Point p = (Point) shape;
+				for(CartesianTierPlotter ctp : tiers.getPlotters()) {
+					double boxId = ctp.getTierBoxId(p.getY(), p.getX());
+					doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+				}
 			}
+		} catch (ParseException e) {
+			// ignore
 		}
 	}
 }

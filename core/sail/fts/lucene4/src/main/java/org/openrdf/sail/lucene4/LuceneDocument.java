@@ -153,15 +153,14 @@ public class LuceneDocument implements SearchDocument
 
 	@Override
 	public void addGeoProperty(String field, String value) {
-		Shape shape;
 		try {
-			shape = geoContext.readShapeFromWkt(value);
+			Shape shape = geoContext.readShapeFromWkt(value);
+			SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, field);
+			for(IndexableField f : geoStrategy.createIndexableFields(shape)) {
+				doc.add(f);
+			}
 		} catch (ParseException e) {
-			throw new IllegalArgumentException("Invalid WKT: "+value, e);
-		}
-		SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, field);
-		for(IndexableField f : geoStrategy.createIndexableFields(shape)) {
-			doc.add(f);
+			// ignore
 		}
 	}
 }
