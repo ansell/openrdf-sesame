@@ -476,6 +476,41 @@ public abstract class RepositoryConnectionTest {
 		assertTrue("bib should be known in context1",
 				testCon.hasStatement(null, name, nameBob, false, context1));
 	}
+	
+	@Test
+	public void testAddInputStreamInTxn()
+		throws Exception
+	{
+		// add file default-graph.ttl to repository, no context
+		InputStream defaultGraph = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX
+				+ "default-graph.ttl");
+		testCon.add(defaultGraph, "", RDFFormat.TURTLE);
+		defaultGraph.close();
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameBob, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameAlice, false));
+
+		// add file graph1.ttl to context1
+		InputStream graph1 = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "graph1.ttl");
+		testCon.begin();
+		testCon.add(graph1, "", RDFFormat.TURTLE, context1);
+		testCon.commit();
+		graph1.close();
+
+		// add file graph2.ttl to context2
+		InputStream graph2 = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX + "graph2.ttl");
+		testCon.add(graph2, "", RDFFormat.TURTLE, context2);
+		graph2.close();
+		assertTrue("alice should be known in the store", testCon.hasStatement(null, name, nameAlice, false));
+		assertFalse("alice should not be known in context1",
+				testCon.hasStatement(null, name, nameAlice, false, context1));
+		assertTrue("alice should be known in context2",
+				testCon.hasStatement(null, name, nameAlice, false, context2));
+		assertTrue("bob should be known in the store", testCon.hasStatement(null, name, nameBob, false));
+		assertFalse("bob should not be known in context2",
+				testCon.hasStatement(null, name, nameBob, false, context2));
+		assertTrue("bib should be known in context1",
+				testCon.hasStatement(null, name, nameBob, false, context1));
+	}
 
 	@Test
 	public void testAddGzipInputStream()
