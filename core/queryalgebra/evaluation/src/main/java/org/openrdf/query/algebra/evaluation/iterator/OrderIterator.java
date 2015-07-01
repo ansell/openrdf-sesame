@@ -141,11 +141,11 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 					Integer count = map.get(next);
 
 					if (count == null) {
-						map.put(next, 1);
+						put(map, next, 1);
 						size++;
 					}
 					else if (!distinct) {
-						map.put(next, ++count);
+						put(map, next, ++count);
 						size++;
 					}
 
@@ -161,10 +161,10 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 
 						Integer lastCount = map.get(lastKey);
 						if (lastCount > 1) {
-							map.put(lastKey, --lastCount);
+							put(map, lastKey, --lastCount);
 						}
 						else {
-							map.remove(lastKey);
+							removeLast(map.navigableKeySet());
 						}
 						size--;
 					}
@@ -216,23 +216,16 @@ public class OrderIterator extends DelayedIteration<BindingSet, QueryEvaluationE
 		}
 	}
 
-	protected Collection<BindingSet> remove(NavigableMap<BindingSet, Collection<BindingSet>> map,
-			BindingSet lastKey)
-	{
-		return map.remove(lastKey);
-	}
-
 	protected boolean add(BindingSet next, Collection<BindingSet> list)
 		throws QueryEvaluationException
 	{
 		return list.add(next);
 	}
 
-	protected Collection<BindingSet> put(Map<BindingSet, Collection<BindingSet>> map, BindingSet next,
-			Collection<BindingSet> list)
+	protected Integer put(NavigableMap<BindingSet, Integer> map, BindingSet set, int count)
 		throws QueryEvaluationException
 	{
-		return map.put(next, list);
+		return map.put(set, count);
 	}
 
 	@Override

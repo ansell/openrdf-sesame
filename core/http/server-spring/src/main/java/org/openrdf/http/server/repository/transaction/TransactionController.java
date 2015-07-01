@@ -206,10 +206,15 @@ public class TransactionController extends AbstractController {
 
 		Map<String, Object> model = new HashMap<String, Object>();
 
+		String baseURI = request.getParameter(Protocol.BASEURI_PARAM_NAME);
+		if (baseURI == null) {
+			baseURI = "";
+		}
+		
 		try {
 			switch (action) {
 				case ADD:
-					conn.add(request.getInputStream(), null,
+					conn.add(request.getInputStream(), baseURI,
 							Rio.getParserFormatForMIMEType(request.getContentType()));
 					break;
 				case DELETE:
@@ -217,7 +222,7 @@ public class TransactionController extends AbstractController {
 							conn.getValueFactory());
 					parser.setRDFHandler(new WildcardRDFRemover(conn));
 					parser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
-					parser.parse(request.getInputStream(), null);
+					parser.parse(request.getInputStream(), baseURI);
 					break;
 				case QUERY:
 					return processQuery(conn, request, response);
