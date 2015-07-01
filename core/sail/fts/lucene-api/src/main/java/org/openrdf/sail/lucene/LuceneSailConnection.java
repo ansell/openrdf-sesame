@@ -41,7 +41,6 @@ import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.SingletonSet;
-import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
@@ -307,9 +306,13 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		// use externally bound variables
 		new BindingAssigner().optimize(tupleExpr, dataset, bindings);
 
-		// lookup the Lucene queries in this TupleExpr
-		QuerySpecBuilder interpreter = new QuerySpecBuilder(sail.isIncompleteQueryFails());
-		Set<QuerySpec> queries = interpreter.process(tupleExpr, bindings);
+		List<SearchQueryEvaluator> queries = new ArrayList<SearchQueryEvaluator>();
+
+		for(SearchQueryInterpreter interpreter : sail.getSearchQueryInterpreters())
+		{
+			interpreter.setIncompleteQueryFails(sail.isIncompleteQueryFails());
+			interpreter.process(tupleExpr, bindings, queries);
+		}
 
 		// evaluate lucene queries
 		if (!queries.isEmpty()) {
@@ -329,7 +332,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 * @param tupleExpr
 	 * @throws SailException
 	 */
-	private void evaluateLuceneQueries(Set<QuerySpec> queries, TupleExpr tupleExpr)
+	private void evaluateLuceneQueries(Collection<SearchQueryEvaluator> queries, TupleExpr tupleExpr)
 		throws SailException
 	{
 		// TODO: optimize lucene queries here
@@ -347,9 +350,9 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		this.mustclose = true;
 
 		// evaluate queries, generate binding sets, and remove queries
-		for (QuerySpec query : queries) {
+		for (SearchQueryEvaluator query : queries) {
 			// evaluate the Lucene query and generate bindings
-			Collection<BindingSet> bindingSets = luceneIndex.evaluate(query);
+			Collection<BindingSet> bindingSets = query.evaluate(luceneIndex);
 
 			Class<? extends QueryModelNode> replacement;
 
@@ -386,14 +389,14 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 * @param query
 	 *        the search query to which the bindings belong
 	 */
-	private void addBindingSets(QuerySpec query, Iterable<BindingSet> bindingSets) {
+	private void addBindingSets(SearchQueryEvaluator query, Iterable<BindingSet> bindingSets) {
 
 		// find projection for the given query
-		StatementPattern matches = query.getMatchesPattern();
-		final Projection projection = (Projection)getParentNodeOfType(matches, Projection.class);
+		QueryModelNode principalNode = query.getPrincipalQueryModelNode();
+		final Projection projection = (Projection)getParentNodeOfType(principalNode, Projection.class);
 		if (projection == null) {
-			logger.error("Could not add bindings to the query tree because no projection was found for the matches pattern: "
-					+ matches.toString());
+			logger.error("Could not add bindings to the query tree because no projection was found for the query node: "
+					+ principalNode.toString());
 			return;
 		}
 
@@ -514,15 +517,12 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 * @param replacement
 	 *        the replacement type
 	 */
-	private void replacePatterns(QuerySpec query, Class<? extends QueryModelNode> replacement)
+	private void replacePatterns(SearchQueryEvaluator query, Class<? extends QueryModelNode> replacement)
 		throws InstantiationException, IllegalAccessException
 	{
-		replace(query.getMatchesPattern(), replacement);
-		replace(query.getQueryPattern(), replacement);
-		replace(query.getScorePattern(), replacement);
-		replace(query.getPropertyPattern(), replacement);
-		replace(query.getSnippetPattern(), replacement);
-		replace(query.getTypePattern(), replacement);
+		for(QueryModelNode node : query.getQueryModelNodes()) {
+			replace(node, replacement);
+		}
 	}
 
 	/**

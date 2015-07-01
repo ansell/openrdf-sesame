@@ -16,17 +16,24 @@
  */
 package org.openrdf.sail.lucene;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.sail.SailException;
 
 /**
  * A QuerySpec holds information extracted from a TupleExpr corresponding with a
  * single Lucene query. Access the patterns or use the get-methods to get the
  * names of the variables to bind.
  */
-public class QuerySpec {
+public class QuerySpec implements SearchQueryEvaluator {
 
 	private final StatementPattern matchesPattern;
 
@@ -59,6 +66,30 @@ public class QuerySpec {
 		this.subject = subject;
 		this.queryString = queryString;
 		this.propertyURI = propertyURI;
+	}
+
+	@Override
+	public QueryModelNode getPrincipalQueryModelNode()
+	{
+		return getMatchesPattern();
+	}
+
+	@Override
+	public Collection<QueryModelNode> getQueryModelNodes()
+	{
+		List<QueryModelNode> nodes = new ArrayList<QueryModelNode>();
+		nodes.add(getMatchesPattern());
+		nodes.add(getQueryPattern());
+		nodes.add(getScorePattern());
+		nodes.add(getPropertyPattern());
+		nodes.add(getSnippetPattern());
+		nodes.add(getTypePattern());
+		return nodes;
+	}
+
+	@Override
+	public Collection<BindingSet> evaluate(SearchIndex searchIndex) throws SailException {
+		return searchIndex.evaluate(this);
 	}
 
 	public StatementPattern getMatchesPattern() {

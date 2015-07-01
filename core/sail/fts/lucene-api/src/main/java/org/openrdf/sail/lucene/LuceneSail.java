@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -564,6 +566,12 @@ public class LuceneSail extends NotifyingSailWrapper {
 					statement.getContext());
 		else
 			return statement;
+	}
+
+	protected Collection<SearchQueryInterpreter> getSearchQueryInterpreters() {
+		return Arrays.<SearchQueryInterpreter>asList(
+			new QuerySpecBuilder()
+		);
 	}
 }
 
