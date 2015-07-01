@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.spatial4j.core.context.SpatialContext;
 
 /**
  * @see LuceneSail
@@ -73,6 +74,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	public static final String DEFAULT_ANALYZER = "standard";
 
 	public static final String ELASTICSEARCH_KEY_PREFIX = "elasticsearch.";
+
+	public static final String GEO_POINT_FIELD_PREFIX = "_geo_point_";
 
 	// we do everything synchronously so no point using another thread
 	private static final boolean OPERATION_THREADED = false;
@@ -89,6 +92,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	private String analyzer;
 	private String queryAnalyzer = "standard";
+
+	private SpatialContext geoContext;
 
 	public ElasticsearchIndex()
 	{
@@ -109,12 +114,18 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		return new String[] {documentType};
 	}
 
+	public SpatialContext getSpatialContext()
+	{
+		return geoContext;
+	}
+
 	@Override
 	public void initialize(Properties parameters) throws Exception {
 		super.initialize(parameters);
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
+		geoContext = SpatialContext.GEO;
 		String dataDir = parameters.getProperty(LuceneSail.LUCENE_DIR_KEY);
 
 		NodeBuilder nodeBuilder = NodeBuilder.nodeBuilder();
@@ -224,7 +235,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	{
 		GetResponse response = client.prepareGet(indexName, documentType, id).setOperationThreaded(OPERATION_THREADED).execute().actionGet();
 		if(response.isExists()) {
-			return new ElasticsearchDocument(response.getId(), response.getType(), response.getIndex(), response.getVersion(), response.getSource());
+			return new ElasticsearchDocument(response.getId(), response.getType(), response.getIndex(), response.getVersion(), response.getSource(), geoContext);
 		}
 		// no such Document
 		return null;
@@ -237,7 +248,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		{
 			@Override
 			public SearchDocument apply(SearchHit hit) {
-				return new ElasticsearchDocument(hit);
+				return new ElasticsearchDocument(hit, geoContext);
 			}
 		});
 	}
@@ -245,7 +256,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new ElasticsearchDocument(id, documentType, indexName, resourceId, context);
+		return new ElasticsearchDocument(id, documentType, indexName, resourceId, context, geoContext);
 	}
 
 	@Override
@@ -254,7 +265,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
 		Map<String,Object> source = esDoc.getSource();
 		Map<String,Object> newDocument = new HashMap<String,Object>(source);
-		return new ElasticsearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getIndex(), esDoc.getVersion(), newDocument);
+		return new ElasticsearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getIndex(), esDoc.getVersion(), newDocument, geoContext);
 	}
 
 	@Override

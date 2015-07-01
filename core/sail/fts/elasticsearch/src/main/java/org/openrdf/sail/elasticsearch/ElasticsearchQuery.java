@@ -56,7 +56,7 @@ public class ElasticsearchQuery implements SearchQuery {
 		{
 			@Override
 			public DocumentScore apply(SearchHit hit) {
-				return new ElasticsearchDocumentScore(hit);
+				return new ElasticsearchDocumentScore(hit, index.getSpatialContext());
 			}
 		});
 	}

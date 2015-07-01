@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.elasticsearch;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,32 +28,38 @@ import org.elasticsearch.search.SearchHit;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
+
 public class ElasticsearchDocument implements SearchDocument {
 	private final String id;
 	private final String type;
 	private final long version;
 	private final String index;
 	private final Map<String,Object> fields;
+	private final SpatialContext geoContext;
 
-	public ElasticsearchDocument(SearchHit hit) {
-		this(hit.getId(), hit.getType(), hit.getIndex(), hit.getVersion(), hit.getSource());
+	public ElasticsearchDocument(SearchHit hit, SpatialContext geoContext) {
+		this(hit.getId(), hit.getType(), hit.getIndex(), hit.getVersion(), hit.getSource(), geoContext);
 	}
 
-	public ElasticsearchDocument(String id, String type, String index, String resourceId, String context)
+	public ElasticsearchDocument(String id, String type, String index, String resourceId, String context, SpatialContext geoContext)
 	{
-		this(id, type, index, 0L, new HashMap<String,Object>());
+		this(id, type, index, 0L, new HashMap<String,Object>(), geoContext);
 		fields.put(SearchFields.URI_FIELD_NAME, resourceId);
 		if (context != null) {
 			fields.put(SearchFields.CONTEXT_FIELD_NAME, context);
 		}
 	}
 
-	public ElasticsearchDocument(String id, String type, String index, long version, Map<String,Object> fields) {
+	public ElasticsearchDocument(String id, String type, String index, long version, Map<String,Object> fields, SpatialContext geoContext) {
 		this.id = id;
 		this.type = type;
 		this.version = version;
 		this.index = index;
 		this.fields = fields;
+		this.geoContext = geoContext;
 	}
 
 	@Override
@@ -108,6 +115,23 @@ public class ElasticsearchDocument implements SearchDocument {
 	public void addProperty(String name, String text) {
 		addField(name, text, fields);
 		addField(SearchFields.TEXT_FIELD_NAME, text, fields);
+	}
+
+	@Override
+	public void addGeoProperty(String name, String text) {
+		addField(name, text, fields);
+		try {
+			Shape shape = geoContext.readShapeFromWkt(text);
+			if(shape instanceof Point) {
+				Point p = (Point) shape;
+				Map<String,Number> value = new HashMap<String,Number>(4);
+				value.put("lat", p.getY());
+				value.put("lon", p.getX());
+				fields.put(ElasticsearchIndex.GEO_POINT_FIELD_PREFIX+name, value);
+			}
+		} catch (ParseException e) {
+			// ignore
+		}
 	}
 
 	@Override
