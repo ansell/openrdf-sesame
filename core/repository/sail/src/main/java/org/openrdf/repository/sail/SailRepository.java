@@ -32,7 +32,6 @@ import org.openrdf.repository.RepositoryLockedException;
 import org.openrdf.repository.base.RepositoryBase;
 import org.openrdf.repository.sail.config.RepositoryResolver;
 import org.openrdf.repository.sail.config.RepositoryResolverClient;
-import org.openrdf.sail.AdvancedSail;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailLockedException;
@@ -161,9 +160,7 @@ public class SailRepository extends RepositoryBase implements FederatedServiceRe
 		throws RepositoryException
 	{
 		try {
-			if(!(sail instanceof AdvancedSail) || !((AdvancedSail)sail).isInitialized()) {
-				sail.initialize();
-			}
+			sail.initialize();
 		}
 		catch (SailLockedException e) {
 			String l = e.getLockedBy();
