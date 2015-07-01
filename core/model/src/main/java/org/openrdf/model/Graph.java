@@ -20,9 +20,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.openrdf.OpenRDFUtil;
-import org.openrdf.model.util.GraphUtil;
-
 /**
  * An RDF graph, represented as a collection of {@link Statement}s.
  * 

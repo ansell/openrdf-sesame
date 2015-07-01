@@ -26,6 +26,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.elasticsearch.action.ActionRequestBuilder;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequestBuilder;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.cluster.health.ClusterIndexHealth;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -67,8 +70,41 @@ import com.spatial4j.core.context.SpatialContext;
  */
 public class ElasticsearchIndex extends AbstractSearchIndex {
 
+	/**
+	 * Set the parameter "indexName=" to specify the index to use.
+	 */
 	public static final String INDEX_NAME_KEY = "indexName";
+	/**
+	 * Set the parameter "documentType=" to specify the document type to use.
+	 * By default, the document type is "resource".
+	 */
 	public static final String DOCUMENT_TYPE_KEY = "documentType";
+	/**
+	 * Set the parameter "waitForStatus=" to configure if {@link #initialize(java.util.Properties) initialization}
+	 * should wait for a particular health status.
+	 * The value can be one of "green" or "yellow".
+	 * Does not wait by default.
+	 */
+	public static final String WAIT_FOR_STATUS_KEY = "waitForStatus";
+	/**
+	 * Set the parameter "waitForNodes=" to configure if {@link #initialize(java.util.Properties) initialization}
+	 * should wait until the specified number of nodes are available.
+	 * Does not wait by default.
+	 */
+	public static final String WAIT_FOR_NODES_KEY = "waitForNodes";
+	/**
+	 * Set the parameter "waitForActiveShards=" to configure if {@link #initialize(java.util.Properties) initialization}
+	 * should wait until the specified number of shards to be active.
+	 * Does not wait by default.
+	 */
+	public static final String WAIT_FOR_ACTIVE_SHARDS_KEY = "waitForActiveShards";
+	/**
+	 * Set the parameter "waitForRelocatingShards=" to configure if {@link #initialize(java.util.Properties) initialization}
+	 * should wait until the specified number of nodes are relocating.
+	 * Does not wait by default.
+	 */
+	public static final String WAIT_FOR_RELOCATING_SHARDS_KEY = "waitForRelocatingShards";
+
 	public static final String DEFAULT_INDEX_NAME = "elastic-search-sail";
 	public static final String DEFAULT_DOCUMENT_TYPE = "resource";
 	public static final String DEFAULT_ANALYZER = "standard";
@@ -145,15 +181,44 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		clusterName = node.settings().get("cluster.name");
 		client = node.client();
 
-		// give elasticsearch threads a chance to initialize themselves
-		Thread.yield();
-
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 		if(!exists) {
 			createIndex();
 		}
 
 		logger.info("Field mappings:\n{}", getMappings());
+
+		ClusterHealthRequestBuilder healthReqBuilder = client.admin().cluster().prepareHealth(indexName);
+		String waitForStatus = parameters.getProperty(WAIT_FOR_STATUS_KEY);
+		if("green".equals(waitForStatus)) {
+			healthReqBuilder.setWaitForGreenStatus();
+		}
+		else if("yellow".equals(waitForStatus)) {
+			healthReqBuilder.setWaitForYellowStatus();
+		}
+		String waitForNodes = parameters.getProperty(WAIT_FOR_NODES_KEY);
+		if(waitForNodes != null) {
+			healthReqBuilder.setWaitForNodes(waitForNodes);
+		}
+		String waitForActiveShards = parameters.getProperty(WAIT_FOR_ACTIVE_SHARDS_KEY);
+		if(waitForActiveShards != null) {
+			healthReqBuilder.setWaitForActiveShards(Integer.parseInt(waitForActiveShards));
+		}
+		String waitForRelocatingShards = parameters.getProperty(WAIT_FOR_RELOCATING_SHARDS_KEY);
+		if(waitForRelocatingShards != null) {
+			healthReqBuilder.setWaitForRelocatingShards(Integer.parseInt(waitForRelocatingShards));
+		}
+		ClusterHealthResponse healthResponse = healthReqBuilder.execute().actionGet();
+		logger.info("Cluster health: {}", healthResponse.getStatus());
+		logger.info("Cluster nodes: {} (data {})", healthResponse.getNumberOfNodes(), healthResponse.getNumberOfDataNodes());
+		ClusterIndexHealth indexHealth = healthResponse.getIndices().get(indexName);
+		logger.info("Index health: {}", indexHealth.getStatus());
+		logger.info("Index shards: {} (active {} [primary {}], initializing {}, unassigned {}, relocating {})", indexHealth.getNumberOfShards(),
+				indexHealth.getActiveShards(), indexHealth.getActivePrimaryShards(),
+				indexHealth.getInitializingShards(), indexHealth.getUnassignedShards(), indexHealth.getRelocatingShards());
+		for(String err : healthResponse.getAllValidationFailures()) {
+			logger.warn(err);
+		}
 	}
 
 	public Map<String,Object> getMappings() throws IOException
