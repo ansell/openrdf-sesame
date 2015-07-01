@@ -201,6 +201,11 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 			.field("type", "string")
 			.field("index", "analyzed")
 		.endObject();
+		for(String wktField : wktFields) {
+			typeMapping.startObject(wktField)
+				.field("type", "geo_point")
+			.endObject();
+		}
 		typeMapping
 				.endObject()
 			.endObject()
