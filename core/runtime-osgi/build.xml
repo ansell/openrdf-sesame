@@ -37,7 +37,7 @@
 	<dirname property="antfile.dir" file="${ant.file}"/>
 	<echo message="META-INF/services/${service}"/>
 	<concat destfile="target/services/META-INF/services/${service}" fixlastline="yes">
-	    <fileset dir="${antfile.dir}" includes="**/src/main/resources/META-INF/services/${service}"/>
+	    <fileset dir="${antfile.dir}/.." includes="**/src/main/resources/META-INF/services/${service}"/>
 	</concat>
     </target>
 </project>
