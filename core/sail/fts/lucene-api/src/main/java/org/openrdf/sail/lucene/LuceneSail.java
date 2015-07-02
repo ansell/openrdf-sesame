@@ -570,7 +570,8 @@ public class LuceneSail extends NotifyingSailWrapper {
 
 	protected Collection<SearchQueryInterpreter> getSearchQueryInterpreters() {
 		return Arrays.<SearchQueryInterpreter>asList(
-			new QuerySpecBuilder()
+			new QuerySpecBuilder(),
+			new GeoQuerySpecBuilder()
 		);
 	}
 }

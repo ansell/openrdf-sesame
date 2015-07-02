@@ -16,12 +16,15 @@
  */
 package org.openrdf.sail.lucene;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +34,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.GEO;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -65,6 +69,8 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 	public static final Literal ARC_TRIOMPHE = new LiteralImpl("POINT (48.8738 2.2950)", GEO.WKT_LITERAL);
 	public static final Literal NOTRE_DAME = new LiteralImpl("POINT (48.8547 2.3465)", GEO.WKT_LITERAL);
 
+	private static final double ERROR = 1000.0;
+
 	protected LuceneSail sail;
 
 	protected Repository repository;
@@ -77,12 +83,6 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 	public void setUp()
 		throws IOException, RepositoryException
 	{
-		// set logging, uncomment this to get better logging for debugging
-		// org.apache.log4j.BasicConfigurator.configure();
-		// TODO: disable logging for org.openrdf.query.parser.serql.SeRQLParser,
-		// which is not possible
-		// to configure using just the Logger
-
 		// setup a LuceneSail
 		MemoryStore memoryStore = new MemoryStore();
 		// enable lock tracking
@@ -126,37 +126,57 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 	public void testDistanceQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
-		String queryStr = "select ?l ?dist where { filter(geof:distance(?l, '') < 100) }";
+		String queryStr =
+				 "prefix geo:  <"+GEO.NAMESPACE+">"
+				+"prefix geof: <"+GEOF.NAMESPACE+">"
+				+"select ?toUri where { ?toUri geo:asWKT ?to. filter(geof:distance(?from, ?to, ?units) < ?range) }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		query.setBinding("Query", new LiteralImpl("one"));
+		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (48.8630,2.2871)", GEO.WKT_LITERAL));
+		query.setBinding("units", GEOF.UOM_METRE);
+		query.setBinding("range", sail.getValueFactory().createLiteral(1500.0));
+
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		ArrayList<URI> uris = new ArrayList<URI>();
+		Set<URI> expected = new HashSet<URI>();
+		expected.add(SUBJECT_1);
+		expected.add(SUBJECT_2);
 
-		BindingSet bindings = null;
-
-		assertTrue(result.hasNext());
-		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
-		assertNotNull(bindings.getValue("Score"));
-
-		assertTrue(result.hasNext());
-		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
-		assertNotNull(bindings.getValue("Score"));
-
-		assertTrue(result.hasNext());
-		bindings = result.next();
-		uris.add((URI)bindings.getValue("Subject"));
-		assertNotNull(bindings.getValue("Score"));
-
-		assertFalse(result.hasNext());
-
+		while(result.hasNext()) {
+			BindingSet bindings = result.next();
+			assertTrue(expected.remove(bindings.getValue("toUri")));
+		}
+		assertTrue(expected.isEmpty());
 		result.close();
+	}
 
-		assertTrue(uris.contains(SUBJECT_1));
-		assertTrue(uris.contains(SUBJECT_2));
-		assertTrue(uris.contains(SUBJECT_3));
+	@Test
+	public void testComplexDistanceQuery()
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		String queryStr =
+				 "prefix geo:  <"+GEO.NAMESPACE+">"
+				+"prefix geof: <"+GEOF.NAMESPACE+">"
+				+"select ?toUri ?dist where { ?toUri geo:asWKT ?to. bind(geof:distance(?from, ?to, ?units) as ?dist) filter(?dist < ?range) }";
+		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
+		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (48.8630,2.2871)", GEO.WKT_LITERAL));
+		query.setBinding("units", GEOF.UOM_METRE);
+		query.setBinding("range", sail.getValueFactory().createLiteral(1500.0));
+
+		TupleQueryResult result = query.evaluate();
+
+		// check the results
+		Map<URI,Literal> expected = new HashMap<URI,Literal>();
+		expected.put(SUBJECT_1, sail.getValueFactory().createLiteral(770.0));
+		expected.put(SUBJECT_2, sail.getValueFactory().createLiteral(1300.0));
+
+		while(result.hasNext()) {
+			BindingSet bindings = result.next();
+			Literal dist = expected.remove(bindings.getValue("toUri"));
+			assertNotNull(dist);
+			assertEquals(dist.doubleValue(), ((Literal)bindings.getValue("dist")).doubleValue(), ERROR);
+		}
+		assertTrue(expected.isEmpty());
+		result.close();
 	}
 }

@@ -27,7 +27,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class GEO {
 
-	private static String NAMESPACE = "http://www.opengis.net/ont/geosparql#";
+	public static String NAMESPACE = "http://www.opengis.net/ont/geosparql#";
 
 	public static URI AS_WKT;
 
