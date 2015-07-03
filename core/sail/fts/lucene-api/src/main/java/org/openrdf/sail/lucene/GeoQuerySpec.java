@@ -17,12 +17,17 @@
 package org.openrdf.sail.lucene;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.Extension;
+import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.sail.SailException;
 
@@ -33,7 +38,7 @@ public class GeoQuerySpec implements SearchQueryEvaluator {
 	private URI units;
 	private double distance;
 	private String distanceVar;
-	private StatementPattern sp;
+	private StatementPattern geoStatement;
 	private Filter filter;
 
 	public void setFunctionParent(QueryModelNode functionParent) {
@@ -61,7 +66,7 @@ public class GeoQuerySpec implements SearchQueryEvaluator {
 	}
 
 	public void setGeometryPattern(StatementPattern sp) {
-		this.sp = sp;
+		this.geoStatement = sp;
 	}
 
 	public void setFilter(Filter f) {
@@ -86,6 +91,23 @@ public class GeoQuerySpec implements SearchQueryEvaluator {
 
 	@Override
 	public void updateQueryModelNodes(boolean hasResult) {
-		// TODO Auto-generated method stub
+		QueryModelNode replacementNode = hasResult ? new SingletonSet() : new EmptySet();
+		geoStatement.replaceWith(replacementNode);
+
+		if(hasResult) {
+			filter.replaceWith(filter.getArg());
+		} else {
+			filter.replaceWith(new EmptySet());
+		}
+
+		if(functionParent instanceof ExtensionElem) {
+			Extension extension = (Extension) functionParent.getParentNode();
+			List<ExtensionElem> elements = extension.getElements();
+			if(elements.size() > 1) {
+				elements.remove(functionParent);
+			} else {
+				extension.replaceWith(extension.getArg());
+			}
+		}
 	}
 }
