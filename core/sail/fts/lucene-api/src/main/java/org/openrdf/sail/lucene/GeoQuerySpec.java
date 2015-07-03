@@ -18,22 +18,63 @@ package org.openrdf.sail.lucene;
 
 import java.util.Collection;
 
+import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.sail.SailException;
 
 public class GeoQuerySpec implements SearchQueryEvaluator {
+	private QueryModelNode functionParent;
+	private Literal from;
+	private String to;
+	private URI units;
+	private double distance;
+	private String distanceVar;
+	private StatementPattern sp;
+	private Filter filter;
 
-	@Override
-	public QueryModelNode getPrincipalQueryModelNode() {
-		// TODO Auto-generated method stub
-		return null;
+	public void setFunctionParent(QueryModelNode functionParent) {
+		this.functionParent = functionParent;
+	}
+
+	public void setFrom(Literal from) {
+		this.from = from;
+	}
+
+	public void setTo(String to) {
+		this.to = to;
+	}
+
+	public void setUnits(URI units) {
+		this.units = units;
+	}
+
+	public void setDistance(double d) {
+		this.distance = d;
+	}
+
+	public void setDistanceVar(String varName) {
+		this.distanceVar = varName;
+	}
+
+	public void setGeometryPattern(StatementPattern sp) {
+		this.sp = sp;
+	}
+
+	public void setFilter(Filter f) {
+		this.filter = f;
+	}
+
+	public Filter getFilter() {
+		return filter;
 	}
 
 	@Override
-	public Collection<QueryModelNode> getQueryModelNodes() {
-		// TODO Auto-generated method stub
-		return null;
+	public QueryModelNode getParentQueryModelNode() {
+		return filter;
 	}
 
 	@Override
@@ -43,4 +84,8 @@ public class GeoQuerySpec implements SearchQueryEvaluator {
 		return null;
 	}
 
+	@Override
+	public void updateQueryModelNodes(boolean hasResult) {
+		// TODO Auto-generated method stub
+	}
 }

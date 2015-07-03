@@ -16,17 +16,19 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
+
+import com.google.common.base.Supplier;
 
 /**
  * A QuerySpec holds information extracted from a TupleExpr corresponding with a
@@ -69,27 +71,57 @@ public class QuerySpec implements SearchQueryEvaluator {
 	}
 
 	@Override
-	public QueryModelNode getPrincipalQueryModelNode()
+	public QueryModelNode getParentQueryModelNode()
 	{
 		return getMatchesPattern();
 	}
 
 	@Override
-	public Collection<QueryModelNode> getQueryModelNodes()
-	{
-		List<QueryModelNode> nodes = new ArrayList<QueryModelNode>();
-		nodes.add(getMatchesPattern());
-		nodes.add(getQueryPattern());
-		nodes.add(getScorePattern());
-		nodes.add(getPropertyPattern());
-		nodes.add(getSnippetPattern());
-		nodes.add(getTypePattern());
-		return nodes;
+	public Collection<BindingSet> evaluate(SearchIndex searchIndex) throws SailException {
+		return searchIndex.evaluate(this);
 	}
 
 	@Override
-	public Collection<BindingSet> evaluate(SearchIndex searchIndex) throws SailException {
-		return searchIndex.evaluate(this);
+	public void updateQueryModelNodes(boolean hasResult)
+	{
+		Supplier<QueryModelNode> nodeFactory = hasResult ?
+				new Supplier<QueryModelNode>()
+				{
+					@Override
+					public QueryModelNode get() {
+						return new SingletonSet();
+					}
+				}
+				:
+				new Supplier<QueryModelNode>()
+				{
+					@Override
+					public QueryModelNode get() {
+						return new EmptySet();
+					}
+				};
+
+		replace(getMatchesPattern(), nodeFactory);
+		replace(getQueryPattern(), nodeFactory);
+		replace(getScorePattern(), nodeFactory);
+		replace(getPropertyPattern(), nodeFactory);
+		replace(getSnippetPattern(), nodeFactory);
+		replace(getTypePattern(), nodeFactory);
+	}
+
+	/**
+	 * Replace the given node with a new instance of the given replacement type.
+	 * 
+	 * @param pattern
+	 *        the pattern to remove
+	 * @param replacement
+	 *        the replacement type
+	 */
+	private void replace(QueryModelNode node, Supplier<? extends QueryModelNode> replacement)
+	{
+		if (node != null) {
+			node.replaceWith(replacement.get());
+		}
 	}
 
 	public StatementPattern getMatchesPattern() {

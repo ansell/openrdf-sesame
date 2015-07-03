@@ -34,7 +34,6 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.BindingSetAssignment;
-import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.Projection;
@@ -310,7 +309,6 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 
 		for(SearchQueryInterpreter interpreter : sail.getSearchQueryInterpreters())
 		{
-			interpreter.setIncompleteQueryFails(sail.isIncompleteQueryFails());
 			interpreter.process(tupleExpr, bindings, queries);
 		}
 
@@ -354,28 +352,16 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 			// evaluate the Lucene query and generate bindings
 			Collection<BindingSet> bindingSets = query.evaluate(luceneIndex);
 
-			Class<? extends QueryModelNode> replacement;
+			boolean hasResult = bindingSets != null && !bindingSets.isEmpty();
 
 			// found something?
-			if (bindingSets != null && !bindingSets.isEmpty()) {
-				replacement = SingletonSet.class;
-
+			if (hasResult) {
 				// add bindings to the query tree
 				addBindingSets(query, bindingSets);
 			}
-			// return an empty result set if no matches were found
-			else {
-				replacement = EmptySet.class;
-			}
 
 			// remove the evaluated lucene query from the query tree
-			try {
-				replacePatterns(query, replacement);
-			}
-			catch (Exception e) {
-				logger.error("Could not remove search patterns", e);
-				continue;
-			}
+			query.updateQueryModelNodes(hasResult);
 		}
 	}
 
@@ -392,7 +378,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	private void addBindingSets(SearchQueryEvaluator query, Iterable<BindingSet> bindingSets) {
 
 		// find projection for the given query
-		QueryModelNode principalNode = query.getPrincipalQueryModelNode();
+		QueryModelNode principalNode = query.getParentQueryModelNode();
 		final Projection projection = (Projection)getParentNodeOfType(principalNode, Projection.class);
 		if (projection == null) {
 			logger.error("Could not add bindings to the query tree because no projection was found for the query node: "
@@ -506,39 +492,6 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		}
 
 		return output;
-	}
-
-	/**
-	 * Replace all StatementPatterns occurring in the given query with the given
-	 * replacement type.
-	 * 
-	 * @param query
-	 *        the query for replacement
-	 * @param replacement
-	 *        the replacement type
-	 */
-	private void replacePatterns(SearchQueryEvaluator query, Class<? extends QueryModelNode> replacement)
-		throws InstantiationException, IllegalAccessException
-	{
-		for(QueryModelNode node : query.getQueryModelNodes()) {
-			replace(node, replacement);
-		}
-	}
-
-	/**
-	 * Replace the given node with a new instance of the given replacement type.
-	 * 
-	 * @param pattern
-	 *        the pattern to remove
-	 * @param replacement
-	 *        the replacement type
-	 */
-	private void replace(QueryModelNode node, Class<? extends QueryModelNode> replacement)
-		throws InstantiationException, IllegalAccessException
-	{
-		if (node != null) {
-			node.replaceWith(replacement.newInstance());
-		}
 	}
 
 	@Override

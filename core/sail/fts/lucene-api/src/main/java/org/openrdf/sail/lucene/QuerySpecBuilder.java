@@ -55,8 +55,6 @@ public class QuerySpecBuilder implements SearchQueryInterpreter {
 
 	private boolean incompleteQueryFails;
 
-	public QuerySpecBuilder() {}
-
 	/**
 	 * Initialize a new QuerySpecBuilder
 	 * 
@@ -64,15 +62,6 @@ public class QuerySpecBuilder implements SearchQueryInterpreter {
 	 *        see {@link LuceneSail#isIncompleteQueryFails()}
 	 */
 	public QuerySpecBuilder(boolean incompleteQueryFails) {
-		this.incompleteQueryFails = incompleteQueryFails;
-	}
-
-	/**
-	 * @param incompleteQueryFails
-	 *        see {@link LuceneSail#isIncompleteQueryFails()}
-	 */
-	@Override
-	public void setIncompleteQueryFails(boolean incompleteQueryFails) {
 		this.incompleteQueryFails = incompleteQueryFails;
 	}
 

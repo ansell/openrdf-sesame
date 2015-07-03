@@ -95,6 +95,11 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return true;
 	}
 
+	@Override
+	public boolean isGeoProperty(String propName) {
+		return wktFields.contains(propName);
+	}
+
 
 
 	/**

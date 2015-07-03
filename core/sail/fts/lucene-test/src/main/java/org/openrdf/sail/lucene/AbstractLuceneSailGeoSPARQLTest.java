@@ -157,7 +157,10 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		String queryStr =
 				 "prefix geo:  <"+GEO.NAMESPACE+">"
 				+"prefix geof: <"+GEOF.NAMESPACE+">"
-				+"select ?toUri ?dist where { ?toUri geo:asWKT ?to. bind(geof:distance(?from, ?to, ?units) as ?dist) filter(?dist < ?range) }";
+				+"select ?toUri ?dist where { ?toUri geo:asWKT ?to."
+				+ " bind(geof:distance(?from, ?to, ?units) as ?dist)"
+				+ " filter(?dist < ?range)"
+				+ " }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
 		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (48.8630,2.2871)", GEO.WKT_LITERAL));
 		query.setBinding("units", GEOF.UOM_METRE);

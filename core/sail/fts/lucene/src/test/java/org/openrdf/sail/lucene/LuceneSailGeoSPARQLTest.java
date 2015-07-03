@@ -16,14 +16,18 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.util.Collection;
+import java.io.IOException;
 
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.sail.SailException;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.store.RAMDirectory;
 
-public interface SearchQueryEvaluator {
-	QueryModelNode getParentQueryModelNode();
-	Collection<BindingSet> evaluate(SearchIndex searchIndex) throws SailException;
-	void updateQueryModelNodes(boolean hasResult);
+public class LuceneSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
+	private LuceneIndex index;
+
+	@Override
+	protected void configure(LuceneSail sail) throws IOException
+	{
+		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer());
+		sail.setLuceneIndex(index);
+	}
 }

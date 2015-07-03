@@ -23,7 +23,6 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.sail.SailException;
 
 public interface SearchQueryInterpreter {
-	void setIncompleteQueryFails(boolean f);
 	/**
 	 * Processes a TupleExpr into a set of SearchQueryEvaluators.
 	 * @param tupleExpr the TupleExpr to process.

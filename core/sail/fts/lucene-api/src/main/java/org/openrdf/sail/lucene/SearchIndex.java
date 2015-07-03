@@ -62,6 +62,11 @@ public interface SearchIndex {
 	boolean accept(Literal literal);
 
 	/**
+	 * Returns true if the given property contains a geometry.
+	 */
+	boolean isGeoProperty(String propertyName);
+
+	/**
 	 * Begins a transaction.
 	 */
 	void begin()
