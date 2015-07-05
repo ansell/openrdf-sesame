@@ -42,9 +42,6 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 		return sharedInstance;
 	}
 
-	public static final Literal TRUE = getInstance().createLiteral(Boolean.TRUE.toString(), XMLSchema.BOOLEAN);
-	public static final Literal FALSE = getInstance().createLiteral(Boolean.FALSE.toString(), XMLSchema.BOOLEAN);
-
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -62,11 +59,6 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 	@Override
 	public BNode createBNode(String nodeID) {
 		return new BNodeImpl(nodeID);
-	}
-
-	@Override
-	public Literal createLiteral(boolean b) {
-		return b ? TRUE : FALSE;
 	}
 
 	@Override

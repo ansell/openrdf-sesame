@@ -99,7 +99,6 @@ public class GeoQuerySpecBuilder implements SearchQueryInterpreter {
 					GeoQuerySpec spec = new GeoQuerySpec();
 					spec.setFunctionParent(parent);
 					spec.setFrom(from);
-					spec.setTo(to);
 					spec.setUnits(units);
 					spec.setDistance(dist.doubleValue());
 					spec.setDistanceVar(distanceVar);
@@ -111,7 +110,7 @@ public class GeoQuerySpecBuilder implements SearchQueryInterpreter {
 			@Override
 			public void meet(StatementPattern sp) {
 				URI propertyName = (URI) sp.getPredicateVar().getValue();
-				if(index.isGeoProperty(propertyName.toString())) {
+				if(index.isGeoProperty(propertyName.toString()) && !sp.getObjectVar().hasValue()) {
 					String objectVarName = sp.getObjectVar().getName();
 					GeoQuerySpec spec = specs.remove(objectVarName);
 					if(spec != null && isChildOf(sp, spec.getFilter())) {

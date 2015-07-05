@@ -350,7 +350,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		// evaluate queries, generate binding sets, and remove queries
 		for (SearchQueryEvaluator query : queries) {
 			// evaluate the Lucene query and generate bindings
-			Collection<BindingSet> bindingSets = query.evaluate(luceneIndex);
+			Collection<BindingSet> bindingSets = luceneIndex.evaluate(query);
 
 			boolean hasResult = bindingSets != null && !bindingSets.isEmpty();
 

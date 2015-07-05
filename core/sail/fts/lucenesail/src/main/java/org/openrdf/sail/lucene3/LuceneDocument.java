@@ -25,13 +25,13 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.spatial.geohash.GeoHashUtils;
 import org.apache.lucene.spatial.tier.projections.CartesianTierPlotter;
 import org.apache.lucene.util.NumericUtils;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
-import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
@@ -42,24 +42,22 @@ import com.spatial4j.core.shape.Shape;
 public class LuceneDocument implements SearchDocument
 {
 	private final Document doc;
-	private final SpatialContext geoContext;
-	private final CartesianTiers tiers;
+	private final LuceneIndex index;
 
-	public LuceneDocument(SpatialContext ctx, CartesianTiers tiers)
+	public LuceneDocument(LuceneIndex index)
 	{
-		this(new Document(), ctx, tiers);
+		this(new Document(), index);
 	}
 
-	public LuceneDocument(Document doc, SpatialContext ctx, CartesianTiers tiers)
+	public LuceneDocument(Document doc, LuceneIndex index)
 	{
 		this.doc = doc;
-		this.geoContext = ctx;
-		this.tiers = tiers;
+		this.index = index;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, SpatialContext ctx, CartesianTiers tiers)
+	public LuceneDocument(String id, String resourceId, String context, LuceneIndex index)
 	{
-		this(ctx, tiers);
+		this(index);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -154,11 +152,14 @@ public class LuceneDocument implements SearchDocument
 
 	@Override
 	public void addGeoProperty(String field, String value) {
+		LuceneIndex.addPredicateField(field, value, doc);
 		try {
-			Shape shape = geoContext.readShapeFromWkt(value);
+			Shape shape = index.getSpatialContext().readShapeFromWkt(value);
 			if(shape instanceof Point)
 			{
 				Point p = (Point) shape;
+				doc.add(new Field(LuceneIndex.GEOHASH_FIELD_PREFIX+field, GeoHashUtils.encode(p.getY(), p.getX()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+				CartesianTiers tiers = index.getCartesianTiers(field);
 				for(CartesianTierPlotter ctp : tiers.getPlotters()) {
 					double boxId = ctp.getTierBoxId(p.getY(), p.getX());
 					doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));

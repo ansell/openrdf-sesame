@@ -25,6 +25,7 @@ public class CartesianTiers {
 	private static final CartesianTierPlotter utils = new CartesianTierPlotter(0, null, null);
 
 	private final IProjector projector = new FixedSinusoidalProjector();
+	private final String fieldPrefix;
 	private final int minTier;
 	private final int maxTier;
 	private final CartesianTierPlotter[] plotters;
@@ -34,21 +35,26 @@ public class CartesianTiers {
 		return utils.bestFit(miles);
 	}
 
-	public CartesianTiers()
+	public CartesianTiers(String field)
 	{
-		this(DEFAULT_MIN_TIER, DEFAULT_MAX_TIER);
+		this(field, DEFAULT_MIN_TIER, DEFAULT_MAX_TIER);
 	}
 
-	public CartesianTiers(int minTier, int maxTier)
+	public CartesianTiers(String field, int minTier, int maxTier)
 	{
+		this.fieldPrefix = CartesianTierPlotter.DEFALT_FIELD_PREFIX+field+"_";
 		this.minTier = minTier;
 		this.maxTier = maxTier;
-		String fieldPrefix = CartesianTierPlotter.DEFALT_FIELD_PREFIX;
 		plotters = new CartesianTierPlotter[maxTier-minTier+1];
 		for(int tier = minTier; tier <= maxTier; tier++)
 		{
 			plotters[tier-minTier] = new CartesianTierPlotter(tier, projector, fieldPrefix);
 		}
+	}
+
+	public String getFieldPrefix()
+	{
+		return fieldPrefix;
 	}
 
 	public int getMinTier()

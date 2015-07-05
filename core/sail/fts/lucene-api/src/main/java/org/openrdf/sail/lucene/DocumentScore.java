@@ -23,6 +23,7 @@ public interface DocumentScore
 	 */
 	SearchDocument getDocument();
 	float getScore();
+	double getDistance();
 	boolean isHighlighted();
 	Iterable<String> getSnippets(String field);
 }

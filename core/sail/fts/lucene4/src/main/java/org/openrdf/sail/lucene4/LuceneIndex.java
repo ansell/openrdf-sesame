@@ -56,9 +56,13 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTreeFactory;
 import org.apache.lucene.store.Directory;
@@ -73,10 +77,10 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractLuceneIndex;
 import org.openrdf.sail.lucene.AbstractReaderMonitor;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
-import org.openrdf.sail.lucene.SearchQuery;
 import org.openrdf.sail.lucene.SimpleBulkUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +128,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
-	private SpatialContext geoContext;
 	private SpatialPrefixTree spt;
 
 	public LuceneIndex()
@@ -145,9 +148,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public LuceneIndex(Directory directory, Analyzer analyzer)
 			throws IOException
 	{
+		super(SpatialContext.GEO);
 		this.directory = directory;
 		this.analyzer = analyzer;
-		this.geoContext = SpatialContext.GEO;
 		this.spt = SpatialPrefixTreeFactory.makeSPT(Collections.<String,String>emptyMap(), Thread.currentThread().getContextClassLoader(), geoContext);
 
 		postInit();
@@ -160,7 +163,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
-		this.geoContext = SpatialContext.GEO;
 		// slightly hacky cast to cope with the fact that Properties is Map<Object,Object>
 		// even though it is effectively Map<String,String>
 		this.spt = SpatialPrefixTreeFactory.makeSPT((Map<String,String>)(Map<?,?>)parameters, Thread.currentThread().getContextClassLoader(), geoContext);
@@ -220,11 +222,6 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
-	}
-
-	public SpatialContext getSpatialContext()
-	{
-		return geoContext;
 	}
 
 	public SpatialPrefixTree getSpatialPrefixTree()
@@ -642,7 +639,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
-	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI, boolean highlight) throws MalformedQueryException, IOException
 	{
 		Query q;
 		try {
@@ -651,7 +648,29 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		catch (ParseException e) {
 			throw new MalformedQueryException(e);
 		}
-		return new LuceneQuery(q, this);
+
+		final Highlighter highlighter;
+		if(highlight) {
+			Formatter formatter = new SimpleHTMLFormatter(SearchFields.HIGHLIGHTER_PRE_TAG, SearchFields.HIGHLIGHTER_POST_TAG);
+			highlighter = new Highlighter(formatter, new QueryScorer(q));
+		} else {
+			highlighter = null;
+		}
+
+		TopDocs docs;
+		if(subject != null) {
+			docs = search(subject, q);
+		}
+		else {
+			docs = search(q);
+		}
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentScore>()
+		{
+			@Override
+			public DocumentScore apply(ScoreDoc doc) {
+				return new LuceneDocumentScore(doc, highlighter, LuceneIndex.this);
+			}
+		});
 	}
 
 	/**

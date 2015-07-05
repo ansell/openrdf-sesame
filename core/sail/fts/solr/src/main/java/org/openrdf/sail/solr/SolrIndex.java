@@ -19,6 +19,8 @@ package org.openrdf.sail.solr;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -36,10 +38,10 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
-import org.openrdf.sail.lucene.SearchQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +60,6 @@ public class SolrIndex extends AbstractSearchIndex {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private SolrClient client;
-
-	public SolrIndex()
-	{
-	}
 
 	@Override
 	public void initialize(Properties parameters) throws Exception {
@@ -282,10 +280,47 @@ public class SolrIndex extends AbstractSearchIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
-	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI, boolean highlight) throws MalformedQueryException, IOException
 	{
 		SolrQuery q = prepareQuery(propertyURI, new SolrQuery(query));
-		return new SolrSearchQuery(q, this);
+		if(highlight) {
+			q.setHighlight(true);
+			String field = (propertyURI != null) ? propertyURI.toString() : "*";
+			q.addHighlightField(field);
+			q.setHighlightSimplePre(SearchFields.HIGHLIGHTER_PRE_TAG);
+			q.setHighlightSimplePost(SearchFields.HIGHLIGHTER_POST_TAG);
+			q.setHighlightSnippets(2);
+		}
+
+		QueryResponse response;
+		if(q.getHighlight()) {
+			q.addField("*");
+		}
+		else {
+			q.addField(SearchFields.URI_FIELD_NAME);
+		}
+		q.addField("score");
+		try {
+			if(subject != null) {
+				response = search(subject, q);
+			}
+			else {
+				response = search(q);
+			}
+		} catch(SolrServerException e) {
+			throw new IOException(e);
+		}
+		SolrDocumentList results = response.getResults();
+		final Map<String,Map<String,List<String>>> highlighting = response.getHighlighting();
+		return Iterables.transform(results, new Function<SolrDocument,DocumentScore>()
+		{
+			@Override
+			public DocumentScore apply(SolrDocument document) {
+				SolrSearchDocument doc = new SolrSearchDocument(document);
+				Map<String,List<String>> docHighlighting = (highlighting != null) ? highlighting.get(doc.getId()) : null;
+				return new SolrDocumentScore(doc, docHighlighting);
+			}
+		});
 	}
 
 	// /**

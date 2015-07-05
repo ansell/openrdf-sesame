@@ -32,10 +32,10 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.GEO;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -47,6 +47,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
 
 public abstract class AbstractSearchIndex implements SearchIndex {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -58,7 +61,15 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	}
 
 	protected int maxDocs;
+	protected SpatialContext geoContext;
 	protected Set<String> wktFields = Collections.singleton(GEO.AS_WKT.toString());
+
+	protected AbstractSearchIndex() {}
+
+	protected AbstractSearchIndex(SpatialContext geoContext)
+	{
+		this.geoContext = geoContext;
+	}
 
 	@Override
 	public void initialize(Properties parameters)
@@ -67,10 +78,17 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		String maxDocParam = parameters.getProperty(LuceneSail.MAX_DOCUMENTS_KEY);
 		maxDocs = (maxDocParam != null) ? Integer.parseInt(maxDocParam) : -1;
 
+		geoContext = SpatialContext.GEO;
+
 		String wktFieldParam = parameters.getProperty(LuceneSail.WKT_FIELDS);
 		if(wktFieldParam != null) {
 			wktFields = Sets.newHashSet(wktFieldParam.split("\\s+"));
 		}
+	}
+
+	public SpatialContext getSpatialContext()
+	{
+		return geoContext;
 	}
 
 	/**
@@ -97,7 +115,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 	@Override
 	public boolean isGeoProperty(String propName) {
-		return wktFields.contains(propName);
+		return (wktFields != null) && wktFields.contains(propName);
 	}
 
 
@@ -432,7 +450,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	}
 
 	private void addProperty(String field, String value, SearchDocument document) {
-		if(wktFields != null && wktFields.contains(field)) {
+		if(isGeoProperty(field)) {
 			document.addGeoProperty(field, value);
 		}
 		else {
@@ -443,12 +461,19 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 
 	@Override
-	public final Collection<BindingSet> evaluate(QuerySpec query) throws SailException
+	public final Collection<BindingSet> evaluate(SearchQueryEvaluator evaluator) throws SailException
 	{
-		Iterable<? extends DocumentScore> result = evaluateQuery(query);
-
-		// generate bindings
-		return generateBindingSets(query, result);
+		if(evaluator instanceof QuerySpec) {
+			QuerySpec query = (QuerySpec) evaluator;
+			Iterable<? extends DocumentScore> result = evaluateQuery(query);
+			return generateBindingSets(query, result);
+		} else if(evaluator instanceof GeoQuerySpec) {
+			GeoQuerySpec query = (GeoQuerySpec) evaluator;
+			Iterable<? extends DocumentScore> result = evaluateQuery(query);
+			return generateBindingSets(query, result);
+		} else {
+			throw new IllegalArgumentException("Unsupported ");
+		}
 	}
 
 	/**
@@ -462,25 +487,18 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	private Iterable<? extends DocumentScore> evaluateQuery(QuerySpec query) {
 		Iterable<? extends DocumentScore> hits = null;
 
-		// get the subject of the query
-		Resource subject = query.getSubject();
-
 		try {
 			// parse the query string to a lucene query
 
 			String sQuery = query.getQueryString();
 
 			if (!sQuery.isEmpty()) {
-				SearchQuery searchQuery = parseQuery(query.getQueryString(), query.getPropertyURI());
-
 				// if the query requests for the snippet, create a highlighter using
 				// this query
-				if (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null) {
-					searchQuery.highlight(query.getPropertyURI());
-				}
+				boolean highlight = (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null);
 
 				// distinguish the two cases of subject == null
-				hits = searchQuery.query(subject);
+				hits = query(query.getSubject(), query.getQueryString(), query.getPropertyURI(), highlight);
 			}
 			else {
 				hits = null;
@@ -531,16 +549,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				String matchVar = query.getMatchesVariableName();
 				if (matchVar != null) {
 					Resource resource = getResource(doc);
-					Value existing = derivedBindings.getValue(matchVar);
-					// if the existing binding contradicts the current binding, than
-					// we can safely skip this permutation
-					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
-						// invalidate the binding
-						derivedBindings = null;
-	
-						// and exit the loop
-						break;
-					}
 					derivedBindings.addBinding(matchVar, resource);
 				}
 	
@@ -600,6 +608,84 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
+	private Iterable<? extends DocumentScore> evaluateQuery(GeoQuerySpec query) {
+		Iterable<? extends DocumentScore> hits = null;
+
+		Literal from = query.getFrom();
+		double distance = query.getDistance();
+		URI units = query.getUnits();
+		try {
+			if(!GEO.WKT_LITERAL.equals(from.getDatatype())) {
+				throw new MalformedQueryException("Unsupported datatype: "+from.getDatatype());
+			}
+			Shape shape = geoContext.readShapeFromWkt(from.getLabel());
+			if(!(shape instanceof Point)) {
+				throw new MalformedQueryException("Geometry literal is not a point: "+from.getLabel());
+			}
+			Point p = (Point) shape;
+			hits = geoQuery(query.getSubjectVar(), query.getGeoProperty(), p.getY(), p.getX(), units, distance, query.getDistanceVar());
+		}
+		catch (Exception e) {
+			logger.error("There was a problem evaluating distance query 'within " + distance + getUnitSymbol(units) + " of " + from.getLabel() + "'!", e);
+		}
+
+		return hits;
+	}
+
+	private static String getUnitSymbol(URI units)
+	{
+		if(GEOF.UOM_METRE.equals(units)) {
+			return "m";
+		} else {
+			return "";
+		}
+	}
+
+	private Collection<BindingSet> generateBindingSets(GeoQuerySpec query, Iterable<? extends DocumentScore> hits)
+		throws SailException
+	{
+		// Since one resource can be returned many times, it can lead now to
+		// multiple occurrences
+		// of the same binding tuple in the BINDINGS clause. This in turn leads to
+		// duplicate answers in the original SPARQL query.
+		// We want to avoid this, so BindingSets added to the result must be
+		// unique.
+		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
+
+		if(hits != null) {
+			// for each hit ...
+			for (DocumentScore hit : hits) {
+				// get the current hit
+				SearchDocument doc = hit.getDocument();
+				if (doc == null)
+					continue;
+
+				String subjVar = query.getSubjectVar();
+				String geoVar = query.getGeoVar();
+				String distanceVar = query.getDistanceVar();
+				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
+				for(String geometry : geometries) {
+					QueryBindingSet derivedBindings = new QueryBindingSet();
+					if(subjVar != null) {
+						Resource resource = getResource(doc);
+						derivedBindings.addBinding(subjVar, resource);
+					}
+					if(geoVar != null) {
+						derivedBindings.addBinding(geoVar, SearchFields.wktToLiteral(geometry));
+					}
+					if(distanceVar != null) {
+						derivedBindings.addBinding(distanceVar, SearchFields.distanceToLiteral(hit.getDistance()));
+					}
+
+					bindingSets.add(derivedBindings);
+				}
+			}
+		}
+
+		// we succeeded
+		return bindingSets;
+	}
+
 	/**
 	 * Returns the Resource corresponding with the specified Document.
 	 */
@@ -617,7 +703,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract void updateDocument(SearchDocument doc) throws IOException;
 	protected abstract void deleteDocument(SearchDocument doc) throws IOException;
 
-	protected abstract SearchQuery parseQuery(String q, URI property) throws MalformedQueryException;
+	protected abstract Iterable<? extends DocumentScore> query(Resource subject, String q, URI property, boolean highlight) throws MalformedQueryException, IOException;
+	protected abstract Iterable<? extends DocumentScore> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
 
 	protected abstract BulkUpdater newBulkUpdate();
 }

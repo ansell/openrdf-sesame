@@ -38,7 +38,7 @@ public interface SearchIndex {
 	void initialize(Properties parameters)
 		throws Exception;
 
-	Collection<BindingSet> evaluate(QuerySpec query)
+	Collection<BindingSet> evaluate(SearchQueryEvaluator query)
 		throws SailException;
 
 	void beginReading()

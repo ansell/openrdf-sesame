@@ -350,7 +350,9 @@ public class LuceneSail extends NotifyingSailWrapper {
 		throws SailException
 	{
 		try {
-			luceneIndex.shutDown();
+			if(luceneIndex != null) {
+				luceneIndex.shutDown();
+			}
 		}
 		catch (IOException e) {
 			throw new SailException(e);

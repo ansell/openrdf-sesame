@@ -11,6 +11,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.GEO;
 
 public final class SearchFields {
 
@@ -54,7 +55,7 @@ public final class SearchFields {
 	public static final String HIGHLIGHTER_POST_TAG = "</B>";
 	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
-	protected static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+	private static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
 
 	private SearchFields() {}
 
@@ -140,6 +141,14 @@ public final class SearchFields {
 	 */
 	public static Literal scoreToLiteral(float score) {
 		return valueFactory.createLiteral(score);
+	}
+
+	public static Literal wktToLiteral(String wkt) {
+		return valueFactory.createLiteral(wkt, GEO.WKT_LITERAL);
+	}
+
+	public static Literal distanceToLiteral(double d) {
+		return valueFactory.createLiteral(d);
 	}
 
 	public static String getSnippet(String highlightedValue)

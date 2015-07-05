@@ -16,14 +16,9 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.util.Collection;
-
-import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.sail.SailException;
 
 public interface SearchQueryEvaluator {
 	QueryModelNode getParentQueryModelNode();
-	Collection<BindingSet> evaluate(SearchIndex searchIndex) throws SailException;
 	void updateQueryModelNodes(boolean hasResult);
 }

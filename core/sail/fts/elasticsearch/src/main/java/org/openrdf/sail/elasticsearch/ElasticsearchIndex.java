@@ -54,16 +54,15 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
-import org.openrdf.sail.lucene.SearchQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.spatial4j.core.context.SpatialContext;
 
 /**
  * @see LuceneSail
@@ -129,8 +128,6 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	private String analyzer;
 	private String queryAnalyzer = "standard";
 
-	private SpatialContext geoContext;
-
 	public ElasticsearchIndex()
 	{
 	}
@@ -150,18 +147,12 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		return new String[] {documentType};
 	}
 
-	public SpatialContext getSpatialContext()
-	{
-		return geoContext;
-	}
-
 	@Override
 	public void initialize(Properties parameters) throws Exception {
 		super.initialize(parameters);
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
-		geoContext = SpatialContext.GEO;
 		String dataDir = parameters.getProperty(LuceneSail.LUCENE_DIR_KEY);
 
 		NodeBuilder nodeBuilder = NodeBuilder.nodeBuilder();
@@ -453,10 +444,35 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
-	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI, boolean highlight) throws MalformedQueryException, IOException
 	{
 		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
-		return new ElasticsearchQuery(client.prepareSearch(), qb, this);
+		SearchRequestBuilder request = client.prepareSearch();
+		if(highlight) {
+			String field = (propertyURI != null) ? propertyURI.toString() : "*";
+			request.addHighlightedField(field);
+			request.setHighlighterPreTags(SearchFields.HIGHLIGHTER_PRE_TAG);
+			request.setHighlighterPostTags(SearchFields.HIGHLIGHTER_POST_TAG);
+			// Elastic Search doesn't really have the same support for fragments as Lucene.
+			// So, we have to get back the whole highlighted value (comma-separated if it is a list)
+			// and then post-process it into fragments ourselves.
+			request.setHighlighterNumOfFragments(0);
+		}
+
+		SearchHits hits;
+		if(subject != null) {
+			hits = search(subject, request, qb);
+		}
+		else {
+			hits = search(request, qb);
+		}
+		return Iterables.transform(hits, new Function<SearchHit,DocumentScore>()
+		{
+			@Override
+			public DocumentScore apply(SearchHit hit) {
+				return new ElasticsearchDocumentScore(hit, geoContext);
+			}
+		});
 	}
 
 	// /**

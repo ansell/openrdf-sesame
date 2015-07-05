@@ -22,9 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -129,7 +127,7 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		String queryStr =
 				 "prefix geo:  <"+GEO.NAMESPACE+">"
 				+"prefix geof: <"+GEOF.NAMESPACE+">"
-				+"select ?toUri where { ?toUri geo:asWKT ?to. filter(geof:distance(?from, ?to, ?units) < ?range) }";
+				+"select ?toUri ?to where { ?toUri geo:asWKT ?to. filter(geof:distance(?from, ?to, ?units) < ?range) }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
 		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (48.8630,2.2871)", GEO.WKT_LITERAL));
 		query.setBinding("units", GEOF.UOM_METRE);
@@ -138,13 +136,15 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		Set<URI> expected = new HashSet<URI>();
-		expected.add(SUBJECT_1);
-		expected.add(SUBJECT_2);
+		Map<URI,Literal> expected = new HashMap<URI,Literal>();
+		expected.put(SUBJECT_1, EIFFEL_TOWER);
+		expected.put(SUBJECT_2, NOTRE_DAME);
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
-			assertTrue(expected.remove(bindings.getValue("toUri")));
+			Literal location = expected.remove(bindings.getValue("toUri"));
+			assertNotNull(location);
+			assertEquals(location, bindings.getValue("to"));
 		}
 		assertTrue(expected.isEmpty());
 		result.close();

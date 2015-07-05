@@ -21,9 +21,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -47,25 +49,34 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.function.CustomScoreProvider;
+import org.apache.lucene.search.function.CustomScoreQuery;
+import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.spatial.tier.DistanceQueryBuilder;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractLuceneIndex;
 import org.openrdf.sail.lucene.AbstractReaderMonitor;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
-import org.openrdf.sail.lucene.SearchQuery;
 import org.openrdf.sail.lucene.SimpleBulkUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +84,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.distance.DistanceUtils;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -87,6 +99,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// do NOT set this to Integer.MAX_VALUE, because this breaks fuzzy queries
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
 	}
+
+	public static final String GEOHASH_FIELD_PREFIX = "_geohash_";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -113,8 +127,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
-	private SpatialContext geoContext;
-	private CartesianTiers geoTiers;
+	private final Map<String,CartesianTiers> geoFieldsToTiers = new HashMap<String,CartesianTiers>();
 
 	public LuceneIndex()
 	{}
@@ -134,10 +147,13 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public LuceneIndex(Directory directory, Analyzer analyzer)
 		throws IOException
 	{
+		super(SpatialContext.GEO);
 		this.directory = directory;
 		this.analyzer = analyzer;
-		this.geoContext = SpatialContext.GEO;
-		this.geoTiers = new CartesianTiers();
+		for(String geoProperty : wktFields) {
+			CartesianTiers tiers = new CartesianTiers(geoProperty);
+			this.geoFieldsToTiers.put(geoProperty, tiers);
+		}
 
 		postInit();
 	}
@@ -149,12 +165,14 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
-		this.geoContext = SpatialContext.GEO;
 		String minMileProp = parameters.getProperty("minMiles");
 		String maxMileProp = parameters.getProperty("maxMiles");
 		int maxTier = (minMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(minMileProp)) : CartesianTiers.DEFAULT_MAX_TIER;
 		int minTier = (maxMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(maxMileProp)) : CartesianTiers.DEFAULT_MIN_TIER;
-		this.geoTiers = new CartesianTiers(minTier, maxTier);
+		for(String geoProperty : wktFields) {
+			CartesianTiers tiers = new CartesianTiers(geoProperty, minTier, maxTier);
+			this.geoFieldsToTiers.put(geoProperty, tiers);
+		}
 
 		postInit();
 	}
@@ -220,13 +238,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return analyzer;
 	}
 
-	public SpatialContext getSpatialContext()
-	{
-		return geoContext;
-	}
-
-	public CartesianTiers getCartesianTiers() {
-		return geoTiers;		
+	public CartesianTiers getCartesianTiers(String geoProperty) {
+		return geoFieldsToTiers.get(geoProperty);		
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -309,7 +322,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	protected SearchDocument getDocument(String id) throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document, geoContext, geoTiers) : null;
+		return (document != null) ? new LuceneDocument(document, this) : null;
 	}
 
 	@Override
@@ -319,7 +332,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		{
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc, geoContext, geoTiers);
+				return new LuceneDocument(doc, LuceneIndex.this);
 			}
 		});
 	}
@@ -327,7 +340,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context)
 	{
-		return new LuceneDocument(id, resourceId, context, geoContext, geoTiers);
+		return new LuceneDocument(id, resourceId, context, this);
 	}
 
 	@Override
@@ -340,7 +353,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (Fieldable oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument, geoContext, geoTiers);
+		return new LuceneDocument(newDocument, this);
 	}
 
 	@Override
@@ -620,7 +633,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
-	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI, boolean highlight) throws MalformedQueryException, IOException
 	{
 		Query q;
 		try {
@@ -629,7 +642,75 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		catch (ParseException e) {
 			throw new MalformedQueryException(e);
 		}
-		return new LuceneQuery(q, this);
+
+		final Highlighter highlighter;
+		if(highlight) {
+			Formatter formatter = new SimpleHTMLFormatter(SearchFields.HIGHLIGHTER_PRE_TAG, SearchFields.HIGHLIGHTER_POST_TAG);
+			highlighter = new Highlighter(formatter, new QueryScorer(q));
+		} else {
+			highlighter = null;
+		}
+
+		TopDocs docs;
+		if(subject != null) {
+			docs = search(subject, q);
+		}
+		else {
+			docs = search(q);
+		}
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentScore>()
+		{
+			@Override
+			public DocumentScore apply(ScoreDoc doc) {
+				return new LuceneDocumentScore(doc, highlighter, LuceneIndex.this);
+			}
+		});
+	}
+
+	@Override
+	protected Iterable<? extends DocumentScore> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException
+	{
+		final double miles;
+		if(GEOF.UOM_METRE.equals(units)) {
+			miles = DistanceUtils.KM_TO_MILES*distance/1000.0;
+		} else if(GEOF.UOM_DEGREE.equals(units)) {
+			miles = DistanceUtils.degrees2Dist(distance, DistanceUtils.EARTH_MEAN_RADIUS_MI);
+		} else if(GEOF.UOM_RADIAN.equals(units)) {
+			miles = DistanceUtils.radians2Dist(distance, DistanceUtils.EARTH_MEAN_RADIUS_MI);
+		} else if(GEOF.UOM_UNITY.equals(units)) {
+			miles = 2.0*Math.PI*DistanceUtils.EARTH_MEAN_RADIUS_MI;
+		} else {
+			throw new MalformedQueryException("Unsupported units: "+units);
+		}
+
+		CartesianTiers tiers = geoFieldsToTiers.get(geoProperty.stringValue());
+		final DistanceQueryBuilder qb = new DistanceQueryBuilder(lat, lon, miles, GEOHASH_FIELD_PREFIX+geoProperty.toString(), tiers.getFieldPrefix(), true, tiers.getMinTier(), tiers.getMaxTier());
+		CustomScoreQuery customScore = new CustomScoreQuery(new MatchAllDocsQuery()) {
+			@Override
+			protected CustomScoreProvider getCustomScoreProvider(IndexReader reader) {
+				return new CustomScoreProvider(reader) {
+					@Override
+					public float customScore(int doc, float subQueryScore, float valSrcScore) {
+						Double distance = qb.getDistanceFilter().getDistance(doc);
+						if(distance == null) {
+							return 0.0f;
+						}
+						// we normalise the score between 0 and 1
+						float score = (float) (1.0/(1.0+distance/miles));
+						return score;
+					}
+				};
+			}
+		};
+
+		TopDocs docs = getIndexSearcher().search(customScore, qb.getFilter(), getMaxDocs());
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentScore>()
+		{
+			@Override
+			public DocumentScore apply(ScoreDoc doc) {
+				return new LuceneDocumentScore(doc, qb.getDistanceFilter(), LuceneIndex.this);
+			}
+		});
 	}
 
 	/**
@@ -703,6 +784,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public TopDocs search(Query query)
 		throws IOException
 	{
+		return getIndexSearcher().search(query, getMaxDocs());
+	}
+
+	private int getMaxDocs() throws IOException
+	{
 		int nDocs;
 		if(maxDocs > 0) {
 			nDocs = maxDocs;
@@ -710,7 +796,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		else {
 			nDocs = Math.max(getIndexReader().numDocs(), 1);
 		}
-		return getIndexSearcher().search(query, nDocs);
+		return nDocs;
 	}
 
 	private QueryParser getQueryParser(URI propertyURI) {

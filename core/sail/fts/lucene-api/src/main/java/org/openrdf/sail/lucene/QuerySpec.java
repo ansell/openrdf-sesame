@@ -16,17 +16,13 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.util.Collection;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.sail.SailException;
 
 import com.google.common.base.Supplier;
 
@@ -74,11 +70,6 @@ public class QuerySpec implements SearchQueryEvaluator {
 	public QueryModelNode getParentQueryModelNode()
 	{
 		return getMatchesPattern();
-	}
-
-	@Override
-	public Collection<BindingSet> evaluate(SearchIndex searchIndex) throws SailException {
-		return searchIndex.evaluate(this);
 	}
 
 	@Override
