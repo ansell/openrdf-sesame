@@ -76,7 +76,7 @@ public class FunctionArguments {
 			v = DistanceUtils.toRadians(degs);
 		}
 		else if(GEOF.UOM_UNITY.equals(units)) {
-			v = degs/360.0;
+			v = degs/180.0;
 		}
 		else if(GEOF.UOM_METRE.equals(units)) {
 			v = DistanceUtils.degrees2Dist(degs, DistanceUtils.EARTH_MEAN_RADIUS_KM)*1000.0;
@@ -96,7 +96,7 @@ public class FunctionArguments {
 			degs = DistanceUtils.toDegrees(v);
 		}
 		else if(GEOF.UOM_UNITY.equals(units)) {
-			degs = v*360.0;
+			degs = v*180.0;
 		}
 		else if(GEOF.UOM_METRE.equals(units)) {
 			degs = DistanceUtils.dist2Degrees(v/1000.0, DistanceUtils.EARTH_MEAN_RADIUS_KM);
