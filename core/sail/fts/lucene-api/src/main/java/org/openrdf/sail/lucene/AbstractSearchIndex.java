@@ -469,7 +469,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			return generateBindingSets(query, result);
 		} else if(evaluator instanceof GeoQuerySpec) {
 			GeoQuerySpec query = (GeoQuerySpec) evaluator;
-			Iterable<? extends DocumentScore> result = evaluateQuery(query);
+			Iterable<? extends DocumentDistance> result = evaluateQuery(query);
 			return generateBindingSets(query, result);
 		} else {
 			throw new IllegalArgumentException("Unsupported ");
@@ -608,8 +608,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
-	private Iterable<? extends DocumentScore> evaluateQuery(GeoQuerySpec query) {
-		Iterable<? extends DocumentScore> hits = null;
+	private Iterable<? extends DocumentDistance> evaluateQuery(GeoQuerySpec query) {
+		Iterable<? extends DocumentDistance> hits = null;
 
 		Literal from = query.getFrom();
 		double distance = query.getDistance();
@@ -641,7 +641,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		}
 	}
 
-	private Collection<BindingSet> generateBindingSets(GeoQuerySpec query, Iterable<? extends DocumentScore> hits)
+	private Collection<BindingSet> generateBindingSets(GeoQuerySpec query, Iterable<? extends DocumentDistance> hits)
 		throws SailException
 	{
 		// Since one resource can be returned many times, it can lead now to
@@ -654,7 +654,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 		if(hits != null) {
 			// for each hit ...
-			for (DocumentScore hit : hits) {
+			for (DocumentDistance hit : hits) {
 				// get the current hit
 				SearchDocument doc = hit.getDocument();
 				if (doc == null)
@@ -704,7 +704,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract void deleteDocument(SearchDocument doc) throws IOException;
 
 	protected abstract Iterable<? extends DocumentScore> query(Resource subject, String q, URI property, boolean highlight) throws MalformedQueryException, IOException;
-	protected abstract Iterable<? extends DocumentScore> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
+	protected abstract Iterable<? extends DocumentDistance> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
 
 	protected abstract BulkUpdater newBulkUpdate();
 }

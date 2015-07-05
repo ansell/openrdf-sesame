@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.Highlighter;
-import org.apache.lucene.spatial.tier.DistanceFilter;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
@@ -34,21 +33,12 @@ public class LuceneDocumentScore implements DocumentScore
 {
 	private final ScoreDoc scoreDoc;
 	private final Highlighter highlighter;
-	private final DistanceFilter distanceFilter;
 	private final LuceneIndex index;
 	private LuceneDocument fullDoc;
 
 	public LuceneDocumentScore(ScoreDoc doc, Highlighter highlighter, LuceneIndex index) {
 		this.scoreDoc = doc;
 		this.highlighter = highlighter;
-		this.distanceFilter = null;
-		this.index = index;
-	}
-
-	public LuceneDocumentScore(ScoreDoc doc, DistanceFilter df, LuceneIndex index) {
-		this.scoreDoc = doc;
-		this.distanceFilter = df;
-		this.highlighter = null;
 		this.index = index;
 	}
 
@@ -72,10 +62,6 @@ public class LuceneDocumentScore implements DocumentScore
 	@Override
 	public float getScore() {
 		return scoreDoc.score;
-	}
-
-	public double getDistance() {
-		return distanceFilter.getDistance(scoreDoc.doc);
 	}
 
 	@Override

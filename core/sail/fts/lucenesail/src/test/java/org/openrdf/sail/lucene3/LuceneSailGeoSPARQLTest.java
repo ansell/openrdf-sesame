@@ -14,15 +14,23 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene;
+package org.openrdf.sail.lucene3;
 
-public interface DocumentScore
-{
-	/**
-	 * Returns null if the document no longer exists.
-	 */
-	SearchDocument getDocument();
-	float getScore();
-	boolean isHighlighted();
-	Iterable<String> getSnippets(String field);
+import java.io.IOException;
+
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
+import org.openrdf.sail.lucene.AbstractLuceneSailGeoSPARQLTest;
+import org.openrdf.sail.lucene.LuceneSail;
+
+public class LuceneSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
+	private LuceneIndex index;
+
+	@Override
+	protected void configure(LuceneSail sail) throws IOException
+	{
+		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer(Version.LUCENE_35));
+		sail.setLuceneIndex(index);
+	}
 }

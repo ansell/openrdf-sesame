@@ -18,13 +18,14 @@ package org.openrdf.sail.lucene3;
 
 import org.apache.lucene.spatial.tier.projections.CartesianTierPlotter;
 import org.apache.lucene.spatial.tier.projections.IProjector;
+import org.apache.lucene.spatial.tier.projections.SinusoidalProjector;
 
 public class CartesianTiers {
 	public static final int DEFAULT_MIN_TIER = 2;
 	public static final int DEFAULT_MAX_TIER = 15;
 	private static final CartesianTierPlotter utils = new CartesianTierPlotter(0, null, null);
 
-	private final IProjector projector = new FixedSinusoidalProjector();
+	private final IProjector projector = new SinusoidalProjector();
 	private final String fieldPrefix;
 	private final int minTier;
 	private final int maxTier;

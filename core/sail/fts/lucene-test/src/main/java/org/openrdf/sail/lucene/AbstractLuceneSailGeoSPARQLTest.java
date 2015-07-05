@@ -63,11 +63,11 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 
 	public static final URI CONTEXT_3 = new URIImpl("urn:context3");
 
-	public static final Literal EIFFEL_TOWER = new LiteralImpl("POINT (48.8582 2.2945)", GEO.WKT_LITERAL);
-	public static final Literal ARC_TRIOMPHE = new LiteralImpl("POINT (48.8738 2.2950)", GEO.WKT_LITERAL);
-	public static final Literal NOTRE_DAME = new LiteralImpl("POINT (48.8547 2.3465)", GEO.WKT_LITERAL);
+	public static final Literal EIFFEL_TOWER = new LiteralImpl("POINT (2.2945 48.8582)", GEO.WKT_LITERAL);
+	public static final Literal ARC_TRIOMPHE = new LiteralImpl("POINT (2.2950 48.8738)", GEO.WKT_LITERAL);
+	public static final Literal NOTRE_DAME = new LiteralImpl("POINT (2.3465 48.8547)", GEO.WKT_LITERAL);
 
-	private static final double ERROR = 1000.0;
+	private static final double ERROR = 1.0;
 
 	protected LuceneSail sail;
 
@@ -129,7 +129,7 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 				+"prefix geof: <"+GEOF.NAMESPACE+">"
 				+"select ?toUri ?to where { ?toUri geo:asWKT ?to. filter(geof:distance(?from, ?to, ?units) < ?range) }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (48.8630,2.2871)", GEO.WKT_LITERAL));
+		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (2.2871 48.8630)", GEO.WKT_LITERAL));
 		query.setBinding("units", GEOF.UOM_METRE);
 		query.setBinding("range", sail.getValueFactory().createLiteral(1500.0));
 
@@ -138,7 +138,7 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		// check the results
 		Map<URI,Literal> expected = new HashMap<URI,Literal>();
 		expected.put(SUBJECT_1, EIFFEL_TOWER);
-		expected.put(SUBJECT_2, NOTRE_DAME);
+		expected.put(SUBJECT_2, ARC_TRIOMPHE);
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
@@ -162,7 +162,7 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 				+ " filter(?dist < ?range)"
 				+ " }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (48.8630,2.2871)", GEO.WKT_LITERAL));
+		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (2.2871 48.8630)", GEO.WKT_LITERAL));
 		query.setBinding("units", GEOF.UOM_METRE);
 		query.setBinding("range", sail.getValueFactory().createLiteral(1500.0));
 
@@ -170,8 +170,8 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 
 		// check the results
 		Map<URI,Literal> expected = new HashMap<URI,Literal>();
-		expected.put(SUBJECT_1, sail.getValueFactory().createLiteral(770.0));
-		expected.put(SUBJECT_2, sail.getValueFactory().createLiteral(1300.0));
+		expected.put(SUBJECT_1, sail.getValueFactory().createLiteral(761.0));
+		expected.put(SUBJECT_2, sail.getValueFactory().createLiteral(1334.0));
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();

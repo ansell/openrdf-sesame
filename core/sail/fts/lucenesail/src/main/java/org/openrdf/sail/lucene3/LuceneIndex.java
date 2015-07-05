@@ -73,6 +73,7 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractLuceneIndex;
 import org.openrdf.sail.lucene.AbstractReaderMonitor;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentDistance;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -668,7 +669,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentScore> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException
+	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty, double lat, double lon, final URI units, double distance, String distanceVar) throws MalformedQueryException, IOException
 	{
 		final double miles;
 		if(GEOF.UOM_METRE.equals(units)) {
@@ -678,7 +679,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		} else if(GEOF.UOM_RADIAN.equals(units)) {
 			miles = DistanceUtils.radians2Dist(distance, DistanceUtils.EARTH_MEAN_RADIUS_MI);
 		} else if(GEOF.UOM_UNITY.equals(units)) {
-			miles = 2.0*Math.PI*DistanceUtils.EARTH_MEAN_RADIUS_MI;
+			miles = distance*Math.PI*DistanceUtils.EARTH_MEAN_RADIUS_MI;
 		} else {
 			throw new MalformedQueryException("Unsupported units: "+units);
 		}
@@ -696,7 +697,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 							return 0.0f;
 						}
 						// we normalise the score between 0 and 1
-						float score = (float) (1.0/(1.0+distance/miles));
+						float score = (float) (1.0 - distance/miles);
 						return score;
 					}
 				};
@@ -704,11 +705,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		};
 
 		TopDocs docs = getIndexSearcher().search(customScore, qb.getFilter(), getMaxDocs());
-		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentScore>()
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentDistance>()
 		{
 			@Override
-			public DocumentScore apply(ScoreDoc doc) {
-				return new LuceneDocumentScore(doc, qb.getDistanceFilter(), LuceneIndex.this);
+			public DocumentDistance apply(ScoreDoc doc) {
+				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, qb.getDistanceFilter(), LuceneIndex.this);
 			}
 		});
 	}
