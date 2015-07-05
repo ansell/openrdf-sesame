@@ -48,6 +48,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -60,7 +61,9 @@ import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-import org.apache.lucene.spatial.tier.DistanceQueryBuilder;
+import org.apache.lucene.spatial.geohash.GeoHashDistanceFilter;
+import org.apache.lucene.spatial.tier.DistanceFilter;
+import org.apache.lucene.spatial.tier.FixedCartesianPolyFilterBuilder;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
@@ -685,14 +688,17 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 
 		CartesianTiers tiers = geoFieldsToTiers.get(geoProperty.stringValue());
-		final DistanceQueryBuilder qb = new DistanceQueryBuilder(lat, lon, miles, GEOHASH_FIELD_PREFIX+geoProperty.toString(), tiers.getFieldPrefix(), true, tiers.getMinTier(), tiers.getMaxTier());
+		FixedCartesianPolyFilterBuilder cpf = new FixedCartesianPolyFilterBuilder(tiers.getFieldPrefix(), tiers.getMinTier(), tiers.getMaxTier());
+		Filter cartesianFilter = cpf.getBoundingArea(lat, lon, miles);
+		final DistanceFilter filter = new GeoHashDistanceFilter(cartesianFilter, lat, lon, miles, GEOHASH_FIELD_PREFIX+geoProperty.toString());
+
 		CustomScoreQuery customScore = new CustomScoreQuery(new MatchAllDocsQuery()) {
 			@Override
 			protected CustomScoreProvider getCustomScoreProvider(IndexReader reader) {
 				return new CustomScoreProvider(reader) {
 					@Override
 					public float customScore(int doc, float subQueryScore, float valSrcScore) {
-						Double distance = qb.getDistanceFilter().getDistance(doc);
+						Double distance = filter.getDistance(doc);
 						if(distance == null) {
 							return 0.0f;
 						}
@@ -704,12 +710,12 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			}
 		};
 
-		TopDocs docs = getIndexSearcher().search(customScore, qb.getFilter(), getMaxDocs());
+		TopDocs docs = getIndexSearcher().search(customScore, filter, getMaxDocs());
 		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentDistance>()
 		{
 			@Override
 			public DocumentDistance apply(ScoreDoc doc) {
-				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, qb.getDistanceFilter(), LuceneIndex.this);
+				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, filter, LuceneIndex.this);
 			}
 		});
 	}
