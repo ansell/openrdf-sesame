@@ -38,22 +38,30 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.common.geo.GeoDistance;
+import org.elasticsearch.common.geo.GeoDistance.FixedSourceDistance;
+import org.elasticsearch.common.geo.GeoHashUtils;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentDistance;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -63,6 +71,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.spatial4j.core.distance.DistanceUtils;
 
 /**
  * @see LuceneSail
@@ -110,7 +119,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	public static final String ELASTICSEARCH_KEY_PREFIX = "elasticsearch.";
 
-	public static final String GEO_POINT_FIELD_PREFIX = "_geo_point_";
+	public static final String GEOHASH_FIELD_PREFIX = "_geohash_";
 
 	// we do everything synchronously so no point using another thread
 	private static final boolean OPERATION_THREADED = false;
@@ -258,7 +267,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 			.field("index", "analyzed")
 		.endObject();
 		for(String wktField : wktFields) {
-			typeMapping.startObject(wktField)
+			typeMapping.startObject(GEOHASH_FIELD_PREFIX+wktField)
 				.field("type", "geo_point")
 			.endObject();
 		}
@@ -500,6 +509,45 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
 		QueryBuilder combinedQuery = QueryBuilders.boolQuery().must(idQuery).must(query);
 		return search(request, combinedQuery);
+	}
+
+	@Override
+	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar,
+			final URI geoProperty, double lat, double lon, final URI units,
+			double distance, String distanceVar)
+			throws MalformedQueryException, IOException {
+		double unitDist;
+		final DistanceUnit unit;
+		if(GEOF.UOM_METRE.equals(units)) {
+			unit = DistanceUnit.METERS;
+			unitDist = distance;
+		} else if(GEOF.UOM_DEGREE.equals(units)) {
+			unit = DistanceUnit.KILOMETERS;
+			unitDist = unit.getDistancePerDegree()*distance;
+		} else if(GEOF.UOM_RADIAN.equals(units)) {
+			unit = DistanceUnit.KILOMETERS;
+			unitDist = DistanceUtils.radians2Dist(distance, DistanceUtils.EARTH_MEAN_RADIUS_KM);
+		} else if(GEOF.UOM_UNITY.equals(units)) {
+			unit = DistanceUnit.KILOMETERS;
+			unitDist = distance*Math.PI*DistanceUtils.EARTH_MEAN_RADIUS_KM;
+		} else {
+			throw new MalformedQueryException("Unsupported units: "+units);
+		}
+
+		final String fieldName = GEOHASH_FIELD_PREFIX+geoProperty.toString();
+		QueryBuilder qb = QueryBuilders.functionScoreQuery(
+				FilterBuilders.geoDistanceFilter(fieldName).lat(lat).lon(lon).distance(unitDist, unit),
+				ScoreFunctionBuilders.linearDecayFunction(fieldName, GeoHashUtils.encode(lat, lon), new DistanceUnit.Distance(unitDist, unit)));
+		SearchRequestBuilder request = client.prepareSearch();
+		SearchHits hits = search(request, qb);
+		final FixedSourceDistance srcDistance = GeoDistance.DEFAULT.fixedSourceDistance(lat, lon, unit);
+		return Iterables.transform(hits, new Function<SearchHit,DocumentDistance>()
+		{
+			@Override
+			public DocumentDistance apply(SearchHit hit) {
+				return new ElasticsearchDocumentDistance(hit, geoContext, fieldName, units, srcDistance, unit);
+			}
+		});
 	}
 
 	/**

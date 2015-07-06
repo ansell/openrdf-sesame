@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.elasticsearch.common.geo.GeoHashUtils;
 import org.elasticsearch.search.SearchHit;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
@@ -124,10 +125,7 @@ public class ElasticsearchDocument implements SearchDocument {
 			Shape shape = geoContext.readShapeFromWkt(text);
 			if(shape instanceof Point) {
 				Point p = (Point) shape;
-				Map<String,Number> value = new HashMap<String,Number>(4);
-				value.put("lat", p.getY());
-				value.put("lon", p.getX());
-				fields.put(ElasticsearchIndex.GEO_POINT_FIELD_PREFIX+name, value);
+				fields.put(ElasticsearchIndex.GEOHASH_FIELD_PREFIX+name, GeoHashUtils.encode(p.getY(), p.getX()));
 			}
 		} catch (ParseException e) {
 			// ignore

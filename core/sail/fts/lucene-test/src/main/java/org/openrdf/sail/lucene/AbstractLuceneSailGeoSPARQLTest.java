@@ -67,7 +67,7 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 	public static final Literal ARC_TRIOMPHE = new LiteralImpl("POINT (2.2950 48.8738)", GEO.WKT_LITERAL);
 	public static final Literal NOTRE_DAME = new LiteralImpl("POINT (2.3465 48.8547)", GEO.WKT_LITERAL);
 
-	private static final double ERROR = 1.0;
+	private static final double ERROR = 2.0;
 
 	protected LuceneSail sail;
 
@@ -170,8 +170,8 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 
 		// check the results
 		Map<URI,Literal> expected = new HashMap<URI,Literal>();
-		expected.put(SUBJECT_1, sail.getValueFactory().createLiteral(761.0));
-		expected.put(SUBJECT_2, sail.getValueFactory().createLiteral(1334.0));
+		expected.put(SUBJECT_1, sail.getValueFactory().createLiteral(760.0));
+		expected.put(SUBJECT_2, sail.getValueFactory().createLiteral(1332.5));
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
