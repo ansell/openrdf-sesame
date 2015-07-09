@@ -14,49 +14,30 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.lucene3;
+package org.openrdf.sail.solr;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.spatial.tier.DistanceFilter;
 import org.openrdf.model.URI;
 import org.openrdf.sail.lucene.DocumentDistance;
 import org.openrdf.sail.lucene.SearchDocument;
-import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.util.GeoUnits;
 
-import com.google.common.collect.Sets;
-
-public class LuceneDocumentDistance implements DocumentDistance
-{
-	private final ScoreDoc scoreDoc;
-	private final String geoProperty;
+public class SolrDocumentDistance implements DocumentDistance {
+	private final SolrSearchDocument doc;
 	private final URI units;
-	private final DistanceFilter distanceFilter;
-	private final LuceneIndex index;
-	private LuceneDocument fullDoc;
 
-	public LuceneDocumentDistance(ScoreDoc doc, String geoProperty, URI units, DistanceFilter df, LuceneIndex index) {
-		this.scoreDoc = doc;
-		this.geoProperty = geoProperty;
+	public SolrDocumentDistance(SolrSearchDocument doc, URI units) {
+		this.doc = doc;
 		this.units = units;
-		this.distanceFilter = df;
-		this.index = index;
 	}
 
 	@Override
 	public SearchDocument getDocument() {
-		if(fullDoc == null)
-		{
-			Document doc = index.getDocument(scoreDoc.doc, Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoProperty));
-			fullDoc = new LuceneDocument(doc, index);
-		}
-		return fullDoc;
+		return doc;
 	}
 
 	@Override
 	public double getDistance() {
-		double miles = distanceFilter.getDistance(scoreDoc.doc);
-		return GeoUnits.fromMiles(miles, units);
+		Number s = ((Number) doc.getDocument().get(SolrIndex.DISTANCE_FIELD));
+		return (s != null) ? GeoUnits.fromKilometres(s.doubleValue(), units) : 0.0;
 	}
 }

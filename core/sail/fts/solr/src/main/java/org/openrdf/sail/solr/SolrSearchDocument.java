@@ -85,8 +85,7 @@ public class SolrSearchDocument implements SearchDocument {
 
 	@Override
 	public void addGeoProperty(String name, String text) {
-		addField(name, text, doc); // stored
-		addField(SolrIndex.GEO_FIELD_PREFIX+name, text, doc); // indexed
+		addField(name, text, doc);
 	}
 
 	@Override

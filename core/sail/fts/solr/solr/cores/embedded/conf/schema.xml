@@ -41,9 +41,8 @@
    <field name="uri" type="string" required="true"/>
    <field name="context" type="string" required="false" default="null"/>
    <field name="text" type="text"/>
-   <field name="http://www.opengis.net/ont/geosparql#asWKT" type="string" indexed="false" required="false"/>
+   <field name="http://www.opengis.net/ont/geosparql#asWKT" type="geo" required="false"/>
 
-   <dynamicField name="_geo_*" type="geo" required="false"/>
    <dynamicField name="*" type="text"/>
 
    <uniqueKey>id</uniqueKey>
@@ -68,8 +67,7 @@
      </analyzer>
    </fieldType>
 
-   <fieldType name="geo" class="solr.SpatialRecursivePrefixTreeFieldType" distanceUnits="kilometers">
-   </fieldType>
+   <fieldType name="geo" class="solr.SpatialRecursivePrefixTreeFieldType" distanceUnits="kilometers"/>
 
    <fieldType name="int" class="solr.TrieIntField" precisionStep="0" positionIncrementGap="0"/>
    <fieldType name="float" class="solr.TrieFloatField" precisionStep="0" positionIncrementGap="0"/>

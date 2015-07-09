@@ -70,7 +70,6 @@ import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractLuceneIndex;
@@ -82,13 +81,13 @@ import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.SimpleBulkUpdater;
+import org.openrdf.sail.lucene.util.GeoUnits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
-import com.spatial4j.core.distance.DistanceUtils;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -674,18 +673,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	@Override
 	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty, double lat, double lon, final URI units, double distance, String distanceVar) throws MalformedQueryException, IOException
 	{
-		final double miles;
-		if(GEOF.UOM_METRE.equals(units)) {
-			miles = DistanceUtils.KM_TO_MILES*distance/1000.0;
-		} else if(GEOF.UOM_DEGREE.equals(units)) {
-			miles = DistanceUtils.degrees2Dist(distance, DistanceUtils.EARTH_MEAN_RADIUS_MI);
-		} else if(GEOF.UOM_RADIAN.equals(units)) {
-			miles = DistanceUtils.radians2Dist(distance, DistanceUtils.EARTH_MEAN_RADIUS_MI);
-		} else if(GEOF.UOM_UNITY.equals(units)) {
-			miles = distance*Math.PI*DistanceUtils.EARTH_MEAN_RADIUS_MI;
-		} else {
-			throw new MalformedQueryException("Unsupported units: "+units);
-		}
+		final double miles = GeoUnits.toMiles(distance, units);
 
 		CartesianTiers tiers = geoFieldsToTiers.get(geoProperty.stringValue());
 		FixedCartesianPolyFilterBuilder cpf = new FixedCartesianPolyFilterBuilder(tiers.getFieldPrefix(), tiers.getMinTier(), tiers.getMaxTier());

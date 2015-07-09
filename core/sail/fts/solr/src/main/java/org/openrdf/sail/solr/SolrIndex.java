@@ -32,16 +32,19 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.params.SpatialParams;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentDistance;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
+import org.openrdf.sail.lucene.util.GeoUnits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +58,7 @@ public class SolrIndex extends AbstractSearchIndex {
 
 	public static final String SERVER_KEY = "server";
 
-	public static final String GEO_FIELD_PREFIX = "_geo_";
+	public static final String DISTANCE_FIELD = "_dist";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -349,6 +352,44 @@ public class SolrIndex extends AbstractSearchIndex {
 		String idQuery = termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
 		query.setQuery(query.getQuery()+" AND "+idQuery);
 		return search(query);
+	}
+
+	@Override
+	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar,
+			URI geoProperty, double lat, double lon, final URI units,
+			double distance, String distanceVar)
+			throws MalformedQueryException, IOException {
+		double kms = GeoUnits.toKilometres(distance, units);
+
+		SolrQuery q = new SolrQuery("{!geofilt score=recipDistance}");
+		//q.addFilterQuery("{!geofilt score=recipDistance filter=false}");
+		q.set(SpatialParams.FIELD, geoProperty.toString());
+		q.set(SpatialParams.POINT, lat+","+lon);
+		q.set(SpatialParams.DISTANCE, Double.toString(kms));
+		q.addField(SearchFields.URI_FIELD_NAME);
+		// ':' is part of the fl parameter syntax so we can't use the full property field name
+		// instead we use wildcard + local part of the property URI
+		q.addField("*"+geoProperty.getLocalName());
+		if(distanceVar != null) {
+			q.addField(DISTANCE_FIELD+":geodist()");
+		}
+
+		QueryResponse response;
+		try {
+			response = search(q);
+		} catch (SolrServerException e) {
+			throw new IOException(e);
+		}
+
+		SolrDocumentList results = response.getResults();
+		return Iterables.transform(results, new Function<SolrDocument,DocumentDistance>()
+		{
+			@Override
+			public DocumentDistance apply(SolrDocument document) {
+				SolrSearchDocument doc = new SolrSearchDocument(document);
+				return new SolrDocumentDistance(doc, units);
+			}
+		});
 	}
 
 	/**

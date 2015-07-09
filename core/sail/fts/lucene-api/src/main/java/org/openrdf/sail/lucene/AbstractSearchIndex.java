@@ -472,7 +472,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			Iterable<? extends DocumentDistance> result = evaluateQuery(query);
 			return generateBindingSets(query, result);
 		} else {
-			throw new IllegalArgumentException("Unsupported ");
+			throw new IllegalArgumentException("Unsupported "+SearchQueryEvaluator.class.getSimpleName()+": "+evaluator.getClass().getName());
 		}
 	}
 
