@@ -67,7 +67,7 @@
      </analyzer>
    </fieldType>
 
-   <fieldType name="geo" class="solr.SpatialRecursivePrefixTreeFieldType" distanceUnits="kilometers"/>
+   <fieldType name="geo" class="solr.SpatialRecursivePrefixTreeFieldType" indexed="true" stored="true" distanceUnits="kilometers"/>
 
    <fieldType name="int" class="solr.TrieIntField" precisionStep="0" positionIncrementGap="0"/>
    <fieldType name="float" class="solr.TrieFloatField" precisionStep="0" positionIncrementGap="0"/>

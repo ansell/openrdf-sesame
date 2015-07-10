@@ -33,12 +33,14 @@ import java.util.Set;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Shape;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
@@ -54,6 +56,8 @@ import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -67,8 +71,12 @@ import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.spatial.SpatialStrategy;
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTreeFactory;
+import org.apache.lucene.spatial.query.SpatialArgs;
+import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
@@ -80,6 +88,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.lucene.util.GeoUnits;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -94,6 +103,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// do NOT set this to Integer.MAX_VALUE, because this breaks fuzzy queries
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
 	}
+
+	public static final String GEO_FIELD_PREFIX = "_geo_";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -502,6 +513,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		document.add(new TextField(predicate, text, Store.YES));
 	}
 
+	public static void addStoredOnlyPredicateField(String predicate, String text, Document document) {
+		// store this predicate
+		document.add(new StoredField(predicate, text));
+	}
+
 	public static void addTextField(String text, Document document) {
 		// and in TEXT_FIELD_NAME
 		document.add(new TextField(SearchFields.TEXT_FIELD_NAME, text, Store.YES));
@@ -661,6 +677,26 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			@Override
 			public DocumentScore apply(ScoreDoc doc) {
 				return new LuceneDocumentScore(doc, highlighter, LuceneIndex.this);
+			}
+		});
+	}
+
+	@Override
+	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty, double lat,
+			double lon, final URI units, double distance, String distanceVar)
+		throws MalformedQueryException, IOException
+	{
+		double degs = GeoUnits.toDegrees(distance, units);
+		SpatialStrategy strategy = new RecursivePrefixTreeStrategy(spt, GEO_FIELD_PREFIX+geoProperty.toString());
+		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(lon, lat, degs);
+		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.IsWithin, boundingCircle));
+
+		TopDocs docs = search(new CustomScoreQuery(q, new FunctionQuery(strategy.makeRecipDistanceValueSource(boundingCircle))));
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentDistance>()
+		{
+			@Override
+			public DocumentDistance apply(ScoreDoc doc) {
+				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, boundingCircle.getCenter(), LuceneIndex.this);
 			}
 		});
 	}

@@ -146,9 +146,10 @@ public class LuceneDocument implements SearchDocument
 
 	@Override
 	public void addGeoProperty(String field, String value) {
+		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
 		try {
 			Shape shape = geoContext.readShapeFromWkt(value);
-			SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, field);
+			SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, LuceneIndex.GEO_FIELD_PREFIX+field);
 			for(IndexableField f : geoStrategy.createIndexableFields(shape)) {
 				doc.add(f);
 			}

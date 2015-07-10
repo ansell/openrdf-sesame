@@ -87,4 +87,36 @@ public final class GeoUnits {
 		}
 		return dist;
 	}
+
+	public static final double toDegrees(double distance, URI units) {
+		final double degs;
+		if(GEOF.UOM_METRE.equals(units)) {
+			degs = DistanceUtils.dist2Degrees(distance/1000.0, DistanceUtils.EARTH_MEAN_RADIUS_KM);
+		} else if(GEOF.UOM_DEGREE.equals(units)) {
+			degs = distance;
+		} else if(GEOF.UOM_RADIAN.equals(units)) {
+			degs = DistanceUtils.RADIANS_TO_DEGREES*distance;
+		} else if(GEOF.UOM_UNITY.equals(units)) {
+			degs = distance*180.0;
+		} else {
+			throw new IllegalArgumentException("Unsupported units: "+units);
+		}
+		return degs;
+	}
+
+	public static final double fromDegrees(double degs, URI units) {
+		double dist;
+		if(GEOF.UOM_METRE.equals(units)) {
+			dist = DistanceUtils.degrees2Dist(degs, DistanceUtils.EARTH_MEAN_RADIUS_KM)*1000.0;
+		} else if(GEOF.UOM_DEGREE.equals(units)) {
+			dist = degs;
+		} else if(GEOF.UOM_RADIAN.equals(units)) {
+			dist = DistanceUtils.DEGREES_TO_RADIANS*degs;
+		} else if(GEOF.UOM_UNITY.equals(units)) {
+			dist = degs/180.0;
+		} else {
+			throw new IllegalArgumentException("Unsupported units: "+units);
+		}
+		return dist;
+	}
 }

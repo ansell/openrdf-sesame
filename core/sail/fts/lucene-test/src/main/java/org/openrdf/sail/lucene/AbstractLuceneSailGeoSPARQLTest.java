@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.After;
@@ -136,13 +136,18 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		Map<URI,Literal> expected = new HashMap<URI,Literal>();
+		Map<URI,Literal> expected = new LinkedHashMap<URI,Literal>();
 		expected.put(SUBJECT_1, EIFFEL_TOWER);
 		expected.put(SUBJECT_2, ARC_TRIOMPHE);
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
-			Literal location = expected.remove(bindings.getValue("toUri"));
+			URI subj = (URI) bindings.getValue("toUri");
+			// check ordering
+			URI expectedUri = expected.keySet().iterator().next();
+			assertEquals(expectedUri, subj);
+
+			Literal location = expected.remove(subj);
 			assertNotNull(location);
 			assertEquals(location, bindings.getValue("to"));
 		}
@@ -169,13 +174,18 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		Map<URI,Literal> expected = new HashMap<URI,Literal>();
+		Map<URI,Literal> expected = new LinkedHashMap<URI,Literal>();
 		expected.put(SUBJECT_1, sail.getValueFactory().createLiteral(760.0));
 		expected.put(SUBJECT_2, sail.getValueFactory().createLiteral(1332.5));
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
-			Literal dist = expected.remove(bindings.getValue("toUri"));
+			URI subj = (URI) bindings.getValue("toUri");
+			// check ordering
+			URI expectedUri = expected.keySet().iterator().next();
+			assertEquals(expectedUri, subj);
+
+			Literal dist = expected.remove(subj);
 			assertNotNull(dist);
 			assertEquals(dist.doubleValue(), ((Literal)bindings.getValue("dist")).doubleValue(), ERROR);
 		}

@@ -504,7 +504,17 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public static void addPredicateField(String predicate, String text, Document document) {
 		// store this predicate
-		document.add(new Field(predicate, text, Field.Store.YES, Field.Index.ANALYZED));
+		addPredicateField(predicate, text, document, Field.Index.ANALYZED);
+	}
+
+	public static void addStoredOnlyPredicateField(String predicate, String text, Document document) {
+		// store this predicate
+		addPredicateField(predicate, text, document, Field.Index.NO);
+	}
+
+	private static void addPredicateField(String predicate, String text, Document document, Field.Index indexOptions) {
+		// store this predicate
+		document.add(new Field(predicate, text, Field.Store.YES, indexOptions));
 	}
 
 	public static void addTextField(String text, Document document) {

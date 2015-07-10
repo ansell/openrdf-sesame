@@ -152,7 +152,7 @@ public class LuceneDocument implements SearchDocument
 
 	@Override
 	public void addGeoProperty(String field, String value) {
-		LuceneIndex.addPredicateField(field, value, doc);
+		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
 		try {
 			Shape shape = index.getSpatialContext().readShapeFromWkt(value);
 			if(shape instanceof Point)
