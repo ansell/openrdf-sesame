@@ -16,9 +16,6 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import junit.framework.TestCase;
 
 import info.aduna.iteration.CloseableIteratorIteration;
 
@@ -39,11 +35,11 @@ import org.openrdf.query.QueryEvaluationException;
 
 
 /**
- *
+ * 
  * @author james
- *
+ * 
  */
-public class OrderIteratorTest {
+public class OrderIteratorTest extends TestCase {
 	class IterationStub extends
 			CloseableIteratorIteration<BindingSet, QueryEvaluationException> {
 		int hasNextCount = 0;
@@ -141,7 +137,6 @@ public class OrderIteratorTest {
 
 	private SizeComparator cmp;
 
-	@Test
 	public void testFirstHasNext() throws Exception {
 		order.hasNext();
 		assertEquals(list.size() + 1, iteration.hasNextCount);
@@ -149,7 +144,6 @@ public class OrderIteratorTest {
 		assertEquals(0, iteration.removeCount);
 	}
 
-	@Test
 	public void testHasNext() throws Exception {
 		order.hasNext();
 		order.next();
@@ -159,7 +153,6 @@ public class OrderIteratorTest {
 		assertEquals(0, iteration.removeCount);
 	}
 
-	@Test
 	public void testFirstNext() throws Exception {
 		order.next();
 		assertEquals(list.size() + 1, iteration.hasNextCount);
@@ -167,7 +160,6 @@ public class OrderIteratorTest {
 		assertEquals(0, iteration.removeCount);
 	}
 
-	@Test
 	public void testNext() throws Exception {
 		order.next();
 		order.next();
@@ -176,12 +168,15 @@ public class OrderIteratorTest {
 		assertEquals(0, iteration.removeCount);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
 	public void testRemove() throws Exception {
-		order.remove();
+		try {
+			order.remove();
+			fail();
+		} catch (UnsupportedOperationException e) {
+		}
+
 	}
 
-	@Test
 	public void testSorting() throws Exception {
 		List<BindingSet> sorted = new ArrayList<BindingSet>(list);
 		Collections.sort(sorted, cmp);
@@ -191,8 +186,8 @@ public class OrderIteratorTest {
 		assertFalse(order.hasNext());
 	}
 
-	@Before
-	public void setUp() throws Exception {
+	@Override
+	protected void setUp() throws Exception {
 		list = Arrays.asList(b3, b5, b2, b1, b4, b2);
 		cmp = new SizeComparator();
 		iteration = new IterationStub();

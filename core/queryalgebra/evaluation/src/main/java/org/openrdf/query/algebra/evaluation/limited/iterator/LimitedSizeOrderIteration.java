@@ -23,6 +23,7 @@ import java.util.NavigableMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -62,16 +63,6 @@ public class LimitedSizeOrderIteration extends OrderIterator {
 	}
 
 	@Override
-	protected Collection<BindingSet> remove(NavigableMap<BindingSet, Collection<BindingSet>> map,
-			BindingSet lastKey)
-	{
-		Collection<BindingSet> col = map.get(lastKey);
-		col.remove(lastKey);
-		used.addAndGet(-(col.size() + 1));
-		return col;
-	}
-
-	@Override
 	protected boolean add(BindingSet next, Collection<BindingSet> list)
 		throws QueryEvaluationException
 	{
@@ -80,13 +71,25 @@ public class LimitedSizeOrderIteration extends OrderIterator {
 	}
 
 	@Override
-	protected Collection<BindingSet> put(Map<BindingSet, Collection<BindingSet>> map, BindingSet next,
-			Collection<BindingSet> list) throws QueryEvaluationException
+	protected Integer put(NavigableMap<BindingSet, Integer> map, BindingSet next, int count)
+		throws QueryEvaluationException
 	{
-		Collection<BindingSet> put = super.put(map, next, list);
-		if (put != null && used.incrementAndGet() > maxSize){
-			throw new QueryEvaluationException("Size limited reached inside order operator query, max size is:"+maxSize);
+		final Integer i = map.get(next);
+		final int oldCount = i == null ? 0 : i;
+		
+		final Integer put = super.put(map, next, count);
+
+		if (oldCount < count) {
+			if (used.incrementAndGet() > maxSize) {
+				throw new QueryEvaluationException(
+						"Size limited reached inside order operator query, max size is:" + maxSize);
+			}
 		}
+		else if (oldCount > count) {
+			used.decrementAndGet();
+		}
+		
 		return put;
 	}
+
 }

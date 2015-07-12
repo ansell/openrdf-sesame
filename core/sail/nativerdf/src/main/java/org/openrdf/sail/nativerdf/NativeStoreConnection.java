@@ -23,6 +23,10 @@ import info.aduna.concurrent.locks.Lock;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.base.SailSourceConnection;
@@ -79,7 +83,8 @@ public class NativeStoreConnection extends SailSourceConnection {
 				txnLock = nativeStore.getTransactionLock(getTransactionIsolation());
 			}
 			super.startTransactionInternal();
-		} finally {
+		}
+		finally {
 			if (releaseLock && txnLock != null) {
 				txnLock.release();
 			}
@@ -92,7 +97,8 @@ public class NativeStoreConnection extends SailSourceConnection {
 	{
 		try {
 			super.commitInternal();
-		} finally {
+		}
+		finally {
 			if (txnLock != null) {
 				txnLock.release();
 			}
@@ -110,7 +116,8 @@ public class NativeStoreConnection extends SailSourceConnection {
 	{
 		try {
 			super.rollbackInternal();
-		} finally {
+		}
+		finally {
 			if (txnLock != null) {
 				txnLock.release();
 			}
@@ -149,6 +156,12 @@ public class NativeStoreConnection extends SailSourceConnection {
 		boolean ret = super.removeInferredStatement(subj, pred, obj, contexts);
 		sailChangedEvent.setStatementsRemoved(true);
 		return ret;
+	}
+
+	@Override
+	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
+		return new EvaluationStrategyImpl(tripleSource, dataset, getFederatedServiceResolver(),
+				nativeStore.getIterationCacheSyncThreshold());
 	}
 
 	@Override

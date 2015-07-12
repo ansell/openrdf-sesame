@@ -25,6 +25,8 @@ import org.openrdf.model.Resource;
 public interface SailImplConfig {
 
 	public String getType();
+	
+	public long getIterationCacheSyncThreshold();
 
 	/**
 	 * Validates this configuration. A {@link SailConfigException} is thrown when
