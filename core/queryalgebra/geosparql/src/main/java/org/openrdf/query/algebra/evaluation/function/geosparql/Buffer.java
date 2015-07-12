@@ -1,13 +1,16 @@
 package org.openrdf.query.algebra.evaluation.function.geosparql;
 
+import java.io.IOException;
+
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 
-import com.spatial4j.core.context.jts.JtsSpatialContext;
+import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
 
 /**
@@ -27,7 +30,7 @@ public class Buffer implements Function {
 			throw new ValueExprEvaluationException(getURI()+" requires exactly 3 arguments, got " + args.length);
 		}
 
-		JtsSpatialContext geoContext = JtsSpatialContext.GEO;
+		SpatialContext geoContext = SpatialSupport.getSpatialContext();
 		Shape geom = FunctionArguments.getShape(this, args[0], geoContext);
 		double radiusUom = FunctionArguments.getDouble(this, args[1]);
 		URI units = FunctionArguments.getUnits(this, args[2]);
@@ -35,6 +38,12 @@ public class Buffer implements Function {
 
 		Shape buffered = geom.getBuffered(radiusDegs, geoContext);
 
-		return JTSHelper.createWktLiteral(geoContext.getGeometryFrom(buffered), valueFactory);
+		String wkt;
+		try {
+			wkt = SpatialSupport.getWktWriter().toWkt(buffered);
+		} catch(IOException ioe) {
+			throw new ValueExprEvaluationException(ioe);
+		}
+		return valueFactory.createLiteral(wkt, GEO.WKT_LITERAL);
 	}
 }

@@ -3,7 +3,7 @@ package org.openrdf.query.algebra.evaluation.function.geosparql;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.algebra.evaluation.function.Function;
 
-import com.vividsolutions.jts.geom.Geometry;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * The GeoSPARQL {@link Function} geof:envelope,
@@ -16,7 +16,7 @@ public class Envelope extends GeometricUnaryFunction {
 	}
 
 	@Override
-	protected Geometry operation(Geometry g) {
-		return g.getEnvelope();
+	protected Shape operation(Shape s) {
+		return SpatialSupport.getSpatialAlgebra().envelope(s);
 	}
 }

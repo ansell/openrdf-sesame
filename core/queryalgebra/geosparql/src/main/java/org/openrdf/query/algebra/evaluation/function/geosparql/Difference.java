@@ -3,7 +3,7 @@ package org.openrdf.query.algebra.evaluation.function.geosparql;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.algebra.evaluation.function.Function;
 
-import com.vividsolutions.jts.geom.Geometry;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * The GeoSPARQL {@link Function} geof:difference,
@@ -16,7 +16,7 @@ public class Difference extends GeometricBinaryFunction {
 	}
 
 	@Override
-	protected Geometry operation(Geometry g1, Geometry g2) {
-		return g1.difference(g2);
+	protected Shape operation(Shape s1, Shape s2) {
+		return SpatialSupport.getSpatialAlgebra().difference(s1, s2);
 	}
 }

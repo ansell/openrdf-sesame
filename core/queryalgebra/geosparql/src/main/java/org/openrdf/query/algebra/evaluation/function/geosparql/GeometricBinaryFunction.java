@@ -1,13 +1,15 @@
 package org.openrdf.query.algebra.evaluation.function.geosparql;
 
+import java.io.IOException;
+
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 
-import com.spatial4j.core.context.jts.JtsSpatialContext;
+import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
-import com.vividsolutions.jts.geom.Geometry;
 
 abstract class GeometricBinaryFunction implements Function {
 	@Override
@@ -17,13 +19,19 @@ abstract class GeometricBinaryFunction implements Function {
 			throw new ValueExprEvaluationException(getURI()+" requires exactly 2 arguments, got " + args.length);
 		}
 
-		JtsSpatialContext geoContext = JtsSpatialContext.GEO;
+		SpatialContext geoContext = SpatialSupport.getSpatialContext();
 		Shape geom1 = FunctionArguments.getShape(this, args[0], geoContext);
 		Shape geom2 = FunctionArguments.getShape(this, args[1], geoContext);
-		Geometry result = operation(geoContext.getGeometryFrom(geom1), geoContext.getGeometryFrom(geom2));
+		Shape result = operation(geom1, geom2);
 
-		return JTSHelper.createWktLiteral(result, valueFactory);
+		String wkt;
+		try {
+			wkt = SpatialSupport.getWktWriter().toWkt(result);
+		} catch(IOException ioe) {
+			throw new ValueExprEvaluationException(ioe);
+		}
+		return valueFactory.createLiteral(wkt, GEO.WKT_LITERAL);
 	}
 
-	protected abstract Geometry operation(Geometry g1, Geometry g2);
+	protected abstract Shape operation(Shape g1, Shape g2);
 }

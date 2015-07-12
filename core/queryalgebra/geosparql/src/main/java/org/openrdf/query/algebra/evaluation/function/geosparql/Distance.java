@@ -27,7 +27,7 @@ public class Distance implements Function {
 			throw new ValueExprEvaluationException(getURI()+" requires exactly 3 arguments, got " + args.length);
 		}
 
-		SpatialContext geoContext = SpatialContext.GEO;
+		SpatialContext geoContext = SpatialSupport.getSpatialContext();
 		Point p1 = FunctionArguments.getPoint(this, args[0], geoContext);
 		Point p2 = FunctionArguments.getPoint(this, args[1], geoContext);
 		URI units = FunctionArguments.getUnits(this, args[2]);

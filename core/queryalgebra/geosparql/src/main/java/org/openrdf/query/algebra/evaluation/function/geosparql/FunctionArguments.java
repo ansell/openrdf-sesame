@@ -16,7 +16,7 @@ import com.spatial4j.core.distance.DistanceUtils;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
-public class FunctionArguments {
+class FunctionArguments {
 	private FunctionArguments() {}
 
 	public static double getDouble(Function func, Value v) throws ValueExprEvaluationException {
