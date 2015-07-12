@@ -9,7 +9,7 @@ import com.spatial4j.core.context.jts.JtsSpatialContext;
 import com.spatial4j.core.shape.Shape;
 import com.vividsolutions.jts.geom.Geometry;
 
-public abstract class GeometricUnaryFunction implements Function {
+abstract class GeometricUnaryFunction implements Function {
 	@Override
 	public Value evaluate(ValueFactory valueFactory, Value... args)
 			throws ValueExprEvaluationException {
