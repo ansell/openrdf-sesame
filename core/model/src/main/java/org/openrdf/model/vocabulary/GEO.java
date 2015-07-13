@@ -27,11 +27,11 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class GEO {
 
-	public static String NAMESPACE = "http://www.opengis.net/ont/geosparql#";
+	public static final String NAMESPACE = "http://www.opengis.net/ont/geosparql#";
 
-	public static URI AS_WKT;
+	public static final URI AS_WKT;
 
-	public static URI WKT_LITERAL;
+	public static final URI WKT_LITERAL;
 
 	public static final String DEFAULT_SRID = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
 
