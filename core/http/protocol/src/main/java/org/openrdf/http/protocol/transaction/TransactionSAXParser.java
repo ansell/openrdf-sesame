@@ -54,7 +54,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 
 	private ValueFactory valueFactory;
 
-	private List<TransactionOperation> txn;
+	protected Collection<TransactionOperation> txn;
 
 	private List<Value> parsedValues = new ArrayList<Value>();
 

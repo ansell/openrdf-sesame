@@ -16,12 +16,14 @@
 
 	<modules>
 		<module>api</module>
+		<module>base</module>
 		<module>inferencer</module>
 		<module>federation</module>
 		<module>memory</module>
 		<module>nativerdf</module>
 		<module>rdbms</module>
 		<module>fts</module>
+		<module>model</module>
 	</modules>
 
 </project>

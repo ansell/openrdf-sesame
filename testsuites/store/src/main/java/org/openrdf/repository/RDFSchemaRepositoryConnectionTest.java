@@ -20,7 +20,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.RDF;
@@ -30,13 +35,28 @@ import org.openrdf.model.vocabulary.RDFS;
  * @author jeen
  * @author Arjohn Kampman
  */
+@RunWith(Parameterized.class)
 public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnectionTest {
 
-	private IRI person;
+	@Parameters(name="{0}")
+	public static final IsolationLevel[] parametersREAD_COMMITTED() {
+		return new IsolationLevel[] {
+				IsolationLevels.READ_COMMITTED,
+				IsolationLevels.SNAPSHOT_READ,
+				IsolationLevels.SNAPSHOT,
+				IsolationLevels.SERIALIZABLE };
+	}
 
+
+	private IRI person;
+	
 	private IRI woman;
 
 	private IRI man;
+
+	public RDFSchemaRepositoryConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	public void setUp()
@@ -117,7 +137,7 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testInferencerUpdates()
 		throws Exception
 	{
-		testCon.begin();
+		testCon.begin(IsolationLevels.READ_COMMITTED);
 
 		testCon.add(bob, name, nameBob);
 		testCon.remove(bob, name, nameBob);
@@ -143,6 +163,9 @@ public abstract class RDFSchemaRepositoryConnectionTest extends RepositoryConnec
 	public void testInferencerTransactionIsolation()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		testCon.begin();
 		testCon.add(bob, name, nameBob);
 

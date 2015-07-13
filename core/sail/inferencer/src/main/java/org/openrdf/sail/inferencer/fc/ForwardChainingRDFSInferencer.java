@@ -19,7 +19,6 @@ package org.openrdf.sail.inferencer.fc;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
 
 /**
@@ -29,8 +28,7 @@ import org.openrdf.sail.inferencer.InferencerConnection;
  * RDF Schema semantics to any Sail that returns {@link InferencerConnection}s
  * from their {@link Sail#getConnection()} method.
  */
-public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
-
+public class ForwardChainingRDFSInferencer extends AbstractForwardChainingInferencer {
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -53,7 +51,7 @@ public class ForwardChainingRDFSInferencer extends NotifyingSailWrapper {
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new ForwardChainingRDFSInferencerConnection(con);
+			return new ForwardChainingRDFSInferencerConnection(this, con);
 		}
 		catch (ClassCastException e) {
 			throw new SailException(e.getMessage(), e);

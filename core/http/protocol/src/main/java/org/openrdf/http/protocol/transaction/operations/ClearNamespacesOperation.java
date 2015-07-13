@@ -16,6 +16,8 @@
  */
 package org.openrdf.http.protocol.transaction.operations;
 
+import java.io.Serializable;
+
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
@@ -25,7 +27,12 @@ import org.openrdf.repository.RepositoryException;
  * @author Arjohn Kampman
  * @author Leo Sauermann
  */
-public class ClearNamespacesOperation implements TransactionOperation {
+public class ClearNamespacesOperation implements TransactionOperation, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 804163331093326031L;
 
 	public ClearNamespacesOperation() {
 	}

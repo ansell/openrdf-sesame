@@ -27,6 +27,7 @@ import info.aduna.io.FileUtil;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.IRI;
+import org.openrdf.IsolationLevel;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
@@ -36,6 +37,10 @@ import org.openrdf.sail.nativerdf.NativeStore;
 public class NativeStoreConnectionTest extends RepositoryConnectionTest {
 
 	private File dataDir;
+
+	public NativeStoreConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	protected Repository createRepository()

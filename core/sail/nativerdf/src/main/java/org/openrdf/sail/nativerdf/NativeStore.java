@@ -18,39 +18,30 @@ package org.openrdf.sail.nativerdf;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.FileUtils;
 
-import info.aduna.concurrent.locks.ExclusiveLockManager;
 import info.aduna.concurrent.locks.Lock;
+import info.aduna.concurrent.locks.LockManager;
 import info.aduna.io.MavenUtil;
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.ConvertingIteration;
-import info.aduna.iteration.DistinctIteration;
-import info.aduna.iteration.EmptyIteration;
-import info.aduna.iteration.FilterIteration;
-import info.aduna.iteration.ReducedIteration;
-import info.aduna.iteration.UnionIteration;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
+import org.openrdf.model.Model;
+import org.openrdf.model.ModelFactory;
 import org.openrdf.model.IRI;
-import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.base.SailSource;
+import org.openrdf.sail.base.SailStore;
+import org.openrdf.sail.base.SnapshotSailStore;
 import org.openrdf.sail.helpers.DirectoryLockManager;
 import org.openrdf.sail.helpers.NotifyingSailBase;
-import org.openrdf.sail.nativerdf.btree.RecordIterator;
-import org.openrdf.sail.nativerdf.model.NativeValue;
 
 /**
  * A SAIL implementation using B-Tree indexing on disk for storing and querying
@@ -88,16 +79,7 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 
 	private volatile int namespaceIDCacheSize = ValueStore.NAMESPACE_ID_CACHE_SIZE;
 
-	private volatile TripleStore tripleStore;
-
-	private volatile ValueStore valueStore;
-
-	private volatile NamespaceStore namespaceStore;
-
-	/**
-	 * Lock manager used to prevent concurrent transactions.
-	 */
-	private final ExclusiveLockManager txnLockManager = new ExclusiveLockManager(debugEnabled());
+	private SailStore store;
 
 	/**
 	 * Data directory lock.
@@ -110,6 +92,21 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	/** dependent life cycle */
 	private FederatedServiceResolverImpl dependentServiceResolver;
 
+	/**
+	 * Lock manager used to prevent concurrent {@link #getTransactionLock(IsolationLevel)} calls.
+	 */
+	private final ReentrantLock txnLockManager = new ReentrantLock();
+
+	/**
+	 * Holds locks for all isolated transactions.
+	 */
+	private final LockManager isolatedLockManager = new LockManager(debugEnabled());
+
+	/**
+	 * Holds locks for all {@link IsolationLevels#NONE} isolation transactions.
+	 */
+	private final LockManager disabledIsolationLockManager = new LockManager(debugEnabled());
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -119,7 +116,9 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	 */
 	public NativeStore() {
 		super();
-		addSupportedIsolationLevel(IsolationLevels.READ_COMMITTED);
+		setSupportedIsolationLevels(IsolationLevels.NONE, IsolationLevels.READ_COMMITTED,
+				IsolationLevels.SNAPSHOT_READ, IsolationLevels.SNAPSHOT, IsolationLevels.SERIALIZABLE);
+		setDefaultIsolationLevel(IsolationLevels.SNAPSHOT_READ);
 	}
 
 	public NativeStore(File dataDir) {
@@ -252,27 +251,51 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 			if (!VERSION.equals(version) && upgradeStore(dataDir, version)) {
 				FileUtils.writeStringToFile(versionFile, VERSION);
 			}
-			namespaceStore = new NamespaceStore(dataDir);
-			valueStore = new ValueStore(dataDir, forceSync, valueCacheSize, valueIDCacheSize,
-					namespaceCacheSize, namespaceIDCacheSize);
-			tripleStore = new TripleStore(dataDir, tripleIndexes, forceSync);
+			final NativeSailStore master = new NativeSailStore(dataDir, tripleIndexes, forceSync,
+					valueCacheSize, valueIDCacheSize, namespaceCacheSize, namespaceIDCacheSize);
+			this.store = new SnapshotSailStore(master, new ModelFactory() {
+
+				@Override
+				public Model createEmptyModel() {
+					return new MemoryOverflowModel() {
+
+						@Override
+						protected SailStore createSailStore(File dataDir)
+							throws IOException, SailException
+						{
+							// Model can't fit into memory, use another NativeSailStore to store delta
+							return new NativeSailStore(dataDir, getTripleIndexes());
+						}
+					};
+				}
+			})
+			{
+
+				@Override
+				public SailSource getExplicitSailSource() {
+					if (isIsolationDisabled()) {
+						// no isolation, use NativeSailStore directly
+						return master.getExplicitSailSource();
+					}
+					else {
+						return super.getExplicitSailSource();
+					}
+				}
+
+				@Override
+				public SailSource getInferredSailSource() {
+					if (isIsolationDisabled()) {
+						// no isolation, use NativeSailStore directly
+						return master.getInferredSailSource();
+					}
+					else {
+						return super.getInferredSailSource();
+					}
+				}
+			};
 		}
 		catch (Throwable e) {
 			// NativeStore initialization failed, release any allocated files
-			if (valueStore != null) {
-				try {
-					valueStore.close();
-				}
-				catch (IOException e1) {
-					logger.warn("Failed to close value store after native store initialization failure", e);
-				}
-				valueStore = null;
-			}
-			if (namespaceStore != null) {
-				namespaceStore.close();
-				namespaceStore = null;
-			}
-
 			dirLock.release();
 
 			throw new SailException(e);
@@ -288,14 +311,9 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 		logger.debug("Shutting down NativeStore...");
 
 		try {
-			tripleStore.close();
-			valueStore.close();
-			namespaceStore.close();
+			store.close();
 
 			logger.debug("NativeStore shut down");
-		}
-		catch (IOException e) {
-			throw new SailException(e);
 		}
 		finally {
 			dirLock.release();
@@ -323,230 +341,62 @@ public class NativeStore extends NotifyingSailBase implements FederatedServiceRe
 	}
 
 	public ValueFactory getValueFactory() {
-		return valueStore;
-	}
-
-	protected TripleStore getTripleStore() {
-		return tripleStore;
-	}
-
-	protected ValueStore getValueStore() {
-		return valueStore;
-	}
-
-	protected NamespaceStore getNamespaceStore() {
-		return namespaceStore;
-	}
-
-	protected Lock getTransactionLock()
-		throws SailException
-	{
-		try {
-			return txnLockManager.getExclusiveLock();
-		}
-		catch (InterruptedException e) {
-			throw new SailException(e);
-		}
-	}
-
-	protected Lock tryTransactionLock() {
-		return txnLockManager.tryExclusiveLock();
-	}
-
-	protected List<Integer> getContextIDs(Resource... contexts)
-		throws IOException
-	{
-		assert contexts.length > 0 : "contexts must not be empty";
-
-		// Filter duplicates
-		LinkedHashSet<Resource> contextSet = new LinkedHashSet<Resource>();
-		Collections.addAll(contextSet, contexts);
-
-		// Fetch IDs, filtering unknown resources from the result
-		List<Integer> contextIDs = new ArrayList<Integer>(contextSet.size());
-		for (Resource context : contextSet) {
-			if (context == null) {
-				contextIDs.add(0);
-			}
-			else {
-				int contextID = valueStore.getID(context);
-				if (contextID != NativeValue.UNKNOWN_ID) {
-					contextIDs.add(contextID);
-				}
-			}
-		}
-
-		return contextIDs;
-	}
-
-	protected CloseableIteration<Resource, IOException> getContextIDs(boolean readTransaction)
-		throws IOException
-	{
-		CloseableIteration<? extends Statement, IOException> stIter;
-		CloseableIteration<Resource, IOException> ctxIter;
-		RecordIterator btreeIter;
-		btreeIter = tripleStore.getAllTriplesSortedByContext(readTransaction);
-		if (btreeIter == null) {
-			// Iterator over all statements
-			stIter = createStatementIterator(null, null, null, true, readTransaction);
-		}
-		else {
-			stIter = new NativeStatementIterator(btreeIter, valueStore);
-		}
-		// Filter statements without context resource
-		stIter = new FilterIteration<Statement, IOException>(stIter) {
-
-			@Override
-			protected boolean accept(Statement st) {
-				return st.getContext() != null;
-			}
-		};
-		// Return the contexts of the statements
-		ctxIter = new ConvertingIteration<Statement, Resource, IOException>(stIter) {
-
-			@Override
-			protected Resource convert(Statement st) {
-				return st.getContext();
-			}
-		};
-		if (btreeIter == null) {
-			// Filtering any duplicates
-			ctxIter = new DistinctIteration<Resource, IOException>(ctxIter);
-		}
-		else {
-			// Filtering sorted duplicates
-			ctxIter = new ReducedIteration<Resource, IOException>(ctxIter);
-		}
-		return ctxIter;
+		return store.getValueFactory();
 	}
 
 	/**
-	 * Creates a statement iterator based on the supplied pattern.
+	 * This call will block when {@link IsolationLevels#NONE} is provided when
+	 * there are active transactions with a higher isolation and block when a
+	 * higher isolation is provided when there are active transactions with
+	 * {@link IsolationLevels#NONE} isolation. Store is either exclusively in
+	 * {@link IsolationLevels#NONE} isolation with potentially zero or more
+	 * transactions, or exclusively in higher isolation mode with potentially
+	 * zero or more transactions.
 	 * 
-	 * @param subj
-	 *        The subject of the pattern, or <tt>null</tt> to indicate a
-	 *        wildcard.
-	 * @param pred
-	 *        The predicate of the pattern, or <tt>null</tt> to indicate a
-	 *        wildcard.
-	 * @param obj
-	 *        The object of the pattern, or <tt>null</tt> to indicate a wildcard.
-	 * @param contexts
-	 *        The context(s) of the pattern. Note that this parameter is a vararg
-	 *        and as such is optional. If no contexts are supplied the method
-	 *        operates on the entire repository.
-	 * @return A StatementIterator that can be used to iterate over the
-	 *         statements that match the specified pattern.
+	 * @param level
+	 *        indicating desired mode {@link IsolationLevels#NONE} or higher
+	 * @return Lock used to prevent Store from switching isolation modes
+	 * @throws SailException
 	 */
-	protected CloseableIteration<? extends Statement, IOException> createStatementIterator(Resource subj,
-			IRI pred, Value obj, boolean includeInferred, boolean readTransaction, Resource... contexts)
-		throws IOException
+	protected Lock getTransactionLock(IsolationLevel level)
+		throws SailException
 	{
-		int subjID = NativeValue.UNKNOWN_ID;
-		if (subj != null) {
-			subjID = valueStore.getID(subj);
-			if (subjID == NativeValue.UNKNOWN_ID) {
-				return new EmptyIteration<Statement, IOException>();
-			}
-		}
-
-		int predID = NativeValue.UNKNOWN_ID;
-		if (pred != null) {
-			predID = valueStore.getID(pred);
-			if (predID == NativeValue.UNKNOWN_ID) {
-				return new EmptyIteration<Statement, IOException>();
-			}
-		}
-
-		int objID = NativeValue.UNKNOWN_ID;
-		if (obj != null) {
-			objID = valueStore.getID(obj);
-			if (objID == NativeValue.UNKNOWN_ID) {
-				return new EmptyIteration<Statement, IOException>();
-			}
-		}
-
-		List<Integer> contextIDList = new ArrayList<Integer>(contexts.length);
-		if (contexts.length == 0) {
-			contextIDList.add(NativeValue.UNKNOWN_ID);
-		}
-		else {
-			for (Resource context : contexts) {
-				if (context == null) {
-					contextIDList.add(0);
-				}
-				else {
-					int contextID = valueStore.getID(context);
-
-					if (contextID != NativeValue.UNKNOWN_ID) {
-						contextIDList.add(contextID);
-					}
-				}
-			}
-		}
-
-		ArrayList<NativeStatementIterator> perContextIterList = new ArrayList<NativeStatementIterator>(
-				contextIDList.size());
-
-		for (int contextID : contextIDList) {
-			RecordIterator btreeIter;
-
-			if (includeInferred) {
-				// Get both explicit and inferred statements
-				btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, readTransaction);
+		txnLockManager.lock();
+		try {
+			if (IsolationLevels.NONE.isCompatibleWith(level)) {
+				// make sure no isolated transaction are active
+				isolatedLockManager.waitForActiveLocks();
+				// mark isolation as disabled
+				return disabledIsolationLockManager.createLock(level.toString());
 			}
 			else {
-				// Only get explicit statements
-				btreeIter = tripleStore.getTriples(subjID, predID, objID, contextID, true, readTransaction);
+				// make sure isolation is not disabled
+				disabledIsolationLockManager.waitForActiveLocks();
+				// mark isolated transaction as active
+				return isolatedLockManager.createLock(level.toString());
 			}
-
-			perContextIterList.add(new NativeStatementIterator(btreeIter, valueStore));
 		}
-
-		if (perContextIterList.size() == 1) {
-			return perContextIterList.get(0);
-		}
-		else {
-			return new UnionIteration<Statement, IOException>(perContextIterList);
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new SailException(e);
+		} finally {
+			txnLockManager.unlock();
 		}
 	}
 
-	protected double cardinality(Resource subj, IRI pred, Value obj, Resource context)
-		throws IOException
-	{
-		int subjID = NativeValue.UNKNOWN_ID;
-		if (subj != null) {
-			subjID = valueStore.getID(subj);
-			if (subjID == NativeValue.UNKNOWN_ID) {
-				return 0;
-			}
-		}
+	/**
+	 * Checks if any {@link IsolationLevels#NONE} isolation transactions are
+	 * active.
+	 * 
+	 * @return <code>true</code> if at least one transaction has direct access to
+	 *         the indexes
+	 */
+	boolean isIsolationDisabled() {
+		return disabledIsolationLockManager.isActiveLock();
+	}
 
-		int predID = NativeValue.UNKNOWN_ID;
-		if (pred != null) {
-			predID = valueStore.getID(pred);
-			if (predID == NativeValue.UNKNOWN_ID) {
-				return 0;
-			}
-		}
-
-		int objID = NativeValue.UNKNOWN_ID;
-		if (obj != null) {
-			objID = valueStore.getID(obj);
-			if (objID == NativeValue.UNKNOWN_ID) {
-				return 0;
-			}
-		}
-
-		int contextID = NativeValue.UNKNOWN_ID;
-		if (context != null) {
-			contextID = valueStore.getID(context);
-			if (contextID == NativeValue.UNKNOWN_ID) {
-				return 0;
-			}
-		}
-
-		return tripleStore.cardinality(subjID, predID, objID, contextID);
+	SailStore getSailStore() {
+		return store;
 	}
 
 	private boolean upgradeStore(File dataDir, String version)

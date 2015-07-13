@@ -18,6 +18,7 @@ package org.openrdf.sail.helpers;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -62,10 +63,15 @@ public abstract class SailBase implements Sail {
 	/**
 	 * list of supported isolation levels. By default set to include
 	 * {@link IsolationLevels#READ_UNCOMMITTED} and
-	 * {@link IsolationLevels#SERIALIZABLE}. Specific store implementations
-	 * are expected to alter this list according to their specific capabilities.
+	 * {@link IsolationLevels#SERIALIZABLE}. Specific store implementations are
+	 * expected to alter this list according to their specific capabilities.
 	 */
 	private List<IsolationLevel> supportedIsolationLevels = new ArrayList<IsolationLevel>();
+
+	/**
+	 * default value for the Iteration item sync threshold
+	 */
+	protected static final long DEFAULT_ITERATION_SYNC_THRESHOLD = 0L;
 
 	// Note: the following variable and method are package protected so that they
 	// can be removed when open connections no longer block other connections and
@@ -117,6 +123,8 @@ public abstract class SailBase implements Sail {
 	 */
 	protected volatile long connectionTimeOut = DEFAULT_CONNECTION_TIMEOUT;
 
+	private long iterationCacheSyncThreshold = DEFAULT_ITERATION_SYNC_THRESHOLD;
+
 	/**
 	 * Map used to track active connections and where these were acquired. The
 	 * Throwable value may be null in case debugging was disable at the time the
@@ -127,13 +135,13 @@ public abstract class SailBase implements Sail {
 	/*
 	 * constructors
 	 */
-	
+
 	public SailBase() {
 		super();
 		this.addSupportedIsolationLevel(IsolationLevels.READ_UNCOMMITTED);
 		this.addSupportedIsolationLevel(IsolationLevels.SERIALIZABLE);
 	}
-	
+
 	/*---------*
 	 * Methods *
 	 *---------*/
@@ -367,6 +375,18 @@ public abstract class SailBase implements Sail {
 		this.supportedIsolationLevels = supportedIsolationLevels;
 	}
 
+	/**
+	 * Sets the list of supported {@link IsolationLevels}s for this SAIL. The
+	 * list is expected to be ordered in increasing complexity.
+	 * 
+	 * @param supportedIsolationLevels
+	 *        a list of supported isolation levels.
+	 * @since 2.8.3
+	 */
+	protected void setSupportedIsolationLevels(IsolationLevel... supportedIsolationLevels) {
+		this.supportedIsolationLevels = Arrays.asList(supportedIsolationLevels);
+	}
+
 	@Override
 	public List<IsolationLevel> getSupportedIsolationLevels() {
 		return Collections.unmodifiableList(supportedIsolationLevels);
@@ -390,5 +410,25 @@ public abstract class SailBase implements Sail {
 			throw new IllegalArgumentException("default isolation level may not be null");
 		}
 		this.defaultIsolationLevel = defaultIsolationLevel;
+	}
+
+	/**
+	 * Retrieves the currently configured threshold for syncing query evaluation
+	 * iteration caches to disk.
+	 * 
+	 * @return Returns the iterationCacheSyncThreshold.
+	 */
+	public long getIterationCacheSyncThreshold() {
+		return iterationCacheSyncThreshold;
+	}
+
+	/**
+	 * Set the threshold for syncing query evaluation iteration caches to disk.
+	 * 
+	 * @param iterationCacheSyncThreshold
+	 *        The iterationCacheSyncThreshold to set. 
+	 */
+	public void setIterationCacheSyncThreshold(long iterationCacheSyncThreshold) {
+		this.iterationCacheSyncThreshold = iterationCacheSyncThreshold;
 	}
 }

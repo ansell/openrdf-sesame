@@ -16,6 +16,8 @@
  */
 package org.openrdf.http.protocol.transaction.operations;
 
+import java.io.Serializable;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
@@ -28,7 +30,12 @@ import org.openrdf.repository.RepositoryException;
  * @author Arjohn Kampman
  * @author Leo Sauermann
  */
-public class AddStatementOperation extends StatementOperation {
+public class AddStatementOperation extends StatementOperation implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7055177153036638975L;
 
 	/**
 	 * Create an AddStatementOperation.

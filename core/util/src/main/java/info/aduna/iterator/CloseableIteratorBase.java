@@ -40,29 +40,6 @@ public abstract class CloseableIteratorBase<E> implements Iterator<E>, Closeable
 	 * Methods *
 	 *---------*/
 
-	static void close(Iterator<?> iter) throws IOException
-	{
-		if(iter instanceof Closeable)
-		{
-			((Closeable)iter).close();
-		}
-	}
-
-	static void closeSilently(Iterator<?> iter)
-	{
-		if(iter instanceof Closeable)
-		{
-			try
-			{
-				((Closeable)iter).close();
-			}
-			catch(IOException ioe)
-			{
-				// ignore
-			}
-		}
-	}
-
 	/**
 	 * Checks whether this Iterator has been closed.
 	 * 
@@ -77,6 +54,7 @@ public abstract class CloseableIteratorBase<E> implements Iterator<E>, Closeable
 	 * Calls {@link #handleClose()} upon first call and makes sure this method
 	 * gets called only once.
 	 */
+	@Override
 	public final void close()
 		throws IOException
 	{

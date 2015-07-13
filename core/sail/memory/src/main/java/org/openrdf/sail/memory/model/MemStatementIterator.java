@@ -58,20 +58,14 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 
 	/**
 	 * Flag indicating whether this iterator should only return explicitly added
-	 * statements.
+	 * statements or only return inferred statements.
 	 */
-	private final boolean explicitOnly;
+	private final Boolean explicit;
 
 	/**
 	 * Indicates which snapshot should be iterated over.
 	 */
 	private final int snapshot;
-
-	/**
-	 * Flag indicating whether or not the iterator should read any non-committed
-	 * changes to the data.
-	 */
-	private final ReadMode readMode;
 
 	/**
 	 * The index of the last statement that has been returned.
@@ -99,16 +93,15 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 	 *        context(s) of pattern.
 	 */
 	public MemStatementIterator(MemStatementList statementList, MemResource subject, MemIRI predicate,
-			MemValue object, boolean explicitOnly, int snapshot, ReadMode readMode, MemResource... contexts)
+			MemValue object, Boolean explicit, int snapshot, MemResource... contexts)
 	{
 		this.statementList = statementList;
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
 		this.contexts = contexts;
-		this.explicitOnly = explicitOnly;
+		this.explicit = explicit;
 		this.snapshot = snapshot;
-		this.readMode = readMode;
 
 		this.statementIdx = -1;
 	}
@@ -132,7 +125,7 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 		for (; statementIdx < statementList.size(); statementIdx++) {
 			MemStatement st = statementList.get(statementIdx);
 
-			if (st.isInSnapshot(snapshot) && (subject == null || subject == st.getSubject())
+			if (isInSnapshot(st) && (subject == null || subject == st.getSubject())
 					&& (predicate == null || predicate == st.getPredicate())
 					&& (object == null || object == st.getObject()))
 			{
@@ -151,45 +144,9 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 					}
 				}
 
-				if (ReadMode.COMMITTED.equals(readMode)) {
-					// Only read committed statements
-
-					if (st.getTxnStatus() == TxnStatus.NEW) {
-						// Uncommitted statements, skip it
-						continue;
-					}
-					if (explicitOnly && !st.isExplicit()) {
-						// Explicit statements only; skip inferred ones
-						continue;
-					}
-				}
-				else if (ReadMode.TRANSACTION.equals(readMode)) {
-					// Pretend that the transaction has already been committed
-
-					TxnStatus txnStatus = st.getTxnStatus();
-
-					if (TxnStatus.DEPRECATED.equals(txnStatus) || TxnStatus.ZOMBIE.equals(txnStatus)) {
-						// Statement scheduled for removal, skip it
-						continue;
-					}
-
-					if (explicitOnly) {
-						if (!st.isExplicit() && !TxnStatus.EXPLICIT.equals(txnStatus)
-								|| TxnStatus.INFERRED.equals(txnStatus))
-						{
-							// Explicit statements only; skip inferred ones
-							continue;
-						}
-					}
-				}
-				else if (ReadMode.RAW.equals(readMode)) {
-					// Ignore the statement's transaction status, only check the
-					// explicitOnly requirement
-
-					if (explicitOnly && !st.isExplicit()) {
-						// Explicit statements only; skip inferred ones
-						continue;
-					}
+				if (explicit != null && explicit.booleanValue() != st.isExplicit()) {
+					// Explicit flag does not match
+					continue;
 				}
 
 				return st;
@@ -198,5 +155,9 @@ public class MemStatementIterator<X extends Exception> extends LookAheadIteratio
 
 		// No more matching statements.
 		return null;
+	}
+
+	private boolean isInSnapshot(MemStatement st) {
+		return snapshot < 0 || st.isInSnapshot(snapshot);
 	}
 }

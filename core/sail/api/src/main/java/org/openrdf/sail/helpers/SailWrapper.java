@@ -21,6 +21,8 @@ import java.util.List;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
@@ -32,7 +34,7 @@ import org.openrdf.sail.StackableSail;
  * 
  * @author Arjohn Kampman
  */
-public class SailWrapper implements StackableSail {
+public class SailWrapper implements StackableSail, FederatedServiceResolverClient {
 
 	/*-----------*
 	 * Variables *
@@ -78,6 +80,13 @@ public class SailWrapper implements StackableSail {
 	protected void verifyBaseSailSet() {
 		if (baseSail == null) {
 			throw new IllegalStateException("No base Sail has been set");
+		}
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		if (baseSail instanceof FederatedServiceResolverClient) {
+			((FederatedServiceResolverClient)baseSail).setFederatedServiceResolver(resolver);
 		}
 	}
 

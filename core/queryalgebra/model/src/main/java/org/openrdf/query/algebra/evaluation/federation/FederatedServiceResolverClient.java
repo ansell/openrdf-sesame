@@ -17,7 +17,8 @@
 package org.openrdf.query.algebra.evaluation.federation;
 
 /**
- * Interface used by SailFactory and RepostioryFactory class that can make
+ * Interface used by {@link org.openrdf.sail.config.SailFactory} and
+ * {@link org.openrdf.repository.config.RepositoryFactory} that can make
  * external SERVICE calls.
  * 
  * @author James Leigh
