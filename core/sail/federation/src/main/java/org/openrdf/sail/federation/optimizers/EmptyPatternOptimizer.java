@@ -19,8 +19,8 @@ package org.openrdf.sail.federation.optimizers;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collection;
 
-import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -32,7 +32,6 @@ import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.util.RepositoryConnectionUtil;
 
 /**
  * Remove StatementPatterns that have no statements.
@@ -68,7 +67,7 @@ public class EmptyPatternOptimizer extends QueryModelVisitorBase<RepositoryExcep
 		Value obj = node.getObjectVar().getValue();
 		Resource[] ctx = getContexts(node.getContextVar());
 		for (RepositoryConnection member : members) {
-			if (!RepositoryConnectionUtil.isHasStatementOptimized(member) || member.hasStatement(subj, pred, obj, true, ctx)) {
+			if (member.hasStatement(subj, pred, obj, true, ctx)) {
 				return;
 			}
 		}

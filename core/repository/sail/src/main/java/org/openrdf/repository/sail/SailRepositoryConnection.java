@@ -41,7 +41,7 @@ import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.repository.RepositoryConnectionOptimizations;
+import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
@@ -51,9 +51,7 @@ import org.openrdf.repository.sail.config.RepositoryResolver;
 import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.sail.AdvancedSailConnection;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailConnectionOptimizations;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 
@@ -65,8 +63,7 @@ import org.openrdf.sail.SailReadOnlyException;
  * @author Arjohn Kampman
  */
 public class SailRepositoryConnection extends RepositoryConnectionBase implements
-		RepositoryConnectionOptimizations, FederatedServiceResolverClient, RepositoryResolverClient,
-		HttpClientDependent, SesameClientDependent
+		FederatedServiceResolverClient, RepositoryResolverClient, HttpClientDependent, SesameClientDependent
 {
 
 	/*-----------*
@@ -121,7 +118,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase implement
 	public SesameClient getSesameClient() {
 		if (sailConnection instanceof SesameClientDependent) {
 			return ((SesameClientDependent)sailConnection).getSesameClient();
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -137,7 +135,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase implement
 	public HttpClient getHttpClient() {
 		if (sailConnection instanceof HttpClientDependent) {
 			return ((HttpClientDependent)sailConnection).getHttpClient();
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -281,17 +280,7 @@ public class SailRepositoryConnection extends RepositoryConnectionBase implement
 			Resource... contexts)
 		throws RepositoryException
 	{
-		if(sailConnection instanceof AdvancedSailConnection) {
-			try {
-				return ((AdvancedSailConnection)sailConnection).hasStatement(subj, pred, obj, includeInferred, contexts);
-			}
-			catch(SailException e) {
-				throw new RepositoryException("Unable to find statement in Sail", e);
-			}
-		}
-		else {
-			return super.hasStatement(subj, pred, obj, includeInferred, contexts);
-		}
+		return sailConnection.hasStatement(subj, pred, obj, includeInferred, contexts);
 	}
 
 	@Override
@@ -523,14 +512,8 @@ public class SailRepositoryConnection extends RepositoryConnectionBase implement
 		}
 	}
 
-	public boolean isHasStatementOptimized()
-	{
-		return (sailConnection instanceof SailConnectionOptimizations) ? ((SailConnectionOptimizations)sailConnection).isHasStatementOptimized() : true;
-	}
-
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return getSailConnection().toString();
 	}
 }
