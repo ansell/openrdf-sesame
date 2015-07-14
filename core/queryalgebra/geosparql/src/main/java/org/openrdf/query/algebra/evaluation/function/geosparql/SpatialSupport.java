@@ -11,6 +11,7 @@ import com.spatial4j.core.context.SpatialContextFactory;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 import com.spatial4j.core.shape.ShapeCollection;
+import com.spatial4j.core.shape.impl.BufferedLineString;
 
 /**
  * This class is responsible for creating the
@@ -98,6 +99,11 @@ abstract class SpatialSupport {
 
 		@Override
 		public Shape convexHull(Shape s) {
+			if(s instanceof Point) {
+				return s;
+			} else if(s instanceof ShapeCollection<?>) {
+				return new BufferedLineString((ShapeCollection<Point>)s, 0.0, getSpatialContext());
+			}
 			return notSupported();
 		}
 
@@ -120,14 +126,24 @@ abstract class SpatialSupport {
 			if(s1 instanceof Point && s2 instanceof Point) {
 				Point p1 = (Point) s1;
 				Point p2 = (Point) s2;
-				// order by x-ordinate
-				if(p2.getX() < p1.getX()) {
+				int diff = compare(p2, p1);
+				if(diff == 0) {
+					return s1;
+				} else if(diff < 0) {
 					p1 = p2;
 					p2 = (Point) s1;
 				}
 				return new ShapeCollection<Point>(Arrays.asList(p1, p2), getSpatialContext());
 			}
 			return notSupported();
+		}
+
+		private int compare(Point p1, Point p2) {
+			int diff = Double.compare(p1.getX(), p2.getX());
+			if(diff == 0) {
+				diff = Double.compare(p1.getY(), p2.getY());
+			}
+			return diff;
 		}
 
 		@Override

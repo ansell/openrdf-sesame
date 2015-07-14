@@ -10,6 +10,7 @@
 	mf:entries (
 		:distance
 		:union
+		:convexHull
 		:srid
 	) .
 
@@ -26,6 +27,13 @@
 	[ qt:query <q-union.rq> ;
 	 qt:data <data.ttl> ];
 	mf:result <result-union.srx> .
+
+:convexHull rdf:type mf:QueryEvaluationTest ;
+	mf:name "convexHull" ;
+	mf:action
+	[ qt:query <q-convexHull.rq> ;
+	 qt:data <data.ttl> ];
+	mf:result <result-convexHull.srx> .
 
 :srid rdf:type mf:QueryEvaluationTest ;
 	mf:name "srid" ;
