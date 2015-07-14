@@ -112,12 +112,26 @@ abstract class SpatialSupport {
 			if(s instanceof Point) {
 				// points have no boundary so return empty shape
 				return new ShapeCollection<Point>(Collections.<Point>emptyList(), getSpatialContext());
+			} else if(s instanceof ShapeCollection<?>) {
+				ShapeCollection<?> col = (ShapeCollection<?>) s;
+				if(col.isEmpty()) {
+					return new ShapeCollection<Point>(Collections.<Point>emptyList(), getSpatialContext());
+				}
+				for(Shape p : col) {
+					if(!(p instanceof Point)) {
+						return notSupported();
+					}
+				}
+				return new ShapeCollection<Point>(Collections.<Point>emptyList(), getSpatialContext());
 			}
 			return notSupported();
 		}
 
 		@Override
 		public Shape envelope(Shape s) {
+			if(s instanceof Point) {
+				return s;
+			}
 			return notSupported();
 		}
 
@@ -148,16 +162,47 @@ abstract class SpatialSupport {
 
 		@Override
 		public Shape intersection(Shape s1, Shape s2) {
+			if(s1 instanceof Point && s2 instanceof Point) {
+				Point p1 = (Point) s1;
+				Point p2 = (Point) s2;
+				int diff = compare(p2, p1);
+				if(diff == 0) {
+					return s1;
+				} else {
+					return getSpatialContext().makePoint(Double.NaN, Double.NaN);
+				}
+			}
 			return notSupported();
 		}
 
 		@Override
 		public Shape symDifference(Shape s1, Shape s2) {
+			if(s1 instanceof Point && s2 instanceof Point) {
+				Point p1 = (Point) s1;
+				Point p2 = (Point) s2;
+				int diff = compare(p2, p1);
+				if(diff == 0) {
+					return getSpatialContext().makePoint(Double.NaN, Double.NaN);
+				} else if(diff < 0) {
+					p1 = p2;
+					p2 = (Point) s1;
+				}
+				return new ShapeCollection<Point>(Arrays.asList(p1, p2), getSpatialContext());
+			}
 			return notSupported();
 		}
 
 		@Override
 		public Shape difference(Shape s1, Shape s2) {
+			if(s1 instanceof Point && s2 instanceof Point) {
+				Point p1 = (Point) s1;
+				Point p2 = (Point) s2;
+				int diff = compare(p2, p1);
+				if(diff == 0) {
+					return getSpatialContext().makePoint(Double.NaN, Double.NaN);
+				}
+				return s1;
+			}
 			return notSupported();
 		}
 		
@@ -165,32 +210,81 @@ abstract class SpatialSupport {
 
 	private static final class DefaultWktWriter implements WktWriter {
 
+		private String notSupported(Shape s) {
+			throw new UnsupportedOperationException("This shape is not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS: "+s.getClass().getName());
+		}
+
 		@Override
 		public String toWkt(Shape shape) throws IOException {
 			if(shape instanceof Point) {
 				Point p = (Point) shape;
-				return "POINT ("+p.getX()+" "+p.getY()+")";
+				return "POINT "+toCoords(p);
 			} else if(shape instanceof ShapeCollection<?>) {
 				ShapeCollection<?> col = (ShapeCollection<?>) shape;
 				if(col.isEmpty()) {
-					return "MULTIPOINT EMPTY";
+					return "GEOMETRYCOLLECTION EMPTY";
 				}
-				StringBuilder buf = new StringBuilder("MULTIPOINT (");
+				Class<?> elementType = null;
+				StringBuilder buf = new StringBuilder(" (");
 				String sep = "";
 				for(Shape s : col) {
-					if(!(s instanceof Point)) {
-						throw new UnsupportedOperationException("This shape is not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS.");
+					if(elementType == null) {
+						elementType = s.getClass();
+					} else if(!elementType.equals(s.getClass())) {
+						elementType = Shape.class;
 					}
-					Point p = (Point) s;
-					buf.append(sep);
-					buf.append("(").append(p.getX()).append(" ").append(p.getY()).append(")");
+					buf.append(sep).append(toCoords(s));
 					sep = ", ";
 				}
 				buf.append(")");
+				if(Point.class.isAssignableFrom(elementType)) {
+					buf.insert(0, "MULTIPOINT");
+				} else if(elementType == Shape.class) {
+					buf.insert(0,  "GEOMETRYCOLLECTION");
+				} else {
+					return notSupported(shape);
+				}
 				return buf.toString();
+			} else if(shape instanceof BufferedLineString) {
+				BufferedLineString ls = (BufferedLineString) shape;
+				return "LINESTRING "+toCoords(ls);
 			}
-			throw new UnsupportedOperationException("This shape is not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS.");
+			return notSupported(shape);
 		}
-		
+
+		private String toCoords(Shape shape) throws IOException {
+			if(shape instanceof Point) {
+				Point p = (Point) shape;
+				return toCoords(p);
+			} else if(shape instanceof BufferedLineString) {
+				BufferedLineString ls = (BufferedLineString) shape;
+				return toCoords(ls);
+			}
+			return notSupported(shape);
+		}
+
+		private String toCoords(Point p) throws IOException {
+			if(p.isEmpty()) {
+				return "EMPTY";
+			} else {
+				return "("+p.getX()+" "+p.getY()+")";
+			}
+		}
+
+		private String toCoords(BufferedLineString shape) throws IOException {
+			double buffer = shape.getBuf();
+			if(buffer != 0.0) {
+				return notSupported(shape);
+			}
+			StringBuilder buf = new StringBuilder("(");
+			String sep = "";
+			for(Point p : shape.getPoints()) {
+				buf.append(sep);
+				buf.append(p.getX()).append(" ").append(p.getY());
+				sep = ", ";
+			}
+			buf.append(")");
+			return buf.toString();
+		}
 	}
 }
