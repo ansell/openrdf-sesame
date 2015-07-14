@@ -97,6 +97,14 @@ abstract class SpatialSupport {
 			throw new UnsupportedOperationException("Not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS.");
 		}
 
+		private Shape createEmptyPoint() {
+			return getSpatialContext().makePoint(Double.NaN, Double.NaN);
+		}
+
+		private Shape createEmptyGeometry() {
+			return new ShapeCollection<Shape>(Collections.<Shape>emptyList(), getSpatialContext());
+		}
+
 		@Override
 		public Shape convexHull(Shape s) {
 			if(s instanceof Point) {
@@ -111,18 +119,18 @@ abstract class SpatialSupport {
 		public Shape boundary(Shape s) {
 			if(s instanceof Point) {
 				// points have no boundary so return empty shape
-				return new ShapeCollection<Point>(Collections.<Point>emptyList(), getSpatialContext());
+				return createEmptyGeometry();
 			} else if(s instanceof ShapeCollection<?>) {
 				ShapeCollection<?> col = (ShapeCollection<?>) s;
 				if(col.isEmpty()) {
-					return new ShapeCollection<Point>(Collections.<Point>emptyList(), getSpatialContext());
+					return createEmptyGeometry();
 				}
 				for(Shape p : col) {
 					if(!(p instanceof Point)) {
 						return notSupported();
 					}
 				}
-				return new ShapeCollection<Point>(Collections.<Point>emptyList(), getSpatialContext());
+				return createEmptyGeometry();
 			}
 			return notSupported();
 		}
@@ -169,7 +177,7 @@ abstract class SpatialSupport {
 				if(diff == 0) {
 					return s1;
 				} else {
-					return getSpatialContext().makePoint(Double.NaN, Double.NaN);
+					return createEmptyPoint();
 				}
 			}
 			return notSupported();
@@ -182,7 +190,7 @@ abstract class SpatialSupport {
 				Point p2 = (Point) s2;
 				int diff = compare(p2, p1);
 				if(diff == 0) {
-					return getSpatialContext().makePoint(Double.NaN, Double.NaN);
+					return createEmptyPoint();
 				} else if(diff < 0) {
 					p1 = p2;
 					p2 = (Point) s1;
@@ -199,7 +207,7 @@ abstract class SpatialSupport {
 				Point p2 = (Point) s2;
 				int diff = compare(p2, p1);
 				if(diff == 0) {
-					return getSpatialContext().makePoint(Double.NaN, Double.NaN);
+					return createEmptyPoint();
 				}
 				return s1;
 			}
