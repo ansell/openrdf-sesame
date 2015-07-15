@@ -54,17 +54,6 @@ public class RDFaParserSettings {
 			Boolean.FALSE);
 
 	/**
-	 * Boolean setting for parser to determine whether the published RDFa
-	 * prefixes are used to substitute for undefined prefixes.
-	 * <p>
-	 * Defaults to false.
-	 * 
-	 * @since 2.7.0
-	 */
-	public static final RioSetting<Boolean> FAIL_ON_RDFA_UNDEFINED_PREFIXES = new RioSettingImpl<Boolean>(
-			"org.openrdf.rio.allowrdfaundefinedprefixes", "Allow RDFa Undefined Prefixes", Boolean.FALSE);
-
-	/**
 	 * Private default constructor.
 	 */
 	private RDFaParserSettings() {
