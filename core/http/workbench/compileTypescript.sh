@@ -1,6 +1,6 @@
 #!/bin/bash
-
-destdir=~/Documents/git/sesame/core/http/workbench/src/main/webapp/scripts
+scriptdir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+destdir="$scriptdir/src/main/webapp/scripts"
 srcdir=$destdir/ts
 cd $srcdir
 tsc --noImplicitAny --sourcemap --sourceRoot "/openrdf-workbench/scripts/ts" --outDir $destdir *.ts

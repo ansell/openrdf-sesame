@@ -30,16 +30,7 @@ public class SPARQLFederatedService extends RepositoryFederatedService {
 
 	private static SPARQLRepository createSPARQLRepository(String serviceUrl, SesameClient client)
 	{
-		SPARQLRepository rep = new SPARQLRepository(serviceUrl) {
-
-			@Override
-			protected void shutDownInternal()
-				throws RepositoryException
-			{
-				setSesameClient(null);
-				super.shutDownInternal();
-			}
-		};
+		SPARQLRepository rep = new SPARQLRepository(serviceUrl);
 		rep.setSesameClient(client);
 		return rep;
 	}

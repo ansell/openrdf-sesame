@@ -39,10 +39,14 @@ public class SailConfigSchema {
 
 	/** <tt>http://www.openrdf.org/config/sail#delegate</tt> */
 	public final static URI DELEGATE;
+	
+	/** <tt>http://www.openrdf.org/config/sail#iterationCacheSyncTreshold</tt> */
+	public final static URI ITERATION_CACHE_SYNC_THRESHOLD;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
 		SAILTYPE = factory.createURI(NAMESPACE, "sailType");
 		DELEGATE = factory.createURI(NAMESPACE, "delegate");
+		ITERATION_CACHE_SYNC_THRESHOLD = factory.createURI(NAMESPACE, "iterationCacheSyncTreshold");
 	}
 }

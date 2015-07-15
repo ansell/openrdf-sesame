@@ -34,10 +34,12 @@ import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
@@ -48,16 +50,17 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +125,7 @@ import org.openrdf.rio.helpers.ParseErrorLogger;
  * @author Andreas Schwarte
  * @see SesameSession
  */
-public class SparqlSession {
+public class SparqlSession implements HttpClientDependent {
 
 	/*-----------*
 	 * Constants *
@@ -150,11 +153,11 @@ public class SparqlSession {
 
 	private String updateURL;
 
-	private final HttpClient httpClient;
+	private HttpClient httpClient;
 
 	private final ExecutorService executor;
 
-	private final HttpContext httpContext;
+	private final HttpClientContext httpContext;
 
 	private final HttpParams params = new BasicHttpParams();
 
@@ -174,7 +177,7 @@ public class SparqlSession {
 
 	public SparqlSession(HttpClient client, ExecutorService executor) {
 		this.httpClient = client;
-		this.httpContext = new BasicHttpContext();
+		this.httpContext = new HttpClientContext();
 		this.executor = executor;
 		valueFactory = ValueFactoryImpl.getInstance();
 		params.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
@@ -191,8 +194,12 @@ public class SparqlSession {
 	 * Get/set methods *
 	 *-----------------*/
 
-	protected final HttpClient getHttpClient() {
+	public final HttpClient getHttpClient() {
 		return httpClient;
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		this.httpClient = httpClient;
 	}
 
 	public void setValueFactory(ValueFactory valueFactory) {
@@ -310,11 +317,16 @@ public class SparqlSession {
 			UsernamePasswordCredentials cred = new UsernamePasswordCredentials(username, password);
 			CredentialsProvider credsProvider = new BasicCredentialsProvider();
 			credsProvider.setCredentials(scope, cred);
-			httpContext.setAttribute(ClientContext.CREDS_PROVIDER, credsProvider);
-			params.setBooleanParameter(ClientPNames.HANDLE_AUTHENTICATION, true);
+			httpContext.setCredentialsProvider(credsProvider);
+			AuthCache authCache = new BasicAuthCache();
+			BasicScheme basicAuth = new BasicScheme();
+			HttpHost httpHost = new HttpHost(requestURI.getHost(), requestURI.getPort(), requestURI.getScheme());
+			authCache.put(httpHost, basicAuth);
+			httpContext.setAuthCache(authCache);
 		}
 		else {
-			httpContext.removeAttribute(ClientContext.CREDS_PROVIDER);
+			httpContext.removeAttribute(HttpClientContext.AUTH_CACHE);
+			httpContext.removeAttribute(HttpClientContext.CREDS_PROVIDER);
 		}
 	}
 

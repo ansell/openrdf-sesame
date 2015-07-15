@@ -17,6 +17,7 @@
 package org.openrdf.query.algebra.evaluation.iterator;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import info.aduna.iteration.FilterIteration;
@@ -139,7 +140,7 @@ public class SPARQLMinusIteration<X extends Exception> extends FilterIteration<B
 	protected Set<BindingSet> makeSet()
 		throws X
 	{
-		return new HashSet<BindingSet>();
+		return new LinkedHashSet<BindingSet>();
 	}
 
 	protected Set<String> makeSet(Set<String> set)

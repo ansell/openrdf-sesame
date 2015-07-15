@@ -103,6 +103,10 @@ public class ValueComparator implements Comparator<Value> {
 					return -1;
 				}
 				else {
+					boolean isEquivalent = QueryEvaluationUtil.compareLiterals(leftLit, rightLit, CompareOp.EQ);
+					if (isEquivalent) {
+						return 0;
+					}
 					return 1;
 				}
 			}

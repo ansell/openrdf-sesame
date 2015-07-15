@@ -21,7 +21,11 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.client.HttpClient;
+
+import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.http.client.SesameClientImpl;
 import org.openrdf.http.client.SesameSession;
 import org.openrdf.http.client.SparqlSession;
@@ -50,7 +54,7 @@ import org.openrdf.rio.RDFFormat;
  * @author Jeen Broekstra
  * @author Herko ter Horst
  */
-public class HTTPRepository extends RepositoryBase {
+public class HTTPRepository extends RepositoryBase implements HttpClientDependent, SesameClientDependent {
 
 	/*-----------*
 	 * Variables *
@@ -60,6 +64,9 @@ public class HTTPRepository extends RepositoryBase {
 	 * The HTTP client that takes care of the client-server communication.
 	 */
 	private SesameClient client;
+
+	/** dependent life cycle */
+	private SesameClientImpl dependentClient;
 
 	private String username;
 
@@ -120,13 +127,24 @@ public class HTTPRepository extends RepositoryBase {
 
 	public synchronized SesameClient getSesameClient() {
 		if (client == null) {
-			client = new SesameClientImpl();
+			client = dependentClient = new SesameClientImpl();
 		}
 		return client;
 	}
 
 	public synchronized void setSesameClient(SesameClient client) {
 		this.client = client;
+	}
+
+	public final HttpClient getHttpClient() {
+		return getSesameClient().getHttpClient();
+	}
+
+	public void setHttpClient(HttpClient httpClient) {
+		if (dependentClient == null) {
+			client = dependentClient = new SesameClientImpl();
+		}
+		dependentClient.setHttpClient(httpClient);
 	}
 
 	public ValueFactory getValueFactory() {
@@ -261,9 +279,9 @@ public class HTTPRepository extends RepositoryBase {
 	protected void shutDownInternal()
 		throws RepositoryException
 	{
-		if (client != null) {
-			client.shutDown();
-			client = null;
+		if (dependentClient != null) {
+			dependentClient.shutDown();
+			dependentClient = null;
 		}
 	}
 

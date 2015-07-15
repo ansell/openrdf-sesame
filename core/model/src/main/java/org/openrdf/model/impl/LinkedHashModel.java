@@ -130,20 +130,16 @@ public class LinkedHashModel extends AbstractModel {
 
 	@Override
 	public Namespace setNamespace(String prefix, String name) {
-		Namespace result = getNamespace(prefix);
-		if (result == null || !result.getName().equals(name)) {
-			result = new NamespaceImpl(prefix, name);
-			namespaces.add(result);
-		}
+		removeNamespace(prefix);
+		Namespace result = new NamespaceImpl(prefix, name);
+		namespaces.add(result);
 		return result;
 	}
 
 	@Override
 	public void setNamespace(Namespace namespace) {
-		Namespace existing = getNamespace(namespace.getPrefix());
-		if (existing == null || !existing.getName().equals(namespace.getName())) {
-			namespaces.add(namespace);
-		}
+		removeNamespace(namespace.getPrefix());
+		namespaces.add(namespace);
 	}
 
 	@Override

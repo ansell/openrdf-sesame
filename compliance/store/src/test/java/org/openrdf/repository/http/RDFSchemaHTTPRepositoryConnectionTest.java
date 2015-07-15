@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFException;
 import org.openrdf.repository.RDFSchemaRepositoryConnectionTest;
 import org.openrdf.repository.Repository;
@@ -32,6 +33,10 @@ import org.openrdf.rio.RDFFormat;
 public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryConnectionTest {
 
 	private static HTTPMemServer server;
+
+	public RDFSchemaHTTPRepositoryConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@BeforeClass
 	public static void startServer()
@@ -66,6 +71,15 @@ public class RDFSchemaHTTPRepositoryConnectionTest extends RDFSchemaRepositoryCo
 		throws Exception
 	{
 		System.err.println("temporarily disabled testTransactionIsolationForRead() for HTTPRepository");
+	}
+	
+	@Ignore("temporarily disabled for HTTPRepository")
+	@Test
+	@Override
+	public void testTransactionIsolationForReadWithDeleteOperation()
+	throws Exception 
+	{
+		System.err.println("temporarily disabled testTransactionIsolationForReadWithDeleteOperation() for HTTPRepository");
 	}
 
 	@Ignore("temporarily disabled for HTTPRepository")

@@ -8,11 +8,11 @@ workbench.addLoad(function () {
     var suffix = '_explore';
     var limitParam = workbench.paging.LIMIT + suffix;
     var limitElement = $(workbench.paging.LIM_ID + suffix);
-
     function setElement(num) {
         limitElement.val(String(parseInt(0 + num, 10)));
     }
-
-    setElement(workbench.paging.hasQueryParameter(limitParam) ? workbench.paging.getQueryParameter(limitParam) : workbench.getCookie(limitParam));
+    setElement(workbench.paging.hasQueryParameter(limitParam) ?
+        workbench.paging.getQueryParameter(limitParam) :
+        workbench.getCookie(limitParam));
 });
 //# sourceMappingURL=export.js.map
