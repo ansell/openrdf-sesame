@@ -38,6 +38,8 @@ public class GEOF {
 	public static final URI BOUNDARY;
 	public static final URI GET_SRID;
 
+	public static final URI RELATE;
+
 	public static final URI SF_EQUALS;
 	public static final URI SF_DISJOINT;
 	public static final URI SF_INTERSECTS;
@@ -83,6 +85,8 @@ public class GEOF {
 		ENVELOPE = factory.createURI(NAMESPACE, "envelope");
 		BOUNDARY = factory.createURI(NAMESPACE, "boundary");
 		GET_SRID = factory.createURI(NAMESPACE, "getSRID");
+
+		RELATE = factory.createURI(NAMESPACE, "relate");
 
 		SF_EQUALS = factory.createURI(NAMESPACE, "sfEquals");
 		SF_DISJOINT = factory.createURI(NAMESPACE, "sfDisjoint");

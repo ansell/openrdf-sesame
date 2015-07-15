@@ -24,6 +24,11 @@ class FunctionArguments {
 		return l.doubleValue();
 	}
 
+	public static String getString(Function func, Value v) throws ValueExprEvaluationException {
+		Literal l = getLiteral(func, v, XMLSchema.STRING);
+		return l.stringValue();
+	}
+
 	public static Shape getShape(Function func, Value v, SpatialContext context) throws ValueExprEvaluationException {
 		Literal wktLiteral = getLiteral(func, v, GEO.WKT_LITERAL);
 		try {

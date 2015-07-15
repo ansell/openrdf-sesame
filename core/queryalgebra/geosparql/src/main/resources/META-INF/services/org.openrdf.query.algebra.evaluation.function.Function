@@ -8,6 +8,7 @@ org.openrdf.query.algebra.evaluation.function.geosparql.SymmetricDifference
 org.openrdf.query.algebra.evaluation.function.geosparql.Envelope
 org.openrdf.query.algebra.evaluation.function.geosparql.Boundary
 org.openrdf.query.algebra.evaluation.function.geosparql.SRID
+org.openrdf.query.algebra.evaluation.function.geosparql.Relate
 org.openrdf.query.algebra.evaluation.function.geosparql.SfContains
 org.openrdf.query.algebra.evaluation.function.geosparql.SfCrosses
 org.openrdf.query.algebra.evaluation.function.geosparql.SfDisjoint
