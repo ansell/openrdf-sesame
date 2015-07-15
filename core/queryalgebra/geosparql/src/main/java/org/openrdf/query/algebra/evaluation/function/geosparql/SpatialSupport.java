@@ -91,9 +91,10 @@ abstract class SpatialSupport {
 		}
 	}
 
+
 	private static final class DefaultSpatialAlgebra implements SpatialAlgebra {
 
-		private Shape notSupported() {
+		private <T> T notSupported() {
 			throw new UnsupportedOperationException("Not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS.");
 		}
 
@@ -213,8 +214,123 @@ abstract class SpatialSupport {
 			}
 			return notSupported();
 		}
-		
+
+		@Override
+		public boolean relate(Shape s1, Shape s2, String intersectionPattern) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean equals(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean sfDisjoint(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean sfIntersects(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean sfTouches(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean sfCrosses(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean sfWithin(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean sfContains(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean sfOverlaps(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean ehDisjoint(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean ehMeet(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean ehOverlap(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean ehCovers(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean ehCoveredBy(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean ehInside(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean ehContains(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean rcc8dc(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean rcc8ec(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean rcc8po(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean rcc8tppi(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean rcc8tpp(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean rcc8ntpp(Shape s1, Shape s2) {
+			return notSupported();
+		}
+
+		@Override
+		public boolean rcc8dntppi(Shape s1, Shape s2) {
+			return notSupported();
+		}
 	}
+
 
 	private static final class DefaultWktWriter implements WktWriter {
 
