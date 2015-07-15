@@ -37,5 +37,5 @@ public interface SpatialAlgebra {
 	boolean rcc8tppi(Shape s1, Shape s2);
 	boolean rcc8tpp(Shape s1, Shape s2);
 	boolean rcc8ntpp(Shape s1, Shape s2);
-	boolean rcc8dntppi(Shape s1, Shape s2);
+	boolean rcc8ntppi(Shape s1, Shape s2);
 }

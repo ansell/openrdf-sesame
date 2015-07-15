@@ -24,3 +24,11 @@ org.openrdf.query.algebra.evaluation.function.geosparql.ehEquals
 org.openrdf.query.algebra.evaluation.function.geosparql.ehInside
 org.openrdf.query.algebra.evaluation.function.geosparql.ehMeet
 org.openrdf.query.algebra.evaluation.function.geosparql.ehOverlap
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8DC
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8EC
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8EQ
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8NTPP
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8NTPPI
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8PO
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8TPP
+org.openrdf.query.algebra.evaluation.function.geosparql.RCC8TPPI

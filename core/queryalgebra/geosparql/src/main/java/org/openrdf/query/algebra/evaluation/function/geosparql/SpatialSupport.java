@@ -326,7 +326,7 @@ abstract class SpatialSupport {
 		}
 
 		@Override
-		public boolean rcc8dntppi(Shape s1, Shape s2) {
+		public boolean rcc8ntppi(Shape s1, Shape s2) {
 			return notSupported();
 		}
 	}
