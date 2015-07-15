@@ -18,14 +18,24 @@ package org.openrdf.repository.sail;
 
 import java.io.File;
 
+import org.apache.http.client.HttpClient;
+
+import org.openrdf.http.client.HttpClientDependent;
+import org.openrdf.http.client.SesameClient;
+import org.openrdf.http.client.SesameClientDependent;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryLockedException;
 import org.openrdf.repository.base.RepositoryBase;
+import org.openrdf.repository.sail.config.RepositoryResolver;
+import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailLockedException;
+import org.openrdf.sail.StackableSail;
 
 /**
  * An implementation of the {@link Repository} interface that operates on a
@@ -55,7 +65,9 @@ import org.openrdf.sail.SailLockedException;
  * 
  * @author Arjohn Kampman
  */
-public class SailRepository extends RepositoryBase {
+public class SailRepository extends RepositoryBase implements FederatedServiceResolverClient,
+		RepositoryResolverClient, HttpClientDependent, SesameClientDependent
+{
 
 	/*-----------*
 	 * Constants *
@@ -87,6 +99,60 @@ public class SailRepository extends RepositoryBase {
 
 	public void setDataDir(File dataDir) {
 		sail.setDataDir(dataDir);
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		FederatedServiceResolverClient stack = findSailOf(sail, FederatedServiceResolverClient.class);
+		if (stack != null) {
+			stack.setFederatedServiceResolver(resolver);
+		}
+	}
+
+	@Override
+	public void setRepositoryResolver(RepositoryResolver resolver) {
+		RepositoryResolverClient stack = findSailOf(sail, RepositoryResolverClient.class);
+		if (stack != null) {
+			stack.setRepositoryResolver(resolver);
+		}
+	}
+
+	@Override
+	public SesameClient getSesameClient() {
+		SesameClientDependent stack = findSailOf(sail, SesameClientDependent.class);
+		if (stack != null) {
+			return stack.getSesameClient();
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public void setSesameClient(SesameClient client) {
+		SesameClientDependent stack = findSailOf(sail, SesameClientDependent.class);
+		if (stack != null) {
+			stack.setSesameClient(client);
+		}
+	}
+
+	@Override
+	public HttpClient getHttpClient() {
+		HttpClientDependent stack = findSailOf(sail, HttpClientDependent.class);
+		if (stack != null) {
+			return stack.getHttpClient();
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public void setHttpClient(HttpClient client) {
+		HttpClientDependent stack = findSailOf(sail, HttpClientDependent.class);
+		if (stack != null) {
+			stack.setHttpClient(client);
+		}
 	}
 
 	@Override
@@ -157,5 +223,17 @@ public class SailRepository extends RepositoryBase {
 
 	public String toString() {
 		return sail.toString();
+	}
+
+	private <T> T findSailOf(Sail sail, Class<T> type) {
+		if (type.isInstance(sail)) {
+			return type.cast(sail);
+		}
+		else if (sail instanceof StackableSail) {
+			return findSailOf(((StackableSail)sail).getBaseSail(), type);
+		}
+		else {
+			return null;
+		}
 	}
 }

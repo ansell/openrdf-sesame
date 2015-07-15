@@ -1,0 +1,10 @@
+org.openrdf.query.algebra.evaluation.function.geosparql.Distance
+org.openrdf.query.algebra.evaluation.function.geosparql.Buffered
+org.openrdf.query.algebra.evaluation.function.geosparql.ConvexHull
+org.openrdf.query.algebra.evaluation.function.geosparql.Intersection
+org.openrdf.query.algebra.evaluation.function.geosparql.Union
+org.openrdf.query.algebra.evaluation.function.geosparql.Difference
+org.openrdf.query.algebra.evaluation.function.geosparql.SymmetricDifference
+org.openrdf.query.algebra.evaluation.function.geosparql.Envelope
+org.openrdf.query.algebra.evaluation.function.geosparql.Boundary
+org.openrdf.query.algebra.evaluation.function.geosparql.SRID

@@ -44,11 +44,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.DeleteData;
-import org.openrdf.query.algebra.InsertData;
-import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -82,6 +78,8 @@ public abstract class SailConnectionBase implements SailConnection {
 	private volatile boolean isOpen;
 
 	private volatile boolean txnActive;
+
+	private volatile boolean txnPrepared;
 
 	/**
 	 * Lock used to give the {@link #close()} method exclusive access to a
@@ -250,6 +248,7 @@ public abstract class SailConnectionBase implements SailConnection {
 						}
 						finally {
 							txnActive = false;
+							txnPrepared = false;
 						}
 					}
 
@@ -398,14 +397,26 @@ public abstract class SailConnectionBase implements SailConnection {
 	}
 
 	@Override
-	public void prepare()
+	public final void prepare()
 		throws SailException
 	{
-		flush();
+		if (isActive()) {
+			endUpdate(null);
+		}
 		connectionLock.readLock().lock();
 		try {
 			verifyIsOpen();
-			// assume all transactions will reasonably commit
+
+			updateLock.lock();
+			try {
+				if (txnActive) {
+					prepareInternal();
+					txnPrepared = true;
+				}
+			}
+			finally {
+				updateLock.unlock();
+			}
 		}
 		finally {
 			connectionLock.readLock().unlock();
@@ -426,8 +437,12 @@ public abstract class SailConnectionBase implements SailConnection {
 			updateLock.lock();
 			try {
 				if (txnActive) {
+					if (!txnPrepared) {
+						prepareInternal();
+					}
 					commitInternal();
 					txnActive = false;
+					txnPrepared = false;
 				}
 			}
 			finally {
@@ -461,6 +476,7 @@ public abstract class SailConnectionBase implements SailConnection {
 					}
 					finally {
 						txnActive = false;
+						txnPrepared = false;
 					}
 				}
 			}
@@ -492,6 +508,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	public void startUpdate(UpdateContext op)
 		throws SailException
 	{
+		if (op != null) {
+			flushPendingUpdates();
+		}
 		synchronized (removed) {
 			assert !removed.containsKey(op);
 			removed.put(op, new LinkedList<Statement>());
@@ -818,6 +837,11 @@ public abstract class SailConnectionBase implements SailConnection {
 	protected abstract void startTransactionInternal()
 		throws SailException;
 
+	protected void prepareInternal()
+		throws SailException {
+		// do nothing
+	}
+
 	protected abstract void commitInternal()
 		throws SailException;
 
@@ -894,7 +918,9 @@ public abstract class SailConnectionBase implements SailConnection {
 	private void flushPendingUpdates()
 		throws SailException
 	{
-		if (!isActiveOperation()) {
+		if (!isActiveOperation() || isActive()
+				&& !getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+		{
 			flush();
 		}
 	}

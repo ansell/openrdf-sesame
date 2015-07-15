@@ -16,15 +16,20 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
+
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
@@ -81,6 +86,17 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 	private final Object lock = new Object();
 
+	private final File tempFile;
+
+	private final DB db;
+
+	/**
+	 * Number of items cached before internal collections are synced to disk. If
+	 * set to 0, no disk-syncing is done and all internal caching is kept in
+	 * memory.
+	 */
+	private final long iterationCacheSyncThreshold;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -88,9 +104,31 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	public GroupIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings)
 		throws QueryEvaluationException
 	{
+		this(strategy, group, parentBindings, 0);
+	}
+
+	public GroupIterator(EvaluationStrategy strategy, Group group, BindingSet parentBindings,
+			long iterationCacheSyncThreshold)
+		throws QueryEvaluationException
+	{
 		this.strategy = strategy;
 		this.group = group;
 		this.parentBindings = parentBindings;
+		this.iterationCacheSyncThreshold = iterationCacheSyncThreshold;
+
+		if (this.iterationCacheSyncThreshold > 0) {
+			try {
+				this.tempFile = File.createTempFile("group-eval", null);
+			}
+			catch (IOException e) {
+				throw new QueryEvaluationException("could not initialize temp db", e);
+			}
+			this.db = DBMaker.newFileDB(tempFile).deleteFilesAfterClose().closeOnJvmShutdown().make();
+		}
+		else {
+			this.tempFile = null;
+			this.db = null;
+		}
 	}
 
 	/*---------*
@@ -127,11 +165,30 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		return super.next();
 	}
 
+	@Override
+	protected void handleClose()
+		throws QueryEvaluationException
+	{
+		super.handleClose();
+		if (this.db != null) {
+			this.db.close();
+		}
+	}
+
+	private <T> Set<T> createSet(String setName) {
+		if (db != null) {
+			return db.getHashSet(setName);
+		}
+		else {
+			return new HashSet<T>();
+		}
+	}
+
 	private Iterator<BindingSet> createIterator()
 		throws QueryEvaluationException
 	{
 		Collection<Entry> entries = buildEntries();
-		Collection<BindingSet> bindingSets = new LinkedList<BindingSet>();
+		Set<BindingSet> bindingSets = createSet("bindingsets");
 
 		for (Entry entry : entries) {
 			QueryBindingSet sol = new QueryBindingSet(parentBindings);
@@ -167,8 +224,10 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			if (!iter.hasNext()) {
 				// no solutions, still need to process aggregates to produce a
 				// zero-result.
-				entries.put(new Key(new EmptyBindingSet()), new Entry(new EmptyBindingSet()));
+				entries.put(new Key(EmptyBindingSet.getInstance()), new Entry(EmptyBindingSet.getInstance()));
 			}
+
+			// long count = 0;
 
 			while (iter.hasNext()) {
 				BindingSet sol;
@@ -202,7 +261,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 	 * 
 	 * @author David Huynh
 	 */
-	protected class Key {
+	protected class Key implements Serializable {
+
+		private static final long serialVersionUID = 4461951265373324084L;
 
 		private BindingSet bindingSet;
 
@@ -255,13 +316,22 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws ValueExprEvaluationException, QueryEvaluationException
 		{
 			this.prototype = prototype;
-			this.aggregates = new LinkedHashMap<String, Aggregate>();
-			for (GroupElem ge : group.getGroupElements()) {
-				Aggregate create = create(ge.getOperator());
-				if (create != null) {
-					aggregates.put(ge.getName(), create);
+
+		}
+
+		private Map<String, Aggregate> getAggregates()
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
+			if (this.aggregates == null) {
+				this.aggregates = new LinkedHashMap<String, Aggregate>();
+				for (GroupElem ge : group.getGroupElements()) {
+					Aggregate create = create(ge.getOperator());
+					if (create != null) {
+						aggregates.put(ge.getName(), create);
+					}
 				}
 			}
+			return this.aggregates;
 		}
 
 		public BindingSet getPrototype() {
@@ -271,7 +341,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void addSolution(BindingSet bindingSet)
 			throws QueryEvaluationException
 		{
-			for (Aggregate aggregate : aggregates.values()) {
+			for (Aggregate aggregate : getAggregates().values()) {
 				aggregate.processAggregate(bindingSet);
 			}
 		}
@@ -279,9 +349,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		public void bindSolution(QueryBindingSet sol)
 			throws QueryEvaluationException
 		{
-			for (String name : aggregates.keySet()) {
+			for (String name : getAggregates().keySet()) {
 				try {
-					Value value = aggregates.get(name).getValue();
+					Value value = getAggregates().get(name).getValue();
 					if (value != null) {
 						// Potentially overwrites bindings from super
 						sol.setBinding(name, value);
@@ -332,8 +402,9 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		public Aggregate(AggregateOperatorBase operator) {
 			this.arg = operator.getArg();
+
 			if (operator.isDistinct()) {
-				distinctValues = new HashSet<Value>();
+				distinctValues = createSet("distinct-values-" + this.hashCode());
 			}
 			else {
 				distinctValues = null;
@@ -347,7 +418,17 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			throws QueryEvaluationException;
 
 		protected boolean distinctValue(Value value) {
-			return distinctValues == null || distinctValues.add(value);
+			if (distinctValues == null) {
+				return true;
+			}
+
+			final boolean result = distinctValues.add(value);
+			if (db != null && distinctValues.size() % iterationCacheSyncThreshold == 0) {
+				// write to disk every $iterationCacheSyncThreshold items
+				db.commit();
+			}
+
+			return result;
 		}
 
 		protected ValueExpr getArg() {
@@ -378,7 +459,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 			// for a wildcarded count with a DISTINCT clause we need to filter on
 			// distinct bindingsets rather than individual values.
 			if (operator.isDistinct() && getArg() == null) {
-				distinctBindingSets = new HashSet<BindingSet>();
+				distinctBindingSets = createSet("distinct-bs-" + this.hashCode());
 			}
 			else {
 				distinctBindingSets = null;
@@ -404,9 +485,19 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 		}
 
 		protected boolean distinctBindingSet(BindingSet s) {
-			return this.distinctBindingSets == null || distinctBindingSets.add(s);
+			if (distinctBindingSets == null) {
+				return true;
+			}
+
+			final boolean result = distinctBindingSets.add(s);
+			if (db != null && distinctBindingSets.size() % iterationCacheSyncThreshold == 0) {
+				// write to disk every
+				db.commit();
+			}
+
+			return result;
 		}
-		
+
 		@Override
 		public Value getValue() {
 			return vf.createLiteral(Long.toString(count), XMLSchema.INTEGER);
