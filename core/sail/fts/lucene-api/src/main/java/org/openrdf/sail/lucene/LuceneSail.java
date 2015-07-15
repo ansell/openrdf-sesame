@@ -573,7 +573,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 	protected Collection<SearchQueryInterpreter> getSearchQueryInterpreters() {
 		return Arrays.<SearchQueryInterpreter>asList(
 			new QuerySpecBuilder(incompleteQueryFails),
-			new GeoQuerySpecBuilder(luceneIndex)
+			new DistanceQuerySpecBuilder(luceneIndex)
 		);
 	}
 }

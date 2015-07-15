@@ -467,8 +467,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			QuerySpec query = (QuerySpec) evaluator;
 			Iterable<? extends DocumentScore> result = evaluateQuery(query);
 			return generateBindingSets(query, result);
-		} else if(evaluator instanceof GeoQuerySpec) {
-			GeoQuerySpec query = (GeoQuerySpec) evaluator;
+		} else if(evaluator instanceof DistanceQuerySpec) {
+			DistanceQuerySpec query = (DistanceQuerySpec) evaluator;
 			Iterable<? extends DocumentDistance> result = evaluateQuery(query);
 			return generateBindingSets(query, result);
 		} else {
@@ -608,7 +608,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
-	private Iterable<? extends DocumentDistance> evaluateQuery(GeoQuerySpec query) {
+	private Iterable<? extends DocumentDistance> evaluateQuery(DistanceQuerySpec query) {
 		Iterable<? extends DocumentDistance> hits = null;
 
 		Literal from = query.getFrom();
@@ -641,7 +641,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		}
 	}
 
-	private Collection<BindingSet> generateBindingSets(GeoQuerySpec query, Iterable<? extends DocumentDistance> hits)
+	private Collection<BindingSet> generateBindingSets(DistanceQuerySpec query, Iterable<? extends DocumentDistance> hits)
 		throws SailException
 	{
 		// Since one resource can be returned many times, it can lead now to

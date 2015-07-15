@@ -28,7 +28,7 @@ import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 
-public class GeoQuerySpec implements SearchQueryEvaluator {
+public class DistanceQuerySpec implements SearchQueryEvaluator {
 	private QueryModelNode functionParent;
 	private Literal from;
 	private URI units;

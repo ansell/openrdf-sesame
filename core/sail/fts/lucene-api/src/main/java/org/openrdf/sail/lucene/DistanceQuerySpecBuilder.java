@@ -41,10 +41,10 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.SailException;
 
-public class GeoQuerySpecBuilder implements SearchQueryInterpreter {
+public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 	private SearchIndex index;
 
-	public GeoQuerySpecBuilder(SearchIndex index) {
+	public DistanceQuerySpecBuilder(SearchIndex index) {
 		this.index = index;
 	}
 
@@ -53,7 +53,7 @@ public class GeoQuerySpecBuilder implements SearchQueryInterpreter {
 			final Collection<SearchQueryEvaluator> results) throws SailException {
 
 		tupleExpr.visit(new QueryModelVisitorBase<SailException>() {
-			final Map<String,GeoQuerySpec> specs = new HashMap<String,GeoQuerySpec>();
+			final Map<String,DistanceQuerySpec> specs = new HashMap<String,DistanceQuerySpec>();
 
 			@Override
 			public void meet(FunctionCall f) throws SailException {
@@ -96,7 +96,7 @@ public class GeoQuerySpecBuilder implements SearchQueryInterpreter {
 						return;
 					}
 
-					GeoQuerySpec spec = new GeoQuerySpec();
+					DistanceQuerySpec spec = new DistanceQuerySpec();
 					spec.setFunctionParent(parent);
 					spec.setFrom(from);
 					spec.setUnits(units);
@@ -112,7 +112,7 @@ public class GeoQuerySpecBuilder implements SearchQueryInterpreter {
 				URI propertyName = (URI) sp.getPredicateVar().getValue();
 				if(propertyName != null && index.isGeoProperty(propertyName.toString()) && !sp.getObjectVar().hasValue()) {
 					String objectVarName = sp.getObjectVar().getName();
-					GeoQuerySpec spec = specs.remove(objectVarName);
+					DistanceQuerySpec spec = specs.remove(objectVarName);
 					if(spec != null && isChildOf(sp, spec.getFilter())) {
 						spec.setGeometryPattern(sp);
 						results.add(spec);
