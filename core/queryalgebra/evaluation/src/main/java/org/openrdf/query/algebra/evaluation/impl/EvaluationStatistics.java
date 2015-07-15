@@ -88,13 +88,10 @@ public class EvaluationStatistics {
 
 		@Override
 		public void meet(BindingSetAssignment node) {
-			// node.getBindingSets().size() binding sets
-			// but is cheap as we don't need to do any work
-			// WHY is this zero??? surely it is cost equivalent to a SingletonSet.
-			// what is more is that any join with this will also be zero,
-			// even with a fully unbounded statement pattern.
-			cardinality = 0;
-			//cardinality = 1.0;
+			// actual cardinality is node.getBindingSets().size() binding sets
+			// but cost is cheap as we don't need to query the triple store
+			// so effective cardinality is 1 or a very slowly increasing function of node.getBindingSets().size().
+			cardinality = 1.0;
 		}
 
 		@Override
