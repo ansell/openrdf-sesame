@@ -307,8 +307,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 
 		List<SearchQueryEvaluator> queries = new ArrayList<SearchQueryEvaluator>();
 
-		for(SearchQueryInterpreter interpreter : sail.getSearchQueryInterpreters())
-		{
+		for(SearchQueryInterpreter interpreter : sail.getSearchQueryInterpreters()) {
 			interpreter.process(tupleExpr, bindings, queries);
 		}
 
@@ -381,8 +380,8 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		QueryModelNode principalNode = query.getParentQueryModelNode();
 		final Projection projection = (Projection)getParentNodeOfType(principalNode, Projection.class);
 		if (projection == null) {
-			logger.error("Could not add bindings to the query tree because no projection was found for the query node: "
-					+ principalNode.toString());
+			logger.error("Could not add bindings to the query tree because no projection was found for the query node: {}",
+					principalNode);
 			return;
 		}
 

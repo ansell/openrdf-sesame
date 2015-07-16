@@ -379,7 +379,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	private static int countPropertyValues(SearchDocument document)
 	{
 		int numValues = 0;
-		Set<String> propertyNames = document.getPropertyNames();
+		Collection<String> propertyNames = document.getPropertyNames();
 		for(String propertyName : propertyNames) {
 			List<String> propertyValues = document.getProperty(propertyName);
 			if(propertyValues != null) {
@@ -460,8 +460,20 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 
 
+	/**
+	 * To be removed, prefer {@link evaluate(SearchQueryEvaluator query)}.
+	 */
+	@Deprecated
+	public Collection<BindingSet> evaluate(QuerySpec query)
+		throws SailException
+	{
+		Iterable<? extends DocumentScore> result = evaluateQuery(query);
+		return generateBindingSets(query, result);
+	}
+
 	@Override
-	public final Collection<BindingSet> evaluate(SearchQueryEvaluator evaluator) throws SailException
+	public final Collection<BindingSet> evaluate(SearchQueryEvaluator evaluator)
+		throws SailException
 	{
 		if(evaluator instanceof QuerySpec) {
 			QuerySpec query = (QuerySpec) evaluator;
@@ -558,7 +570,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				if (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null) {
 					if (hit.isHighlighted()) {
 						// limit to the queried field, if there was one
-						Set<String> fields;
+						Collection<String> fields;
 						if (query.getPropertyURI() != null) {
 							String fieldname = query.getPropertyURI().toString();
 							fields = Collections.singleton(fieldname);

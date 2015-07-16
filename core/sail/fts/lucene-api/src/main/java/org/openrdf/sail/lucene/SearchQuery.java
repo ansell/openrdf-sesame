@@ -16,30 +16,22 @@
  */
 package org.openrdf.sail.lucene;
 
-import java.util.Collection;
-import java.util.List;
+import java.io.IOException;
 
-public interface SearchDocument
-{
-	String getId();
-	String getResource();
-	String getContext();
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
+
+@Deprecated
+public interface SearchQuery {
+
 	/**
-	 * Returns a set of the property names.
+	 * Queries for the given subject or all subjects if null.
 	 */
-	Collection<String> getPropertyNames();
+	Iterable<? extends DocumentScore> query(Resource subject)
+		throws IOException;
+
 	/**
-	 * Adds/creates a new property with the given name.
+	 * Highlights the given field or all fields if null.
 	 */
-	void addProperty(String name);
-	/**
-	 * Adds a value to the property with the given name.
-	 */
-	void addProperty(String name, String value);
-	void addGeoProperty(String name, String value);
-	/**
-	 * Checks whether a field occurs with a specified value in a Document.
-	 */
-	boolean hasProperty(String name, String value);
-	List<String> getProperty(String name);
+	void highlight(URI property);
 }

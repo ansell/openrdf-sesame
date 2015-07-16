@@ -38,6 +38,13 @@ public interface SearchIndex {
 	void initialize(Properties parameters)
 		throws Exception;
 
+	/**
+	 * To be removed from interface, prefer {@link evaluate(SearchQueryEvaluator query)}.
+	 */
+	@Deprecated
+	Collection<BindingSet> evaluate(QuerySpec query)
+		throws SailException;
+
 	Collection<BindingSet> evaluate(SearchQueryEvaluator query)
 		throws SailException;
 
