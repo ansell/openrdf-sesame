@@ -10,10 +10,12 @@ import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
 
 /**
- * The GeoSPARQL {@link Function} geof:relate,
- * as defined in <a href="http://www.opengeospatial.org/standards/geosparql">OGC GeoSPARQL - A Geographic Query Language for RDF Data</a>.
+ * The GeoSPARQL {@link Function} geof:relate, as defined in <a
+ * href="http://www.opengeospatial.org/standards/geosparql">OGC GeoSPARQL - A
+ * Geographic Query Language for RDF Data</a>.
  */
 public class Relate implements Function {
+
 	@Override
 	public String getURI() {
 		return GEOF.RELATE.stringValue();
@@ -21,9 +23,11 @@ public class Relate implements Function {
 
 	@Override
 	public Value evaluate(ValueFactory valueFactory, Value... args)
-			throws ValueExprEvaluationException {
-		if(args.length != 3) {
-			throw new ValueExprEvaluationException(getURI()+" requires exactly 3 arguments, got " + args.length);
+		throws ValueExprEvaluationException
+	{
+		if (args.length != 3) {
+			throw new ValueExprEvaluationException(getURI() + " requires exactly 3 arguments, got "
+					+ args.length);
 		}
 
 		SpatialContext geoContext = SpatialSupport.getSpatialContext();

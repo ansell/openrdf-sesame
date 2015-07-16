@@ -14,10 +14,12 @@ import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
 
 /**
- * The GeoSPARQL {@link Function} geof:buffer,
- * as defined in <a href="http://www.opengeospatial.org/standards/geosparql">OGC GeoSPARQL - A Geographic Query Language for RDF Data</a>.
+ * The GeoSPARQL {@link Function} geof:buffer, as defined in <a
+ * href="http://www.opengeospatial.org/standards/geosparql">OGC GeoSPARQL - A
+ * Geographic Query Language for RDF Data</a>.
  */
 public class Buffer implements Function {
+
 	@Override
 	public String getURI() {
 		return GEOF.BUFFER.stringValue();
@@ -25,9 +27,11 @@ public class Buffer implements Function {
 
 	@Override
 	public Value evaluate(ValueFactory valueFactory, Value... args)
-			throws ValueExprEvaluationException {
-		if(args.length != 3) {
-			throw new ValueExprEvaluationException(getURI()+" requires exactly 3 arguments, got " + args.length);
+		throws ValueExprEvaluationException
+	{
+		if (args.length != 3) {
+			throw new ValueExprEvaluationException(getURI() + " requires exactly 3 arguments, got "
+					+ args.length);
 		}
 
 		SpatialContext geoContext = SpatialSupport.getSpatialContext();
@@ -41,7 +45,8 @@ public class Buffer implements Function {
 		String wkt;
 		try {
 			wkt = SpatialSupport.getWktWriter().toWkt(buffered);
-		} catch(IOException ioe) {
+		}
+		catch (IOException ioe) {
 			throw new ValueExprEvaluationException(ioe);
 		}
 		return valueFactory.createLiteral(wkt, GEO.WKT_LITERAL);

@@ -9,11 +9,14 @@ import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
 
 abstract class GeometricRelationFunction implements Function {
+
 	@Override
 	public Value evaluate(ValueFactory valueFactory, Value... args)
-			throws ValueExprEvaluationException {
-		if(args.length != 2) {
-			throw new ValueExprEvaluationException(getURI()+" requires exactly 2 arguments, got " + args.length);
+		throws ValueExprEvaluationException
+	{
+		if (args.length != 2) {
+			throw new ValueExprEvaluationException(getURI() + " requires exactly 2 arguments, got "
+					+ args.length);
 		}
 
 		SpatialContext geoContext = SpatialSupport.getSpatialContext();
