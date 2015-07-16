@@ -29,16 +29,22 @@ import org.apache.lucene.search.ScoreDoc;
 import org.openrdf.model.URI;
 import org.openrdf.sail.lucene.util.GeoUnits;
 
-public class LuceneDocumentDistance implements DocumentDistance
-{
+public class LuceneDocumentDistance implements DocumentDistance {
+
 	private final ScoreDoc scoreDoc;
+
 	private final String geoProperty;
+
 	private final URI units;
+
 	private final Point origin;
+
 	private final LuceneIndex index;
+
 	private LuceneDocument fullDoc;
 
-	public LuceneDocumentDistance(ScoreDoc doc, String geoProperty, URI units, Point origin, LuceneIndex index) {
+	public LuceneDocumentDistance(ScoreDoc doc, String geoProperty, URI units, Point origin, LuceneIndex index)
+	{
 		this.scoreDoc = doc;
 		this.geoProperty = geoProperty;
 		this.units = units;
@@ -48,9 +54,9 @@ public class LuceneDocumentDistance implements DocumentDistance
 
 	@Override
 	public SearchDocument getDocument() {
-		if(fullDoc == null)
-		{
-			Document doc = index.getDocument(scoreDoc.doc, Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoProperty));
+		if (fullDoc == null) {
+			Document doc = index.getDocument(scoreDoc.doc,
+					Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoProperty));
 			fullDoc = new LuceneDocument(doc, index.getSpatialContext(), index.getSpatialPrefixTree());
 		}
 		return fullDoc;
@@ -60,7 +66,7 @@ public class LuceneDocumentDistance implements DocumentDistance
 	public double getDistance() {
 		List<String> wkts = getDocument().getProperty(geoProperty);
 		double min = Double.POSITIVE_INFINITY;
-		for(String wkt : wkts) {
+		for (String wkt : wkts) {
 			Shape shape;
 			try {
 				shape = index.getSpatialContext().readShapeFromWkt(wkt);

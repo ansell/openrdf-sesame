@@ -67,30 +67,25 @@ public class QuerySpec implements SearchQueryEvaluator {
 	}
 
 	@Override
-	public QueryModelNode getParentQueryModelNode()
-	{
+	public QueryModelNode getParentQueryModelNode() {
 		return getMatchesPattern();
 	}
 
 	@Override
-	public void updateQueryModelNodes(boolean hasResult)
-	{
-		Supplier<QueryModelNode> nodeFactory = hasResult ?
-				new Supplier<QueryModelNode>()
-				{
-					@Override
-					public QueryModelNode get() {
-						return new SingletonSet();
-					}
-				}
-				:
-				new Supplier<QueryModelNode>()
-				{
-					@Override
-					public QueryModelNode get() {
-						return new EmptySet();
-					}
-				};
+	public void updateQueryModelNodes(boolean hasResult) {
+		Supplier<QueryModelNode> nodeFactory = hasResult ? new Supplier<QueryModelNode>() {
+
+			@Override
+			public QueryModelNode get() {
+				return new SingletonSet();
+			}
+		} : new Supplier<QueryModelNode>() {
+
+			@Override
+			public QueryModelNode get() {
+				return new EmptySet();
+			}
+		};
 
 		replace(getMatchesPattern(), nodeFactory);
 		replace(getQueryPattern(), nodeFactory);
@@ -108,8 +103,7 @@ public class QuerySpec implements SearchQueryEvaluator {
 	 * @param replacement
 	 *        the replacement type
 	 */
-	private void replace(QueryModelNode node, Supplier<? extends QueryModelNode> replacement)
-	{
+	private void replace(QueryModelNode node, Supplier<? extends QueryModelNode> replacement) {
 		if (node != null) {
 			node.replaceWith(replacement.get());
 		}
@@ -178,8 +172,8 @@ public class QuerySpec implements SearchQueryEvaluator {
 	}
 
 	/**
-	 * the type of query, must equal {@link LuceneSailSchema#LUCENE_QUERY}. A null type is
-	 * possible, but not valid.
+	 * the type of query, must equal {@link LuceneSailSchema#LUCENE_QUERY}. A
+	 * null type is possible, but not valid.
 	 * 
 	 * @return the type of the Query or null, if no type assigned.
 	 */

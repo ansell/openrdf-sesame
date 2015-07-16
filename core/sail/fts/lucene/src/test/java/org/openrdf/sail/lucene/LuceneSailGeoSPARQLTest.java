@@ -22,10 +22,12 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
 
 public class LuceneSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
+
 	private LuceneIndex index;
 
 	@Override
-	protected void configure(LuceneSail sail) throws IOException
+	protected void configure(LuceneSail sail)
+		throws IOException
 	{
 		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer());
 		sail.setLuceneIndex(index);

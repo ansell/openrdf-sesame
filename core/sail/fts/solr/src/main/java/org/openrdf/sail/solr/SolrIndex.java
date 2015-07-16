@@ -65,24 +65,25 @@ public class SolrIndex extends AbstractSearchIndex {
 	private SolrClient client;
 
 	@Override
-	public void initialize(Properties parameters) throws Exception {
+	public void initialize(Properties parameters)
+		throws Exception
+	{
 		super.initialize(parameters);
 		String server = parameters.getProperty(SERVER_KEY);
-		if(server == null) {
-			throw new SailException("Missing "+SERVER_KEY+" parameter");
+		if (server == null) {
+			throw new SailException("Missing " + SERVER_KEY + " parameter");
 		}
 		int pos = server.indexOf(':');
-		if(pos == -1) {
-			throw new SailException("Missing scheme in "+SERVER_KEY+" parameter: "+server);
+		if (pos == -1) {
+			throw new SailException("Missing scheme in " + SERVER_KEY + " parameter: " + server);
 		}
 		String scheme = server.substring(0, pos);
-		Class<?> clientFactoryCls = Class.forName("org.openrdf.sail.solr.client."+scheme+".Factory");
-		SolrClientFactory clientFactory = (SolrClientFactory) clientFactoryCls.newInstance();
+		Class<?> clientFactoryCls = Class.forName("org.openrdf.sail.solr.client." + scheme + ".Factory");
+		SolrClientFactory clientFactory = (SolrClientFactory)clientFactoryCls.newInstance();
 		client = clientFactory.create(server);
 	}
 
-	public SolrClient getClient()
-	{
+	public SolrClient getClient() {
 		return client;
 	}
 
@@ -90,7 +91,7 @@ public class SolrIndex extends AbstractSearchIndex {
 	public void shutDown()
 		throws IOException
 	{
-		if(client != null) {
+		if (client != null) {
 			client.close();
 			client = null;
 		}
@@ -101,31 +102,39 @@ public class SolrIndex extends AbstractSearchIndex {
 	/**
 	 * Returns a Document representing the specified document ID (combination of
 	 * resource and context), or null when no such Document exists yet.
-	 * @throws SolrServerException 
+	 * 
+	 * @throws SolrServerException
 	 */
 	@Override
-	protected SearchDocument getDocument(String id) throws IOException
+	protected SearchDocument getDocument(String id)
+		throws IOException
 	{
 		SolrDocument doc;
 		try {
-			doc = (SolrDocument) client.query(new SolrQuery().setRequestHandler("/get").set(SearchFields.ID_FIELD_NAME, id)).getResponse().get("doc");
-		} catch (SolrServerException e) {
+			doc = (SolrDocument)client.query(
+					new SolrQuery().setRequestHandler("/get").set(SearchFields.ID_FIELD_NAME, id)).getResponse().get(
+					"doc");
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 		return (doc != null) ? new SolrSearchDocument(doc) : null;
 	}
 
 	@Override
-	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
+	protected Iterable<? extends SearchDocument> getDocuments(String resourceId)
+		throws IOException
+	{
 		SolrQuery query = new SolrQuery(termQuery(SearchFields.URI_FIELD_NAME, resourceId));
 		SolrDocumentList docs;
 		try {
 			docs = getDocuments(query);
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
-		return Iterables.transform(docs, new Function<SolrDocument,SearchDocument>()
-		{
+		return Iterables.transform(docs, new Function<SolrDocument, SearchDocument>() {
+
 			@Override
 			public SearchDocument apply(SolrDocument hit) {
 				return new SolrSearchDocument(hit);
@@ -134,14 +143,12 @@ public class SolrIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	protected SearchDocument newDocument(String id, String resourceId, String context)
-	{
+	protected SearchDocument newDocument(String id, String resourceId, String context) {
 		return new SolrSearchDocument(id, resourceId, context);
 	}
 
 	@Override
-	protected SearchDocument copyDocument(SearchDocument doc)
-	{
+	protected SearchDocument copyDocument(SearchDocument doc) {
 		SolrDocument document = ((SolrSearchDocument)doc).getDocument();
 		SolrDocument newDocument = new SolrDocument();
 		newDocument.putAll(document);
@@ -149,41 +156,44 @@ public class SolrIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	protected void addDocument(SearchDocument doc) throws IOException
+	protected void addDocument(SearchDocument doc)
+		throws IOException
 	{
 		SolrDocument document = ((SolrSearchDocument)doc).getDocument();
 		try {
 			client.add(ClientUtils.toSolrInputDocument(document));
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 	}
 
 	@Override
-	protected void updateDocument(SearchDocument doc) throws IOException
+	protected void updateDocument(SearchDocument doc)
+		throws IOException
 	{
 		addDocument(doc);
 	}
 
 	@Override
-	protected void deleteDocument(SearchDocument doc) throws IOException
+	protected void deleteDocument(SearchDocument doc)
+		throws IOException
 	{
 		try {
 			client.deleteById(doc.getId());
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 	}
 
 	@Override
-	protected BulkUpdater newBulkUpdate()
-	{
+	protected BulkUpdater newBulkUpdate() {
 		return new SolrBulkUpdater(client);
 	}
 
-	static String termQuery(String field, String value)
-	{
-		return field+":\""+value+"\"";
+	static String termQuery(String field, String value) {
+		return field + ":\"" + value + "\"";
 	}
 
 	/**
@@ -237,37 +247,44 @@ public class SolrIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	public void begin() throws IOException
+	public void begin()
+		throws IOException
 	{
 	}
 
 	@Override
-	public void commit() throws IOException
+	public void commit()
+		throws IOException
 	{
 		try {
 			client.commit();
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 	}
 
 	@Override
-	public void rollback() throws IOException
+	public void rollback()
+		throws IOException
 	{
 		try {
 			client.rollback();
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 	}
 
 	@Override
-	public void beginReading() throws IOException
+	public void beginReading()
+		throws IOException
 	{
 	}
 
 	@Override
-	public void endReading() throws IOException
+	public void endReading()
+		throws IOException
 	{
 	}
 
@@ -283,10 +300,12 @@ public class SolrIndex extends AbstractSearchIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
-	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI, boolean highlight) throws MalformedQueryException, IOException
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI,
+			boolean highlight)
+		throws MalformedQueryException, IOException
 	{
 		SolrQuery q = prepareQuery(propertyURI, new SolrQuery(query));
-		if(highlight) {
+		if (highlight) {
 			q.setHighlight(true);
 			String field = (propertyURI != null) ? propertyURI.toString() : "*";
 			q.addHighlightField(field);
@@ -296,7 +315,7 @@ public class SolrIndex extends AbstractSearchIndex {
 		}
 
 		QueryResponse response;
-		if(q.getHighlight()) {
+		if (q.getHighlight()) {
 			q.addField("*");
 		}
 		else {
@@ -304,23 +323,25 @@ public class SolrIndex extends AbstractSearchIndex {
 		}
 		q.addField("score");
 		try {
-			if(subject != null) {
+			if (subject != null) {
 				response = search(subject, q);
 			}
 			else {
 				response = search(q);
 			}
-		} catch(SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 		SolrDocumentList results = response.getResults();
-		final Map<String,Map<String,List<String>>> highlighting = response.getHighlighting();
-		return Iterables.transform(results, new Function<SolrDocument,DocumentScore>()
-		{
+		final Map<String, Map<String, List<String>>> highlighting = response.getHighlighting();
+		return Iterables.transform(results, new Function<SolrDocument, DocumentScore>() {
+
 			@Override
 			public DocumentScore apply(SolrDocument document) {
 				SolrSearchDocument doc = new SolrSearchDocument(document);
-				Map<String,List<String>> docHighlighting = (highlighting != null) ? highlighting.get(doc.getId()) : null;
+				Map<String, List<String>> docHighlighting = (highlighting != null) ? highlighting.get(doc.getId())
+						: null;
 				return new SolrDocumentScore(doc, docHighlighting);
 			}
 		});
@@ -344,46 +365,50 @@ public class SolrIndex extends AbstractSearchIndex {
 
 	/**
 	 * Evaluates the given query only for the given resource.
-	 * @throws SolrServerException 
+	 * 
+	 * @throws SolrServerException
 	 */
-	public QueryResponse search(Resource resource, SolrQuery query) throws SolrServerException, IOException
+	public QueryResponse search(Resource resource, SolrQuery query)
+		throws SolrServerException, IOException
 	{
 		// rewrite the query
 		String idQuery = termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
-		query.setQuery(query.getQuery()+" AND "+idQuery);
+		query.setQuery(query.getQuery() + " AND " + idQuery);
 		return search(query);
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar,
-			URI geoProperty, double lat, double lon, final URI units,
-			double distance, String distanceVar)
-			throws MalformedQueryException, IOException {
+	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, URI geoProperty, double lat,
+			double lon, final URI units, double distance, String distanceVar)
+		throws MalformedQueryException, IOException
+	{
 		double kms = GeoUnits.toKilometres(distance, units);
 
 		SolrQuery q = new SolrQuery("{!geofilt score=recipDistance}");
-		//q.addFilterQuery("{!geofilt score=recipDistance filter=false}");
+		// q.addFilterQuery("{!geofilt score=recipDistance filter=false}");
 		q.set(SpatialParams.FIELD, geoProperty.toString());
-		q.set(SpatialParams.POINT, lat+","+lon);
+		q.set(SpatialParams.POINT, lat + "," + lon);
 		q.set(SpatialParams.DISTANCE, Double.toString(kms));
 		q.addField(SearchFields.URI_FIELD_NAME);
-		// ':' is part of the fl parameter syntax so we can't use the full property field name
+		// ':' is part of the fl parameter syntax so we can't use the full
+		// property field name
 		// instead we use wildcard + local part of the property URI
-		q.addField("*"+geoProperty.getLocalName());
-		if(distanceVar != null) {
-			q.addField(DISTANCE_FIELD+":geodist()");
+		q.addField("*" + geoProperty.getLocalName());
+		if (distanceVar != null) {
+			q.addField(DISTANCE_FIELD + ":geodist()");
 		}
 
 		QueryResponse response;
 		try {
 			response = search(q);
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 
 		SolrDocumentList results = response.getResults();
-		return Iterables.transform(results, new Function<SolrDocument,DocumentDistance>()
-		{
+		return Iterables.transform(results, new Function<SolrDocument, DocumentDistance>() {
+
 			@Override
 			public DocumentDistance apply(SolrDocument document) {
 				SolrSearchDocument doc = new SolrSearchDocument(document);
@@ -394,17 +419,19 @@ public class SolrIndex extends AbstractSearchIndex {
 
 	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
-	 * @throws SolrServerException 
+	 * 
+	 * @throws SolrServerException
 	 */
-	public QueryResponse search(SolrQuery query) throws SolrServerException, IOException
+	public QueryResponse search(SolrQuery query)
+		throws SolrServerException, IOException
 	{
 		int nDocs;
-		if(maxDocs > 0) {
+		if (maxDocs > 0) {
 			nDocs = maxDocs;
 		}
 		else {
 			long docCount = client.query(query.setRows(0)).getResults().getNumFound();
-			nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
+			nDocs = Math.max((int)Math.min(docCount, Integer.MAX_VALUE), 1);
 		}
 		return client.query(query.setRows(nDocs));
 	}
@@ -449,7 +476,8 @@ public class SolrIndex extends AbstractSearchIndex {
 				String contextString = SearchFields.getContextID(context);
 				client.deleteByQuery(termQuery(SearchFields.CONTEXT_FIELD_NAME, contextString));
 			}
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 	}
@@ -463,7 +491,8 @@ public class SolrIndex extends AbstractSearchIndex {
 	{
 		try {
 			client.deleteByQuery("*:*");
-		} catch (SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 	}

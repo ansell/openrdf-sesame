@@ -30,8 +30,11 @@ import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
 
 public class ElasticsearchDocumentScore implements DocumentScore {
+
 	private final SearchHit hit;
+
 	private final SpatialContext geoContext;
+
 	private ElasticsearchDocument fullDoc;
 
 	public ElasticsearchDocumentScore(SearchHit hit, SpatialContext geoContext) {
@@ -41,8 +44,7 @@ public class ElasticsearchDocumentScore implements DocumentScore {
 
 	@Override
 	public SearchDocument getDocument() {
-		if(fullDoc == null)
-		{
+		if (fullDoc == null) {
 			fullDoc = new ElasticsearchDocument(hit, geoContext);
 		}
 		return fullDoc;
@@ -61,11 +63,11 @@ public class ElasticsearchDocumentScore implements DocumentScore {
 	@Override
 	public Iterable<String> getSnippets(String field) {
 		HighlightField highlightField = hit.getHighlightFields().get(field);
-		if(highlightField == null) {
+		if (highlightField == null) {
 			return null;
 		}
-		return Iterables.transform(Arrays.asList(highlightField.getFragments()), new Function<Text,String>()
-		{
+		return Iterables.transform(Arrays.asList(highlightField.getFragments()), new Function<Text, String>() {
+
 			@Override
 			public String apply(Text fragment) {
 				return SearchFields.getSnippet(fragment.string());

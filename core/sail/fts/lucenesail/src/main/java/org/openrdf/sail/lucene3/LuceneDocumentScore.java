@@ -29,11 +29,14 @@ import org.openrdf.sail.lucene.SearchFields;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
-public class LuceneDocumentScore implements DocumentScore
-{
+public class LuceneDocumentScore implements DocumentScore {
+
 	private final ScoreDoc scoreDoc;
+
 	private final Highlighter highlighter;
+
 	private final LuceneIndex index;
+
 	private LuceneDocument fullDoc;
 
 	public LuceneDocumentScore(ScoreDoc doc, Highlighter highlighter, LuceneIndex index) {
@@ -44,10 +47,9 @@ public class LuceneDocumentScore implements DocumentScore
 
 	@Override
 	public SearchDocument getDocument() {
-		if(fullDoc == null)
-		{
+		if (fullDoc == null) {
 			Document doc;
-			if(highlighter != null) {
+			if (highlighter != null) {
 				doc = index.getDocument(scoreDoc.doc, null);
 			}
 			else {
@@ -72,11 +74,11 @@ public class LuceneDocumentScore implements DocumentScore
 	@Override
 	public Iterable<String> getSnippets(final String field) {
 		List<String> values = getDocument().getProperty(field);
-		if(values == null) {
+		if (values == null) {
 			return null;
 		}
-		return Iterables.transform(values, new Function<String,String>()
-		{
+		return Iterables.transform(values, new Function<String, String>() {
+
 			@Override
 			public String apply(String text) {
 				return index.getSnippet(field, text, highlighter);

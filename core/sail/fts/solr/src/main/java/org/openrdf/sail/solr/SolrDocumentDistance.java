@@ -22,7 +22,9 @@ import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.util.GeoUnits;
 
 public class SolrDocumentDistance implements DocumentDistance {
+
 	private final SolrSearchDocument doc;
+
 	private final URI units;
 
 	public SolrDocumentDistance(SolrSearchDocument doc, URI units) {
@@ -37,7 +39,7 @@ public class SolrDocumentDistance implements DocumentDistance {
 
 	@Override
 	public double getDistance() {
-		Number s = ((Number) doc.getDocument().get(SolrIndex.DISTANCE_FIELD));
+		Number s = ((Number)doc.getDocument().get(SolrIndex.DISTANCE_FIELD));
 		return (s != null) ? GeoUnits.fromKilometres(s.doubleValue(), units) : 0.0;
 	}
 }

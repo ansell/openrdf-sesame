@@ -36,27 +36,24 @@ import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
 /**
- *
  * @author MJAHale
  */
-public class LuceneDocument implements SearchDocument
-{
+public class LuceneDocument implements SearchDocument {
+
 	private final Document doc;
+
 	private final LuceneIndex index;
 
-	public LuceneDocument(LuceneIndex index)
-	{
+	public LuceneDocument(LuceneIndex index) {
 		this(new Document(), index);
 	}
 
-	public LuceneDocument(Document doc, LuceneIndex index)
-	{
+	public LuceneDocument(Document doc, LuceneIndex index) {
 		this.doc = doc;
 		this.index = index;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, LuceneIndex index)
-	{
+	public LuceneDocument(String id, String resourceId, String context, LuceneIndex index) {
 		this(index);
 		setId(id);
 		setResource(resourceId);
@@ -103,14 +100,13 @@ public class LuceneDocument implements SearchDocument
 	public Set<String> getPropertyNames() {
 		List<Fieldable> fields = doc.getFields();
 		Set<String> names = new HashSet<String>();
-		for(Fieldable field : fields) {
+		for (Fieldable field : fields) {
 			String name = field.name();
 			if (SearchFields.isPropertyField(name))
 				names.add(name);
 		}
 		return names;
 	}
-
 
 	/**
 	 * Stores and indexes a property in a Document. We don't have to recalculate
@@ -155,17 +151,19 @@ public class LuceneDocument implements SearchDocument
 		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
 		try {
 			Shape shape = index.getSpatialContext().readShapeFromWkt(value);
-			if(shape instanceof Point)
-			{
-				Point p = (Point) shape;
-				doc.add(new Field(LuceneIndex.GEOHASH_FIELD_PREFIX+field, GeoHashUtils.encode(p.getY(), p.getX()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+			if (shape instanceof Point) {
+				Point p = (Point)shape;
+				doc.add(new Field(LuceneIndex.GEOHASH_FIELD_PREFIX + field, GeoHashUtils.encode(p.getY(),
+						p.getX()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
 				CartesianTiers tiers = index.getCartesianTiers(field);
-				for(CartesianTierPlotter ctp : tiers.getPlotters()) {
+				for (CartesianTierPlotter ctp : tiers.getPlotters()) {
 					double boxId = ctp.getTierBoxId(p.getY(), p.getX());
-					doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+					doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId),
+							Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
 				}
 			}
-		} catch (ParseException e) {
+		}
+		catch (ParseException e) {
 			// ignore
 		}
 	}

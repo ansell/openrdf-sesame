@@ -31,26 +31,26 @@ import org.apache.lucene.spatial.SpatialStrategy;
 import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 
+public class LuceneDocument implements SearchDocument {
 
-public class LuceneDocument implements SearchDocument
-{
 	private final Document doc;
+
 	private final SpatialContext geoContext;
+
 	private final SpatialPrefixTree grid;
 
-	public LuceneDocument(SpatialContext ctx, SpatialPrefixTree tree)
-	{
+	public LuceneDocument(SpatialContext ctx, SpatialPrefixTree tree) {
 		this(new Document(), ctx, tree);
 	}
 
-	public LuceneDocument(Document doc, SpatialContext ctx, SpatialPrefixTree grid)
-	{
+	public LuceneDocument(Document doc, SpatialContext ctx, SpatialPrefixTree grid) {
 		this.doc = doc;
 		this.geoContext = ctx;
 		this.grid = grid;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, SpatialContext ctx, SpatialPrefixTree grid)
+	public LuceneDocument(String id, String resourceId, String context, SpatialContext ctx,
+			SpatialPrefixTree grid)
 	{
 		this(ctx, grid);
 		setId(id);
@@ -93,7 +93,7 @@ public class LuceneDocument implements SearchDocument
 	public Set<String> getPropertyNames() {
 		List<IndexableField> fields = doc.getFields();
 		Set<String> names = new HashSet<String>();
-		for(IndexableField field : fields) {
+		for (IndexableField field : fields) {
 			String name = field.name();
 			if (SearchFields.isPropertyField(name))
 				names.add(name);
@@ -149,11 +149,13 @@ public class LuceneDocument implements SearchDocument
 		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
 		try {
 			Shape shape = geoContext.readShapeFromWkt(value);
-			SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, LuceneIndex.GEO_FIELD_PREFIX+field);
-			for(IndexableField f : geoStrategy.createIndexableFields(shape)) {
+			SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, LuceneIndex.GEO_FIELD_PREFIX
+					+ field);
+			for (IndexableField f : geoStrategy.createIndexableFields(shape)) {
 				doc.add(f);
 			}
-		} catch (ParseException e) {
+		}
+		catch (ParseException e) {
 			// ignore
 		}
 	}

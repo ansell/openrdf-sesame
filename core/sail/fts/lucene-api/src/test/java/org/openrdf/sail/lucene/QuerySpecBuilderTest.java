@@ -71,7 +71,7 @@ public class QuerySpecBuilderTest {
 		Collection<SearchQueryEvaluator> queries = process(interpreter, tupleExpr);
 		assertEquals(1, queries.size());
 
-		QuerySpec querySpec = (QuerySpec) queries.iterator().next();
+		QuerySpec querySpec = (QuerySpec)queries.iterator().next();
 		assertEquals("Subject", querySpec.getMatchesPattern().getSubjectVar().getName());
 		assertEquals("my Lucene query",
 				((Literal)querySpec.getQueryPattern().getObjectVar().getValue()).getLabel());
@@ -110,7 +110,7 @@ public class QuerySpecBuilderTest {
 		boolean matched1 = false;
 		boolean matched2 = false;
 		while (i.hasNext()) {
-			QuerySpec querySpec = (QuerySpec) i.next();
+			QuerySpec querySpec = (QuerySpec)i.next();
 			if ("sub1".equals(querySpec.getMatchesVariableName())) {
 				// Matched the first
 				assertEquals("sub1", querySpec.getMatchesPattern().getSubjectVar().getName());
@@ -219,7 +219,8 @@ public class QuerySpecBuilderTest {
 		assertEquals("expect one query", 1, queries.size());
 	}
 
-	private Collection<SearchQueryEvaluator> process(SearchQueryInterpreter interpreter, TupleExpr tupleExpr) throws SailException
+	private Collection<SearchQueryEvaluator> process(SearchQueryInterpreter interpreter, TupleExpr tupleExpr)
+		throws SailException
 	{
 		List<SearchQueryEvaluator> queries = new ArrayList<SearchQueryEvaluator>();
 		interpreter.process(tupleExpr, new QueryBindingSet(), queries);

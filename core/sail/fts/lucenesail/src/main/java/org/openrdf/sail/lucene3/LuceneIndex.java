@@ -130,10 +130,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
-	private final Map<String,CartesianTiers> geoFieldsToTiers = new HashMap<String,CartesianTiers>();
+	private final Map<String, CartesianTiers> geoFieldsToTiers = new HashMap<String, CartesianTiers>();
 
-	public LuceneIndex()
-	{}
+	public LuceneIndex() {
+	}
 
 	/**
 	 * Creates a new LuceneIndex.
@@ -153,7 +153,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super(SpatialContext.GEO);
 		this.directory = directory;
 		this.analyzer = analyzer;
-		for(String geoProperty : wktFields) {
+		for (String geoProperty : wktFields) {
 			CartesianTiers tiers = new CartesianTiers(geoProperty);
 			this.geoFieldsToTiers.put(geoProperty, tiers);
 		}
@@ -170,9 +170,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		this.analyzer = createAnalyzer(parameters);
 		String minMileProp = parameters.getProperty("minMiles");
 		String maxMileProp = parameters.getProperty("maxMiles");
-		int maxTier = (minMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(minMileProp)) : CartesianTiers.DEFAULT_MAX_TIER;
-		int minTier = (maxMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(maxMileProp)) : CartesianTiers.DEFAULT_MIN_TIER;
-		for(String geoProperty : wktFields) {
+		int maxTier = (minMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(minMileProp))
+				: CartesianTiers.DEFAULT_MAX_TIER;
+		int minTier = (maxMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(maxMileProp))
+				: CartesianTiers.DEFAULT_MIN_TIER;
+		for (String geoProperty : wktFields) {
 			CartesianTiers tiers = new CartesianTiers(geoProperty, minTier, maxTier);
 			this.geoFieldsToTiers.put(geoProperty, tiers);
 		}
@@ -180,7 +182,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		postInit();
 	}
 
-	protected Directory createDirectory(Properties parameters) throws IOException
+	protected Directory createDirectory(Properties parameters)
+		throws IOException
 	{
 		Directory dir;
 		if (parameters.containsKey(LuceneSail.LUCENE_DIR_KEY)) {
@@ -198,7 +201,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return dir;
 	}
 
-	protected Analyzer createAnalyzer(Properties parameters) throws Exception
+	protected Analyzer createAnalyzer(Properties parameters)
+		throws Exception
 	{
 		Analyzer analyzer;
 		if (parameters.containsKey(LuceneSail.ANALYZER_CLASS_KEY)) {
@@ -210,7 +214,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return analyzer;
 	}
 
-	private void postInit() throws IOException
+	private void postInit()
+		throws IOException
 	{
 		this.queryAnalyzer = new StandardAnalyzer(Version.LUCENE_35);
 
@@ -242,7 +247,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	public CartesianTiers getCartesianTiers(String geoProperty) {
-		return geoFieldsToTiers.get(geoProperty);		
+		return geoFieldsToTiers.get(geoProperty);
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -322,17 +327,20 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	// //////////////////////////////// Methods for updating the index
 
 	@Override
-	protected SearchDocument getDocument(String id) throws IOException
+	protected SearchDocument getDocument(String id)
+		throws IOException
 	{
 		Document document = getDocument(idTerm(id));
 		return (document != null) ? new LuceneDocument(document, this) : null;
 	}
 
 	@Override
-	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
+	protected Iterable<? extends SearchDocument> getDocuments(String resourceId)
+		throws IOException
+	{
 		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
-		return Iterables.transform(docs, new Function<Document,SearchDocument>()
-		{
+		return Iterables.transform(docs, new Function<Document, SearchDocument>() {
+
 			@Override
 			public SearchDocument apply(Document doc) {
 				return new LuceneDocument(doc, LuceneIndex.this);
@@ -341,14 +349,12 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected SearchDocument newDocument(String id, String resourceId, String context)
-	{
+	protected SearchDocument newDocument(String id, String resourceId, String context) {
 		return new LuceneDocument(id, resourceId, context, this);
 	}
 
 	@Override
-	protected SearchDocument copyDocument(SearchDocument doc)
-	{
+	protected SearchDocument copyDocument(SearchDocument doc) {
 		Document document = ((LuceneDocument)doc).getDocument();
 		Document newDocument = new Document();
 
@@ -360,26 +366,28 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected void addDocument(SearchDocument doc) throws IOException
+	protected void addDocument(SearchDocument doc)
+		throws IOException
 	{
 		getIndexWriter().addDocument(((LuceneDocument)doc).getDocument());
 	}
 
 	@Override
-	protected void updateDocument(SearchDocument doc) throws IOException
+	protected void updateDocument(SearchDocument doc)
+		throws IOException
 	{
 		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
 	}
 
 	@Override
-	protected void deleteDocument(SearchDocument doc) throws IOException
+	protected void deleteDocument(SearchDocument doc)
+		throws IOException
 	{
 		getIndexWriter().deleteDocuments(idTerm(doc.getId()));
 	}
 
 	@Override
-	protected BulkUpdater newBulkUpdate()
-	{
+	protected BulkUpdater newBulkUpdate() {
 		return new SimpleBulkUpdater(this);
 	}
 
@@ -476,7 +484,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * Stores and indexes an ID in a Document.
 	 */
 	public static void addIDField(String id, Document document) {
-		document.add(new Field(SearchFields.ID_FIELD_NAME, id, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+		document.add(new Field(SearchFields.ID_FIELD_NAME, id, Field.Store.YES,
+				Field.Index.NOT_ANALYZED_NO_NORMS));
 	}
 
 	/**
@@ -491,7 +500,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	public static void addContextField(String context, Document document) {
 		if (context != null) {
-			document.add(new Field(SearchFields.CONTEXT_FIELD_NAME, context, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+			document.add(new Field(SearchFields.CONTEXT_FIELD_NAME, context, Field.Store.YES,
+					Field.Index.NOT_ANALYZED_NO_NORMS));
 		}
 	}
 
@@ -499,7 +509,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 * Stores and indexes the resource ID in a Document.
 	 */
 	public static void addResourceField(String resourceId, Document document) {
-		document.add(new Field(SearchFields.URI_FIELD_NAME, resourceId, Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+		document.add(new Field(SearchFields.URI_FIELD_NAME, resourceId, Field.Store.YES,
+				Field.Index.NOT_ANALYZED_NO_NORMS));
 	}
 
 	public static void addPredicateField(String predicate, String text, Document document) {
@@ -512,7 +523,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		addPredicateField(predicate, text, document, Field.Index.NO);
 	}
 
-	private static void addPredicateField(String predicate, String text, Document document, Field.Index indexOptions) {
+	private static void addPredicateField(String predicate, String text, Document document,
+			Field.Index indexOptions)
+	{
 		// store this predicate
 		document.add(new Field(predicate, text, Field.Store.YES, indexOptions));
 	}
@@ -646,7 +659,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
-	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI, boolean highlight) throws MalformedQueryException, IOException
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI,
+			boolean highlight)
+		throws MalformedQueryException, IOException
 	{
 		Query q;
 		try {
@@ -657,22 +672,24 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 
 		final Highlighter highlighter;
-		if(highlight) {
-			Formatter formatter = new SimpleHTMLFormatter(SearchFields.HIGHLIGHTER_PRE_TAG, SearchFields.HIGHLIGHTER_POST_TAG);
+		if (highlight) {
+			Formatter formatter = new SimpleHTMLFormatter(SearchFields.HIGHLIGHTER_PRE_TAG,
+					SearchFields.HIGHLIGHTER_POST_TAG);
 			highlighter = new Highlighter(formatter, new QueryScorer(q));
-		} else {
+		}
+		else {
 			highlighter = null;
 		}
 
 		TopDocs docs;
-		if(subject != null) {
+		if (subject != null) {
 			docs = search(subject, q);
 		}
 		else {
 			docs = search(q);
 		}
-		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentScore>()
-		{
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentScore>() {
+
 			@Override
 			public DocumentScore apply(ScoreDoc doc) {
 				return new LuceneDocumentScore(doc, highlighter, LuceneIndex.this);
@@ -681,27 +698,33 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty, double lat, double lon, final URI units, double distance, String distanceVar) throws MalformedQueryException, IOException
+	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty,
+			double lat, double lon, final URI units, double distance, String distanceVar)
+		throws MalformedQueryException, IOException
 	{
 		final double miles = GeoUnits.toMiles(distance, units);
 
 		CartesianTiers tiers = geoFieldsToTiers.get(geoProperty.stringValue());
-		FixedCartesianPolyFilterBuilder cpf = new FixedCartesianPolyFilterBuilder(tiers.getFieldPrefix(), tiers.getMinTier(), tiers.getMaxTier());
+		FixedCartesianPolyFilterBuilder cpf = new FixedCartesianPolyFilterBuilder(tiers.getFieldPrefix(),
+				tiers.getMinTier(), tiers.getMaxTier());
 		Filter cartesianFilter = cpf.getBoundingArea(lat, lon, miles);
-		final DistanceFilter filter = new GeoHashDistanceFilter(cartesianFilter, lat, lon, miles, GEOHASH_FIELD_PREFIX+geoProperty.toString());
+		final DistanceFilter filter = new GeoHashDistanceFilter(cartesianFilter, lat, lon, miles,
+				GEOHASH_FIELD_PREFIX + geoProperty.toString());
 
 		CustomScoreQuery customScore = new CustomScoreQuery(new MatchAllDocsQuery()) {
+
 			@Override
 			protected CustomScoreProvider getCustomScoreProvider(IndexReader reader) {
 				return new CustomScoreProvider(reader) {
+
 					@Override
 					public float customScore(int doc, float subQueryScore, float valSrcScore) {
 						Double distance = filter.getDistance(doc);
-						if(distance == null) {
+						if (distance == null) {
 							return 0.0f;
 						}
 						// we normalise the score between 0 and 1
-						float score = (float) (1.0 - distance/miles);
+						float score = (float)(1.0 - distance / miles);
 						return score;
 					}
 				};
@@ -709,8 +732,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		};
 
 		TopDocs docs = getIndexSearcher().search(customScore, filter, getMaxDocs());
-		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc,DocumentDistance>()
-		{
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentDistance>() {
+
 			@Override
 			public DocumentDistance apply(ScoreDoc doc) {
 				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, filter, LuceneIndex.this);
@@ -742,8 +765,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public String getSnippet(String fieldName, String text, Highlighter highlighter) {
 		String snippet;
 		try {
-			TokenStream tokenStream = getAnalyzer().tokenStream(fieldName,
-					new StringReader(text));
+			TokenStream tokenStream = getAnalyzer().tokenStream(fieldName, new StringReader(text));
 			snippet = highlighter.getBestFragments(tokenStream, text, 2, "...");
 		}
 		catch (Exception e) {
@@ -776,7 +798,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws IOException
 	{
 		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
+		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME,
+				SearchFields.getResourceID(resource)));
 		BooleanQuery combinedQuery = new BooleanQuery();
 		combinedQuery.add(idQuery, Occur.MUST);
 		combinedQuery.add(query, Occur.MUST);
@@ -792,10 +815,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return getIndexSearcher().search(query, getMaxDocs());
 	}
 
-	private int getMaxDocs() throws IOException
+	private int getMaxDocs()
+		throws IOException
 	{
 		int nDocs;
-		if(maxDocs > 0) {
+		if (maxDocs > 0) {
 			nDocs = maxDocs;
 		}
 		else {
@@ -935,18 +959,19 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	// Lucene helper methods
 	//
 
-	private static boolean isDeleted(IndexReader reader, int docId)
-	{
+	private static boolean isDeleted(IndexReader reader, int docId) {
 		return reader.isDeleted(docId);
 	}
 
-	private static Document readDocument(IndexReader reader, int docId, Set<String> fieldsToLoad) throws IOException
+	private static Document readDocument(IndexReader reader, int docId, Set<String> fieldsToLoad)
+		throws IOException
 	{
-		return (fieldsToLoad == null) ? reader.document(docId) : reader.document(docId, new DocumentFieldSelector(fieldsToLoad));
+		return (fieldsToLoad == null) ? reader.document(docId) : reader.document(docId,
+				new DocumentFieldSelector(fieldsToLoad));
 	}
 
-
 	static class DocumentFieldSelector implements FieldSelector {
+
 		private static final long serialVersionUID = -6104764003694180068L;
 
 		private final Set<String> fieldsToLoad;
@@ -957,7 +982,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 		@Override
 		public FieldSelectorResult accept(String fieldName) {
-			return (fieldsToLoad == null || fieldsToLoad.contains(fieldName)) ? FieldSelectorResult.LOAD : FieldSelectorResult.NO_LOAD;
+			return (fieldsToLoad == null || fieldsToLoad.contains(fieldName)) ? FieldSelectorResult.LOAD
+					: FieldSelectorResult.NO_LOAD;
 		}
 	}
 }

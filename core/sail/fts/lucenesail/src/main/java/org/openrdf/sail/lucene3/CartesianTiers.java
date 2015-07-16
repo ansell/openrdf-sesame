@@ -21,55 +21,54 @@ import org.apache.lucene.spatial.tier.projections.FixedSinusoidalProjector;
 import org.apache.lucene.spatial.tier.projections.IProjector;
 
 public class CartesianTiers {
+
 	public static final int DEFAULT_MIN_TIER = 2;
+
 	public static final int DEFAULT_MAX_TIER = 15;
+
 	private static final CartesianTierPlotter utils = new CartesianTierPlotter(0, null, null);
 
 	private final IProjector projector = new FixedSinusoidalProjector();
+
 	private final String fieldPrefix;
+
 	private final int minTier;
+
 	private final int maxTier;
+
 	private final CartesianTierPlotter[] plotters;
 
-	public static int getTier(double miles)
-	{
+	public static int getTier(double miles) {
 		return utils.bestFit(miles);
 	}
 
-	public CartesianTiers(String field)
-	{
+	public CartesianTiers(String field) {
 		this(field, DEFAULT_MIN_TIER, DEFAULT_MAX_TIER);
 	}
 
-	public CartesianTiers(String field, int minTier, int maxTier)
-	{
-		this.fieldPrefix = CartesianTierPlotter.DEFALT_FIELD_PREFIX+field+"_";
+	public CartesianTiers(String field, int minTier, int maxTier) {
+		this.fieldPrefix = CartesianTierPlotter.DEFALT_FIELD_PREFIX + field + "_";
 		this.minTier = minTier;
 		this.maxTier = maxTier;
-		plotters = new CartesianTierPlotter[maxTier-minTier+1];
-		for(int tier = minTier; tier <= maxTier; tier++)
-		{
-			plotters[tier-minTier] = new CartesianTierPlotter(tier, projector, fieldPrefix);
+		plotters = new CartesianTierPlotter[maxTier - minTier + 1];
+		for (int tier = minTier; tier <= maxTier; tier++) {
+			plotters[tier - minTier] = new CartesianTierPlotter(tier, projector, fieldPrefix);
 		}
 	}
 
-	public String getFieldPrefix()
-	{
+	public String getFieldPrefix() {
 		return fieldPrefix;
 	}
 
-	public int getMinTier()
-	{
+	public int getMinTier() {
 		return minTier;
 	}
 
-	public int getMaxTier()
-	{
+	public int getMaxTier() {
 		return maxTier;
 	}
 
-	public CartesianTierPlotter[] getPlotters()
-	{
+	public CartesianTierPlotter[] getPlotters() {
 		return plotters;
 	}
 }
