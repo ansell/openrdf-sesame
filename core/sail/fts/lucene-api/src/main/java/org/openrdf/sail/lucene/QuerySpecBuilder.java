@@ -26,6 +26,9 @@ import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -53,7 +56,7 @@ public class QuerySpecBuilder implements SearchQueryInterpreter {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private boolean incompleteQueryFails;
+	private final boolean incompleteQueryFails;
 
 	/**
 	 * Initialize a new QuerySpecBuilder
@@ -63,6 +66,20 @@ public class QuerySpecBuilder implements SearchQueryInterpreter {
 	 */
 	public QuerySpecBuilder(boolean incompleteQueryFails) {
 		this.incompleteQueryFails = incompleteQueryFails;
+	}
+
+	/**
+	 * Returns a set of QuerySpecs embodying all necessary information to perform
+	 * the Lucene query embedded in a TupleExpr.
+	 * To be removed, prefer {@link process(TupleExpr tupleExpr, BindingSet bindings, Collection<SearchQueryEvaluator> result)}.
+	 */
+	@Deprecated
+	public Set<QuerySpec> process(TupleExpr tupleExpr, BindingSet bindings)
+		throws SailException
+	{
+		HashSet<QuerySpec> result = new HashSet<QuerySpec>();
+		process(tupleExpr, bindings, (Collection<SearchQueryEvaluator>) (Collection<?>) result);
+		return result;
 	}
 
 	/**

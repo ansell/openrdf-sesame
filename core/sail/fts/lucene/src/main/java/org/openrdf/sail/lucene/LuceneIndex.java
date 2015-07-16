@@ -648,6 +648,29 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	/**
 	 * Parse the passed query.
+	 * To be removed, no longer used.
+	 * @param query
+	 *        string
+	 * @return the parsed query
+	 * @throws ParseException
+	 *         when the parsing brakes
+	 */
+	@Override
+	@Deprecated
+	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	{
+		Query q;
+		try {
+			q = getQueryParser(propertyURI).parse(query);
+		}
+		catch (ParseException e) {
+			throw new MalformedQueryException(e);
+		}
+		return new LuceneQuery(q, this);
+	}
+
+	/**
+	 * Parse the passed query.
 	 * 
 	 * @param query
 	 *        string

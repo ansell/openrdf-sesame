@@ -66,6 +66,7 @@ import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
+import org.openrdf.sail.lucene.SearchQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -446,6 +447,23 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	}
 
 	// //////////////////////////////// Methods for querying the index
+
+	/**
+	 * Parse the passed query.
+	 * To be removed, no longer used.
+	 * @param query
+	 *        string
+	 * @return the parsed query
+	 * @throws ParseException
+	 *         when the parsing brakes
+	 */
+	@Override
+	@Deprecated
+	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	{
+		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
+		return new ElasticsearchQuery(client.prepareSearch(), qb, this);
+	}
 
 	/**
 	 * Parse the passed query.

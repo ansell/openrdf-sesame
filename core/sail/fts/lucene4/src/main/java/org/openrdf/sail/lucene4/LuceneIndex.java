@@ -89,6 +89,7 @@ import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
+import org.openrdf.sail.lucene.SearchQuery;
 import org.openrdf.sail.lucene.SimpleBulkUpdater;
 import org.openrdf.sail.lucene.util.GeoUnits;
 import org.slf4j.Logger;
@@ -654,6 +655,29 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	// //////////////////////////////// Methods for querying the index
+
+	/**
+	 * Parse the passed query.
+	 * To be removed, no longer used.
+	 * @param query
+	 *        string
+	 * @return the parsed query
+	 * @throws ParseException
+	 *         when the parsing brakes
+	 */
+	@Override
+	@Deprecated
+	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	{
+		Query q;
+		try {
+			q = getQueryParser(propertyURI).parse(query);
+		}
+		catch (ParseException e) {
+			throw new MalformedQueryException(e);
+		}
+		return new LuceneQuery(q, this);
+	}
 
 	/**
 	 * Parse the passed query.

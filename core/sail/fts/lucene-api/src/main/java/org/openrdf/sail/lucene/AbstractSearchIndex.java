@@ -715,6 +715,12 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract void updateDocument(SearchDocument doc) throws IOException;
 	protected abstract void deleteDocument(SearchDocument doc) throws IOException;
 
+	/**
+	 * To be removed.
+	 */
+	@Deprecated
+	protected abstract SearchQuery parseQuery(String q, URI property) throws MalformedQueryException;
+
 	protected abstract Iterable<? extends DocumentScore> query(Resource subject, String q, URI property, boolean highlight) throws MalformedQueryException, IOException;
 	protected abstract Iterable<? extends DocumentDistance> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
 
