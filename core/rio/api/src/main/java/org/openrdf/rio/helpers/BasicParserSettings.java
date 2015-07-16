@@ -245,7 +245,7 @@ public class BasicParserSettings {
 	 *
 	 * <p>Defaults to <a href="http://www.w3.org/2011/rdfa-context/rdfa-1.1">this list</a>.</p>
 	 *
-	 * @since 2.7.17
+	 * @since 2.8.5
 	 */
 	public static final RioSetting<Set<Namespace>> NAMESPACES = new RioSettingImpl<Set<Namespace>>(
 			"org.openrdf.rio.namespaces", "Collection of default namespaces to use for parsing", defaultPrefix);
