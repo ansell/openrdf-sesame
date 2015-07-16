@@ -44,6 +44,14 @@ public class LuceneDocument implements SearchDocument {
 
 	private final LuceneIndex index;
 
+	/**
+	 * To be removed, no longer used.
+	 */
+	@Deprecated
+	public LuceneDocument() {
+		this(null);
+	}
+
 	public LuceneDocument(LuceneIndex index) {
 		this(new Document(), index);
 	}

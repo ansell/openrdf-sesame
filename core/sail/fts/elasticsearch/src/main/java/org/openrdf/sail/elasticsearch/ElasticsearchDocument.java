@@ -47,6 +47,14 @@ public class ElasticsearchDocument implements SearchDocument {
 
 	private final SpatialContext geoContext;
 
+	/**
+	 * To be removed, no longer used.
+	 */
+	@Deprecated
+	public ElasticsearchDocument(SearchHit hit) {
+		this(hit, null);
+	}
+
 	public ElasticsearchDocument(SearchHit hit, SpatialContext geoContext) {
 		this(hit.getId(), hit.getType(), hit.getIndex(), hit.getVersion(), hit.getSource(), geoContext);
 	}

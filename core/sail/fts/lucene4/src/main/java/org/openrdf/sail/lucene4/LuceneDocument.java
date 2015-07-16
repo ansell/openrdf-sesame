@@ -45,6 +45,14 @@ public class LuceneDocument implements SearchDocument {
 
 	private final SpatialPrefixTree grid;
 
+	/**
+	 * To be removed, no longer used.
+	 */
+	@Deprecated
+	public LuceneDocument() {
+		this(null, null);
+	}
+
 	public LuceneDocument(SpatialContext ctx, SpatialPrefixTree grid) {
 		this(new Document(), ctx, grid);
 	}
