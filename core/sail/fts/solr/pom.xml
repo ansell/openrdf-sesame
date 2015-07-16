@@ -49,7 +49,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-lucene-test</artifactId>
+			<artifactId>sesame-lucene-testsuite</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
