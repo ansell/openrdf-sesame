@@ -16,22 +16,36 @@
  */
 package org.openrdf.query.algebra.evaluation.iterator;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.StatementPattern.Scope;
+import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
+import org.openrdf.query.algebra.evaluation.federation.ServiceCrossProductIteration;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 
 public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
+	/**
+	 * We potentially have to fit all resources in this set
+	 * so let's start of with a reasonably big size.
+	 */
+	private static final int INITIAL_CAPACITY = 10000;
+	private static final String ANON_SUBJECT_VAR = "zero-length-internal-start";
+	private static final String ANON_PREDICATE_VAR = "zero-length-internal-pred";
+	private static final String ANON_OBJECT_VAR = "zero-length-internal-end";
+	private static final String ANON_SEQUENCE_VAR = "zero-length-internal-seq";
 
 	private QueryBindingSet result;
 
@@ -45,20 +59,18 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 
 	private BindingSet bindings;
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> subjectIter;
-
-	private CloseableIteration<BindingSet, QueryEvaluationException> objectIter;
+	private CloseableIteration<BindingSet, QueryEvaluationException> iter;
 
 	private Set<Value> reportedValues;
 
 	private Var contextVar;
 
-	private final EvaluationStrategyImpl evaluationStrategyImpl;
+	private final EvaluationStrategy evaluationStrategy;
 
 	public ZeroLengthPathIteration(EvaluationStrategyImpl evaluationStrategyImpl, Var subjectVar, Var objVar,
 			Value subj, Value obj, Var contextVar, BindingSet bindings)
 	{
-		this.evaluationStrategyImpl = evaluationStrategyImpl;
+		this.evaluationStrategy = evaluationStrategyImpl;
 		result = new QueryBindingSet(bindings);
 		this.subjectVar = subjectVar;
 		this.objVar = objVar;
@@ -74,7 +86,6 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 		if (obj != null && subj == null) {
 			result.addBinding(subjectVar.getName(), obj);
 		}
-		reportedValues = makeSet();
 	}
 
 	@Override
@@ -82,34 +93,40 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 		throws QueryEvaluationException
 	{
 		if (subj == null && obj == null) {
-			if (this.subjectIter == null) {
-				subjectIter = createSubjectIteration();
+			if (this.reportedValues == null) {
+				reportedValues = makeSet();
+			}
+			if (this.iter == null) {
+				// join with a sequence so we iterate over every entry twice
+				QueryBindingSet bs1 = new QueryBindingSet(1);
+				bs1.addBinding(ANON_SEQUENCE_VAR, ValueFactoryImpl.getInstance().createLiteral("subject"));
+				QueryBindingSet bs2 = new QueryBindingSet(1);
+				bs2.addBinding(ANON_SEQUENCE_VAR, ValueFactoryImpl.getInstance().createLiteral("object"));
+				List<BindingSet> seqList = Arrays.<BindingSet>asList(bs1, bs2);
+				iter = new ServiceCrossProductIteration(createIteration(), seqList);
 			}
 
-			while (subjectIter.hasNext()) {
-				QueryBindingSet next = new QueryBindingSet(subjectIter.next());
+			while (iter.hasNext()) {
+				BindingSet bs = iter.next();
 
-				Value v = next.getValue(subjectVar.getName());
+				boolean isSubjOrObj = bs.getValue(ANON_SEQUENCE_VAR).stringValue().equals("subject");
+				String endpointVarName = isSubjOrObj ? ANON_SUBJECT_VAR : ANON_OBJECT_VAR;
+				Value v = bs.getValue(endpointVarName);
 
 				if (add(reportedValues, v)) {
-					next.addBinding(objVar.getName(), v);
-					return next;
-				}
-			}
-
-			if (this.objectIter == null) {
-				objectIter = createObjectIteration();
-			}
-			while (objectIter.hasNext()) {
-				QueryBindingSet next = new QueryBindingSet(objectIter.next());
-
-				Value v = next.getValue(objVar.getName());
-
-				if (add(reportedValues, v)) {
+					QueryBindingSet next = new QueryBindingSet();
 					next.addBinding(subjectVar.getName(), v);
+					next.addBinding(objVar.getName(), v);
+					if (contextVar != null) {
+						Value context = bs.getValue(contextVar.getName());
+						if (context != null) {
+							next.addBinding(contextVar.getName(), context);
+						}
+					}
 					return next;
 				}
 			}
+
 		}
 		else {
 			QueryBindingSet next = result;
@@ -136,43 +153,27 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 		return reportedValues2.add(v);
 	}
 
-	private CloseableIteration<BindingSet, QueryEvaluationException> createSubjectIteration()
+	private CloseableIteration<BindingSet, QueryEvaluationException> createIteration()
 		throws QueryEvaluationException
 	{
-		Var predicate = createAnonVar("zero-length-internal-pred");
-		Var endVar = createAnonVar("zero-length-internal-end");
+		Var startVar = createAnonVar(ANON_SUBJECT_VAR);
+		Var predicate = createAnonVar(ANON_PREDICATE_VAR);
+		Var endVar = createAnonVar(ANON_OBJECT_VAR);
 
-		StatementPattern subjects = new StatementPattern(subjectVar, predicate, endVar);
+		StatementPattern subjects = new StatementPattern(startVar, predicate, endVar);
 
 		if (contextVar != null) {
 			subjects.setScope(Scope.NAMED_CONTEXTS);
 			subjects.setContextVar(contextVar);
 		}
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluationStrategyImpl.evaluate(
-				subjects, bindings);
-
-		return iter;
-	}
-
-	private CloseableIteration<BindingSet, QueryEvaluationException> createObjectIteration()
-		throws QueryEvaluationException
-	{
-		Var startVar = createAnonVar("zero-length-internal-start");
-		Var predicate = createAnonVar("zero-length-internal-pred");
-
-		StatementPattern subjects = new StatementPattern(startVar, predicate, objVar);
-		if (contextVar != null) {
-			subjects.setScope(Scope.NAMED_CONTEXTS);
-			subjects.setContextVar(contextVar);
-		}
-		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluationStrategyImpl.evaluate(
+		CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluationStrategy.evaluate(
 				subjects, bindings);
 
 		return iter;
 	}
 
 	private Set<Value> makeSet() {
-		return new HashSet<Value>();
+		return new HashSet<Value>(INITIAL_CAPACITY);
 	}
 
 	public Var createAnonVar(String varName) {
