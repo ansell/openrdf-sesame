@@ -33,7 +33,6 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.algebra.evaluation.federation.ServiceCrossProductIteration;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 
 public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
@@ -78,14 +77,6 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 		this.subj = subj;
 		this.obj = obj;
 		this.bindings = bindings;
-
-		if (subj != null && obj == null) {
-			result.addBinding(objVar.getName(), subj);
-		}
-
-		if (obj != null && subj == null) {
-			result.addBinding(subjectVar.getName(), obj);
-		}
 	}
 
 	@Override
@@ -103,7 +94,7 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 				QueryBindingSet bs2 = new QueryBindingSet(1);
 				bs2.addBinding(ANON_SEQUENCE_VAR, ValueFactoryImpl.getInstance().createLiteral("object"));
 				List<BindingSet> seqList = Arrays.<BindingSet>asList(bs1, bs2);
-				iter = new ServiceCrossProductIteration(createIteration(), seqList);
+				iter = new CrossProductIteration(createIteration(), seqList);
 			}
 
 			while (iter.hasNext()) {
@@ -126,18 +117,34 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 					return next;
 				}
 			}
+			iter.close();
 
+			// if we're done, throw away the cached list of values to avoid hogging
+			// resources
+			reportedValues = null;
+			return null;
 		}
 		else {
+			if (result != null) {
+				if (obj == null && subj != null) {
+					result.addBinding(objVar.getName(), subj);
+				}
+				else if (subj == null && obj != null) {
+					result.addBinding(subjectVar.getName(), obj);
+				}
+				else if (subj != null && subj.equals(obj)) {
+					// empty bindings
+					// (result but nothing to bind as subjectVar and objVar are both fixed)
+				}
+				else {
+					result = null;
+				}
+			}
+
 			QueryBindingSet next = result;
 			result = null;
 			return next;
 		}
-
-		// if we're done, throw away the cached list of values to avoid hogging
-		// resources
-		reportedValues = null;
-		return null;
 	}
 
 	/**
