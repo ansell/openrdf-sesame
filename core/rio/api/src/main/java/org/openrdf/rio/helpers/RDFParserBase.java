@@ -33,6 +33,7 @@ import info.aduna.net.ParsedURI;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -54,32 +55,6 @@ import org.openrdf.rio.RioSetting;
  * @author Arjohn Kampman
  */
 public abstract class RDFParserBase implements RDFParser {
-
-	/**
-	 * Vocabulary Prefixes of W3C Documents (Recommendations or Notes)
-	 * 
-	 * @see http://www.w3.org/2011/rdfa-context/rdfa-1.1
-	 */
-	private static final Map<String, String> defaultPrefix;
-	static {
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("grddl", "http://www.w3.org/2003/g/data-view#");
-		map.put("ma", "http://www.w3.org/ns/ma-ont#");
-		map.put("owl", "http://www.w3.org/2002/07/owl#");
-		map.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-		map.put("rdfa", "http://www.w3.org/ns/rdfa#");
-		map.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
-		map.put("rif", "http://www.w3.org/2007/rif#");
-		map.put("skos", "http://www.w3.org/2004/02/skos/core#");
-		map.put("skosxl", "http://www.w3.org/2008/05/skos-xl#");
-		map.put("wdr", "http://www.w3.org/2007/05/powder#");
-		map.put("void", "http://rdfs.org/ns/void#");
-		map.put("wdrs", "http://www.w3.org/2007/05/powder-s#");
-		map.put("xhv", "http://www.w3.org/1999/xhtml/vocab#");
-		map.put("xml", "http://www.w3.org/XML/1998/namespace");
-		map.put("xsd", "http://www.w3.org/2001/XMLSchema#");
-		defaultPrefix = Collections.unmodifiableMap(new HashMap<String, String>(map));
-	}
 
 	private final MessageDigest md5;
 
@@ -202,6 +177,7 @@ public abstract class RDFParserBase implements RDFParser {
 	@Override
 	public void setParserConfig(ParserConfig config) {
 		this.parserConfig = config;
+		initializeNamespaceTableFromConfiguration();
 	}
 
 	@Override
@@ -234,8 +210,7 @@ public abstract class RDFParserBase implements RDFParser {
 		// Supported in RDFParserBase.createBNode(String)
 		result.add(BasicParserSettings.PRESERVE_BNODE_IDS);
 
-		// Supported in RDFParserBase.getNamespace
-		result.add(RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
+		result.add(BasicParserSettings.NAMESPACES);
 
 		return result;
 	}
@@ -359,13 +334,11 @@ public abstract class RDFParserBase implements RDFParser {
 		if (namespaceTable.containsKey(prefix))
 			return namespaceTable.get(prefix);
 		String msg = "Namespace prefix '" + prefix + "' used but not defined";
-		if (defaultPrefix.containsKey(prefix)) {
-			reportError(msg, RDFaParserSettings.FAIL_ON_RDFA_UNDEFINED_PREFIXES);
-			return defaultPrefix.get(prefix);
-		}
-		else if ("".equals(prefix)) {
+
+		if ("".equals(prefix)) {
 			msg = "Default namespace used but not defined";
 		}
+
 		reportFatalError(msg);
 		throw new RDFParseException(msg);
 	}
@@ -378,6 +351,14 @@ public abstract class RDFParserBase implements RDFParser {
 		baseURI = null;
 		nextBNodePrefix = createUniqueBNodePrefix();
 		namespaceTable.clear();
+
+		initializeNamespaceTableFromConfiguration();
+	}
+
+	protected void initializeNamespaceTableFromConfiguration() {
+		for (Namespace aNS : getParserConfig().get(BasicParserSettings.NAMESPACES)) {
+			namespaceTable.put(aNS.getPrefix(), aNS.getName());
+		}
 	}
 
 	/**
