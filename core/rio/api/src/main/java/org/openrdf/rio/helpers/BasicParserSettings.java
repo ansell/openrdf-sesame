@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.NamespaceImpl;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,21 +54,21 @@ public class BasicParserSettings {
 	static {
 		Set<Namespace> aNamespaces = new HashSet<Namespace>();
 
-		aNamespaces.add(new NamespaceImpl("grddl", "http://www.w3.org/2003/g/data-view#"));
-		aNamespaces.add(new NamespaceImpl("ma", "http://www.w3.org/ns/ma-ont#"));
-		aNamespaces.add(new NamespaceImpl("owl", "http://www.w3.org/2002/07/owl#"));
-		aNamespaces.add(new NamespaceImpl("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
-		aNamespaces.add(new NamespaceImpl("rdfa", "http://www.w3.org/ns/rdfa#"));
-		aNamespaces.add(new NamespaceImpl("rdfs", "http://www.w3.org/2000/01/rdf-schema#"));
-		aNamespaces.add(new NamespaceImpl("rif", "http://www.w3.org/2007/rif#"));
-		aNamespaces.add(new NamespaceImpl("skos", "http://www.w3.org/2004/02/skos/core#"));
-		aNamespaces.add(new NamespaceImpl("skosxl", "http://www.w3.org/2008/05/skos-xl#"));
-		aNamespaces.add(new NamespaceImpl("wdr", "http://www.w3.org/2007/05/powder#"));
-		aNamespaces.add(new NamespaceImpl("void", "http://rdfs.org/ns/void#"));
-		aNamespaces.add(new NamespaceImpl("wdrs", "http://www.w3.org/2007/05/powder-s#"));
-		aNamespaces.add(new NamespaceImpl("xhv", "http://www.w3.org/1999/xhtml/vocab#"));
-		aNamespaces.add(new NamespaceImpl("xml", "http://www.w3.org/XML/1998/namespace"));
-		aNamespaces.add(new NamespaceImpl("xsd", "http://www.w3.org/2001/XMLSchema#"));
+		aNamespaces.add(new SimpleNamespace("grddl", "http://www.w3.org/2003/g/data-view#"));
+		aNamespaces.add(new SimpleNamespace("ma", "http://www.w3.org/ns/ma-ont#"));
+		aNamespaces.add(new SimpleNamespace("owl", "http://www.w3.org/2002/07/owl#"));
+		aNamespaces.add(new SimpleNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+		aNamespaces.add(new SimpleNamespace("rdfa", "http://www.w3.org/ns/rdfa#"));
+		aNamespaces.add(new SimpleNamespace("rdfs", "http://www.w3.org/2000/01/rdf-schema#"));
+		aNamespaces.add(new SimpleNamespace("rif", "http://www.w3.org/2007/rif#"));
+		aNamespaces.add(new SimpleNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
+		aNamespaces.add(new SimpleNamespace("skosxl", "http://www.w3.org/2008/05/skos-xl#"));
+		aNamespaces.add(new SimpleNamespace("wdr", "http://www.w3.org/2007/05/powder#"));
+		aNamespaces.add(new SimpleNamespace("void", "http://rdfs.org/ns/void#"));
+		aNamespaces.add(new SimpleNamespace("wdrs", "http://www.w3.org/2007/05/powder-s#"));
+		aNamespaces.add(new SimpleNamespace("xhv", "http://www.w3.org/1999/xhtml/vocab#"));
+		aNamespaces.add(new SimpleNamespace("xml", "http://www.w3.org/XML/1998/namespace"));
+		aNamespaces.add(new SimpleNamespace("xsd", "http://www.w3.org/2001/XMLSchema#"));
 
 		defaultPrefix = Collections.unmodifiableSet(aNamespaces);
 	}
