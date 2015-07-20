@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,12 +29,15 @@ import org.junit.rules.Timeout;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
+import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.SKOS;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
@@ -41,6 +45,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.ParseErrorCollector;
+import org.openrdf.rio.helpers.ParseErrorLogger;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -462,5 +467,38 @@ public class CustomTurtleParserTest {
 				vf.createLiteral("testliteral", vf.createURI("urn:datatype"))));
 	}
 
+	@Test
+	public void testParsingDefaultNamespaces() throws Exception {
+		Model model = Rio.parse(new StringReader("<urn:a> skos:broader <urn:b>."), "",
+		                        RDFFormat.TURTLE);
 
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), SKOS.BROADER, vf.createURI("urn:b")));
+	}
+
+	@Test
+	public void testParsingNamespacesWithOption() throws Exception {
+		ParserConfig aConfig = new ParserConfig();
+
+		aConfig.set(BasicParserSettings.NAMESPACES, Collections.<Namespace>singleton(new NamespaceImpl("foo", SKOS.NAMESPACE)));
+
+		Model model = Rio.parse(new StringReader("<urn:a> foo:broader <urn:b>."), "", RDFFormat.TURTLE, aConfig, vf, new ParseErrorLogger());
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), SKOS.BROADER, vf.createURI("urn:b")));
+	}
+
+	@Test
+	public void testParsingNamespacesWithOverride() throws Exception {
+		ParserConfig aConfig = new ParserConfig();
+
+		aConfig.set(BasicParserSettings.NAMESPACES, Collections.<Namespace>singleton(new NamespaceImpl("foo", SKOS.NAMESPACE)));
+
+		Model model = Rio.parse(new StringReader("@prefix skos : <urn:not_skos:> ." +
+		                                         "<urn:a> skos:broader <urn:b>."), "",
+		                        RDFFormat.TURTLE, aConfig, vf, new ParseErrorLogger());
+
+		assertEquals(1, model.size());
+		assertTrue(model.contains(vf.createURI("urn:a"), vf.createURI("urn:not_skos:broader"), vf.createURI("urn:b")));
+	}
 }
