@@ -188,7 +188,7 @@ public abstract class SailBase implements Sail {
 		initializationLock.writeLock().lock();
 		try {
 			if (isInitialized()) {
-				throw new IllegalStateException("sail has already been intialized");
+				throw new IllegalStateException("Sail has already been intialized. Ensure this Sail is being used via a Repository.");
 			}
 
 			initializeInternal();

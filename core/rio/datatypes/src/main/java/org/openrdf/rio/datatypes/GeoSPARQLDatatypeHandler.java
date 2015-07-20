@@ -20,6 +20,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.LiteralUtilException;
+import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.rio.DatatypeHandler;
 
 /**
@@ -42,7 +43,7 @@ public class GeoSPARQLDatatypeHandler implements DatatypeHandler {
 			throw new NullPointerException("Datatype URI cannot be null");
 		}
 
-		return datatypeUri.stringValue().startsWith("http://www.opengis.net/ont/geosparql#");
+		return datatypeUri.stringValue().startsWith(GEO.NAMESPACE);
 	}
 
 	@Override
