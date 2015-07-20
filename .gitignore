@@ -3,10 +3,8 @@
 **/.project
 .classpath
 **/.classpath
-org.eclipse.core.resources.prefs
-org.eclipse.m2e.core.prefs
-#.settings
-#**/.settings
+.settings
+**/.settings
 bin
 **/bin
 
@@ -27,5 +25,3 @@ pom.xml.versionsBackup
 
 # Mac nonsense
 .DS_Store
-
-
