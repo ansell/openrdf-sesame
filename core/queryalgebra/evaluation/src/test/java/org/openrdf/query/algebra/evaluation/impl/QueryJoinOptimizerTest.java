@@ -18,9 +18,6 @@ package org.openrdf.query.algebra.evaluation.impl;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import org.openrdf.OpenRDFException;
@@ -29,7 +26,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.QueryRoot;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.QueryParserUtil;
 
@@ -39,14 +35,12 @@ import org.openrdf.query.parser.QueryParserUtil;
  * @author Mark
  */
 public class QueryJoinOptimizerTest {
-
-	@Test(expected=AssertionError.class)
-	public void testBindingSetAssignmentOptimization()
-		throws OpenRDFException
-	{
+	@Test
+	public void testBindingSetAssignmentOptimization() throws OpenRDFException {
 		String query = "prefix ex: <ex:>"
 				+ "select ?s ?p ?o ?x where {"
-				+ " ex:s1 ex:pred 'foo'. {"
+				+ " ex:s1 ex:pred ?v. "
+				+ " ex:s2 ex:pred 'bah'. {"
 				+ "  ?s ?p ?o. "
 				+ "  optional {"
 				+ "   values ?x {ex:a ex:b ex:c ex:d ex:e ex:f ex:g}. "
@@ -57,10 +51,12 @@ public class QueryJoinOptimizerTest {
 		// followed by left join evaluation
 		String expectedQuery = "prefix ex: <ex:>"
 				+ "select ?s ?p ?o ?x where {"
-				+ " ex:s1 ex:pred 'foo'. {"
-				+ "  ?s ?p ?o. "
-				+ "  optional {"
-				+ "   values ?x {ex:a ex:b ex:c ex:d ex:e ex:f ex:g}. "
+				+ " ex:s2 ex:pred 'bah'. {"
+				+ "  ex:s1 ex:pred ?v. {"
+				+ "   ?s ?p ?o. "
+				+ "   optional {"
+				+ "    values ?x {ex:a ex:b ex:c ex:d ex:e ex:f ex:g}. "
+				+ "   }"
 				+ "  }"
 				+ " }"
 				+ "}";
@@ -75,7 +71,9 @@ public class QueryJoinOptimizerTest {
 		String query = "prefix ex: <ex:>"
 				+ "select ?x ?y ?z ?g ?p ?o where {"
 				+ " graph ?g {"
-				+ "  ex:s ?p ?o. "
+				+ "  ex:s ?sp ?so. "
+				+ "  ?ps ex:p ?po. "
+				+ "  ?os ?op 'ex:o'. "
 				+ " }"
 				+ " ?x ?y ?z. "
 				+ "}";
@@ -87,7 +85,9 @@ public class QueryJoinOptimizerTest {
 		String expectedQuery = "prefix ex: <ex:>"
 				+ "select ?x ?y ?z ?g ?p ?o where {"
 				+ " graph ?g {"
-				+ "  ex:s ?p ?o. "
+				+ "  ex:s ?sp ?so. "
+				+ "  ?ps ex:p ?po. "
+				+ "  ?os ?op 'ex:o'. "
 				+ " }"
 				+ " ?x ?y ?z. "
 				+ "}";
@@ -109,26 +109,6 @@ public class QueryJoinOptimizerTest {
 	}
 
 	private void assertQueryModelTrees(QueryModelNode expected, QueryModelNode actual) {
-		List<QueryModelNode> el = asList(expected);
-		List<QueryModelNode> al = asList(actual);
-		// just re-ordering so sizes should be the same
-		assertEquals(el.size(), al.size());
-		for(int i=0; i<el.size(); i++) {
-			QueryModelNode en = el.get(i);
-			QueryModelNode an = al.get(i);
-			assertEquals(en, an);
-		}
-	}
-
-	private List<QueryModelNode> asList(QueryModelNode root) {
-		final List<QueryModelNode> l = new ArrayList<QueryModelNode>();
-		root.visit(new QueryModelVisitorBase<RuntimeException>()
-		{
-			@Override
-			protected void meetNode(QueryModelNode node) {
-				l.add(node);
-			}
-		});
-		return l;
+		assertEquals(expected, actual);
 	}
 }

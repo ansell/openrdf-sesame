@@ -206,10 +206,15 @@ public class TransactionController extends AbstractController {
 
 		Map<String, Object> model = new HashMap<String, Object>();
 
+		String baseURI = request.getParameter(Protocol.BASEURI_PARAM_NAME);
+		if (baseURI == null) {
+			baseURI = "";
+		}
+		
 		try {
 			switch (action) {
 				case ADD:
-					conn.add(request.getInputStream(), null,
+					conn.add(request.getInputStream(), baseURI,
 							Rio.getParserFormatForMIMEType(request.getContentType()));
 					break;
 				case DELETE:
@@ -217,7 +222,7 @@ public class TransactionController extends AbstractController {
 							conn.getValueFactory());
 					parser.setRDFHandler(new WildcardRDFRemover(conn));
 					parser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
-					parser.parse(request.getInputStream(), null);
+					parser.parse(request.getInputStream(), baseURI);
 					break;
 				case QUERY:
 					return processQuery(conn, request, response);
@@ -390,6 +395,8 @@ public class TransactionController extends AbstractController {
 		model.put(QueryResultView.FILENAME_HINT_KEY, "query-result");
 		model.put(QueryResultView.QUERY_RESULT_KEY, queryResult);
 		model.put(QueryResultView.FACTORY_KEY, factory);
+		model.put(QueryResultView.HEADERS_ONLY, false); // TODO needed for HEAD
+																		// requests.
 
 		return new ModelAndView(view, model);
 	}
@@ -613,36 +620,31 @@ public class TransactionController extends AbstractController {
 		}
 
 		try {
+			Update update = conn.prepareUpdate(queryLn, sparqlUpdateString, baseURI);
 
-			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-			synchronized (repositoryCon) {
-				Update update = repositoryCon.prepareUpdate(queryLn, sparqlUpdateString, baseURI);
+			update.setIncludeInferred(includeInferred);
 
-				update.setIncludeInferred(includeInferred);
-
-				if (dataset != null) {
-					update.setDataset(dataset);
-				}
-
-				// determine if any variable bindings have been set on this update.
-				@SuppressWarnings("unchecked")
-				Enumeration<String> parameterNames = request.getParameterNames();
-
-				while (parameterNames.hasMoreElements()) {
-					String parameterName = parameterNames.nextElement();
-
-					if (parameterName.startsWith(BINDING_PREFIX)
-							&& parameterName.length() > BINDING_PREFIX.length())
-					{
-						String bindingName = parameterName.substring(BINDING_PREFIX.length());
-						Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
-								conn.getValueFactory());
-						update.setBinding(bindingName, bindingValue);
-					}
-				}
-
-				update.execute();
+			if (dataset != null) {
+				update.setDataset(dataset);
 			}
+
+			// determine if any variable bindings have been set on this update.
+			@SuppressWarnings("unchecked")
+			Enumeration<String> parameterNames = request.getParameterNames();
+
+			while (parameterNames.hasMoreElements()) {
+				String parameterName = parameterNames.nextElement();
+
+				if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length())
+				{
+					String bindingName = parameterName.substring(BINDING_PREFIX.length());
+					Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
+							conn.getValueFactory());
+					update.setBinding(bindingName, bindingValue);
+				}
+			}
+
+			update.execute();
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}

@@ -5,6 +5,13 @@
 // corresponding *.ts source in the ts subfolder, and then invoke the
 // compileTypescript.sh bash script to generate new *.js and *.js.map files.
 
+module workbench {
+
+    export module create {
+        export var id = $('#id');
+    }
+}
+
 /**
  * Invoked by the "Create" button on the form for all but 
  * create-federate.xsl. Checks with the InfoServlet for the user-provided id
@@ -15,7 +22,7 @@
 function checkOverwrite() {
     var submit = false;
     $.ajax({
-        url: '../' + $('#id').val() + '/info',
+        url: '../' + workbench.create.id.val() + '/info',
         async: false,
         success: function() {
             submit = confirm(
@@ -48,7 +55,7 @@ workbench.addLoad(function createPageLoaded() {
         var pair = elements[i].split('=');
         var value = decodeURIComponent(pair[1]).replace(/\+/g, ' ');
         if (pair[0] == 'id') {
-            $('#id').val(value);
+            workbench.create.id.val(value);
         }
         if (pair[0] == 'title') {
             $('#title').val(value);

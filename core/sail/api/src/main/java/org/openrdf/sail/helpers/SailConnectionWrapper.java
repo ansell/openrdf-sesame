@@ -28,6 +28,8 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
@@ -40,7 +42,7 @@ import org.openrdf.sail.UpdateContext;
  * 
  * @author Jeen Broekstra
  */
-public class SailConnectionWrapper implements SailConnection {
+public class SailConnectionWrapper implements SailConnection, FederatedServiceResolverClient {
 
 	/*-----------*
 	 * Variables *
@@ -75,6 +77,13 @@ public class SailConnectionWrapper implements SailConnection {
 	 */
 	public SailConnection getWrappedConnection() {
 		return wrappedCon;
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		if (wrappedCon instanceof FederatedServiceResolverClient) {
+			((FederatedServiceResolverClient)wrappedCon).setFederatedServiceResolver(resolver);
+		}
 	}
 
 	@Override

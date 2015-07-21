@@ -91,7 +91,8 @@ public abstract class SailIsolationLevelTest {
 		try {
 			con.begin(level);
 			return true;
-		} catch (UnknownSailTransactionStateException e) {
+		}
+		catch (UnknownSailTransactionStateException e) {
 			return false;
 		}
 		finally {
@@ -113,6 +114,7 @@ public abstract class SailIsolationLevelTest {
 	{
 		rollbackTriple(IsolationLevels.READ_UNCOMMITTED);
 		readPending(IsolationLevels.READ_UNCOMMITTED);
+		readPendingWhileActive(IsolationLevels.READ_UNCOMMITTED);
 	}
 
 	@Test
@@ -122,6 +124,7 @@ public abstract class SailIsolationLevelTest {
 		readCommitted(IsolationLevels.READ_COMMITTED);
 		rollbackTriple(IsolationLevels.READ_COMMITTED);
 		readPending(IsolationLevels.READ_COMMITTED);
+		readPendingWhileActive(IsolationLevels.READ_COMMITTED);
 	}
 
 	@Test
@@ -133,6 +136,7 @@ public abstract class SailIsolationLevelTest {
 			readCommitted(IsolationLevels.SNAPSHOT_READ);
 			rollbackTriple(IsolationLevels.SNAPSHOT_READ);
 			readPending(IsolationLevels.SNAPSHOT_READ);
+			readPendingWhileActive(IsolationLevels.SNAPSHOT_READ);
 		}
 		else {
 			logger.warn("{} does not support {}", store, IsolationLevels.SNAPSHOT_READ);
@@ -150,6 +154,7 @@ public abstract class SailIsolationLevelTest {
 			readCommitted(IsolationLevels.SNAPSHOT);
 			rollbackTriple(IsolationLevels.SNAPSHOT);
 			readPending(IsolationLevels.SNAPSHOT);
+			readPendingWhileActive(IsolationLevels.SNAPSHOT);
 		}
 		else {
 			logger.warn("{} does not support {}", store, IsolationLevels.SNAPSHOT);
@@ -169,6 +174,7 @@ public abstract class SailIsolationLevelTest {
 			readCommitted(IsolationLevels.SERIALIZABLE);
 			rollbackTriple(IsolationLevels.SERIALIZABLE);
 			readPending(IsolationLevels.SERIALIZABLE);
+			readPendingWhileActive(IsolationLevels.SERIALIZABLE);
 		}
 		else {
 			logger.warn("{} does not support {}", store, IsolationLevels.SERIALIZABLE);
@@ -184,6 +190,31 @@ public abstract class SailIsolationLevelTest {
 		clear(store);
 		SailConnection con = store.getConnection();
 		try {
+			con.begin(level);
+			con.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
+			Assert.assertEquals(1, count(con, RDF.NIL, RDF.TYPE, RDF.LIST, false));
+			con.removeStatements(RDF.NIL, RDF.TYPE, RDF.LIST);
+			con.commit();
+		}
+		finally {
+			con.close();
+		}
+	}
+
+	/**
+	 * Every connection must support reading its own changes while another
+	 * iteration is active.
+	 */
+	private void readPendingWhileActive(IsolationLevel level)
+		throws SailException
+	{
+		clear(store);
+		SailConnection con = store.getConnection();
+		try {
+			@SuppressWarnings("unused")
+			// open an iteration outside the transaction and leave it open.
+			CloseableIteration<? extends Statement, SailException> statements = con.getStatements(null, null,
+					null, true);
 			con.begin(level);
 			con.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 			Assert.assertEquals(1, count(con, RDF.NIL, RDF.TYPE, RDF.LIST, false));

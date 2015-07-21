@@ -17,6 +17,8 @@
 
 package org.openrdf.util.iterators;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -96,6 +98,40 @@ public class Iterators {
 
 			if (iter.hasNext()) {
 				sb.append(separator);
+			}
+		}
+	}
+
+	/**
+	 * Closes the given iterator if it implements {@link java.io.Closeable}
+	 * else do nothing.
+	 * @param iter The iterator to close.
+	 * @throws IOException If an underlying I/O error occurs.
+	 */
+	public static void close(Iterator<?> iter) throws IOException
+	{
+		if(iter instanceof Closeable)
+		{
+			((Closeable)iter).close();
+		}
+	}
+
+	/**
+	 * Closes the given iterator, swallowing any IOExceptions, if it implements {@link java.io.Closeable}
+	 * else do nothing.
+	 * @param iter The iterator to close.
+	 */
+	public static void closeSilently(Iterator<?> iter)
+	{
+		if(iter instanceof Closeable)
+		{
+			try
+			{
+				((Closeable)iter).close();
+			}
+			catch(IOException ioe)
+			{
+				// ignore
 			}
 		}
 	}

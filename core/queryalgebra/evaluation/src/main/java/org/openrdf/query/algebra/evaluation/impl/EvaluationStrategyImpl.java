@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.DelayedIteration;
 import info.aduna.iteration.DistinctIteration;
@@ -122,7 +123,6 @@ import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.federation.SPARQLFederatedService;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
@@ -142,6 +142,7 @@ import org.openrdf.query.algebra.evaluation.iterator.ProjectionIterator;
 import org.openrdf.query.algebra.evaluation.iterator.SPARQLMinusIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.algebra.evaluation.iterator.ZeroLengthPathIteration;
+import org.openrdf.query.algebra.evaluation.util.EvaluationStrategies;
 import org.openrdf.query.algebra.evaluation.util.MathUtil;
 import org.openrdf.query.algebra.evaluation.util.OrderComparator;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
@@ -179,6 +180,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	// SES-869.
 	private Value sharedValueOfNow;
 
+	private final long iterationCacheSyncThreshold;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -190,10 +193,23 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset,
 			FederatedServiceResolver serviceResolver)
 	{
+		this(tripleSource, dataset, serviceResolver, 0);
+	}
+
+	public EvaluationStrategyImpl(TripleSource tripleSource, Dataset dataset,
+			FederatedServiceResolver serviceResolver, long iterationCacheSyncTreshold)
+	{
 		this.tripleSource = tripleSource;
 		this.dataset = dataset;
 		this.serviceResolver = serviceResolver;
+		this.iterationCacheSyncThreshold = iterationCacheSyncTreshold;
+
+		EvaluationStrategies.register(this);
 	}
+
+	/*---------*
+	 * Methods *
+	 *---------*/
 
 	public FederatedService getService(String serviceUrl)
 		throws QueryEvaluationException
@@ -201,10 +217,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return serviceResolver.getService(serviceUrl);
 	}
 
-	/*---------*
-	 * Methods *
-	 *---------*/
-
+	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
 			BindingSet bindings)
 		throws QueryEvaluationException
@@ -297,6 +310,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return new ZeroLengthPathIteration(this, subjectVar, objVar, subj, obj, contextVar, bindings);
 	}
 
+	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
 			String serviceUri, CloseableIteration<BindingSet, QueryEvaluationException> bindings)
 		throws QueryEvaluationException
@@ -371,8 +385,8 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			}
 
 			// otherwise: perform a SELECT query
-			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars, bindings,
-					baseUri);
+			CloseableIteration<BindingSet, QueryEvaluationException> result = fs.select(service, freeVars,
+					bindings, baseUri);
 
 			if (service.isSilent())
 				return new SilentIteration(result);
@@ -657,9 +671,12 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 			BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		CloseableIteration<BindingSet, QueryEvaluationException> result;
-
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
+		if(bindings.size() == 0) { // empty binding set
+			return new CloseableIteratorIteration<BindingSet, QueryEvaluationException>(iter);
+		}
+
+		CloseableIteration<BindingSet, QueryEvaluationException> result;
 
 		final QueryBindingSet b = new QueryBindingSet(bindings);
 
@@ -670,24 +687,28 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 				throws QueryEvaluationException
 			{
 				QueryBindingSet result = null;
-				if (iter.hasNext()) {
-					result = new QueryBindingSet(b);
+				while(result == null && iter.hasNext()) {
 					final BindingSet assignedBindings = iter.next();
 					for (String name : assignedBindings.getBindingNames()) {
-						final Binding assignedBinding = assignedBindings.getBinding(name);
-						if (assignedBinding != null) { // can be null if set to UNDEF
+						final Value assignedValue = assignedBindings.getValue(name);
+						if (assignedValue != null) { // can be null if set to UNDEF
 							// check that the binding assignment does not overwrite
 							// existing bindings.
-							if (b.hasBinding(name)) {
-								if (!assignedBinding.getValue().equals(b.getValue(name))) {
-									// if values are not equal there is no compatible
-									// merge and we should return no next element.
-									return null;
+							Value bValue = b.getValue(name);
+							if (bValue == null || assignedValue.equals(bValue)) {
+								if(result == null) {
+									result = new QueryBindingSet(b);
+								}
+								if(bValue == null) {
+									// we are not overwriting an existing binding.
+									result.addBinding(name, assignedValue);
 								}
 							}
 							else {
-								// we are not overwriting an existing binding.
-								result.addBinding(assignedBinding);
+								// if values are not equal there is no compatible
+								// merge and we should return no next element.
+								result = null;
+								break;
 							}
 						}
 					}
@@ -782,7 +803,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Group node, BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		return new GroupIterator(this, node, bindings);
+		return new GroupIterator(this, node, bindings, iterationCacheSyncThreshold);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Order node, BindingSet bindings)
@@ -792,7 +813,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
 		boolean reduced = isReducedOrDistinct(node);
 		long limit = getLimit(node);
-		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced);
+		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced, iterationCacheSyncThreshold);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,
@@ -975,6 +996,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		return external.evaluate(bindings);
 	}
 
+	@Override
 	public Value evaluate(ValueExpr expr, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
@@ -1908,6 +1930,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 	}
 
+	@Override
 	public boolean isTrue(ValueExpr expr, BindingSet bindings)
 		throws QueryEvaluationException
 	{

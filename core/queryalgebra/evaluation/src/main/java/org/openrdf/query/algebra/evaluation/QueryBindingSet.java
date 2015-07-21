@@ -184,10 +184,10 @@ public class QueryBindingSet implements BindingSet {
 
 	@Override
 	public int hashCode() {
-		int hashCode = 0;
+		int hashCode = 5;
 
 		for (Map.Entry<String, Value> entry : bindings.entrySet()) {
-			hashCode ^= entry.getKey().hashCode() ^ entry.getValue().hashCode();
+			hashCode = 37 * hashCode + entry.hashCode();
 		}
 
 		return hashCode;

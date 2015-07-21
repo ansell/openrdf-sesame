@@ -44,6 +44,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.evaluation.iterator.CollectionIteration;
+import org.openrdf.query.algebra.evaluation.iterator.CrossProductIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.Repository;
@@ -109,16 +110,30 @@ public class RepositoryFederatedService implements FederatedService {
 	}
 
 	protected final Repository rep;
+	
+	// flag indicating whether the repository shall be closed in #shutdown()
+	protected boolean shutDown = true;
 
 	protected RepositoryConnection conn = null;
 
 	/**
-	 * @param serviceUrl
-	 *        the serviceUrl use to initialize the inner {@link Repository}
+	 * @param repo
+	 * 			the repository to be used
 	 */
 	public RepositoryFederatedService(Repository repo) {
+		this(repo, true);
+	}
+	
+	/**
+	 * @param repo
+	 * 			the repository to be used
+	 * @param shutDown
+	 * 			a flag indicating whether the repository shall be closed in {@link #shutdown()}
+	 */
+	public RepositoryFederatedService(Repository repo, boolean shutDown) {
 		super();
 		this.rep = repo;
+		this.shutDown = shutDown;
 	}
 
 	/**
@@ -285,7 +300,7 @@ public class RepositoryFederatedService implements FederatedService {
 			}
 
 			if (relevantBindingNames.size() == 0)
-				result = new ServiceCrossProductIteration(res, allBindings); // cross
+				result = new CrossProductIteration(res, allBindings); // cross
 																									// product
 			else
 				result = new ServiceJoinConversionIteration(res, allBindings); // common
@@ -365,7 +380,11 @@ public class RepositoryFederatedService implements FederatedService {
 		}
 		finally {
 			try {
-				rep.shutDown();
+				// shutdown only if desired, e.g. do not 
+				// invoke shutDown for managed repositories
+				if (shutDown) {
+					rep.shutDown();
+				}
 			}
 			catch (RepositoryException e) {
 				// Try not to clobber the initial exception that may be more useful

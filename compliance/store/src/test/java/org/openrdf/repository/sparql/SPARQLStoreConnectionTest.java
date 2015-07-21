@@ -34,6 +34,8 @@ import org.junit.Test;
 
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevel;
+import org.openrdf.OpenRDFException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
@@ -52,6 +54,10 @@ import org.openrdf.repository.http.HTTPMemServer;
 public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 
 	private static HTTPMemServer server;
+
+	public SPARQLStoreConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@BeforeClass
 	public static void startServer()
@@ -96,6 +102,23 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 				Protocol.getStatementsLocation(HTTPMemServer.REPOSITORY_URL));
 	}
 
+	
+	@Override
+	@Ignore
+	public void testAddDelete()
+		throws OpenRDFException
+	{
+		System.err.println("temporarily disabled testAddDelete() for SPARQLRepository");
+	}
+	
+	@Override
+	@Ignore
+	public void testAddRemoveInsert()
+		throws OpenRDFException
+	{
+		System.err.println("temporarily disabled testAddRemoveInsert() for SPARQLRepository");
+	}
+	
 	@Override
 	@Ignore
 	public void testSizeRollback()
@@ -337,6 +360,15 @@ public class SPARQLStoreConnectionTest extends RepositoryConnectionTest {
 		throws Exception
 	{
 		System.err.println("temporarily disabled testTransactionIsolationForRead() for SPARQLRepository");
+	}
+	
+	@Ignore("temporarily disabled for SPARQLRepository")
+	@Test
+	@Override
+	public void testTransactionIsolationForReadWithDeleteOperation()
+	throws Exception 
+	{
+		System.err.println("temporarily disabled testTransactionIsolationForReadWithDeleteOperation() for SPARQLRepository");
 	}
 
 	@Override

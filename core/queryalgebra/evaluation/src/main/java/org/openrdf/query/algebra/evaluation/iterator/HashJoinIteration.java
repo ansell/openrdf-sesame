@@ -33,6 +33,8 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.impl.EmptyBindingSet;
@@ -57,7 +59,7 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 
 	private Map<BindingSetHashKey, List<BindingSet>> hashTable;
 
-	private String[] joinAttributes;
+	protected final String[] joinAttributes;
 
 	private BindingSet currentScanElem;
 
@@ -72,17 +74,23 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	public HashJoinIteration(EvaluationStrategy strategy, Join join, BindingSet bindings)
 		throws QueryEvaluationException
 	{
-		this(strategy, join, bindings, false);
+		this(strategy, join.getLeftArg(), join.getRightArg(), bindings, false);
 	}
 
-	public HashJoinIteration(EvaluationStrategy strategy, Join join, BindingSet bindings, boolean leftJoin)
+	public HashJoinIteration(EvaluationStrategy strategy, LeftJoin join, BindingSet bindings)
 			throws QueryEvaluationException
 	{
-		leftIter = strategy.evaluate(join.getLeftArg(), bindings);
-		rightIter = strategy.evaluate(join.getRightArg(), bindings);
+		this(strategy, join.getLeftArg(), join.getRightArg(), bindings, true);
+	}
 
-		Set<String> joinAttributeNames = join.getLeftArg().getBindingNames();
-		joinAttributeNames.retainAll(join.getRightArg().getBindingNames());
+	public HashJoinIteration(EvaluationStrategy strategy, TupleExpr left, TupleExpr right, BindingSet bindings, boolean leftJoin)
+			throws QueryEvaluationException
+	{
+		leftIter = strategy.evaluate(left, bindings);
+		rightIter = strategy.evaluate(right, bindings);
+
+		Set<String> joinAttributeNames = left.getBindingNames();
+		joinAttributeNames.retainAll(right.getBindingNames());
 		joinAttributes = joinAttributeNames.toArray(new String[joinAttributeNames.size()]);
 
 		this.leftJoin = leftJoin;
@@ -120,11 +128,16 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 				// the empty bindingset should be merged with all bindingset in the
 				// hash table
 				hashTableValues = new UnionIterator<BindingSet>(hashTable.values());
+				if(!hashTableValues.hasNext()) {
+					currentScanElem = null;
+					closeHashValue(hashTableValues);
+					hashTableValues = null;
+				}
 			}
 			else {
 				BindingSetHashKey key = BindingSetHashKey.create(joinAttributes, currentScanElem);
 				List<BindingSet> hashValue = hashTable.get(key);
-				if (hashValue != null) {
+				if (hashValue != null && !hashValue.isEmpty()) {
 					hashTableValues = hashValue.iterator();
 				}
 				else if(leftJoin) {
@@ -237,13 +250,14 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 			BindingSetHashKey hashKey = BindingSetHashKey.create(joinAttributes, b);
 
 			List<BindingSet> hashValue = hashTable.get(hashKey);
-			if (hashValue == null) {
+			boolean newEntry = (hashValue == null);
+			if (newEntry) {
 				hashValue = makeHashValue(maxListSize);
 			}
 			add(hashValue, b);
 			// always do a put() in case the map implementation is not memory-based
 			// e.g. it serializes the values
-			putHashTableEntry(hashTable, hashKey, hashValue);
+			putHashTableEntry(hashTable, hashKey, hashValue, newEntry);
 
 			maxListSize = Math.max(maxListSize, hashValue.size());
 		}
@@ -251,12 +265,12 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	}
 
 	protected void putHashTableEntry(Map<BindingSetHashKey, List<BindingSet>> hashTable, BindingSetHashKey hashKey,
-			List<BindingSet> hashValue)
+			List<BindingSet> hashValue, boolean newEntry)
 		throws QueryEvaluationException
 	{
 		// by default, we use a standard memory hash map
-		// so we only need to do the put() if the list new
-		if(hashValue.size() == 1)
+		// so we only need to do the put() if the list is new
+		if(newEntry)
 		{
 			hashTable.put(hashKey, hashValue);
 		}
@@ -287,7 +301,8 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 		}
 		else
 		{
-			hashTable = Collections.<BindingSetHashKey,List<BindingSet>>singletonMap(BindingSetHashKey.EMPTY, new ArrayList<BindingSet>(initialSize));
+			List<BindingSet> l = (initialSize > 0) ? new ArrayList<BindingSet>(initialSize) : null;
+			hashTable = Collections.<BindingSetHashKey,List<BindingSet>>singletonMap(BindingSetHashKey.EMPTY, l);
 		}
 		return hashTable;
 	}
@@ -304,27 +319,21 @@ public class HashJoinIteration extends LookAheadIteration<BindingSet, QueryEvalu
 	}
 
 	/**
-	 * Utility methods to clear-up in case not using in-memory cache
-	 * 
-	 * @return map
+	 * Utility methods to clear-up in case not using in-memory cache.
 	 */
 	protected void disposeCache(Iterator<BindingSet> iter)
 	{
 	}
 
 	/**
-	 * Utility methods to clear-up in case not using in-memory hash table
-	 * 
-	 * @return map
+	 * Utility methods to clear-up in case not using in-memory hash table.
 	 */
 	protected void disposeHashTable(Map<BindingSetHashKey, List<BindingSet>> map)
 	{
 	}
 
 	/**
-	 * Utility methods to clear-up in case not using in-memory hash table
-	 * 
-	 * @return map
+	 * Utility methods to clear-up in case not using in-memory hash table.
 	 */
 	protected <E> void closeHashValue(Iterator<E> iter)
 	{

@@ -32,6 +32,8 @@ public class SailImplConfigBase implements SailImplConfig {
 
 	private String type;
 
+	private long iterationCacheSyncThreshold;
+	
 	/**
 	 * Create a new RepositoryConfigImpl.
 	 */
@@ -69,6 +71,11 @@ public class SailImplConfigBase implements SailImplConfig {
 			graph.add(implNode, SAILTYPE, graph.getValueFactory().createLiteral(type));
 		}
 
+		if (iterationCacheSyncThreshold > 0)
+		{
+			graph.add(implNode, SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD, graph.getValueFactory().createLiteral(iterationCacheSyncThreshold));
+		}
+		
 		return implNode;
 	}
 
@@ -80,9 +87,29 @@ public class SailImplConfigBase implements SailImplConfig {
 			if (typeLit != null) {
 				setType(typeLit.getLabel());
 			}
+			
+			Literal sizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD);
+			if (sizeLit != null) {
+				setIterationCacheSyncThreshold(sizeLit.longValue());
+			}
 		}
 		catch (GraphUtilException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * @return Returns the iterationCacheSize.
+	 */
+	public long getIterationCacheSyncThreshold() {
+		return iterationCacheSyncThreshold;
+	}
+
+	/**
+	 *
+	 * @param iterationCacheSyncThreshold The iterationCacheSyncThreshold to set.
+	 */
+	public void setIterationCacheSyncThreshold(long iterationCacheSyncThreshold) {
+		this.iterationCacheSyncThreshold = iterationCacheSyncThreshold;
 	}
 }

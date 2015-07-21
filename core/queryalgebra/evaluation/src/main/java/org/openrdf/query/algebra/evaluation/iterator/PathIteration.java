@@ -23,6 +23,7 @@ import java.util.Set;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.Iterations;
 import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.model.Value;
@@ -105,6 +106,7 @@ public class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluatio
 	{
 		again: while (true) {
 			while (!currentIter.hasNext()) {
+				Iterations.closeCloseable(currentIter);
 				createIteration();
 				// stop condition: if the iter is an EmptyIteration
 				if (currentIter instanceof EmptyIteration<?, ?>) {
@@ -206,6 +208,14 @@ public class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluatio
 			valueQueue.clear();
 			return null;
 		}
+	}
+
+	@Override
+	protected void handleClose()
+		throws QueryEvaluationException
+	{
+		Iterations.closeCloseable(currentIter);
+		super.handleClose();
 	}
 
 	/**
