@@ -16,9 +16,7 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -114,20 +112,10 @@ public class EvaluationStatistics {
 		@Override
 		public void meet(ArbitraryLengthPath node) {
 
-			List<Var> vars = new ArrayList<Var>();
-			vars.add(node.getSubjectVar());
-			vars.add(node.getObjectVar());
-			// WHY is no contextVar included here, but is included in
-			// getBindingNames().size()???
-			// This looks like it should have the same cardinality as
-			// ZeroLengthPath
-			// but with some extra cost factor for the length???
-
-			int constantVarCount = countConstantVars(vars);
-			double unboundVarFactor = (double)(node.getBindingNames().size() - constantVarCount)
-					/ node.getBindingNames().size();
-
-			cardinality = Math.pow(1000.0, unboundVarFactor);
+			// actual cardinality = count(union(subjs, objs))
+			// but might require getting all statements
+			// so due to the lower actual cardinality we value it in preference to a fully unbound statement pattern.
+			cardinality = getSubjectCardinality(node.getSubjectVar()) * getObjectCardinality(node.getObjectVar()) * getContextCardinality(node.getContextVar());
 		}
 
 		@Override

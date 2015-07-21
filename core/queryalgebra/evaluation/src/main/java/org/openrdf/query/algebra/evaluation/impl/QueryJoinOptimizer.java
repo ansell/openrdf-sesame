@@ -422,10 +422,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				// Prefer patterns that bind variables from other tuple expressions
 				int foreignVarFreq = getForeignVarFreq(unboundVars, varFreqMap);
 				if (foreignVarFreq > 0) {
-					// WHY isn't foreignVarFreq = 1 more preferable than
-					// foreignVarFreq = 0?
-					cardinality /= foreignVarFreq;
-					// cardinality /= 1 + foreignVarFreq;
+					cardinality /= 1 + foreignVarFreq;
 				}
 			}
 
