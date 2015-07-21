@@ -19,6 +19,7 @@ package org.openrdf.sesame.spin;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -828,7 +829,8 @@ public class SPINRenderer {
 		public void meet(Extension node) {
 			extension = node;
 			List<ExtensionElem> elements = node.getElements();
-			extensionExprs = new HashMap<String,ValueExpr>(elements.size());
+			// NB: preserve ExtensionElem order
+			extensionExprs = new LinkedHashMap<String,ValueExpr>(elements.size());
 			for(ExtensionElem elem : elements) {
 				extensionExprs.put(elem.getName(), elem.getExpr());
 			}

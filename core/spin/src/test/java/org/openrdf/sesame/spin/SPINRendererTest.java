@@ -26,6 +26,8 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
+import org.openrdf.rio.WriterConfig;
+import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 @RunWith(Parameterized.class)
@@ -80,8 +82,10 @@ public class SPINRendererTest {
 
 	private static String toRDF(Iterable<Statement> stmts) throws RDFHandlerException
 	{
+		WriterConfig config = new WriterConfig();
+		config.set(BasicWriterSettings.PRETTY_PRINT, false);
 		StringBuilderWriter writer = new StringBuilderWriter();
-		Rio.write(stmts, writer, RDFFormat.TURTLE);
+		Rio.write(stmts, writer, RDFFormat.TURTLE, config);
 		writer.close();
 		return writer.toString();
 	}
