@@ -62,14 +62,14 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.query.parser.sparql.SPARQLUtil;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.UnknownTransactionStateException;
-import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.repository.base.AbstractRepositoryConnection;
 import org.openrdf.repository.sparql.query.SPARQLBooleanQuery;
 import org.openrdf.repository.sparql.query.SPARQLGraphQuery;
 import org.openrdf.repository.sparql.query.SPARQLTupleQuery;
@@ -86,7 +86,7 @@ import org.openrdf.rio.helpers.StatementCollector;
  * 
  * @author James Leigh
  */
-public class SPARQLConnection extends RepositoryConnectionBase implements HttpClientDependent {
+public class SPARQLConnection extends AbstractRepositoryConnection implements HttpClientDependent {
 
 	private static final String EVERYTHING = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }";
 	
@@ -691,7 +691,7 @@ public class SPARQLConnection extends RepositoryConnectionBase implements HttpCl
 			query.setBinding("o", obj);
 		}
 		if (contexts != null && contexts.length > 0) {
-			DatasetImpl dataset = new DatasetImpl();
+			SimpleDataset dataset = new SimpleDataset();
 			for (Resource ctx : contexts) {
 				if (ctx == null || ctx instanceof IRI) {
 					dataset.addDefaultGraph((IRI)ctx);

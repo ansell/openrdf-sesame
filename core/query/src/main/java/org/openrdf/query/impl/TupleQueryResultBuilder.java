@@ -21,14 +21,14 @@ import java.util.List;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandlerBase;
+import org.openrdf.query.AbstractTupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 
 /**
  * A TupleQueryResultHandler that can be used to create a TupleQueryResult
  * object.
  */
-public class TupleQueryResultBuilder extends TupleQueryResultHandlerBase {
+public class TupleQueryResultBuilder extends AbstractTupleQueryResultHandler {
 
 	/*-----------*
 	 * Variables *
@@ -58,6 +58,6 @@ public class TupleQueryResultBuilder extends TupleQueryResultHandlerBase {
 	}
 
 	public TupleQueryResult getQueryResult() {
-		return new TupleQueryResultImpl(bindingNames, bindingSetList);
+		return new IteratingTupleQueryResult(bindingNames, bindingSetList);
 	}
 }

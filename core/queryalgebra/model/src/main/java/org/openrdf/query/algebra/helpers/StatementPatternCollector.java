@@ -22,14 +22,14 @@ import java.util.List;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * A QueryModelVisitor that collects StatementPattern's from a query model.
  * StatementPatterns thet are part of filters/constraints are not included in
  * the result.
  */
-public class StatementPatternCollector extends QueryModelVisitorBase<RuntimeException> {
+public class StatementPatternCollector extends AbstractQueryModelVisitor<RuntimeException> {
 
 	public static List<StatementPattern> process(QueryModelNode node) {
 		StatementPatternCollector collector = new StatementPatternCollector();

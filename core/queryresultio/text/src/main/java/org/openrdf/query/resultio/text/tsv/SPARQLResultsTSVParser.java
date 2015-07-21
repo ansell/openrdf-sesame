@@ -35,14 +35,14 @@ import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
-import org.openrdf.query.resultio.TupleQueryResultParserBase;
+import org.openrdf.query.resultio.AbstractTupleQueryResultParser;
 
 /**
  * SPARQL Results TSV format parser.
  * 
  * @author Jeen Broekstra
  */
-public class SPARQLResultsTSVParser extends TupleQueryResultParserBase implements TupleQueryResultParser {
+public class SPARQLResultsTSVParser extends AbstractTupleQueryResultParser implements TupleQueryResultParser {
 
 	@Override
 	public TupleQueryResultFormat getTupleQueryResultFormat() {

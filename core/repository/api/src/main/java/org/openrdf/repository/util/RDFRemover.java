@@ -21,12 +21,12 @@ import org.openrdf.model.Statement;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 
 /**
  * An RDFHandler that removes RDF data from a repository.
  */
-public class RDFRemover extends RDFHandlerBase {
+public class RDFRemover extends AbstractRDFHandler {
 
 	/*-----------*
 	 * Constants *

@@ -48,7 +48,7 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
@@ -218,7 +218,7 @@ public class AbstractQueryBuilder<T extends ParsedQuery> implements QueryBuilder
 		mQuery.setTupleExpr(aRoot);
 
 		if (!mFrom.isEmpty() || !mFromNamed.isEmpty()) {
-			DatasetImpl aDataset = new DatasetImpl();
+			SimpleDataset aDataset = new SimpleDataset();
 
 			for (IRI aFrom : mFrom) {
 				aDataset.addDefaultGraph(aFrom);

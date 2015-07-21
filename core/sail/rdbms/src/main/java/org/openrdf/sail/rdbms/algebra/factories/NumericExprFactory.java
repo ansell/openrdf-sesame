@@ -32,7 +32,7 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.MathExpr.MathOp;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.rdbms.algebra.DoubleValue;
 import org.openrdf.sail.rdbms.algebra.NumericColumn;
 import org.openrdf.sail.rdbms.algebra.SqlMathExpr;
@@ -46,7 +46,7 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class NumericExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class NumericExprFactory extends AbstractQueryModelVisitor<UnsupportedRdbmsOperatorException> {
 
 	protected SqlExpr result;
 

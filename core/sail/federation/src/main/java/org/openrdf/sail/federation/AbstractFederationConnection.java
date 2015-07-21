@@ -60,7 +60,7 @@ import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
 import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.RepositoryConnection;
@@ -77,8 +77,8 @@ import org.openrdf.sail.federation.optimizers.OwnedTupleExprPruner;
 import org.openrdf.sail.federation.optimizers.PrepareOwnedTupleExpr;
 import org.openrdf.sail.federation.optimizers.QueryModelPruner;
 import org.openrdf.sail.federation.optimizers.QueryMultiJoinOptimizer;
-import org.openrdf.sail.helpers.SailBase;
-import org.openrdf.sail.helpers.SailConnectionBase;
+import org.openrdf.sail.helpers.AbstractSail;
+import org.openrdf.sail.helpers.AbstractSailConnection;
 
 /**
  * Unions the results from multiple {@link RepositoryConnection} into one
@@ -87,7 +87,7 @@ import org.openrdf.sail.helpers.SailConnectionBase;
  * @author James Leigh
  * @author Arjohn Kampman
  */
-abstract class AbstractFederationConnection extends SailConnectionBase implements
+abstract class AbstractFederationConnection extends AbstractSailConnection implements
 		FederatedServiceResolverClient, RepositoryResolverClient, HttpClientDependent, SesameClientDependent
 {
 
@@ -105,7 +105,7 @@ abstract class AbstractFederationConnection extends SailConnectionBase implement
 	private FederatedServiceResolver federatedServiceResolver;
 
 	public AbstractFederationConnection(Federation federation, List<RepositoryConnection> members) {
-		super(new SailBase() {
+		super(new AbstractSail() {
 
 			public boolean isWritable()
 				throws SailException

@@ -38,14 +38,14 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.helpers.BasicParserSettings;
-import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.AbstractRDFWriter;
 import org.openrdf.rio.helpers.XMLWriterSettings;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
  * XML-serialized RDF format.
  */
-public class RDFXMLWriter extends RDFWriterBase implements RDFWriter {
+public class RDFXMLWriter extends AbstractRDFWriter implements RDFWriter {
 
 	/*-----------*
 	 * Variables *

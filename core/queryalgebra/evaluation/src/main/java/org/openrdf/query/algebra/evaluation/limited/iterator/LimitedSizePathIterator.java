@@ -24,7 +24,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.iterator.PathIteration;
 
 /**
@@ -46,7 +46,7 @@ public class LimitedSizePathIterator extends PathIteration {
 	 * @param bindings
 	 * @throws QueryEvaluationException
 	 */
-	public LimitedSizePathIterator(EvaluationStrategyImpl evaluationStrategyImpl, Scope scope, Var startVar,
+	public LimitedSizePathIterator(SimpleEvaluationStrategy evaluationStrategyImpl, Scope scope, Var startVar,
 			TupleExpr pathExpression, Var endVar, Var contextVar, long minLength, BindingSet bindings,
 			AtomicLong used, long maxSize)
 		throws QueryEvaluationException

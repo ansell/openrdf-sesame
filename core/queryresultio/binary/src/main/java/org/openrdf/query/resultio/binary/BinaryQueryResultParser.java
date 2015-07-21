@@ -59,13 +59,13 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
-import org.openrdf.query.resultio.TupleQueryResultParserBase;
+import org.openrdf.query.resultio.AbstractTupleQueryResultParser;
 
 /**
  * Reader for the binary tuple result format. The format is explained in
  * {@link BinaryQueryResultConstants}.
  */
-public class BinaryQueryResultParser extends TupleQueryResultParserBase {
+public class BinaryQueryResultParser extends AbstractTupleQueryResultParser {
 
 	/*-----------*
 	 * Variables *

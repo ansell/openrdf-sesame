@@ -23,7 +23,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.AbstractRDFWriter;
 import org.openrdf.rio.turtle.TurtleWriter;
 
 /**
@@ -31,7 +31,7 @@ import org.openrdf.rio.turtle.TurtleWriter;
  * format. Note: the current implementation simply wraps a {@link TurtleWriter}
  * and writes documents in Turtle format, which is a subset of N3.
  */
-public class N3Writer extends RDFWriterBase implements RDFWriter {
+public class N3Writer extends AbstractRDFWriter implements RDFWriter {
 
 	/*-----------*
 	 * Variables *

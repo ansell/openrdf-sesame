@@ -20,7 +20,7 @@ package org.openrdf.query.algebra;
  * @author David Huynh
  * @author Jeen Broekstra
  */
-public class Count extends AggregateOperatorBase {
+public class Count extends AbstractAggregateOperator {
 
 	public Count(ValueExpr arg) {
 		super(arg);

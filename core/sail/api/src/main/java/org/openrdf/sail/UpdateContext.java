@@ -19,7 +19,7 @@ package org.openrdf.sail;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.UpdateExpr;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
@@ -43,7 +43,7 @@ public class UpdateContext {
 		assert updateExpr != null;
 		this.updateExpr = updateExpr;
 		if (dataset == null) {
-			this.dataset = new DatasetImpl();
+			this.dataset = new SimpleDataset();
 		} else {
 			this.dataset = dataset;
 		}

@@ -29,7 +29,7 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverC
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryLockedException;
-import org.openrdf.repository.base.RepositoryBase;
+import org.openrdf.repository.base.AbstractRepository;
 import org.openrdf.repository.sail.config.RepositoryResolver;
 import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.sail.Sail;
@@ -65,7 +65,7 @@ import org.openrdf.sail.StackableSail;
  * 
  * @author Arjohn Kampman
  */
-public class SailRepository extends RepositoryBase implements FederatedServiceResolverClient,
+public class SailRepository extends AbstractRepository implements FederatedServiceResolverClient,
 		RepositoryResolverClient, HttpClientDependent, SesameClientDependent
 {
 

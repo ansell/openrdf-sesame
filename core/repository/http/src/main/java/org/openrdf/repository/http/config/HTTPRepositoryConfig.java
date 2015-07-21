@@ -27,12 +27,12 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.config.RepositoryImplConfigBase;
+import org.openrdf.repository.config.AbstractRepositoryImplConfig;
 
 /**
  * @author Arjohn Kampman
  */
-public class HTTPRepositoryConfig extends RepositoryImplConfigBase {
+public class HTTPRepositoryConfig extends AbstractRepositoryImplConfig {
 
 	private String url;
 

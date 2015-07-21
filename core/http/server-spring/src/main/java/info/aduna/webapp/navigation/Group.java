@@ -27,7 +27,7 @@ import java.util.Map;
  * @author Herko ter Horst
  * 
  */
-public class Group extends NavigationNodeBase {
+public class Group extends AbstractNavigationNode {
 
 	protected Map<String, Group> groups;
 

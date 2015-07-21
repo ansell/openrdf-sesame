@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * An Iteration that contains exactly one element.
  */
-public class SingletonIteration<E, X extends Exception> extends CloseableIterationBase<E, X> {
+public class SingletonIteration<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
 	 * Variables *

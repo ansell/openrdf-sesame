@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * A tuple expression that contains exactly one solution with zero bindings.
  */
-public class SingletonSet extends QueryModelNodeBase implements TupleExpr {
+public class SingletonSet extends AbstractQueryModelNode implements TupleExpr {
 
 	public Set<String> getBindingNames() {
 		return getAssuredBindingNames();

@@ -42,7 +42,7 @@ import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverClient;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;

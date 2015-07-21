@@ -35,7 +35,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.IteratingTupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
@@ -121,7 +121,7 @@ public class RepositoryListController extends AbstractController {
 						queryResult.close();
 					}
 					model.put(QueryResultView.QUERY_RESULT_KEY,
-							new TupleQueryResultImpl(bindingNames, bindingSets));
+							new IteratingTupleQueryResult(bindingNames, bindingSets));
 
 				}
 				finally {

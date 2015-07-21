@@ -31,7 +31,7 @@ import org.openrdf.query.resultio.QueryResultParseException;
  * Results XML Format</a> for the definition of this format. The parser assumes
  * that the XML is wellformed.
  */
-public class SPARQLBooleanXMLParser extends SPARQLXMLParserBase implements BooleanQueryResultParser {
+public class SPARQLBooleanXMLParser extends AbstractSPARQLXMLParser implements BooleanQueryResultParser {
 
 	/*-------------*
 	 * Construtors *

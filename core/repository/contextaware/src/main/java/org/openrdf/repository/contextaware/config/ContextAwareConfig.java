@@ -37,14 +37,14 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.query.QueryLanguage;
-import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
+import org.openrdf.repository.config.AbstractDelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 
 /**
  * @author James Leigh
  */
-public class ContextAwareConfig extends DelegatingRepositoryImplConfigBase {
+public class ContextAwareConfig extends AbstractDelegatingRepositoryImplConfig {
 
 	private static final IRI[] ALL_CONTEXTS = new IRI[0];
 

@@ -16,12 +16,12 @@
  */
 package org.openrdf.repository.manager;
 
-import org.openrdf.repository.config.RepositoryImplConfigBase;
+import org.openrdf.repository.config.AbstractRepositoryImplConfig;
 
 /**
  * @author Arjohn Kampman
  */
-public class SystemRepositoryConfig extends RepositoryImplConfigBase {
+public class SystemRepositoryConfig extends AbstractRepositoryImplConfig {
 
 	public SystemRepositoryConfig() {
 		super(SystemRepository.REPOSITORY_TYPE);

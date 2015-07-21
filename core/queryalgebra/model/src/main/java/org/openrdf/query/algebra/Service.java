@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * The SERVICE keyword as defined in <a
@@ -217,7 +217,7 @@ public class Service extends UnaryTupleOperator {
 	 */
 	private Set<String> computeServiceVars(TupleExpr serviceExpression) {
 		final Set<String> res = new HashSet<String>();
-		serviceExpression.visit(new QueryModelVisitorBase<RuntimeException>() {
+		serviceExpression.visit(new AbstractQueryModelVisitor<RuntimeException>() {
 
 			@Override
 			public void meet(Var node)

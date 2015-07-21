@@ -16,7 +16,7 @@
  */
 package org.openrdf.query.algebra;
 
-public abstract class SubQueryValueOperator extends QueryModelNodeBase implements ValueExpr {
+public abstract class SubQueryValueOperator extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

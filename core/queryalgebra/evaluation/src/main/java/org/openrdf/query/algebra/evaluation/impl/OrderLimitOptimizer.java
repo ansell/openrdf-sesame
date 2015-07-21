@@ -28,7 +28,7 @@ import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * Moves the Order node above the Projection when variables are projected.
@@ -41,7 +41,7 @@ public class OrderLimitOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new OrderOptimizer());
 	}
 
-	protected static class OrderOptimizer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class OrderOptimizer extends AbstractQueryModelVisitor<RuntimeException> {
 
 		private boolean variablesProjected = true;
 

@@ -24,7 +24,7 @@ package info.aduna.iteration;
  * <tt>IterationWrapper</tt> should override some of these methods and may
  * also provide additional methods and fields.
  */
-public class IterationWrapper<E, X extends Exception> extends CloseableIterationBase<E, X> {
+public class IterationWrapper<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
 	 * Variables *

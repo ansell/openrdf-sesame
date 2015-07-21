@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 /**
  * @author jeen
  */
-public class Add extends QueryModelNodeBase implements UpdateExpr {
+public class Add extends AbstractQueryModelNode implements UpdateExpr {
 
 	private ValueConstant sourceGraph;
 

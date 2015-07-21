@@ -31,7 +31,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * A query optimizer that prunes query model trees by removing superfluous parts
@@ -56,7 +56,7 @@ public class QueryModelPruner implements QueryOptimizer {
 		tupleExpr.visit(new TreeSanitizer());
 	}
 
-	protected static class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class TreeSanitizer extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meet(Join join) {

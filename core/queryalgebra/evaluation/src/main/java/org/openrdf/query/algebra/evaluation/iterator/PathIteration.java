@@ -35,15 +35,15 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 public class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
 	/**
 	 * 
 	 */
-	private final EvaluationStrategyImpl evaluationStrategyImpl;
+	private final SimpleEvaluationStrategy evaluationStrategyImpl;
 
 	private long currentLength;
 
@@ -75,7 +75,7 @@ public class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluatio
 
 	private static final String JOINVAR_PREFIX = "intermediate-join-";
 
-	public PathIteration(EvaluationStrategyImpl evaluationStrategyImpl, Scope scope, Var startVar,
+	public PathIteration(SimpleEvaluationStrategy evaluationStrategyImpl, Scope scope, Var startVar,
 			TupleExpr pathExpression, Var endVar, Var contextVar, long minLength, BindingSet bindings)
 		throws QueryEvaluationException
 	{
@@ -412,7 +412,7 @@ public class PathIteration extends LookAheadIteration<BindingSet, QueryEvaluatio
 		}
 	}
 
-	class VarReplacer extends QueryModelVisitorBase<QueryEvaluationException> {
+	class VarReplacer extends AbstractQueryModelVisitor<QueryEvaluationException> {
 
 		private Var toBeReplaced;
 

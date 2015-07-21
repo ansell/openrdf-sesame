@@ -36,7 +36,7 @@ import org.openrdf.query.resultio.helpers.QueryResultCollector;
  *      Results JSON Format</a>
  * @author Peter Ansell
  */
-public class SPARQLResultsJSONParser extends SPARQLJSONParserBase implements TupleQueryResultParser {
+public class SPARQLResultsJSONParser extends AbstractSPARQLJSONParser implements TupleQueryResultParser {
 
 	/**
 	 * Default constructor.

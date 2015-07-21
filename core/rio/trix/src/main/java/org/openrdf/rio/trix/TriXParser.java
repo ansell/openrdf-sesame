@@ -48,7 +48,7 @@ import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 import org.openrdf.rio.helpers.TriXParserSettings;
 
 /**
@@ -57,7 +57,7 @@ import org.openrdf.rio.helpers.TriXParserSettings;
  * 
  * @author Arjohn Kampman
  */
-public class TriXParser extends RDFParserBase {
+public class TriXParser extends AbstractRDFParser {
 
 	/*--------------*
 	 * Constructors *

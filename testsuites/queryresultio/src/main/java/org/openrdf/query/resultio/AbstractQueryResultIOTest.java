@@ -44,7 +44,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.MapBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.IteratingTupleQueryResult;
 
 /**
  * @author Peter Ansell
@@ -123,7 +123,7 @@ public abstract class AbstractQueryResultIOTest {
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
 				solution5, solution6, solution7 , solution8, solution9);
 
-		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
+		IteratingTupleQueryResult result = new IteratingTupleQueryResult(bindingNames, bindingSetList);
 
 		return result;
 	}
@@ -158,7 +158,7 @@ public abstract class AbstractQueryResultIOTest {
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
 				solution5);
 
-		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
+		IteratingTupleQueryResult result = new IteratingTupleQueryResult(bindingNames, bindingSetList);
 
 		return result;
 	}
@@ -190,7 +190,7 @@ public abstract class AbstractQueryResultIOTest {
 
 		List<? extends BindingSet> bindingSetList = Collections.emptyList();
 
-		TupleQueryResultImpl result = new TupleQueryResultImpl(bindingNames, bindingSetList);
+		IteratingTupleQueryResult result = new IteratingTupleQueryResult(bindingNames, bindingSetList);
 
 		return result;
 	}

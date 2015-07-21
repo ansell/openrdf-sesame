@@ -33,7 +33,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.IteratingTupleQueryResult;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 
@@ -59,7 +59,7 @@ public class SPARQLTSVCustomTest {
 		throws Exception
 	{
 		List<String> bindingNames = Arrays.asList("test");
-		TupleQueryResult tqr = new TupleQueryResultImpl(bindingNames, Arrays.asList(new ListBindingSet(
+		TupleQueryResult tqr = new IteratingTupleQueryResult(bindingNames, Arrays.asList(new ListBindingSet(
 				bindingNames, SimpleValueFactory.getInstance().createLiteral("1", XMLSchema.STRING))));
 		String result = writeTupleResult(tqr);
 		assertEquals("?test\n\"1\"^^<http://www.w3.org/2001/XMLSchema#string>\n", result);
@@ -75,7 +75,7 @@ public class SPARQLTSVCustomTest {
 		throws Exception
 	{
 		List<String> bindingNames = Arrays.asList("test");
-		TupleQueryResult tqr = new TupleQueryResultImpl(bindingNames, Arrays.asList(new ListBindingSet(
+		TupleQueryResult tqr = new IteratingTupleQueryResult(bindingNames, Arrays.asList(new ListBindingSet(
 				bindingNames, SimpleValueFactory.getInstance().createLiteral("1"))));
 		String result = writeTupleResult(tqr);
 		assertEquals("?test\n\"1\"\n", result);

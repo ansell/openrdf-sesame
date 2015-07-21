@@ -21,7 +21,7 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class GroupConcat extends AggregateOperatorBase {
+public class GroupConcat extends AbstractAggregateOperator {
 
 	private ValueExpr separator;
 	

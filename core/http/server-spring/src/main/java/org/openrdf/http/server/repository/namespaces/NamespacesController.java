@@ -45,7 +45,7 @@ import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.SimpleLiteral;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.IteratingTupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.RepositoryConnection;
@@ -123,7 +123,7 @@ public class NamespacesController extends AbstractController {
 					throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 				}
 			}
-			model.put(QueryResultView.QUERY_RESULT_KEY, new TupleQueryResultImpl(columnNames, namespaces));
+			model.put(QueryResultView.QUERY_RESULT_KEY, new IteratingTupleQueryResult(columnNames, namespaces));
 		}
 
 		TupleQueryResultWriterFactory factory = ProtocolUtil.getAcceptableService(request, response,

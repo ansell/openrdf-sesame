@@ -43,7 +43,7 @@ import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.QueryResultWriter;
-import org.openrdf.query.resultio.QueryResultWriterBase;
+import org.openrdf.query.resultio.AbstractQueryResultWriter;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 
@@ -53,7 +53,7 @@ import org.openrdf.rio.helpers.BasicWriterSettings;
  * 
  * @author Peter Ansell
  */
-abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements QueryResultWriter {
+abstract class AbstractSPARQLJSONWriter extends AbstractQueryResultWriter implements QueryResultWriter {
 
 	private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
@@ -86,7 +86,7 @@ abstract class SPARQLJSONWriterBase extends QueryResultWriterBase implements Que
 
 	private final JsonGenerator jg;
 
-	public SPARQLJSONWriterBase(OutputStream out) {
+	public AbstractSPARQLJSONWriter(OutputStream out) {
 		try {
 			jg = JSON_FACTORY.createJsonGenerator(new OutputStreamWriter(out, Charset.forName("UTF-8")));
 		}

@@ -32,7 +32,7 @@ import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.base.RepositoryBase;
+import org.openrdf.repository.base.AbstractRepository;
 
 /**
  * A proxy class to access any SPARQL endpoint. The instance must be initialized
@@ -40,7 +40,7 @@ import org.openrdf.repository.base.RepositoryBase;
  * 
  * @author James Leigh
  */
-public class SPARQLRepository extends RepositoryBase implements HttpClientDependent, SesameClientDependent {
+public class SPARQLRepository extends AbstractRepository implements HttpClientDependent, SesameClientDependent {
 	
 	/**
 	 * Flag indicating if quad mode is enabled in newly created

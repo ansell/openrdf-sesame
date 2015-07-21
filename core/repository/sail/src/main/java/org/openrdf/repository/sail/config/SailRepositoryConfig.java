@@ -25,7 +25,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.config.RepositoryImplConfigBase;
+import org.openrdf.repository.config.AbstractRepositoryImplConfig;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
@@ -34,7 +34,7 @@ import org.openrdf.sail.config.SailRegistry;
 /**
  * @author Arjohn Kampman
  */
-public class SailRepositoryConfig extends RepositoryImplConfigBase {
+public class SailRepositoryConfig extends AbstractRepositoryImplConfig {
 
 	private SailImplConfig sailImplConfig;
 

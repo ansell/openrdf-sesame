@@ -40,7 +40,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.base.RepositoryBase;
+import org.openrdf.repository.base.AbstractRepository;
 import org.openrdf.rio.RDFFormat;
 
 /**
@@ -54,7 +54,7 @@ import org.openrdf.rio.RDFFormat;
  * @author Jeen Broekstra
  * @author Herko ter Horst
  */
-public class HTTPRepository extends RepositoryBase implements HttpClientDependent, SesameClientDependent {
+public class HTTPRepository extends AbstractRepository implements HttpClientDependent, SesameClientDependent {
 
 	/*-----------*
 	 * Variables *

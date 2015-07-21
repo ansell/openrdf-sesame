@@ -60,7 +60,7 @@ import org.openrdf.rio.RDFParseException;
  * @see #isDelegatingRemove()
  * @see #isDelegatingRead()
  */
-public class RepositoryConnectionWrapper extends RepositoryConnectionBase implements
+public class RepositoryConnectionWrapper extends AbstractRepositoryConnection implements
 		DelegatingRepositoryConnection
 {
 

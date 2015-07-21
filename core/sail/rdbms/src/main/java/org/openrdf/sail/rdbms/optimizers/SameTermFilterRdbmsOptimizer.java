@@ -32,7 +32,7 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * A query optimizer that embeds {@link Filter}s with {@link SameTerm} operators
@@ -54,7 +54,7 @@ public class SameTermFilterRdbmsOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new SameTermFilterVisitor());
 	}
 
-	protected static class SameTermFilterVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class SameTermFilterVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meet(Filter filter) {
@@ -143,7 +143,7 @@ public class SameTermFilterRdbmsOptimizer implements QueryOptimizer {
 		}
 	}
 
-	protected static class VarRenamer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarRenamer extends AbstractQueryModelVisitor<RuntimeException> {
 
 		private final String oldName;
 
@@ -171,7 +171,7 @@ public class SameTermFilterRdbmsOptimizer implements QueryOptimizer {
 		}
 	}
 
-	protected static class VarBinder extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarBinder extends AbstractQueryModelVisitor<RuntimeException> {
 
 		private final String varName;
 

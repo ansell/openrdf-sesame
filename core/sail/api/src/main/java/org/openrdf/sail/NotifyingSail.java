@@ -16,13 +16,9 @@
  */
 package org.openrdf.sail;
 
-
 /**
- * An interface for an RDF Storage And Inference Layer. RDF Sails can store RDF
- * statements and evaluate queries over them. Statements can be stored in named
- * contexts or in the null context. Contexts can be used to group sets of
- * statements that logically belong together, for example because they come from
- * the same source. Both URIs and bnodes can be used as context identifiers.
+ * An interface for {@link Sail}s that notify registered
+ * {@link SailChangedListener}s of changes in the data in the Sail.
  * 
  * @author James Leigh
  */

@@ -25,7 +25,7 @@ import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UpdateContext;
@@ -36,7 +36,7 @@ import org.openrdf.sail.UpdateContext;
  * 
  * @author jeen
  */
-class RDFSailRemover extends RDFHandlerBase {
+class RDFSailRemover extends AbstractRDFHandler {
 
 	/*-----------*
 	 * Variables *

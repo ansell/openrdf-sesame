@@ -22,7 +22,7 @@ package info.aduna.webapp.navigation;
  * 
  * @author Herko ter Horst
  */
-public class View extends NavigationNodeBase {
+public class View extends AbstractNavigationNode {
 
 	/**
 	 * Construct a new view with the specified ID.

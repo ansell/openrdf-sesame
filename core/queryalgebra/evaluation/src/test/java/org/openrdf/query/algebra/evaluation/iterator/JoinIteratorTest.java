@@ -34,7 +34,7 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
@@ -43,7 +43,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
  */
 public class JoinIteratorTest {
 	private final ValueFactory vf = ValueFactoryImpl.getInstance();
-	private final EvaluationStrategy evaluator = new EvaluationStrategyImpl(null, null);
+	private final EvaluationStrategy evaluator = new SimpleEvaluationStrategy(null, null);
 
 	/**
 	 * Tests joins between two different BindingSetAssignments with the same BindingSets but ordered differently.

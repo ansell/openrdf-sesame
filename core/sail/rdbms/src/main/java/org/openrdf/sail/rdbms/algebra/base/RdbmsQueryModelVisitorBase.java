@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.rdbms.algebra.base;
 
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.rdbms.algebra.BNodeColumn;
 import org.openrdf.sail.rdbms.algebra.DatatypeColumn;
 import org.openrdf.sail.rdbms.algebra.DateTimeColumn;
@@ -62,7 +62,7 @@ import org.openrdf.sail.rdbms.algebra.UnionItem;
  * @author James Leigh
  * 
  */
-public class RdbmsQueryModelVisitorBase<X extends Exception> extends QueryModelVisitorBase<X> {
+public class RdbmsQueryModelVisitorBase<X extends Exception> extends AbstractQueryModelVisitor<X> {
 
 	public void meet(BNodeColumn node)
 		throws X

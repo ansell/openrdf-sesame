@@ -32,7 +32,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.algebra.helpers.TupleExprs;
 
@@ -64,7 +64,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new JoinVisitor());
 	}
 
-	protected class JoinVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected class JoinVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		Set<String> boundVars = new HashSet<String>();
 

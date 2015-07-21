@@ -60,7 +60,7 @@ public class MapBindingSet implements BindingSet {
 	 *        The binding's value.
 	 */
 	public void addBinding(String name, Value value) {
-		addBinding(new BindingImpl(name, value));
+		addBinding(new SimpleBinding(name, value));
 	}
 
 	/**

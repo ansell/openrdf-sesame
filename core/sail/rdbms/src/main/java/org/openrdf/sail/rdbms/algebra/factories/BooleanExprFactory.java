@@ -59,7 +59,7 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.Compare.CompareOp;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.rdbms.algebra.FalseValue;
 import org.openrdf.sail.rdbms.algebra.RefIdColumn;
 import org.openrdf.sail.rdbms.algebra.SqlCase;
@@ -75,7 +75,7 @@ import org.openrdf.sail.rdbms.exceptions.UnsupportedRdbmsOperatorException;
  * @author James Leigh
  * 
  */
-public class BooleanExprFactory extends QueryModelVisitorBase<UnsupportedRdbmsOperatorException> {
+public class BooleanExprFactory extends AbstractQueryModelVisitor<UnsupportedRdbmsOperatorException> {
 
 	private static final double HR14 = 14 * 60 * 60 * 1000;
 

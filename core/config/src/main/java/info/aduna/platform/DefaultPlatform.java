@@ -19,7 +19,7 @@ package info.aduna.platform;
 
 import java.io.File;
 
-public class DefaultPlatform extends PlatformBase {
+public class DefaultPlatform extends AbstractPlatform {
 
 	public String getName() {
 		return "Default";

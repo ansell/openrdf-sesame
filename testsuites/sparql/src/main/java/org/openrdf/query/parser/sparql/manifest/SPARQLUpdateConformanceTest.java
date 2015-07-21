@@ -48,7 +48,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -110,7 +110,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		this.resultNamedGraphs = resultNamedGraphs;
 
 		if (this.inputNamedGraphs.size() > 0) {
-			DatasetImpl ds = new DatasetImpl();
+			SimpleDataset ds = new SimpleDataset();
 			ds.addDefaultGraph(null);
 			ds.addDefaultRemoveGraph(null);
 			ds.setDefaultInsertGraph(null);

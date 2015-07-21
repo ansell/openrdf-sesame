@@ -51,7 +51,7 @@ import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.queryrender.BaseTupleExprRenderer;
 import org.openrdf.queryrender.RenderUtils;
 
@@ -63,7 +63,7 @@ import org.openrdf.queryrender.RenderUtils;
  * @author Michael Grove
  * @since 2.7.0
  */
-final class SparqlValueExprRenderer extends QueryModelVisitorBase<Exception> {
+final class SparqlValueExprRenderer extends AbstractQueryModelVisitor<Exception> {
 
 	/**
 	 * The current rendered value

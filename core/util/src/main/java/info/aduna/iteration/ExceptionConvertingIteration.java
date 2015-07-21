@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * {@link #convert(Exception)} to do the conversion.
  */
 public abstract class ExceptionConvertingIteration<E, X extends Exception> extends
-		CloseableIterationBase<E, X>
+		AbstractCloseableIteration<E, X>
 {
 
 	/*-----------*

@@ -25,12 +25,12 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.SailConfigException;
-import org.openrdf.sail.config.SailImplConfigBase;
+import org.openrdf.sail.config.AbstractSailImplConfig;
 
 /**
  * @author Arjohn Kampman
  */
-public class MemoryStoreConfig extends SailImplConfigBase {
+public class MemoryStoreConfig extends AbstractSailImplConfig {
 
 	private boolean persist = false;
 

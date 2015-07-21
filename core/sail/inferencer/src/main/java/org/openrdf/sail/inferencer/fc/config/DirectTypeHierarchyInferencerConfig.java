@@ -16,13 +16,13 @@
  */
 package org.openrdf.sail.inferencer.fc.config;
 
-import org.openrdf.sail.config.DelegatingSailImplConfigBase;
+import org.openrdf.sail.config.AbstractDelegatingSailImplConfig;
 import org.openrdf.sail.config.SailImplConfig;
 
 /**
  * @author Arjohn Kampman
  */
-public class DirectTypeHierarchyInferencerConfig extends DelegatingSailImplConfigBase {
+public class DirectTypeHierarchyInferencerConfig extends AbstractDelegatingSailImplConfig {
 
 	public DirectTypeHierarchyInferencerConfig() {
 		super(DirectTypeHierarchyInferencerFactory.SAIL_TYPE);

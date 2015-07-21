@@ -137,7 +137,7 @@ import org.openrdf.query.parser.serql.ast.ASTWhere;
 import org.openrdf.query.parser.serql.ast.Node;
 import org.openrdf.query.parser.serql.ast.VisitorException;
 
-class QueryModelBuilder extends ASTVisitorBase {
+class QueryModelBuilder extends AbstractASTVisitor {
 
 	public static TupleExpr buildQueryModel(ASTQueryContainer node, ValueFactory valueFactory)
 		throws MalformedQueryException

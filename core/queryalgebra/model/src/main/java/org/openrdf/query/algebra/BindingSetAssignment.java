@@ -23,7 +23,7 @@ import org.openrdf.query.BindingSet;
 
 /**
  */
-public class BindingSetAssignment extends QueryModelNodeBase implements TupleExpr {
+public class BindingSetAssignment extends AbstractQueryModelNode implements TupleExpr {
 
 	private Iterable<BindingSet> bindingSets;
 	

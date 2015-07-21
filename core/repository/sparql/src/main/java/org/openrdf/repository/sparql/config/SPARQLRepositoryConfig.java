@@ -24,14 +24,14 @@ import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.config.RepositoryImplConfigBase;
+import org.openrdf.repository.config.AbstractRepositoryImplConfig;
 
 /**
  * Configuration for a SPARQL endpoint.
  * 
  * @author James Leigh
  */
-public class SPARQLRepositoryConfig extends RepositoryImplConfigBase {
+public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 
 	public static final IRI QUERY_ENDPOINT = new SimpleIRI(
 			"http://www.openrdf.org/config/repository/sparql#query-endpoint");

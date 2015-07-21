@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 /**
  * @author jeen
  */
-public class DeleteData extends QueryModelNodeBase implements UpdateExpr {
+public class DeleteData extends AbstractQueryModelNode implements UpdateExpr {
 
 	private final String dataBlock;
 

@@ -21,7 +21,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 
 /**
@@ -43,7 +43,7 @@ public class ValueIdLookupOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new VarVisitor());
 	}
 
-	protected class VarVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected class VarVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meet(Var var) {

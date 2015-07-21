@@ -29,7 +29,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.SailConfigException;
-import org.openrdf.sail.config.SailImplConfigBase;
+import org.openrdf.sail.config.AbstractSailImplConfig;
 
 /**
  * Holds the JDBC Driver, URL, user and password, as well as the database
@@ -37,7 +37,7 @@ import org.openrdf.sail.config.SailImplConfigBase;
  * 
  * @author James Leigh
  */
-public class RdbmsStoreConfig extends SailImplConfigBase {
+public class RdbmsStoreConfig extends AbstractSailImplConfig {
 
 	/*-----------*
 	 * Variables *

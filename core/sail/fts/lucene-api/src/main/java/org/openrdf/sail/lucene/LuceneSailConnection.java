@@ -47,7 +47,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.NotifyingSailConnection;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
@@ -401,7 +401,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 
 		// find existing bindings within the given (sub-)query
 		final List<BindingSetAssignment> assignments = new ArrayList<BindingSetAssignment>();
-		QueryModelVisitor<RuntimeException> assignmentVisitor = new QueryModelVisitorBase<RuntimeException>() {
+		QueryModelVisitor<RuntimeException> assignmentVisitor = new AbstractQueryModelVisitor<RuntimeException>() {
 
 			@Override
 			public void meet(BindingSetAssignment node)

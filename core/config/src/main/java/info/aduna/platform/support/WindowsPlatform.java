@@ -19,13 +19,13 @@ package info.aduna.platform.support;
 
 import java.io.File;
 
-import info.aduna.platform.PlatformBase;
+import info.aduna.platform.AbstractPlatform;
 import info.aduna.platform.ProcessLauncher;
 
 /**
  * Platform implementation for all Windows' platforms.
  */
-public class WindowsPlatform extends PlatformBase {
+public class WindowsPlatform extends AbstractPlatform {
 
 	/** name of the directory containing application data */
 	public static final String APPLICATION_DATA = "Application Data";

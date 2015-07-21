@@ -30,7 +30,7 @@ import org.openrdf.sail.SailConnectionListener;
  * @author Arjohn Kampman
  * @author jeen
  */
-public abstract class NotifyingSailConnectionBase extends SailConnectionBase implements
+public abstract class NotifyingSailConnectionBase extends AbstractSailConnection implements
 		NotifyingSailConnection
 {
 
@@ -44,7 +44,7 @@ public abstract class NotifyingSailConnectionBase extends SailConnectionBase imp
 	 * Constructors *
 	 *--------------*/
 
-	public NotifyingSailConnectionBase(SailBase sailBase) {
+	public NotifyingSailConnectionBase(AbstractSail sailBase) {
 		super(sailBase);
 		listeners = new ArrayList<SailConnectionListener>(0);
 	}

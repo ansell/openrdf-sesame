@@ -33,7 +33,7 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverC
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.helpers.SailBase;
+import org.openrdf.sail.helpers.AbstractSail;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 
 /**
@@ -47,7 +47,7 @@ import org.openrdf.sail.rdbms.exceptions.RdbmsException;
  *             different SAIL backend.
  */
 @Deprecated
-public class RdbmsStore extends SailBase implements FederatedServiceResolverClient {
+public class RdbmsStore extends AbstractSail implements FederatedServiceResolverClient {
 
 	private RdbmsConnectionFactory factory;
 

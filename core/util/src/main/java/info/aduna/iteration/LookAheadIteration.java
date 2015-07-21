@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * no easy way to tell if there are any more results, but still should implement
  * the <tt>java.util.Iteration</tt> interface.
  */
-public abstract class LookAheadIteration<E, X extends Exception> extends CloseableIterationBase<E, X> {
+public abstract class LookAheadIteration<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
 	 * Variables *

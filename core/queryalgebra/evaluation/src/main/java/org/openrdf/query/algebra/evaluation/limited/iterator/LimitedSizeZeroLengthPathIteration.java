@@ -23,7 +23,7 @@ import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.iterator.ZeroLengthPathIteration;
 
 /**
@@ -44,7 +44,7 @@ public class LimitedSizeZeroLengthPathIteration extends ZeroLengthPathIteration 
 	 * @param contextVar
 	 * @param bindings
 	 */
-	public LimitedSizeZeroLengthPathIteration(EvaluationStrategyImpl evaluationStrategyImpl, Var subjectVar,
+	public LimitedSizeZeroLengthPathIteration(SimpleEvaluationStrategy evaluationStrategyImpl, Var subjectVar,
 			Var objVar, Value subj, Value obj, Var contextVar, BindingSet bindings, AtomicLong used, long maxSize)
 	{
 		super(evaluationStrategyImpl, subjectVar, objVar, subj, obj, contextVar, bindings);

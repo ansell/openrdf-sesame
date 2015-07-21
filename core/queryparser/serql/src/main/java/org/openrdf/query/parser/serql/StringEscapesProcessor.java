@@ -52,7 +52,7 @@ class StringEscapesProcessor {
 		}
 	}
 
-	private static class StringProcessor extends ASTVisitorBase {
+	private static class StringProcessor extends AbstractASTVisitor {
 
 		public StringProcessor() {
 		}

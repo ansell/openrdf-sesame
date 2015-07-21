@@ -39,7 +39,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.helpers.DefaultSailChangedEvent;
-import org.openrdf.sail.helpers.SailConnectionBase;
+import org.openrdf.sail.helpers.AbstractSailConnection;
 import org.openrdf.sail.rdbms.evaluation.RdbmsEvaluationFactory;
 import org.openrdf.sail.rdbms.exceptions.RdbmsException;
 import org.openrdf.sail.rdbms.iteration.NamespaceIteration;
@@ -57,7 +57,7 @@ import org.openrdf.sail.rdbms.optimizers.RdbmsQueryOptimizer;
  * @author James Leigh
  * 
  */
-public class RdbmsConnection extends SailConnectionBase implements FederatedServiceResolverClient {
+public class RdbmsConnection extends AbstractSailConnection implements FederatedServiceResolverClient {
 
 	private RdbmsStore sail;
 

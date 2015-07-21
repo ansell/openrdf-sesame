@@ -29,7 +29,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 
 public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
@@ -53,9 +53,9 @@ public class ZeroLengthPathIteration extends LookAheadIteration<BindingSet, Quer
 
 	private Var contextVar;
 
-	private final EvaluationStrategyImpl evaluationStrategyImpl;
+	private final SimpleEvaluationStrategy evaluationStrategyImpl;
 
-	public ZeroLengthPathIteration(EvaluationStrategyImpl evaluationStrategyImpl, Var subjectVar, Var objVar,
+	public ZeroLengthPathIteration(SimpleEvaluationStrategy evaluationStrategyImpl, Var subjectVar, Var objVar,
 			Value subj, Value obj, Var contextVar, BindingSet bindings)
 	{
 		this.evaluationStrategyImpl = evaluationStrategyImpl;

@@ -29,7 +29,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
@@ -38,7 +38,7 @@ import org.openrdf.repository.RepositoryException;
  * 
  * @author James Leigh
  */
-public class EmptyPatternOptimizer extends QueryModelVisitorBase<RepositoryException> implements
+public class EmptyPatternOptimizer extends AbstractQueryModelVisitor<RepositoryException> implements
 		QueryOptimizer
 {
 

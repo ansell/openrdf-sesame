@@ -23,9 +23,9 @@ import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.repository.config.RepositoryConfigException;
-import org.openrdf.repository.config.RepositoryImplConfigBase;
+import org.openrdf.repository.config.AbstractRepositoryImplConfig;
 
-public class ProxyRepositoryConfig extends RepositoryImplConfigBase {
+public class ProxyRepositoryConfig extends AbstractRepositoryImplConfig {
 
 	private String proxiedID;
 

@@ -21,7 +21,7 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class Sum extends AggregateOperatorBase {
+public class Sum extends AbstractAggregateOperator {
 
 	public Sum(ValueExpr arg) {
 		super(arg);

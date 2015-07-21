@@ -28,7 +28,7 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.UpdateContext;
@@ -38,7 +38,7 @@ import org.openrdf.sail.UpdateContext;
  * 
  * @author jeen
  */
-public class RDFSailInserter extends RDFHandlerBase {
+public class RDFSailInserter extends AbstractRDFHandler {
 
 	/*-----------*
 	 * Variables *

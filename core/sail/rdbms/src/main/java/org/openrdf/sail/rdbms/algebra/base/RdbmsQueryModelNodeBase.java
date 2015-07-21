@@ -16,16 +16,16 @@
  */
 package org.openrdf.sail.rdbms.algebra.base;
 
-import org.openrdf.query.algebra.QueryModelNodeBase;
+import org.openrdf.query.algebra.AbstractQueryModelNode;
 import org.openrdf.query.algebra.QueryModelVisitor;
 
 /**
- * An extension to {@link QueryModelNodeBase} for SQL query algebra.
+ * An extension to {@link AbstractQueryModelNode} for SQL query algebra.
  * 
  * @author James Leigh
  * 
  */
-public abstract class RdbmsQueryModelNodeBase extends QueryModelNodeBase {
+public abstract class RdbmsQueryModelNodeBase extends AbstractQueryModelNode {
 
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X

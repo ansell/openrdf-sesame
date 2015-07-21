@@ -22,7 +22,7 @@ import java.util.Set;
  * An abstract superclass for unary tuple operators which, by definition, has
  * one argument.
  */
-public abstract class UnaryTupleOperator extends QueryModelNodeBase implements TupleExpr {
+public abstract class UnaryTupleOperator extends AbstractQueryModelNode implements TupleExpr {
 
 	/*-----------*
 	 * Variables *

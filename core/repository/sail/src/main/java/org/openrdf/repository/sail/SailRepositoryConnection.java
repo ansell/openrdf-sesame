@@ -46,7 +46,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.UnknownTransactionStateException;
-import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.repository.base.AbstractRepositoryConnection;
 import org.openrdf.repository.sail.config.RepositoryResolver;
 import org.openrdf.repository.sail.config.RepositoryResolverClient;
 import org.openrdf.rio.RDFHandler;
@@ -62,7 +62,7 @@ import org.openrdf.sail.SailReadOnlyException;
  * @author Jeen Broekstra
  * @author Arjohn Kampman
  */
-public class SailRepositoryConnection extends RepositoryConnectionBase implements
+public class SailRepositoryConnection extends AbstractRepositoryConnection implements
 		FederatedServiceResolverClient, RepositoryResolverClient, HttpClientDependent, SesameClientDependent
 {
 

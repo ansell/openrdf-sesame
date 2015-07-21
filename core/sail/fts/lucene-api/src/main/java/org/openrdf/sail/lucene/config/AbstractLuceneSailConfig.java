@@ -24,11 +24,11 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
-import org.openrdf.sail.config.DelegatingSailImplConfigBase;
+import org.openrdf.sail.config.AbstractDelegatingSailImplConfig;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfig;
 
-public abstract class AbstractLuceneSailConfig extends DelegatingSailImplConfigBase {
+public abstract class AbstractLuceneSailConfig extends AbstractDelegatingSailImplConfig {
 	/*-----------*
 	 * Variables *
 	 *-----------*/

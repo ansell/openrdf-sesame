@@ -109,7 +109,7 @@ public class BaseDeclProcessor {
 		}
 	}
 
-	private static class RelativeIRIResolver extends ASTVisitorBase {
+	private static class RelativeIRIResolver extends AbstractASTVisitor {
 
 		private ParsedURI parsedBaseURI;
 

@@ -43,7 +43,7 @@ import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
 import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.IterativeEvaluationOptimizer;
 import org.openrdf.query.algebra.evaluation.impl.OrderLimitOptimizer;
@@ -56,7 +56,7 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.UnknownSailTransactionStateException;
 import org.openrdf.sail.UpdateContext;
 import org.openrdf.sail.helpers.NotifyingSailConnectionBase;
-import org.openrdf.sail.helpers.SailBase;
+import org.openrdf.sail.helpers.AbstractSail;
 import org.openrdf.sail.inferencer.InferencerConnection;
 
 /**
@@ -148,7 +148,7 @@ public abstract class SailSourceConnection extends NotifyingSailConnectionBase i
 	 * @param store
 	 * @param resolver
 	 */
-	protected SailSourceConnection(SailBase sail, SailStore store, FederatedServiceResolver resolver) {
+	protected SailSourceConnection(AbstractSail sail, SailStore store, FederatedServiceResolver resolver) {
 		super(sail);
 		this.vf = sail.getValueFactory();
 		this.store = store;
@@ -169,7 +169,7 @@ public abstract class SailSourceConnection extends NotifyingSailConnectionBase i
 	}
 
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
-		return new EvaluationStrategyImpl(tripleSource, dataset, getFederatedServiceResolver());
+		return new SimpleEvaluationStrategy(tripleSource, dataset, getFederatedServiceResolver());
 	}
 
 	@Override

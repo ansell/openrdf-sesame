@@ -20,7 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import info.aduna.iteration.CloseableIterationBase;
+import info.aduna.iteration.AbstractCloseableIteration;
 
 /**
  * Base class for Iteration of a {@link ResultSet}.
@@ -28,7 +28,7 @@ import info.aduna.iteration.CloseableIterationBase;
  * @author James Leigh
  * 
  */
-public abstract class RdbmIterationBase<T, X extends Exception> extends CloseableIterationBase<T, X> {
+public abstract class RdbmIterationBase<T, X extends Exception> extends AbstractCloseableIteration<T, X> {
 
 	private PreparedStatement stmt;
 

@@ -43,7 +43,7 @@ import org.openrdf.model.util.Literals;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.AbstractRDFWriter;
 import org.openrdf.rio.helpers.XMLWriterSettings;
 
 /**
@@ -52,7 +52,7 @@ import org.openrdf.rio.helpers.XMLWriterSettings;
  * 
  * @author Arjohn Kampman
  */
-public class TriXWriter extends RDFWriterBase implements RDFWriter {
+public class TriXWriter extends AbstractRDFWriter implements RDFWriter {
 
 	/*-----------*
 	 * Variables *

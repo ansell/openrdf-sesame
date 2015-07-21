@@ -1,136 +1,34 @@
 /* 
- * Licensed to Aduna under one or more contributor license agreements.  
- * See the NOTICE.txt file distributed with this work for additional 
- * information regarding copyright ownership. 
+ * Licensed to Aduna under one or more contributor license agreements. 
+ * See the NOTICE.txt file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * Aduna licenses this file to you under the terms of the Aduna BSD
  * License (the "License"); you may not use this file except in compliance 
- * with the License. See the LICENSE.txt file distributed with this work 
+ * with the License. See the LICENSE.txt file distributed with this work
  * for the full License.
  *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
 package info.aduna.app.logging.base;
 
-import info.aduna.app.AppConfiguration;
-import info.aduna.app.logging.LogConfiguration;
-import info.aduna.app.util.ConfigurationUtil;
-
-import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * Base implementation of LogConfiguration.
- * 
- * @author Herko ter Horst
+ * @deprecated since 4.0. Use {@link AbstractLogConfiguration} instead.
+ * @author Jeen Broekstra
  */
-public abstract class LogConfigurationBase implements LogConfiguration {
-
-	private static final String LOGGING_CONFIG_FILE = "logging.properties";
-
-	private static final String PACKAGES_SLF4J_KEY = "packages.slf4j";
-
-	private static final String PACKAGES_JUL_KEY = "packages.jul";
-
-	private File baseDir;
-	
-	private File confDir;
-
-	private File loggingDir;
-
-	private boolean debugLoggingEnabled;
-
-	private Set<String> packages;
-	
-	private AppConfiguration config;
+@Deprecated
+public abstract class LogConfigurationBase extends AbstractLogConfiguration {
 
 	protected LogConfigurationBase()
 		throws IOException
-	{		
-		debugLoggingEnabled = false;
-		packages = new LinkedHashSet<String>();
-		initBase();
-	}
-	
-	public void setBaseDir(File baseDir) throws IOException {
-		this.baseDir = baseDir;
-		confDir = new File(baseDir, DIR);
-		loggingDir = new File(baseDir, LOGGING_DIR);
-		if (!loggingDir.mkdirs() && !loggingDir.canWrite()) {
-			throw new IOException("Unable to create logging directory " + loggingDir.getAbsolutePath());
-		}
-	}
-	
-	public File getBaseDir() {
-		return this.baseDir;
-	}
-
-	public File getConfDir() {
-		return confDir;
-	}
-
-	public File getLoggingDir() {
-		return loggingDir;
-	}
-
-	private void initBase()
-		throws IOException
 	{
-		Properties loggingConfig = ConfigurationUtil.loadConfigurationProperties(LOGGING_CONFIG_FILE, null);
-
-		String slf4jPackages = loggingConfig.getProperty(PACKAGES_SLF4J_KEY);
-
-		if (slf4jPackages != null) {
-			String[] slf4jPackageNames = slf4jPackages.split(",");
-
-			for (String packageName : slf4jPackageNames) {
-				packages.add(packageName);
-			}
-		}
-
-		String julPackages = loggingConfig.getProperty(PACKAGES_JUL_KEY);
-
-		if (julPackages != null) {
-			String[] julPackageNames = julPackages.split(",");
-
-			for (String packageName : julPackageNames) {
-				packages.add(packageName);
-
-				Logger logger = Logger.getLogger(packageName.trim());
-				logger.setUseParentHandlers(false);
-				logger.setLevel(Level.ALL);
-				logger.addHandler(new LogConverterHandler());
-			}
-		}
+		super();
 	}
 
-	public boolean isDebugLoggingEnabled() {
-		return debugLoggingEnabled;
-	}
-
-	public void setDebugLoggingEnabled(boolean debugLoggingEnabled) {
-		this.debugLoggingEnabled = debugLoggingEnabled;
-	}
-
-	protected Set<String> getPackages() {
-		return Collections.unmodifiableSet(packages);
-	}
-	
-	public AppConfiguration getAppConfiguration() {
-		return this.config;
-	}
-
-	public void setAppConfiguration(AppConfiguration config) {
-		this.config = config;
-	}
 }

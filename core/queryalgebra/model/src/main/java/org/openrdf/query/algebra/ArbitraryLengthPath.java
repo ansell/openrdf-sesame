@@ -29,7 +29,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
  * They can can be targeted at one of three context scopes: all
  * contexts, null context only, or named contexts only.
  */
-public class ArbitraryLengthPath extends QueryModelNodeBase implements TupleExpr {
+public class ArbitraryLengthPath extends AbstractQueryModelNode implements TupleExpr {
 
 	/*-----------*
 	 * Variables *

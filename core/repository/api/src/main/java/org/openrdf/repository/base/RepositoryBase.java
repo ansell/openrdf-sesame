@@ -16,49 +16,11 @@
  */
 package org.openrdf.repository.base;
 
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
-
 /**
- * @author jeen
+ * @deprecated since 4.0. Use {@link AbstractRepository} instead.
+ * @author Jeen Broekstra
  */
-public abstract class RepositoryBase implements Repository {
-
-	// "volatile" guarantees access ordering in JDK5+
-	private volatile boolean initialized = false;
-
-	private final Object initLock = new Object();
-
-	public final void initialize()
-		throws RepositoryException
-	{
-		if (!initialized) {
-			synchronized (initLock) {
-				if (!initialized) {
-					initializeInternal();
-					initialized = true;
-				}
-			}
-		}
-	}
-
-	protected abstract void initializeInternal()
-		throws RepositoryException;
-
-	public final void shutDown()
-		throws RepositoryException
-	{
-		synchronized (initLock) {
-			shutDownInternal();
-			initialized = false;
-		}
-	}
-
-	public final boolean isInitialized() {
-		return initialized;
-	}
-
-	protected abstract void shutDownInternal()
-		throws RepositoryException;
+@Deprecated
+public abstract class RepositoryBase extends AbstractRepository {
 
 }

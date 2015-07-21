@@ -30,12 +30,12 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 
 /**
  * An RDFHandler that adds RDF data to some RDF sink.
  */
-public abstract class AbstractRDFInserter extends RDFHandlerBase {
+public abstract class AbstractRDFInserter extends AbstractRDFHandler {
 
 	/*-----------*
 	 * Variables *

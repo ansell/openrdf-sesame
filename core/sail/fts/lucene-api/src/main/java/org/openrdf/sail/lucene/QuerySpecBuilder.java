@@ -39,7 +39,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.SailException;
 
 /**
@@ -234,7 +234,7 @@ public class QuerySpecBuilder {
 		return result;
 	}
 
-	private static class PatternFilter extends QueryModelVisitorBase<RuntimeException> {
+	private static class PatternFilter extends AbstractQueryModelVisitor<RuntimeException> {
 
 		public ArrayList<StatementPattern> typePatterns = new ArrayList<StatementPattern>();
 

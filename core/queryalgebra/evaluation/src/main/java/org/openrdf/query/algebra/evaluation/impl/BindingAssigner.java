@@ -22,7 +22,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * Assigns values to variables based on a supplied set of bindings.
@@ -37,7 +37,7 @@ public class BindingAssigner implements QueryOptimizer {
 		}
 	}
 
-	protected static class VarVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class VarVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		protected BindingSet bindings;
 

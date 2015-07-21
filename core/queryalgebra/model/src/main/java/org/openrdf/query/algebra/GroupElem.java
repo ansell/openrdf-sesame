@@ -24,7 +24,7 @@ package org.openrdf.query.algebra;
  * @author David Huynh
  * @author Arjohn Kampman
  */
-public class GroupElem extends QueryModelNodeBase {
+public class GroupElem extends AbstractQueryModelNode {
 
 	/*-----------*
 	 * Variables *

@@ -20,14 +20,14 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.IterationWrapper;
 
 /**
- * An iteration extension that keeps a reference to the SailConnectionBase from
+ * An iteration extension that keeps a reference to the AbstractSailConnection from
  * which it originates and signals when it is closed.
  * 
- * @author jeen
+ * @author Jeen Broekstra
  */
 class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 
-	private final SailConnectionBase connection;
+	private final AbstractSailConnection connection;
 
 	/**
 	 * Creates a new memory-store specific iteration object.
@@ -39,7 +39,7 @@ class SailBaseIteration<T, E extends Exception> extends IterationWrapper<T, E> {
 	 * @param connection
 	 *        the connection from which this iteration originates.
 	 */
-	public SailBaseIteration(CloseableIteration<? extends T, ? extends E> iter, SailConnectionBase connection)
+	public SailBaseIteration(CloseableIteration<? extends T, ? extends E> iter, AbstractSailConnection connection)
 	{
 		super(iter);
 		this.connection = connection;

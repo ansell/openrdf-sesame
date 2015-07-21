@@ -27,13 +27,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.workbench.RepositoryServlet;
-import org.openrdf.workbench.base.BaseRepositoryServlet;
+import org.openrdf.workbench.base.AbstractRepositoryServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.BasicServletConfig;
 import org.openrdf.workbench.util.DynamicHttpRequest;
 
-public class ProxyRepositoryServlet extends BaseRepositoryServlet {
+public class ProxyRepositoryServlet extends AbstractRepositoryServlet {
 	private static final String HEADER_IFMODSINCE = "If-Modified-Since";
 	private static final String HEADER_LASTMOD = "Last-Modified";
 	private static final String DEFAULT_PATH_PARAM = "default-command";

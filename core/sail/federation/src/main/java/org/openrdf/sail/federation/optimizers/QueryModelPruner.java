@@ -32,7 +32,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.federation.algebra.NaryJoin;
 
 /**
@@ -51,7 +51,7 @@ public class QueryModelPruner implements QueryOptimizer {
 		tupleExpr.visit(new TreeSanitizer());
 	}
 
-	protected class TreeSanitizer extends QueryModelVisitorBase<RuntimeException> {
+	protected class TreeSanitizer extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meetOther(QueryModelNode node)

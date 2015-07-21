@@ -27,7 +27,7 @@ import org.openrdf.model.impl.SimpleNamespace;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailReadOnlyException;
 import org.openrdf.sail.base.SailSourceConnection;
@@ -161,7 +161,7 @@ public class NativeStoreConnection extends SailSourceConnection {
 
 	@Override
 	protected EvaluationStrategy getEvaluationStrategy(Dataset dataset, TripleSource tripleSource) {
-		return new EvaluationStrategyImpl(tripleSource, dataset, getFederatedServiceResolver(),
+		return new SimpleEvaluationStrategy(tripleSource, dataset, getFederatedServiceResolver(),
 				nativeStore.getIterationCacheSyncThreshold());
 	}
 

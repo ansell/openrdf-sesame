@@ -16,12 +16,12 @@
  */
 package org.openrdf.repository.dataset.config;
 
-import org.openrdf.repository.config.DelegatingRepositoryImplConfigBase;
+import org.openrdf.repository.config.AbstractDelegatingRepositoryImplConfig;
 
 /**
  * @author Arjohn Kampman
  */
-public class DatasetRepositoryConfig extends DelegatingRepositoryImplConfigBase {
+public class DatasetRepositoryConfig extends AbstractDelegatingRepositoryImplConfig {
 
 	public DatasetRepositoryConfig() {
 		super(DatasetRepositoryFactory.REPOSITORY_TYPE);

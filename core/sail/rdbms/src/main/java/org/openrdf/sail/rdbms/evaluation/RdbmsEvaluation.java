@@ -34,7 +34,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.sail.rdbms.RdbmsTripleRepository;
 import org.openrdf.sail.rdbms.RdbmsValueFactory;
 import org.openrdf.sail.rdbms.algebra.ColumnVar;
@@ -54,7 +54,7 @@ import org.openrdf.sail.rdbms.schema.IdSequence;
  * @author James Leigh
  * 
  */
-public class RdbmsEvaluation extends EvaluationStrategyImpl {
+public class RdbmsEvaluation extends SimpleEvaluationStrategy {
 
 	private Logger logger = LoggerFactory.getLogger(RdbmsEvaluation.class);
 

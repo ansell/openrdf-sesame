@@ -21,7 +21,7 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
 
 /**
@@ -29,7 +29,7 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
  * 
  * @author James Leigh
  */
-public class OwnedTupleExprPruner extends QueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
+public class OwnedTupleExprPruner extends AbstractQueryModelVisitor<RuntimeException> implements QueryOptimizer {
 
 	private OwnedTupleExpr owned;
 

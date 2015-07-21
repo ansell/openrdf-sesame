@@ -39,7 +39,7 @@ import org.openrdf.query.parser.serql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class NamespaceDeclProcessor extends ASTVisitorBase {
+class NamespaceDeclProcessor extends AbstractASTVisitor {
 
 	/**
 	 * Processes prefix declarations in queries. This method collects all
@@ -116,7 +116,7 @@ class NamespaceDeclProcessor extends ASTVisitorBase {
 		return nsMap;
 	}
 
-	private static class QNameProcessor extends ASTVisitorBase {
+	private static class QNameProcessor extends AbstractASTVisitor {
 
 		private Map<String, String> prefixMap;
 

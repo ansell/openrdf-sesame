@@ -49,12 +49,12 @@ import org.openrdf.model.Value;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 
 /**
  * @author Arjohn Kampman
  */
-public class BinaryRDFParser extends RDFParserBase {
+public class BinaryRDFParser extends AbstractRDFParser {
 
 	private Value[] declaredValues = new Value[16];
 

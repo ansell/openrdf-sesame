@@ -16,62 +16,14 @@
  */
 package org.openrdf.rio.helpers;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.WriterConfig;
-
 /**
- * Base class for {@link RDFWriter}s offering common functionality for RDF
- * writers.
- * 
- * @author Peter Ansell
+ * @deprecated since 4.0. Use {@link AbstractRDFWriter} instead.
+ * @author Jeen Broekstra
  */
-public abstract class RDFWriterBase implements RDFWriter {
+@Deprecated
+public abstract class RDFWriterBase extends AbstractRDFWriter {
 
-	/**
-	 * Mapping from namespace prefixes to namespace names.
-	 */
-	protected Map<String, String> namespaceTable;
-
-	/**
-	 * A collection of configuration options for this writer.
-	 */
-	private WriterConfig writerConfig = new WriterConfig();
-
-	/**
-	 * Default constructor.
-	 */
 	public RDFWriterBase() {
+		super();
 	}
-
-	@Override
-	public void handleNamespace(String prefix, String uri)
-		throws RDFHandlerException
-	{
-		namespaceTable.put(prefix, uri);
-	}
-
-	@Override
-	public void setWriterConfig(WriterConfig config) {
-		this.writerConfig = config;
-	}
-
-	@Override
-	public WriterConfig getWriterConfig() {
-		return this.writerConfig;
-	}
-
-	/*
-	 * Default implementation. Implementing classes must override this to specify that they support given settings.
-	 */
-	@Override
-	public Collection<RioSetting<?>> getSupportedSettings() {
-		return Collections.emptyList();
-	}
-
 }

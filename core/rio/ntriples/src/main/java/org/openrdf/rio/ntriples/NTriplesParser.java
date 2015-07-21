@@ -39,7 +39,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 
 /**
  * RDF parser for N-Triples files. A specification of NTriples can be found in
@@ -49,7 +49,7 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * 
  * @author Arjohn Kampman
  */
-public class NTriplesParser extends RDFParserBase {
+public class NTriplesParser extends AbstractRDFParser {
 
 	/*-----------*
 	 * Variables *
@@ -638,7 +638,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportWarning(String)}, adding line number
+	 * Overrides {@link AbstractRDFParser#reportWarning(String)}, adding line number
 	 * information to the error.
 	 */
 	@Override
@@ -647,7 +647,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding
+	 * Overrides {@link AbstractRDFParser#reportError(String, RioSetting)}, adding
 	 * line number information to the error.
 	 */
 	@Override
@@ -664,7 +664,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportFatalError(String)}, adding line
+	 * Overrides {@link AbstractRDFParser#reportFatalError(String)}, adding line
 	 * number information to the error.
 	 */
 	@Override
@@ -675,7 +675,7 @@ public class NTriplesParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportFatalError(Exception)}, adding line
+	 * Overrides {@link AbstractRDFParser#reportFatalError(Exception)}, adding line
 	 * number information to the error.
 	 */
 	@Override

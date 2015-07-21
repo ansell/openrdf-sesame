@@ -158,7 +158,7 @@ public class RepositoryConfig {
 
 			Resource implNode = GraphUtil.getOptionalObjectResource(graph, repositoryNode, REPOSITORYIMPL);
 			if (implNode != null) {
-				setRepositoryImplConfig(RepositoryImplConfigBase.create(graph, implNode));
+				setRepositoryImplConfig(AbstractRepositoryImplConfig.create(graph, implNode));
 			}
 		}
 		catch (GraphUtilException e) {

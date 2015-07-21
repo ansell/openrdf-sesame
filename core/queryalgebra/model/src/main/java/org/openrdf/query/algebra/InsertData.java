@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 /**
  * @author jeen
  */
-public class InsertData extends QueryModelNodeBase implements UpdateExpr {
+public class InsertData extends AbstractQueryModelNode implements UpdateExpr {
 
 	private final String dataBlock;
 	

@@ -32,10 +32,10 @@ import ch.qos.logback.core.FileAppender;
 
 import info.aduna.logging.LogLevel;
 import info.aduna.logging.LogRecord;
-import info.aduna.logging.base.LogReaderBase;
-import info.aduna.logging.base.LogRecordBase;
+import info.aduna.logging.base.AbstractLogReader;
+import info.aduna.logging.base.SimpleLogRecord;
 
-public class FileLogReader extends LogReaderBase {
+public class FileLogReader extends AbstractLogReader {
 
 	private File logFile = null;
 
@@ -126,7 +126,7 @@ public class FileLogReader extends LogReaderBase {
 	private LogRecord getNext()
 		throws IOException
 	{
-		LogRecordBase result = null;
+		SimpleLogRecord result = null;
 
 		StringBuilder message = new StringBuilder();
 
@@ -176,7 +176,7 @@ public class FileLogReader extends LogReaderBase {
 						String threadName = matcher.group(3);
 						message.insert(0, matcher.group(4));
 
-						result = new LogRecordBase();
+						result = new SimpleLogRecord();
 						result.setLevel(level);
 						result.setTime(timestamp);
 						result.setThreadName(threadName);

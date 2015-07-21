@@ -34,7 +34,7 @@ import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.Operation;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.impl.MapBindingSet;
 
 /**
@@ -46,7 +46,7 @@ public abstract class SPARQLOperation implements Operation {
 	private static Executor executor = Executors.newCachedThreadPool();
 	protected HttpClient client;
 	private String url;
-	protected Dataset dataset = new DatasetImpl();
+	protected Dataset dataset = new SimpleDataset();
 
 	private String operation;
 	

@@ -21,7 +21,7 @@ import org.openrdf.model.Value;
 /**
  * A variable that can contain a Value.
  */
-public class Var extends QueryModelNodeBase implements ValueExpr {
+public class Var extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

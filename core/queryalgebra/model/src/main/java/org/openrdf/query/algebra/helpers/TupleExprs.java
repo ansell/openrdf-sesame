@@ -46,7 +46,7 @@ public class TupleExprs {
 		}
 		final boolean[] result = new boolean[1];
 		try {
-			t.visit(new QueryModelVisitorBase<VisitException>() {
+			t.visit(new AbstractQueryModelVisitor<VisitException>() {
 
 				@Override
 				public void meet(Projection node)

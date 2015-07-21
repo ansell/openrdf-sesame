@@ -86,7 +86,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
@@ -98,7 +98,7 @@ import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicParserSettings;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 
 /**
  * Handles requests for transaction creation on a repository.
@@ -441,9 +441,9 @@ public class TransactionController extends AbstractController {
 		String[] defaultGraphURIs = request.getParameterValues(DEFAULT_GRAPH_PARAM_NAME);
 		String[] namedGraphURIs = request.getParameterValues(NAMED_GRAPH_PARAM_NAME);
 
-		DatasetImpl dataset = null;
+		SimpleDataset dataset = null;
 		if (defaultGraphURIs != null || namedGraphURIs != null) {
-			dataset = new DatasetImpl();
+			dataset = new SimpleDataset();
 
 			if (defaultGraphURIs != null) {
 				for (String defaultGraphURI : defaultGraphURIs) {
@@ -556,7 +556,7 @@ public class TransactionController extends AbstractController {
 		String[] defaultGraphURIs = request.getParameterValues(USING_GRAPH_PARAM_NAME);
 		String[] namedGraphURIs = request.getParameterValues(USING_NAMED_GRAPH_PARAM_NAME);
 
-		DatasetImpl dataset = new DatasetImpl();
+		SimpleDataset dataset = new SimpleDataset();
 
 		if (defaultRemoveGraphURIs != null) {
 			for (String graphURI : defaultRemoveGraphURIs) {
@@ -674,7 +674,7 @@ public class TransactionController extends AbstractController {
 		}
 	}
 
-	private static class WildcardRDFRemover extends RDFHandlerBase {
+	private static class WildcardRDFRemover extends AbstractRDFHandler {
 
 		private final RepositoryConnection conn;
 

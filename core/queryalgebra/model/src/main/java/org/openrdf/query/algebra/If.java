@@ -21,7 +21,7 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class If extends QueryModelNodeBase implements ValueExpr {
+public class If extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

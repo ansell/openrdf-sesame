@@ -43,7 +43,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.AggregateOperator;
-import org.openrdf.query.algebra.AggregateOperatorBase;
+import org.openrdf.query.algebra.AbstractAggregateOperator;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.Group;
@@ -400,7 +400,7 @@ public class GroupIterator extends CloseableIteratorIteration<BindingSet, QueryE
 
 		private final ValueExpr arg;
 
-		public Aggregate(AggregateOperatorBase operator) {
+		public Aggregate(AbstractAggregateOperator operator) {
 			this.arg = operator.getArg();
 
 			if (operator.isDistinct()) {

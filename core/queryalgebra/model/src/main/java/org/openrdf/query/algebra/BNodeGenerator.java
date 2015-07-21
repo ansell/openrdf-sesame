@@ -20,7 +20,7 @@ package org.openrdf.query.algebra;
  * A BNode generator, which generates a new BNode each time it needs to supply a
  * value.
  */
-public class BNodeGenerator extends QueryModelNodeBase implements ValueExpr {
+public class BNodeGenerator extends AbstractQueryModelNode implements ValueExpr {
 
 	private ValueExpr nodeIdExpr = null;
 	

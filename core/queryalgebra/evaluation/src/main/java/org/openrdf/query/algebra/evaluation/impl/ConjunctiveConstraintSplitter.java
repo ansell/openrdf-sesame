@@ -27,7 +27,7 @@ import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
@@ -41,7 +41,7 @@ public class ConjunctiveConstraintSplitter implements QueryOptimizer {
 		tupleExpr.visit(new ConstraintVisitor(tupleExpr));
 	}
 
-	protected static class ConstraintVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class ConstraintVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		protected final TupleExpr tupleExpr;
 

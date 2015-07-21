@@ -76,7 +76,7 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.UnknownTransactionStateException;
-import org.openrdf.repository.base.RepositoryConnectionBase;
+import org.openrdf.repository.base.AbstractRepositoryConnection;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
@@ -98,7 +98,7 @@ import org.openrdf.rio.helpers.StatementCollector;
  * @author Arjohn Kampman
  * @author Herko ter Horst
  */
-class HTTPRepositoryConnection extends RepositoryConnectionBase implements HttpClientDependent {
+class HTTPRepositoryConnection extends AbstractRepositoryConnection implements HttpClientDependent {
 
 	/*-----------*
 	 * Variables *

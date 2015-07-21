@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  * An Iteration that can convert an {@link Iterator} to a
  * {@link CloseableIteration}.
  */
-public class CloseableIteratorIteration<E, X extends Exception> extends CloseableIterationBase<E, X> {
+public class CloseableIteratorIteration<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
 	 * Variables *

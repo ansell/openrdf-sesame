@@ -24,7 +24,7 @@ import java.util.Set;
 
 /**
  */
-public class ProjectionElemList extends QueryModelNodeBase {
+public class ProjectionElemList extends AbstractQueryModelNode {
 
 	/*-----------*
 	 * Variables *

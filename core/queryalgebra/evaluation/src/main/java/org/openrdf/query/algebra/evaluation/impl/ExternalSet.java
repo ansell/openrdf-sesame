@@ -23,14 +23,14 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.QueryModelNodeBase;
+import org.openrdf.query.algebra.AbstractQueryModelNode;
 import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.TupleExpr;
 
 /**
  * @author James Leigh
  */
-public abstract class ExternalSet extends QueryModelNodeBase implements TupleExpr {
+public abstract class ExternalSet extends AbstractQueryModelNode implements TupleExpr {
 
 	private static final long serialVersionUID = 3903453394409442226L;
 

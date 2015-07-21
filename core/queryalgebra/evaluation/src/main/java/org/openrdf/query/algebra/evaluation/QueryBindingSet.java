@@ -25,7 +25,7 @@ import java.util.Set;
 import org.openrdf.model.Value;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.impl.BindingImpl;
+import org.openrdf.query.impl.SimpleBinding;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.util.iterators.ConvertingIterator;
 
@@ -125,7 +125,7 @@ public class QueryBindingSet implements BindingSet {
 		Value value = getValue(bindingName);
 
 		if (value != null) {
-			return new BindingImpl(bindingName, value);
+			return new SimpleBinding(bindingName, value);
 		}
 
 		return null;
@@ -142,7 +142,7 @@ public class QueryBindingSet implements BindingSet {
 
 			@Override
 			protected Binding convert(Map.Entry<String, Value> entry) {
-				return new BindingImpl(entry.getKey(), entry.getValue());
+				return new SimpleBinding(entry.getKey(), entry.getValue());
 			}
 		};
 	}

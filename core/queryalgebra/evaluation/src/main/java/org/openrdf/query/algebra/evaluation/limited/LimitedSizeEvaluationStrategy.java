@@ -39,7 +39,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.ServiceJoinIterator;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.iterator.JoinIterator;
 import org.openrdf.query.algebra.evaluation.iterator.ZeroLengthPathIteration;
 import org.openrdf.query.algebra.evaluation.limited.iterator.LimitedSizeDistinctIteration;
@@ -56,7 +56,7 @@ import org.openrdf.query.algebra.helpers.TupleExprs;
 /**
  * @author Jerven Bolleman, SIB Swiss Institute of Bioinformatics
  */
-public class LimitedSizeEvaluationStrategy extends EvaluationStrategyImpl {
+public class LimitedSizeEvaluationStrategy extends SimpleEvaluationStrategy {
 
 	private final AtomicLong used = new AtomicLong();
 

@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 /**
  * @author David Huynh
  */
-public class Max extends AggregateOperatorBase {
+public class Max extends AbstractAggregateOperator {
 
 	public Max(ValueExpr arg) {
 		super(arg);
