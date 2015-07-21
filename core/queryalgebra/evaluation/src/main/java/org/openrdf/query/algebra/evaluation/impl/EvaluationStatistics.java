@@ -97,13 +97,18 @@ public class EvaluationStatistics {
 
 		@Override
 		public void meet(ZeroLengthPath node) {
-			// cardinality is the same as that of a statement pattern with three
-			// unbound vars.
-			// WHY unbound vars??? surely just three vars. If some are bound surely
-			// it will be cheaper???
-			cardinality = VAR_CARDINALITY * VAR_CARDINALITY * VAR_CARDINALITY;
-			// cardinality =
-			// getSubjectCardinality(node.getSubjectVar())*getObjectCardinality(node.getObjectVar())*getContextCardinality(node.getContextVar());
+			Var subjVar = node.getSubjectVar();
+			Var objVar = node.getObjectVar();
+			if((subjVar != null && subjVar.hasValue()) || (objVar != null && objVar.hasValue())) {
+				// subj = obj
+				cardinality = 1.0;
+			}
+			else {
+				// actual cardinality = count(union(subjs, objs))
+				// but cost is equivalent to ?s ?p ?o ?c (impl scans all statements)
+				// so due to the lower actual cardinality we value it in preference to a fully unbound statement pattern.
+				cardinality = getSubjectCardinality(subjVar) * getObjectCardinality(objVar) * getContextCardinality(node.getContextVar());
+			}
 		}
 
 		@Override
