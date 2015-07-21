@@ -85,7 +85,7 @@ public class QueryBuilderFactory {
 	 *        the specific bound URI values to be described
 	 * @return a describe query builder
 	 */
-	public static QueryBuilder<ParsedDescribeQuery> describe(Resource... theValues) {
+	public static QueryBuilder<ParsedGraphQuery> describe(Resource... theValues) {
 		return describe(null, theValues);
 	}
 
@@ -98,8 +98,8 @@ public class QueryBuilderFactory {
 	 *        the specific bound URI values to be described
 	 * @return a describe query builder
 	 */
-	public static QueryBuilder<ParsedDescribeQuery> describe(String[] theVars, Resource... theValues) {
-		QueryBuilder<ParsedDescribeQuery> aBuilder = new AbstractQueryBuilder<ParsedDescribeQuery>(
+	public static QueryBuilder<ParsedGraphQuery> describe(String[] theVars, Resource... theValues) {
+		QueryBuilder<ParsedGraphQuery> aBuilder = new AbstractQueryBuilder<ParsedGraphQuery>(
 				new ParsedDescribeQuery());
 
 		aBuilder.reduced();
