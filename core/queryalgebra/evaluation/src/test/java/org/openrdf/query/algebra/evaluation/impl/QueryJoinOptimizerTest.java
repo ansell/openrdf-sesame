@@ -65,15 +65,17 @@ public class QueryJoinOptimizerTest {
 	}
 
 	@Test(expected=AssertionError.class)
-	public void testContextOptimization() throws OpenRDFException {
+	public void testContextOptimization()
+		throws OpenRDFException
+	{
 		String query = "prefix ex: <ex:>"
 				+ "select ?x ?y ?z ?g ?p ?o where {"
-				+ " ?x ?y ?z. "
 				+ " graph ?g {"
 				+ "  ex:s ?sp ?so. "
 				+ "  ?ps ex:p ?po. "
 				+ "  ?os ?op 'ex:o'. "
 				+ " }"
+				+ " ?x ?y ?z. "
 				+ "}";
 		// optimal order should be ?g graph first
 		// as it is all statements about a subject in all graphs
@@ -93,7 +95,9 @@ public class QueryJoinOptimizerTest {
 		testOptimizer(expectedQuery, query);
 	}
 
-	private void testOptimizer(String expectedQuery, String actualQuery) throws MalformedQueryException, UnsupportedQueryLanguageException {
+	private void testOptimizer(String expectedQuery, String actualQuery)
+		throws MalformedQueryException, UnsupportedQueryLanguageException
+	{
 		ParsedQuery pq = QueryParserUtil.parseQuery(QueryLanguage.SPARQL, actualQuery, null);
 		QueryJoinOptimizer opt = new QueryJoinOptimizer();
 		QueryRoot optRoot = new QueryRoot(pq.getTupleExpr());

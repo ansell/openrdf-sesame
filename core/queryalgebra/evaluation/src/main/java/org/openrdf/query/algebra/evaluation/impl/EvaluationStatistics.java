@@ -66,6 +66,7 @@ public class EvaluationStatistics {
 	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
 
 		private static double VAR_CARDINALITY = 10;
+
 		private static double UNBOUND_SERVICE_CARDINALITY = 100000;
 
 		protected double cardinality;
@@ -96,10 +97,18 @@ public class EvaluationStatistics {
 
 		@Override
 		public void meet(ZeroLengthPath node) {
-			// cardinality is the same as that of a statement pattern with three unbound vars. 
-			// WHY unbound vars??? surely just three vars. If some are bound surely it will be cheaper???
-			cardinality = VAR_CARDINALITY*VAR_CARDINALITY*VAR_CARDINALITY;
-			//cardinality = getSubjectCardinality(node.getSubjectVar())*getObjectCardinality(node.getObjectVar())*getContextCardinality(node.getContextVar());
+			Var subjVar = node.getSubjectVar();
+			Var objVar = node.getObjectVar();
+			if((subjVar != null && subjVar.hasValue()) || (objVar != null && objVar.hasValue())) {
+				// subj = obj
+				cardinality = 1.0;
+			}
+			else {
+				// actual cardinality = count(union(subjs, objs))
+				// but cost is equivalent to ?s ?p ?o ?c (impl scans all statements)
+				// so due to the lower actual cardinality we value it in preference to a fully unbound statement pattern.
+				cardinality = getSubjectCardinality(subjVar) * getObjectCardinality(objVar) * getContextCardinality(node.getContextVar());
+			}
 		}
 
 		@Override
@@ -108,14 +117,16 @@ public class EvaluationStatistics {
 			List<Var> vars = new ArrayList<Var>();
 			vars.add(node.getSubjectVar());
 			vars.add(node.getObjectVar());
-			// WHY is no contextVar included here, but is included in getBindingNames().size()???
-			// This looks like it should have the same cardinality as ZeroLengthPath
+			// WHY is no contextVar included here, but is included in
+			// getBindingNames().size()???
+			// This looks like it should have the same cardinality as
+			// ZeroLengthPath
 			// but with some extra cost factor for the length???
 
 			int constantVarCount = countConstantVars(vars);
 			double unboundVarFactor = (double)(node.getBindingNames().size() - constantVarCount)
 					/ node.getBindingNames().size();
-			
+
 			cardinality = Math.pow(1000.0, unboundVarFactor);
 		}
 
@@ -154,12 +165,14 @@ public class EvaluationStatistics {
 		}
 
 		protected double getCardinality(StatementPattern sp) {
-			return getSubjectCardinality(sp)*getPredicateCardinality(sp)*getObjectCardinality(sp)*getContextCardinality(sp);
+			return getSubjectCardinality(sp) * getPredicateCardinality(sp) * getObjectCardinality(sp)
+					* getContextCardinality(sp);
 		}
 
 		/**
-		 * Override this if you are able to determine the cardinality based not only on the subjectVar itself
-		 * but also the other vars (e.g. the predicate value might determine a subject subset). 
+		 * Override this if you are able to determine the cardinality based not
+		 * only on the subjectVar itself but also the other vars (e.g. the
+		 * predicate value might determine a subject subset).
 		 */
 		protected double getSubjectCardinality(StatementPattern sp) {
 			return getSubjectCardinality(sp.getSubjectVar());
@@ -170,8 +183,9 @@ public class EvaluationStatistics {
 		}
 
 		/**
-		 * Override this if you are able to determine the cardinality based not only on the predicateVar itself
-		 * but also the other vars (e.g. the subject value might determine a predicate subset). 
+		 * Override this if you are able to determine the cardinality based not
+		 * only on the predicateVar itself but also the other vars (e.g. the
+		 * subject value might determine a predicate subset).
 		 */
 		protected double getPredicateCardinality(StatementPattern sp) {
 			return getPredicateCardinality(sp.getPredicateVar());
@@ -182,8 +196,9 @@ public class EvaluationStatistics {
 		}
 
 		/**
-		 * Override this if you are able to determine the cardinality based not only on the objectVar itself
-		 * but also the other vars (e.g. the predicate value might determine an object subset). 
+		 * Override this if you are able to determine the cardinality based not
+		 * only on the objectVar itself but also the other vars (e.g. the
+		 * predicate value might determine an object subset).
 		 */
 		protected double getObjectCardinality(StatementPattern sp) {
 			return getObjectCardinality(sp.getObjectVar());
@@ -194,8 +209,9 @@ public class EvaluationStatistics {
 		}
 
 		/**
-		 * Override this if you are able to determine the cardinality based not only on the contextVar itself
-		 * but also the other vars (e.g. the subject value might determine a context subset). 
+		 * Override this if you are able to determine the cardinality based not
+		 * only on the contextVar itself but also the other vars (e.g. the subject
+		 * value might determine a context subset).
 		 */
 		protected double getContextCardinality(StatementPattern sp) {
 			return getContextCardinality(sp.getContextVar());

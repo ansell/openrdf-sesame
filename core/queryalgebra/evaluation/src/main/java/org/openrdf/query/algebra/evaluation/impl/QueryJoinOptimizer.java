@@ -219,7 +219,6 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 			return subselects;
 		}
 
-		
 		/**
 		 * Determines an optimal ordering of subselect join arguments, based on
 		 * variable bindings. An ordering is considered optimal if for each
@@ -376,7 +375,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 		{
 			TupleExpr result = null;
 
-			if(expressions.size() > 1) {
+			if (expressions.size() > 1) {
 				double lowestCardinality = Double.POSITIVE_INFINITY;
 				for (TupleExpr tupleExpr : expressions) {
 					// Calculate a score for this tuple expression
@@ -423,9 +422,10 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				// Prefer patterns that bind variables from other tuple expressions
 				int foreignVarFreq = getForeignVarFreq(unboundVars, varFreqMap);
 				if (foreignVarFreq > 0) {
-// WHY isn't foreignVarFreq = 1 more preferable than foreignVarFreq = 0?
+					// WHY isn't foreignVarFreq = 1 more preferable than
+					// foreignVarFreq = 0?
 					cardinality /= foreignVarFreq;
-					//cardinality /= 1 + foreignVarFreq;
+					// cardinality /= 1 + foreignVarFreq;
 				}
 			}
 
