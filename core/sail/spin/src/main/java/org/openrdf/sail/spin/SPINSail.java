@@ -2,10 +2,10 @@ package org.openrdf.sail.spin;
 
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.helpers.NotifyingSailWrapper;
 import org.openrdf.sail.inferencer.InferencerConnection;
+import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencer;
 
-public class SPINSail extends NotifyingSailWrapper
+public class SPINSail extends AbstractForwardChainingInferencer
 {
 	public SPINSail() {
 	}
@@ -18,7 +18,7 @@ public class SPINSail extends NotifyingSailWrapper
 	public SPINSailConnection getConnection() throws SailException {
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new SPINSailConnection(con, getValueFactory());
+			return new SPINSailConnection(this, con);
 		}
 		catch (ClassCastException e) {
 			throw new SailException(e.getMessage(), e);

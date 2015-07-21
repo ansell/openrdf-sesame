@@ -40,10 +40,10 @@ import org.openrdf.model.impl.AbstractModel;
 import org.openrdf.model.impl.FilteredModel;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.util.ModelException;
-import org.openrdf.model.util.NonSerializables;
 import org.openrdf.sail.AdvancedSailConnection;
 import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailException;
+import org.openrdf.util.NonSerializables;
 
 
 /**

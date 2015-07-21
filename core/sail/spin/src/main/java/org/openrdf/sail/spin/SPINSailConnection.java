@@ -7,21 +7,21 @@ import java.net.URL;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Model;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.repository.sail.helpers.RDFSailInserter;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
-import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnection;
+import org.openrdf.sail.inferencer.util.RDFInferencerInserter;
 
 public class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 	private final ValueFactory vf;
 
-	public SPINSailConnection(InferencerConnection con, ValueFactory vf) {
-		super(con);
-		this.vf = vf;
+	public SPINSailConnection(Sail sail, InferencerConnection con) {
+		super(sail, con);
+		this.vf = sail.getValueFactory();
 	}
 
 	@Override
@@ -39,8 +39,8 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		load(parser, "/schema/spl.spin.ttl", this);
 	}
 
-	private void load(RDFParser parser, String file, SailConnection con) throws SailException {
-		RDFSailInserter inserter = new RDFSailInserter(con, vf);
+	private void load(RDFParser parser, String file, InferencerConnection con) throws SailException {
+		RDFInferencerInserter inserter = new RDFInferencerInserter(con, vf);
 		parser.setRDFHandler(inserter);
 		URL url = getClass().getResource(file);
 		try
