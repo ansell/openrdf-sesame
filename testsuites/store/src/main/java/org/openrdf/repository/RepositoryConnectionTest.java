@@ -60,17 +60,18 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -92,7 +93,6 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.Query;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
@@ -109,7 +109,13 @@ import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 import org.openrdf.sail.memory.MemoryStore;
 
+@RunWith(Parameterized.class)
 public abstract class RepositoryConnectionTest {
+
+	@Parameters(name = "{0}")
+	public static final IsolationLevel[] parameters() {
+		return IsolationLevels.values();
+	}
 
 	/**
 	 * Timeout all individual tests after 1 minute.
@@ -197,6 +203,12 @@ public abstract class RepositoryConnectionTest {
 
 	protected Literal Александър;
 
+	protected IsolationLevel level;
+
+	public RepositoryConnectionTest(IsolationLevel level) {
+		this.level = level;
+	}
+
 	@Before
 	public void setUp()
 		throws Exception
@@ -207,8 +219,10 @@ public abstract class RepositoryConnectionTest {
 		testCon = testRepository.getConnection();
 		testCon.clear();
 		testCon.clearNamespaces();
+		testCon.setIsolationLevel(level);
 
 		testCon2 = testRepository.getConnection();
+		testCon2.setIsolationLevel(level);
 
 		vf = testRepository.getValueFactory();
 
@@ -303,6 +317,9 @@ public abstract class RepositoryConnectionTest {
 	public void testTransactionIsolation()
 		throws Exception
 	{
+		if (IsolationLevels.READ_UNCOMMITTED.isCompatibleWith(level)) {
+			return;
+		}
 		testCon.begin();
 		testCon.add(bob, name, nameBob);
 		assertThat(testCon.hasStatement(bob, name, nameBob, false), is(equalTo(true)));
@@ -355,6 +372,39 @@ public abstract class RepositoryConnectionTest {
 			testCon.rollback();
 		}
 
+	}
+
+	@Test
+	@Ignore("this test is no longer generally applicable, since the outcome depends on the transaction isolation level selected by the store")
+	public void testTransactionIsolationForReadWithDeleteOperation()
+		throws Exception
+	{
+		try {
+			testCon.begin();
+			testCon.add(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			testCon.commit();
+
+			testCon.begin();
+			// Remove but do not commit
+			testCon.remove(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT);
+			assertFalse("Should not see removed statement on same connection",
+					testCon.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			assertTrue("Statement should not be removed for different connection",
+					testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+
+			testCon2.begin();
+			try {
+				assertTrue("Statement should not be removed for different connection inside transaction",
+						testCon2.hasStatement(OWL.CLASS, RDFS.COMMENT, RDF.STATEMENT, true));
+			}
+			finally {
+				testCon2.rollback();
+			}
+		}
+		finally {
+			testCon.rollback();
+		}
 	}
 
 	@Test
@@ -425,6 +475,25 @@ public abstract class RepositoryConnectionTest {
 				testCon.hasStatement(null, name, nameBob, false, context2));
 		assertTrue("bib should be known in context1",
 				testCon.hasStatement(null, name, nameBob, false, context1));
+	}
+
+	@Test
+	public void testAddInputStreamInTxn()
+		throws Exception
+	{
+		// add file default-graph.ttl to repository, no context
+		InputStream defaultGraph = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX
+				+ "default-graph.ttl");
+		try {
+			testCon.begin();
+			testCon.add(defaultGraph, "", RDFFormat.TURTLE);
+			testCon.commit();
+		}
+		finally {
+			defaultGraph.close();
+		}
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameBob, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameAlice, false));
 	}
 
 	@Test
@@ -512,6 +581,9 @@ public abstract class RepositoryConnectionTest {
 	public void testRollback()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		testCon.begin();
 		testCon.add(alice, name, nameAlice);
 
@@ -1525,6 +1597,9 @@ public abstract class RepositoryConnectionTest {
 	public void testEmptyRollback()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.begin();
@@ -1540,6 +1615,9 @@ public abstract class RepositoryConnectionTest {
 	public void testEmptyCommit()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.isEmpty(), is(equalTo(true)));
 		assertThat(testCon2.isEmpty(), is(equalTo(true)));
 		testCon.begin();
@@ -1566,6 +1644,9 @@ public abstract class RepositoryConnectionTest {
 	public void testSizeRollback()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.size(), is(equalTo(0L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.begin();
@@ -1584,6 +1665,9 @@ public abstract class RepositoryConnectionTest {
 	public void testSizeCommit()
 		throws Exception
 	{
+		if (IsolationLevels.NONE.isCompatibleWith(level)) {
+			return;
+		}
 		assertThat(testCon.size(), is(equalTo(0L)));
 		assertThat(testCon2.size(), is(equalTo(0L)));
 		testCon.begin();
@@ -1602,7 +1686,8 @@ public abstract class RepositoryConnectionTest {
 	public void testAddRemove()
 		throws OpenRDFException
 	{
-		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1),
+				vf.createURI(URN_TEST_O1));
 		testCon.begin();
 		testCon.add(stmt);
 		testCon.remove(stmt);
@@ -1623,10 +1708,12 @@ public abstract class RepositoryConnectionTest {
 	public void testAddDelete()
 		throws OpenRDFException
 	{
-		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1),
+				vf.createURI(URN_TEST_O1));
 		testCon.begin();
 		testCon.add(stmt);
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.commit();
 
 		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
@@ -1644,9 +1731,11 @@ public abstract class RepositoryConnectionTest {
 	public final void testInsertRemove()
 		throws OpenRDFException
 	{
-		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1),
+				vf.createURI(URN_TEST_O1));
 		testCon.begin();
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.remove(stmt);
 		testCon.commit();
 
@@ -1665,10 +1754,13 @@ public abstract class RepositoryConnectionTest {
 	public void testInsertDelete()
 		throws OpenRDFException
 	{
-		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		final Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1),
+				vf.createURI(URN_TEST_O1));
 		testCon.begin();
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.commit();
 
 		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
@@ -1686,7 +1778,8 @@ public abstract class RepositoryConnectionTest {
 	public void testAddRemoveAdd()
 		throws OpenRDFException
 	{
-		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1),
+				vf.createURI(URN_TEST_O1));
 		testCon.add(stmt);
 		testCon.begin();
 		testCon.remove(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
@@ -1699,10 +1792,12 @@ public abstract class RepositoryConnectionTest {
 	public void testAddDeleteAdd()
 		throws OpenRDFException
 	{
-		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1),
+				vf.createURI(URN_TEST_O1));
 		testCon.add(stmt);
 		testCon.begin();
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.add(stmt);
 		testCon.commit();
 		Assert.assertFalse(testCon.isEmpty());
@@ -1712,23 +1807,27 @@ public abstract class RepositoryConnectionTest {
 	public void testAddRemoveInsert()
 		throws OpenRDFException
 	{
-		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
+		Statement stmt = vf.createStatement(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1),
+				vf.createURI(URN_TEST_O1));
 		testCon.add(stmt);
 		testCon.begin();
 		testCon.remove(stmt);
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.commit();
 		Assert.assertFalse(testCon.isEmpty());
 	}
 
 	@Test
-	public  void testAddDeleteInsert()
+	public void testAddDeleteInsert()
 		throws OpenRDFException
 	{
 		testCon.add(vf.createURI(URN_TEST_S1), vf.createURI(URN_TEST_P1), vf.createURI(URN_TEST_O1));
 		testCon.begin();
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
-		testCon.prepareUpdate(QueryLanguage.SPARQL, "INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
+		testCon.prepareUpdate(QueryLanguage.SPARQL,
+				"INSERT DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.commit();
 		Assert.assertFalse(testCon.isEmpty());
 	}
@@ -1742,8 +1841,9 @@ public abstract class RepositoryConnectionTest {
 		testCon.begin();
 		String query = "SELECT * where {?x a ?y }";
 		TupleQueryResult result = testCon.prepareTupleQuery(QueryLanguage.SPARQL, query).evaluate();
-		
-		// test verifies that query as part of transaction executes and returns a result
+
+		// test verifies that query as part of transaction executes and returns a
+		// result
 		assertNotNull(result);
 		assertTrue(result.hasNext());
 		testCon.commit();

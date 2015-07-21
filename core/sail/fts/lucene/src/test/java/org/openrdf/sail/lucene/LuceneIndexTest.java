@@ -30,10 +30,10 @@ import java.util.Set;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -146,7 +146,7 @@ public class LuceneIndexTest {
 		assertEquals(1, reader.numDocs());
 
 		Term term = new Term(SearchFields.URI_FIELD_NAME, subject.toString());
-		DocsEnum docs = termDocs(reader, term);
+		PostingsEnum docs = termDocs(reader, term);
 		assertTrue(next(docs));
 
 		int documentNr = docs.docID();
@@ -235,14 +235,14 @@ public class LuceneIndexTest {
 	 * It is sufficient for testing purposes.
 	 * @throws IOException 
 	 */
-	private static DocsEnum termDocs(IndexReader reader, Term term) throws IOException
+	private static PostingsEnum termDocs(IndexReader reader, Term term) throws IOException
 	{
 		return MultiFields.getTermDocsEnum(reader, MultiFields.getLiveDocs(reader), term.field(), term.bytes());
 	}
 
-	private static boolean next(DocsEnum docs) throws IOException
+	private static boolean next(PostingsEnum docs) throws IOException
 	{
-		return (docs.nextDoc() != DocsEnum.NO_MORE_DOCS);
+		return (docs.nextDoc() != PostingsEnum.NO_MORE_DOCS);
 	}
 
 	@Test

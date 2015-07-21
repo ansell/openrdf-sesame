@@ -481,9 +481,14 @@ public class LocalRepositoryManager extends RepositoryManager {
 			String result = null;
 
 			RepositoryResult<Statement> idStatements = con.getStatements(null, REPOSITORYID, null, true, context);
-			if (idStatements.hasNext()) {
-				Statement idStatement = idStatements.next();
-				result = idStatement.getObject().stringValue();
+			try {
+				if (idStatements.hasNext()) {
+					Statement idStatement = idStatements.next();
+					result = idStatement.getObject().stringValue();
+				}
+			}
+			finally {
+				idStatements.close();
 			}
 
 			return result;

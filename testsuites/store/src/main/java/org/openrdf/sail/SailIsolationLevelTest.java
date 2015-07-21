@@ -136,8 +136,7 @@ public abstract class SailIsolationLevelTest {
 			readCommitted(IsolationLevels.SNAPSHOT_READ);
 			rollbackTriple(IsolationLevels.SNAPSHOT_READ);
 			readPending(IsolationLevels.SNAPSHOT_READ);
-			// FIXME disabled due to known bug SES-2225
-			// readPendingWhileActive(IsolationLevels.SNAPSHOT_READ);
+			readPendingWhileActive(IsolationLevels.SNAPSHOT_READ);
 		}
 		else {
 			logger.warn("{} does not support {}", store, IsolationLevels.SNAPSHOT_READ);
@@ -155,8 +154,7 @@ public abstract class SailIsolationLevelTest {
 			readCommitted(IsolationLevels.SNAPSHOT);
 			rollbackTriple(IsolationLevels.SNAPSHOT);
 			readPending(IsolationLevels.SNAPSHOT);
-			// FIXME disabled due to known bug SES-2225
-			// readPendingWhileActive(IsolationLevels.SNAPSHOT);
+			readPendingWhileActive(IsolationLevels.SNAPSHOT);
 		}
 		else {
 			logger.warn("{} does not support {}", store, IsolationLevels.SNAPSHOT);
@@ -176,8 +174,7 @@ public abstract class SailIsolationLevelTest {
 			readCommitted(IsolationLevels.SERIALIZABLE);
 			rollbackTriple(IsolationLevels.SERIALIZABLE);
 			readPending(IsolationLevels.SERIALIZABLE);
-			// FIXME disabled due to known bug SES-2225
-			// readPendingWhileActive(IsolationLevels.SERIALIZABLE);
+			readPendingWhileActive(IsolationLevels.SERIALIZABLE);
 		}
 		else {
 			logger.warn("{} does not support {}", store, IsolationLevels.SERIALIZABLE);

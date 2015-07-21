@@ -19,6 +19,7 @@ package org.openrdf.sail.inferencer.fc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+<<<<<<< HEAD
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
 import org.openrdf.sail.SailConnectionListener;

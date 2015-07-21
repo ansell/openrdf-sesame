@@ -191,7 +191,7 @@ public class SolrIndex extends AbstractSearchIndex {
 	 * specific context
 	 */
 	private SolrDocumentList getDocuments(SolrQuery query)
-		throws SolrServerException
+		throws SolrServerException, IOException
 	{
 		return search(query).getResults();
 	}
@@ -307,7 +307,7 @@ public class SolrIndex extends AbstractSearchIndex {
 	 * Evaluates the given query only for the given resource.
 	 * @throws SolrServerException 
 	 */
-	public QueryResponse search(Resource resource, SolrQuery query) throws SolrServerException
+	public QueryResponse search(Resource resource, SolrQuery query) throws SolrServerException, IOException
 	{
 		// rewrite the query
 		String idQuery = termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
@@ -319,7 +319,7 @@ public class SolrIndex extends AbstractSearchIndex {
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 * @throws SolrServerException 
 	 */
-	public QueryResponse search(SolrQuery query) throws SolrServerException
+	public QueryResponse search(SolrQuery query) throws SolrServerException, IOException
 	{
 		int nDocs;
 		if(maxDocs > 0) {

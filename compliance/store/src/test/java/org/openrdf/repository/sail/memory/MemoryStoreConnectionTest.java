@@ -16,12 +16,17 @@
  */
 package org.openrdf.repository.sail.memory;
 
+import org.openrdf.IsolationLevel;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnectionTest;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class MemoryStoreConnectionTest extends RepositoryConnectionTest {
+
+	public MemoryStoreConnectionTest(IsolationLevel level) {
+		super(level);
+	}
 
 	@Override
 	protected Repository createRepository() {
