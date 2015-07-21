@@ -66,7 +66,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 	 *--------------*/
 
 	public ForwardChainingRDFSInferencerConnection(Sail sail, InferencerConnection con) {
-		super(con);
+		super(sail, con);
 	}
 
 	/*---------*

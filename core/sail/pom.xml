@@ -18,7 +18,6 @@
 		<module>api</module>
 		<module>base</module>
 		<module>inferencer</module>
-		<module>inferencer-api</module>
 		<module>federation</module>
 		<module>memory</module>
 		<module>nativerdf</module>

@@ -19,11 +19,14 @@ package org.openrdf.sail.inferencer.fc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-<<<<<<< HEAD
+import org.openrdf.IsolationLevel;
+import org.openrdf.IsolationLevels;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
+import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.UnknownSailTransactionStateException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.InferencerConnectionWrapper;
 import org.openrdf.sail.model.SailModel;
@@ -42,13 +45,15 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 	 * Variables *
 	 *-----------*/
 
+	private Sail sail;
+
 	/**
 	 * true if the base Sail reported removed statements.
 	 */
 	private boolean statementsRemoved;
 
 	/**
-	 * Contains the statements that have been reported by the base Sail as new.
+	 * Contains the statements that have been reported by the base Sail as
 	 */
 	private Model newStatements;
 
@@ -58,8 +63,9 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 	 * Constructors *
 	 *--------------*/
 
-	public AbstractForwardChainingInferencerConnection(InferencerConnection con) {
+	public AbstractForwardChainingInferencerConnection(Sail sail, InferencerConnection con) {
 		super(con);
+		this.sail = sail;
 		con.addConnectionListener(this);
 	}
 
@@ -101,17 +107,40 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 			clearInferred();
 			addAxiomStatements();
 
-			newStatements = new SailModel(getWrappedConnection(), false);
+			newStatements = new SailModel(getWrappedConnection(), true);
 
 			statementsRemoved = false;
 		}
 
 		if(hasNewStatements()) {
 			doInferencing();
-
-			newStatements = null;
-			statementsRemoved = false;
 		}
+
+		newStatements = null;
+	}
+
+	@Override
+	public void begin()
+		throws SailException
+	{
+		this.begin(null);
+	}
+
+	@Override
+	public void begin(IsolationLevel level)
+		throws SailException
+	{
+		if (level == null) {
+			level = sail.getDefaultIsolationLevel();
+		}
+
+		IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(level,
+				sail.getSupportedIsolationLevels());
+		if (compatibleLevel == null) {
+			throw new UnknownSailTransactionStateException("Isolation level " + level
+					+ " not compatible with this Sail");
+		}
+		super.begin(compatibleLevel);
 	}
 
 	@Override

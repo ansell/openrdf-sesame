@@ -301,6 +301,16 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-sail-spin</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-spin</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-util</artifactId>
 				<version>${project.version}</version>
 			</dependency>
