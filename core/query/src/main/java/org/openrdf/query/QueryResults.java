@@ -22,17 +22,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.Iterations;
-import info.aduna.iterator.CloseableIterationIterator;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
@@ -74,24 +69,6 @@ public class QueryResults extends Iterations {
 		Model model = new LinkedHashModel();
 		addAll(iteration, model);
 		return model;
-	}
-
-	/**
-	 * Get a sequential {@link Stream} with the supplied
-	 * {@link CloseableIteration} as its source. The source iteration will be
-	 * automatically closed by the stream when done.
-	 * 
-	 * @param iteration
-	 *        a source {@link CloseableIteration} for the stream.
-	 * @return a sequential {@link Stream} object which can be used to process
-	 *         the data from the source iteration.
-	 * @since 4.0
-	 */
-	public static <T> Stream<T> stream(CloseableIteration<T, ? extends OpenRDFException> iteration) {
-		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(new CloseableIterationIterator<T>(
-				iteration), Spliterator.IMMUTABLE | Spliterator.NONNULL);
-
-		return StreamSupport.stream(spliterator, false).onClose(iteration::close);
 	}
 
 	/**
