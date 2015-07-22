@@ -5,8 +5,8 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencer;
 
-public class SPINSail extends AbstractForwardChainingInferencer
-{
+public class SPINSail extends AbstractForwardChainingInferencer {
+
 	public SPINSail() {
 	}
 
@@ -15,7 +15,9 @@ public class SPINSail extends AbstractForwardChainingInferencer
 	}
 
 	@Override
-	public SPINSailConnection getConnection() throws SailException {
+	public SPINSailConnection getConnection()
+		throws SailException
+	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
 			return new SPINSailConnection(this, con);
@@ -26,7 +28,9 @@ public class SPINSail extends AbstractForwardChainingInferencer
 	}
 
 	@Override
-	public void initialize() throws SailException {
+	public void initialize()
+		throws SailException
+	{
 		super.initialize();
 
 		SPINSailConnection con = getConnection();
