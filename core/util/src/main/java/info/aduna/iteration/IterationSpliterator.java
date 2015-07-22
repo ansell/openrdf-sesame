@@ -1,5 +1,6 @@
 package info.aduna.iteration;
 
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -33,6 +34,7 @@ public class IterationSpliterator<T> extends Spliterators.AbstractSpliterator<T>
 
 	@Override
 	public boolean tryAdvance(Consumer<? super T> action) {
+		Objects.requireNonNull(action, "action may not be null");
 		try {
 			if (iteration.hasNext()) {
 				action.accept(iteration.next());
@@ -41,26 +43,41 @@ public class IterationSpliterator<T> extends Spliterators.AbstractSpliterator<T>
 			Iterations.closeCloseable(iteration);
 			return false;
 		}
-		catch (RuntimeException e) {
-			throw e;
-		}
 		catch (Exception e) {
+			try {
+				Iterations.closeCloseable(iteration);
+			}
+			catch (Exception e1) {
+				// fall through
+			}
+
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException)e;
+			}
 			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
 	public void forEachRemaining(final Consumer<? super T> action) {
+		Objects.requireNonNull(action, "action may not be null");
 		try {
 			while (iteration.hasNext()) {
 				action.accept(iteration.next());
 			}
 			Iterations.closeCloseable(iteration);
 		}
-		catch (RuntimeException e) {
-			throw e;
-		}
 		catch (Exception e) {
+			try {
+				Iterations.closeCloseable(iteration);
+			}
+			catch (Exception e1) {
+				// fall through
+			}
+
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException)e;
+			}
 			throw new RuntimeException(e);
 		}
 	}
