@@ -19,9 +19,6 @@ package org.openrdf.repository.event;
 import java.io.File;
 import java.util.EventListener;
 
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-
 /**
  * Listener interface for Repository state changes.
  * 
@@ -30,12 +27,12 @@ import org.openrdf.repository.RepositoryConnection;
  */
 public interface RepositoryListener extends EventListener {
 
-	public abstract void getConnection(Repository repo, RepositoryConnection conn);
+	public abstract void getConnection(NotifyingRepository repo, NotifyingRepositoryConnection conn);
 
-	public abstract void initialize(Repository repo);
+	public abstract void initialize(NotifyingRepository repo);
 
-	public abstract void setDataDir(Repository repo, File dataDir);
+	public abstract void setDataDir(NotifyingRepository repo, File dataDir);
 
-	public abstract void shutDown(Repository repo);
+	public abstract void shutDown(NotifyingRepository repo);
 
 }

@@ -16,6 +16,7 @@
  */
 package org.openrdf.query.impl;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -27,7 +28,9 @@ import org.openrdf.query.Dataset;
  * @author Arjohn Kampman
  * @author James Leigh
  */
-public class DatasetImpl implements Dataset {
+public class DatasetImpl implements Dataset, Serializable {
+
+	private static final long serialVersionUID = 7841576172053060417L;
 
 	private Set<IRI> defaultRemoveGraphs = new LinkedHashSet<IRI>();
 

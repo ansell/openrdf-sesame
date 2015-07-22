@@ -151,6 +151,14 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	public boolean contains(Resource subj, IRI pred, Value obj, Resource... contexts);
 
 	/**
+	 * @deprecated since 4.0. Use {@link #contains(Resource, IRI, Value, Resource...)} instead.
+	 */
+	@Deprecated
+	public default boolean contains(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return contains(subj, (IRI)pred, obj, contexts);
+	}
+
+	/**
 	 * Adds one or more statements to the model. This method creates a statement
 	 * for each specified context and adds those to the model. If no contexts are
 	 * specified, a single statement with no associated context is added. If this
@@ -174,6 +182,15 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 */
 	@Override
 	public boolean add(Resource subj, IRI pred, Value obj, Resource... contexts);
+
+
+	/**
+	 * @deprecated since 4.0. Use {@link #add(Resource, IRI, Value, Resource...)} instead.
+	 */
+	@Deprecated
+	public default boolean add(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return add(subj, (IRI)pred, obj, contexts);
+	}
 
 	/**
 	 * Removes statements with the specified context exist in this model.
@@ -221,6 +238,14 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @return <code>true</code> if one or more statements have been removed.
 	 */
 	public boolean remove(Resource subj, IRI pred, Value obj, Resource... contexts);
+
+	/**
+	 * @deprecated since 4.0. Use {@link #remove(Resource, IRI, Value, Resource...)} instead.
+	 */
+	@Deprecated
+	public default boolean remove(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return remove(subj, (IRI)pred, obj, contexts);
+	}
 
 	// Views
 
@@ -272,6 +297,11 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * @return The statements that match the specified pattern.
 	 */
 	public Model filter(Resource subj, IRI pred, Value obj, Resource... contexts);
+
+	@Deprecated
+	public default Model filter(Resource subj, URI pred, Value obj, Resource... contexts) {
+		return filter(subj, (IRI)pred, obj, contexts);
+	}
 
 	/**
 	 * Returns a {@link Set} view of the subjects contained in this model. The

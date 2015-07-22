@@ -19,6 +19,7 @@
 		<module>store</module>
 		<module>serql</module>
 		<module>sparql</module>
+		<module>geosparql</module>
 	</modules>
 
 	<name>OpenRDF Sesame compliance tests</name>

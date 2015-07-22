@@ -18,8 +18,15 @@ package org.openrdf.rio.helpers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.openrdf.model.Namespace;
+import org.openrdf.model.impl.SimpleNamespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +44,35 @@ import org.openrdf.rio.RioSetting;
  * @since 2.7.0
  */
 public class BasicParserSettings {
+
+	/**
+	 * Vocabulary Prefixes of W3C Documents (Recommendations or Notes)
+	 *
+	 * @see http://www.w3.org/2011/rdfa-context/rdfa-1.1
+	 */
+	private static final Set<Namespace> defaultPrefix;
+	static {
+		Set<Namespace> aNamespaces = new HashSet<Namespace>();
+
+		aNamespaces.add(new SimpleNamespace("grddl", "http://www.w3.org/2003/g/data-view#"));
+		aNamespaces.add(new SimpleNamespace("ma", "http://www.w3.org/ns/ma-ont#"));
+		aNamespaces.add(new SimpleNamespace("owl", "http://www.w3.org/2002/07/owl#"));
+		aNamespaces.add(new SimpleNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+		aNamespaces.add(new SimpleNamespace("rdfa", "http://www.w3.org/ns/rdfa#"));
+		aNamespaces.add(new SimpleNamespace("rdfs", "http://www.w3.org/2000/01/rdf-schema#"));
+		aNamespaces.add(new SimpleNamespace("rif", "http://www.w3.org/2007/rif#"));
+		aNamespaces.add(new SimpleNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
+		aNamespaces.add(new SimpleNamespace("skosxl", "http://www.w3.org/2008/05/skos-xl#"));
+		aNamespaces.add(new SimpleNamespace("wdr", "http://www.w3.org/2007/05/powder#"));
+		aNamespaces.add(new SimpleNamespace("void", "http://rdfs.org/ns/void#"));
+		aNamespaces.add(new SimpleNamespace("wdrs", "http://www.w3.org/2007/05/powder-s#"));
+		aNamespaces.add(new SimpleNamespace("xhv", "http://www.w3.org/1999/xhtml/vocab#"));
+		aNamespaces.add(new SimpleNamespace("xml", "http://www.w3.org/XML/1998/namespace"));
+		aNamespaces.add(new SimpleNamespace("xsd", "http://www.w3.org/2001/XMLSchema#"));
+
+		defaultPrefix = Collections.unmodifiableSet(aNamespaces);
+	}
+
 
 	private final static Logger log = LoggerFactory.getLogger(BasicParserSettings.class);
 
@@ -200,6 +236,19 @@ public class BasicParserSettings {
 	 */
 	public static final RioSetting<Long> LARGE_LITERALS_LIMIT = new RioSettingImpl<Long>(
 			"org.openrdf.rio.largeliteralslimit", "Size limit for large literals", 1048576L);
+
+	/**
+	 * <p></p>Setting to provide a collection of {@link Namespace} objects which will be used when parsing RDF as the
+	 * basis for the default set of namespaces of the document.</p>
+	 *
+	 * <p>Namespaces specified within the RDF document being parsed will override these defaults</p>
+	 *
+	 * <p>Defaults to <a href="http://www.w3.org/2011/rdfa-context/rdfa-1.1">this list</a>.</p>
+	 *
+	 * @since 2.8.5
+	 */
+	public static final RioSetting<Set<Namespace>> NAMESPACES = new RioSettingImpl<Set<Namespace>>(
+			"org.openrdf.rio.namespaces", "Collection of default namespaces to use for parsing", defaultPrefix);
 
 	static {
 		List<DatatypeHandler> defaultDatatypeHandlers = new ArrayList<DatatypeHandler>(4);

@@ -27,6 +27,7 @@ import org.openrdf.model.Value;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
+import org.openrdf.sail.nativerdf.model.NativeValue;
 
 /**
  * @author Arjohn Kampman
@@ -36,10 +37,13 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-	private final NativeStore nativeStore;
+	private final ValueStore valueStore;
 
-	public NativeEvaluationStatistics(NativeStore nativeStore) {
-		this.nativeStore = nativeStore;
+	private final TripleStore tripleStore;
+
+	public NativeEvaluationStatistics(ValueStore valueStore, TripleStore tripleStore) {
+		this.valueStore = valueStore;
+		this.tripleStore = tripleStore;
 	}
 
 	@Override
@@ -70,7 +74,7 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 					//  can happen when a previous optimizer has inlined a comparison operator. See SES-970 
 					context = null;
 				}
-				return nativeStore.cardinality((Resource)subj, (IRI)pred, obj, (Resource)context);
+				return cardinality((Resource)subj, (IRI)pred, obj, (Resource)context);
 			}
 			catch (IOException e) {
 				log.error(
@@ -83,5 +87,43 @@ class NativeEvaluationStatistics extends EvaluationStatistics {
 		protected Value getConstantValue(Var var) {
 			return (var != null) ? var.getValue() : null;
 		}
+	}
+
+	private double cardinality(Resource subj, IRI pred, Value obj, Resource context)
+		throws IOException
+	{
+		int subjID = NativeValue.UNKNOWN_ID;
+		if (subj != null) {
+			subjID = valueStore.getID(subj);
+			if (subjID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int predID = NativeValue.UNKNOWN_ID;
+		if (pred != null) {
+			predID = valueStore.getID(pred);
+			if (predID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int objID = NativeValue.UNKNOWN_ID;
+		if (obj != null) {
+			objID = valueStore.getID(obj);
+			if (objID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		int contextID = NativeValue.UNKNOWN_ID;
+		if (context != null) {
+			contextID = valueStore.getID(context);
+			if (contextID == NativeValue.UNKNOWN_ID) {
+				return 0;
+			}
+		}
+
+		return tripleStore.cardinality(subjID, predID, objID, contextID);
 	}
 }

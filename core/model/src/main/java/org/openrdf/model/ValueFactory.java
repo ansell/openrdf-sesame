@@ -135,6 +135,21 @@ public interface ValueFactory {
 	public Literal createLiteral(String label, IRI datatype);
 
 	/**
+	 * Creates a new literal with the supplied label and datatype.
+	 * 
+	 * @param label
+	 *        The literal's label.
+	 * @param datatype
+	 *        The literal's datatype, or <tt>null</tt> if the literal doesn't
+	 *        have a datatype.
+	 * @deprecated since 4.0. Use {@link #createLiteral(String, IRI)} instead.
+	 */
+	@Deprecated
+	public default Literal createLiteral(String label, URI datatype) {
+		return createLiteral(label, (IRI)datatype);
+	}
+
+	/**
 	 * Creates a new <tt>xsd:boolean</tt>-typed literal representing the
 	 * specified value.
 	 * 

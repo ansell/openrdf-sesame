@@ -16,6 +16,8 @@
  */
 package org.openrdf.http.protocol.transaction.operations;
 
+import java.io.Serializable;
+
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
@@ -29,7 +31,12 @@ import org.openrdf.repository.RepositoryException;
  * @author Arjohn Kampman
  * @author Leo Sauermann
  */
-public class RemoveStatementsOperation extends StatementOperation {
+public class RemoveStatementsOperation extends StatementOperation implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1497684375399016153L;
 
 	/**
 	 * Creates a RemoveStatementsOperation.

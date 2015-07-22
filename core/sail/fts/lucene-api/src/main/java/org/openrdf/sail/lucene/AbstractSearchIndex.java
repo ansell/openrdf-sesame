@@ -458,7 +458,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 				// if the query requests for the snippet, create a highlighter using
 				// this query
-				if (query.getSnippetVariableName() != null) {
+				if (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null) {
 					searchQuery.highlight(query.getPropertyURI());
 				}
 
@@ -530,7 +530,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				if ((query.getScoreVariableName() != null) && (score > 0.0f))
 					derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
 	
-				if (query.getSnippetVariableName() != null) {
+				if (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null) {
 					if (hit.isHighlighted()) {
 						// limit to the queried field, if there was one
 						Collection<String> fields;
@@ -550,13 +550,16 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 									if(snippet != null && !snippet.isEmpty()) {
 										// create an individual binding set for each snippet
 										QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
-			
-										snippetBindings.addBinding(query.getSnippetVariableName(), new SimpleLiteral(snippet));
-			
+
+										if(query.getSnippetVariableName() != null)
+										{
+											snippetBindings.addBinding(query.getSnippetVariableName(), new SimpleLiteral(snippet));
+										}
+
 										if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
 											snippetBindings.addBinding(query.getPropertyVariableName(), new SimpleIRI(field));
 										}
-			
+
 										bindingSets.add(snippetBindings);
 									}
 								}

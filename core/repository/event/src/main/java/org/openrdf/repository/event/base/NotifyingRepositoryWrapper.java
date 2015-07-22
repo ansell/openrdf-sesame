@@ -120,14 +120,14 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 		throws RepositoryException
 	{
 		RepositoryConnection con = getDelegate().getConnection();
+		NotifyingRepositoryConnection ncon = new NotifyingRepositoryConnectionWrapper(this,
+				con, getDefaultReportDeltas());
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.getConnection(getDelegate(), con);
+				listener.getConnection(this, ncon);
 			}
 		}
-		NotifyingRepositoryConnection ncon = new NotifyingRepositoryConnectionWrapper(this,
-				con, getDefaultReportDeltas());
 		for (RepositoryConnectionListener l : conListeners) {
 			ncon.addRepositoryConnectionListener(l);
 		}
@@ -143,7 +143,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.initialize(getDelegate());
+				listener.initialize(this);
 			}
 		}
 	}
@@ -155,7 +155,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.setDataDir(getDelegate(), dataDir);
+				listener.setDataDir(this, dataDir);
 			}
 		}
 	}
@@ -168,7 +168,7 @@ public class NotifyingRepositoryWrapper extends RepositoryWrapper implements Not
 
 		if (activated) {
 			for (RepositoryListener listener : listeners) {
-				listener.shutDown(getDelegate());
+				listener.shutDown(this);
 			}
 		}
 	}

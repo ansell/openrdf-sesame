@@ -76,6 +76,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-queryalgebra-geosparql</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryparser-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -334,12 +339,22 @@
 			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-geosparql-compliance</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-store-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<!-- reusable test suites -->
 
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-model-testsuite</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-queryresultio-testsuite</artifactId>
@@ -358,6 +373,11 @@
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-sparql-testsuite</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-geosparql-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

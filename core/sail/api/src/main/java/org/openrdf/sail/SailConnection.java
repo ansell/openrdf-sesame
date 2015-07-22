@@ -19,10 +19,10 @@ package org.openrdf.sail;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -130,6 +130,49 @@ public interface SailConnection {
 	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, IRI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
 		throws SailException;
+
+	/**
+	 * Determines if the store contains any statements from the specified
+	 * contexts that have a specific subject, predicate and/or object. All three
+	 * parameters may be null to indicate wildcards. The <tt>includeInferred</tt>
+	 * parameter can be used to control which statements are checked: all
+	 * statements or only the statements that have been added explicitly.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        An IRI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param includeInferred
+	 *        if false, no inferred statements are returned; if true, inferred
+	 *        statements are returned if available
+	 * @param contexts
+	 *        The context(s) to get the data from. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are specified the
+	 *        method operates on the entire repository. A <tt>null</tt> value can
+	 *        be used to match context-less statements.
+	 * @return <code>true</code> iff the store contains any statements matching
+	 *         the supplied criteria, <code>false</code> otherwise.
+	 * @throws SailException
+	 *         If the Sail object encountered an error or unexpected situation
+	 *         internally.
+	 * @throws IllegalStateException
+	 *         If the connection has been closed.
+	 * @since 4.0
+	 */
+	default boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
+		throws SailException
+	{
+		CloseableIteration<? extends Statement, SailException> stIter = getStatements(subj, pred, obj, includeInferred, contexts);
+		try {
+			return stIter.hasNext();
+		}
+		finally {
+			stIter.close();
+		}
+	}
 
 	/**
 	 * Returns the number of (explicit) statements in the store, or in specific

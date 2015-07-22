@@ -51,11 +51,6 @@ public class MemStatement extends ContextStatement {
 	 */
 	private volatile int tillSnapshot = Integer.MAX_VALUE;
 
-	/**
-	 * Flag indicating the status of of this statement during a transaction.
-	 */
-	private volatile TxnStatus txnStatus;
-
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -72,26 +67,15 @@ public class MemStatement extends ContextStatement {
 
 	/**
 	 * Creates a new MemStatement with the supplied subject, predicate, object
-	 * and context and marks it as 'explicit'.
-	 */
-	public MemStatement(MemResource subject, MemIRI predicate, MemValue object, MemResource context,
-			boolean explicit, int sinceSnapshot)
-	{
-		this(subject, predicate, object, context, explicit, sinceSnapshot, TxnStatus.NEUTRAL);
-	}
-
-	/**
-	 * Creates a new MemStatement with the supplied subject, predicate, object
 	 * and context. The value of the <tt>explicit</tt> parameter determines if
 	 * this statement is marked as 'explicit' or not.
 	 */
 	public MemStatement(MemResource subject, MemIRI predicate, MemValue object, MemResource context,
-			boolean explicit, int sinceSnapshot, TxnStatus txnStatus)
+			boolean explicit, int sinceSnapshot)
 	{
 		super(subject, predicate, object, context);
 		setExplicit(explicit);
 		setSinceSnapshot(sinceSnapshot);
-		setTxnStatus(txnStatus);
 	}
 
 	/*---------*
@@ -144,14 +128,6 @@ public class MemStatement extends ContextStatement {
 
 	public boolean isExplicit() {
 		return explicit;
-	}
-
-	public void setTxnStatus(TxnStatus txnStatus) {
-		this.txnStatus = txnStatus;
-	}
-
-	public TxnStatus getTxnStatus() {
-		return txnStatus;
 	}
 
 	/**

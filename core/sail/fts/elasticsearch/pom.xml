@@ -14,7 +14,7 @@
 	<description>StackableSail implementation offering full-text search on literals, based on Elastic Search.</description>
 
 	<properties>
-		<elasticsearch.version>1.5.0</elasticsearch.version>
+		<elasticsearch.version>1.5.2</elasticsearch.version>
 	</properties>
 
 	<dependencies>

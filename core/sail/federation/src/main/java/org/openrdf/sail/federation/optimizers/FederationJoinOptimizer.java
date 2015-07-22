@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -46,7 +46,6 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.util.RepositoryConnectionUtil;
 import org.openrdf.sail.federation.PrefixHashSet;
 import org.openrdf.sail.federation.algebra.NaryJoin;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
@@ -366,12 +365,6 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 				// fallback to using hasStatement()
 				// but hopefully we narrowed it down to results
 				for (RepositoryConnection member : results) {
-					if(!RepositoryConnectionUtil.isHasStatementOptimized(member)) {
-						// if we can't use hasStatement() on all the connections
-						// then we can't use it to conclusively determine a single owner
-						result = null;
-						break;
-					}
 					if (member.hasStatement(subj, pred, obj, true, ctx)) {
 						if (result == null) {
 							result = member;

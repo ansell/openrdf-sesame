@@ -22,20 +22,15 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-model</artifactId>
+			<artifactId>sesame-model-testsuite</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- needed for SailModelTest -->
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>compile</scope>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sesame-sail-memory</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

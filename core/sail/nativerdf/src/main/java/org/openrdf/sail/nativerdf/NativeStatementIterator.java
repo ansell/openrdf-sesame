@@ -25,13 +25,14 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
+import org.openrdf.sail.SailException;
 import org.openrdf.sail.nativerdf.btree.RecordIterator;
 
 /**
  * A statement iterator that wraps a RecordIterator containing statement records
  * and translates these records to {@link Statement} objects.
  */
-class NativeStatementIterator extends LookAheadIteration<Statement, IOException> {
+class NativeStatementIterator extends LookAheadIteration<Statement, SailException> {
 
 	/*-----------*
 	 * Variables *
@@ -60,37 +61,51 @@ class NativeStatementIterator extends LookAheadIteration<Statement, IOException>
 	 *---------*/
 
 	public Statement getNextElement()
-		throws IOException
+		throws SailException
 	{
-		byte[] nextValue = btreeIter.next();
+		try {
+			byte[] nextValue = btreeIter.next();
 
-		if (nextValue == null) {
-			return null;
-		}
+			if (nextValue == null) {
+				return null;
+			}
 
-		int subjID = ByteArrayUtil.getInt(nextValue, TripleStore.SUBJ_IDX);
-		Resource subj = (Resource)valueStore.getValue(subjID);
+			int subjID = ByteArrayUtil.getInt(nextValue, TripleStore.SUBJ_IDX);
+			Resource subj = (Resource)valueStore.getValue(subjID);
 
-		int predID = ByteArrayUtil.getInt(nextValue, TripleStore.PRED_IDX);
+			int predID = ByteArrayUtil.getInt(nextValue, TripleStore.PRED_IDX);
 		IRI pred = (IRI)valueStore.getValue(predID);
 
-		int objID = ByteArrayUtil.getInt(nextValue, TripleStore.OBJ_IDX);
-		Value obj = valueStore.getValue(objID);
+			int objID = ByteArrayUtil.getInt(nextValue, TripleStore.OBJ_IDX);
+			Value obj = valueStore.getValue(objID);
 
-		Resource context = null;
-		int contextID = ByteArrayUtil.getInt(nextValue, TripleStore.CONTEXT_IDX);
-		if (contextID != 0) {
-			context = (Resource)valueStore.getValue(contextID);
+			Resource context = null;
+			int contextID = ByteArrayUtil.getInt(nextValue, TripleStore.CONTEXT_IDX);
+			if (contextID != 0) {
+				context = (Resource)valueStore.getValue(contextID);
+			}
+
+			return valueStore.createStatement(subj, pred, obj, context);
 		}
-
-		return valueStore.createStatement(subj, pred, obj, context);
+		catch (IOException e) {
+			throw causeIOException(e);
+		}
 	}
 
 	@Override
 	protected void handleClose()
-		throws IOException
+		throws SailException
 	{
 		super.handleClose();
-		btreeIter.close();
+		try {
+			btreeIter.close();
+		}
+		catch (IOException e) {
+			throw causeIOException(e);
+		}
+	}
+
+	protected SailException causeIOException(IOException e) {
+		return new SailException(e);
 	}
 }
