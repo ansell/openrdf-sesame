@@ -50,10 +50,10 @@ public class IterationSpliterator<T> extends Spliterators.AbstractSpliterator<T>
 	}
 
 	@Override
-	public void forEachRemaining(final Consumer<? super T> theAction) {
+	public void forEachRemaining(final Consumer<? super T> action) {
 		try {
 			while (iteration.hasNext()) {
-				theAction.accept(iteration.next());
+				action.accept(iteration.next());
 			}
 			Iterations.closeCloseable(iteration);
 		}
