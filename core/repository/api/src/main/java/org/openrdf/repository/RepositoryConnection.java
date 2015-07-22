@@ -373,6 +373,36 @@ public interface RepositoryConnection extends AutoCloseable {
 	/**
 	 * Gets all statements with a specific subject, predicate and/or object from
 	 * the repository. The result is optionally restricted to the specified set
+	 * of named contexts. If the repository supports inferencing, inferred
+	 * statements will be included in the result.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        A URI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) to get the data from. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @return The statements matching the specified pattern. The result object
+	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         containing {@link Statement}s and optionally throwing a
+	 *         {@link RepositoryException} when an error when a problem occurs
+	 *         during retrieval.
+	 * @since 4.0
+	 */
+	public default RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
+			Resource... contexts)
+		throws RepositoryException
+	{
+		return getStatements(subj, pred, obj, true, contexts);
+	}
+
+	/**
+	 * Gets all statements with a specific subject, predicate and/or object from
+	 * the repository. The result is optionally restricted to the specified set
 	 * of named contexts.
 	 * 
 	 * @param subj
