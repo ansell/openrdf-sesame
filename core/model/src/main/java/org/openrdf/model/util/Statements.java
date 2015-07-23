@@ -11,6 +11,9 @@ import org.openrdf.model.StatementSource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 
+/**
+ * Useful methods for working with {@link StatementSource}s.
+ */
 public class Statements {
 
 	private Statements() {
