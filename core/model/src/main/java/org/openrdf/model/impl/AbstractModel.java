@@ -19,6 +19,7 @@ package org.openrdf.model.impl;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,6 +44,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 		Model {
 	private static final long serialVersionUID = 4254119331281455614L;
 
+	@Override
 	public Model unmodifiable() {
 		return new UnmodifiableModel(this);
 	}
@@ -469,7 +471,7 @@ public abstract class AbstractModel extends AbstractSet<Statement> implements
 
 		private final class ValueSetIterator implements Iterator<V> {
 			private final Iterator<Statement> iter;
-			private final Set<V> set = new LinkedHashSet<V>();
+			private final Set<V> set = new HashSet<V>();
 			private Statement current;
 			private Statement next;
 

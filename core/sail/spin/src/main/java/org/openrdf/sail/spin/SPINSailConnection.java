@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,14 +13,14 @@ import org.openrdf.OpenRDFException;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.StatementSource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.util.Statements;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
@@ -30,12 +29,14 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnection;
 import org.openrdf.sail.inferencer.util.RDFInferencerInserter;
+import org.openrdf.spin.SPINParser;
 
-public class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
+public class SPINSailConnection extends AbstractForwardChainingInferencerConnection implements StatementSource<SailException> {
 
 	private static final URI AXIOM_CONTEXT = ValueFactoryImpl.getInstance().createURI("local:axioms");
 
 	private final ValueFactory vf;
+	private final SPINParser parser = new SPINParser();
 
 	public SPINSailConnection(Sail sail, InferencerConnection con) {
 		super(sail, con);
@@ -97,30 +98,69 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		}
 	}
 
+	@Override
+	protected int applyRules(Model iteration)
+		throws SailException
+	{
+		try {
+			return applyRulesInternal(iteration);
+		}
+		catch(SailException e) {
+			throw e;
+		}
+		catch(OpenRDFException e) {
+			throw new SailException(e);
+		}
+	}
+
 	/**
 	 * update spin:rules modify existing (non-inferred) statements directly.
 	 * spin:constructors should be run after spin:rules for each subject of an
 	 * RDF.TYPE statement.
 	 */
-	@Override
-	protected int applyRules(Model iteration)
-		throws SailException
+	private int applyRulesInternal(Model iteration)
+		throws OpenRDFException
 	{
 		int count = 0;
 		for (Resource subj : iteration.subjects()) {
 			// get rule properties
-			Set<Resource> ruleProps = getSubjects(RDFS.SUBPROPERTYOF, SPIN.RULE_PROPERTY);
+			List<URI> ruleProps = null;
 			// get classes
-			Set<Value> classes = getObjects(subj, RDF.TYPE);
-			// classes that have rules
-			List<Resource> classesWithRules = getClassesOf(subj, ruleProps);
+			CloseableIteration<? extends Resource,? extends OpenRDFException> classIter = Statements.getObjectResources(subj, RDF.TYPE, this);
+			try {
+				while(classIter.hasNext()) {
+					Resource cls = classIter.next();
+					List<Object> rules = null;
+					for(URI ruleProp : ruleProps) {
+						CloseableIteration<? extends Resource,? extends OpenRDFException> ruleIter = Statements.getObjectResources(cls, ruleProp, this);
+						try {
+							while(ruleIter.hasNext()) {
+								Resource rule = ruleIter.next();
+								//rules.add(new Rule(rule, ruleProp));
+							}
+						}
+						finally {
+							ruleIter.close();
+						}
+					}
+					if(!rules.isEmpty()) {
+						//rulesByClass.put(cls, rules);
+					}
+				}
+			}
+			finally {
+				classIter.close();
+			}
+
 			// class hierarchy
+			/*
 			for(Resource cls : classesWithRules) {
 				List<Resource> rules = getRules(cls, ruleProps);
 				for(Resource rule : rules) {
 					count += executeRule(rule);
 				}
 			}
+			*/
 		}
 		return count;
 	}
@@ -137,58 +177,17 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		return null;
 	}
 
-	private List<Resource> getClassesOf(Resource res, Set<Resource> props)
+	private List<Resource> getClassesWith(Set<Resource> classes, Set<Resource> props)
 		throws SailException
 	{
-		Set<Value> classes = getObjects(res, RDF.TYPE);
 		return null;
 	}
 
-	private Set<Resource> getSubjects(URI prop, Value obj)
+	@Override
+	public CloseableIteration<? extends Statement, SailException> getStatements(Resource subj,
+			URI pred, Value obj, Resource... contexts)
 		throws SailException
 	{
-		final Set<Resource> subjs = new HashSet<Resource>();
-		getStatements(null, prop, obj, new Handler<Statement>()
-		{
-			@Override
-			public void handle(Statement t) {
-				subjs.add(t.getSubject());
-			}
-		});
-		return subjs;
-	}
-
-	private Set<Value> getObjects(Resource subj, URI prop)
-		throws SailException
-	{
-		final Set<Value> objs = new HashSet<Value>();
-		getStatements(subj, prop, null, new Handler<Statement>()
-		{
-			@Override
-			public void handle(Statement t) {
-				objs.add(t.getObject());
-			}
-		});
-		return objs;
-	}
-
-	private void getStatements(Resource subj, URI prop, Value obj, Handler<Statement> handler)
-		throws SailException
-	{
-		CloseableIteration<? extends Statement, SailException> iter = getStatements(null, prop,
-				obj, true);
-		try {
-			while(iter.hasNext()) {
-				handler.handle(iter.next());
-			}
-		}
-		finally {
-			iter.close();
-		}
-	}
-
-	interface Handler<T>
-	{
-		void handle(T t);
+		return getStatements(subj, pred, obj, true, contexts);
 	}
 }

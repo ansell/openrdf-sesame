@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sesame.spin;
+package org.openrdf.spin;
 
 import java.util.ArrayList;
 import java.util.Collection;

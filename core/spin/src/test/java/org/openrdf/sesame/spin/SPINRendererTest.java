@@ -29,6 +29,7 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.WriterConfig;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
+import org.openrdf.spin.SPINRenderer;
 
 @RunWith(Parameterized.class)
 public class SPINRendererTest {
