@@ -39,12 +39,10 @@ public class TestCreateServlet {
 				"memory-rdfs-dt",
 				"memory-rdfs",
 				"memory",
-				"mysql",
 				"native-customrule",
 				"native-rdfs-dt",
 				"native-rdfs",
 				"native",
-				"pgsql",
 				"remote",
 				"sparql" };
 		for (String template : expectedTemplates) {
