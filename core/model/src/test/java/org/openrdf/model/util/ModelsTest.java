@@ -115,14 +115,21 @@ public class ModelsTest {
 	public void testModelsIsomorphicContext() {
 		model1.add(foo, RDF.TYPE, bar);
 		model2.add(foo, RDF.TYPE, bar, foo);
-		
 		assertFalse(Models.isomorphic(model1, model2));
 		
 		model1.add(foo, RDF.TYPE, bar, foo);
 		model2.add(foo, RDF.TYPE, bar);
 		
 		assertTrue(Models.isomorphic(model1, model2));
+
+		model1.add(foo, RDF.TYPE, bar, baz);
+
+		assertFalse(Models.isomorphic(model1, model2));
 		
+		model2.add(foo, RDF.TYPE, bar, VF.createBNode());
+
+		assertTrue(Models.isomorphic(model1, model2));
+
 	}
 
 	@Test
