@@ -71,6 +71,7 @@ public class SimpleStatement implements Statement {
 	 * @param object
 	 *        The statement's object, must not be <tt>null</tt>.
 	 * @see {@link SimpleValueFactory#createStatement(Resource, IRI, Value)
+
 	 */
 	public SimpleStatement(Resource subject, IRI predicate, Value object) {
 		this.subject = Objects.requireNonNull(subject, "subject must not be null");
@@ -110,7 +111,17 @@ public class SimpleStatement implements Statement {
 		}
 
 		if (other instanceof Statement) {
-			Statement otherSt = (Statement)other;
+			Statement that = (Statement)other;
+
+			// check context equality first since it's probably cheapest
+			if (getContext() != null) {
+				if (!getContext().equals(that.getContext())) {
+					return false;
+				}
+			}
+			else if (that.getContext() != null) {
+				return false;
+			}
 
 			// The object is potentially the cheapest to check, as types
 			// of these references might be different.
@@ -118,8 +129,8 @@ public class SimpleStatement implements Statement {
 			// In general the number of different predicates in sets of
 			// statements is the smallest, so predicate equality is checked
 			// last.
-			return object.equals(otherSt.getObject()) && subject.equals(otherSt.getSubject())
-					&& predicate.equals(otherSt.getPredicate());
+			return object.equals(that.getObject()) && subject.equals(that.getSubject())
+					&& predicate.equals(that.getPredicate());
 		}
 
 		return false;

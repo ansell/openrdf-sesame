@@ -110,6 +110,20 @@ public class ModelsTest {
 		assertFalse(Models.isomorphic(model1, model2));
 
 	}
+	
+	@Test
+	public void testModelsIsomorphicContext() {
+		model1.add(foo, RDF.TYPE, bar);
+		model2.add(foo, RDF.TYPE, bar, foo);
+		
+		assertFalse(Models.isomorphic(model1, model2));
+		
+		model1.add(foo, RDF.TYPE, bar, foo);
+		model2.add(foo, RDF.TYPE, bar);
+		
+		assertTrue(Models.isomorphic(model1, model2));
+		
+	}
 
 	@Test
 	public void testIsSubset() {
