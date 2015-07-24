@@ -25,17 +25,18 @@ import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.Iterations;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.GraphImpl;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -55,16 +56,18 @@ public class QueryResults extends Iterations {
 	 * query result.
 	 * 
 	 * @since 2.7.0
-	 * @param gqr
-	 *        the {@link GraphQueryResult} to get the statements from
+	 * @param iteration
+	 *        the source iteration to get the statements from. This can be a
+	 *        {@link GraphQueryResult}, a {@link RepositoryResult<Statement>}, or
+	 *        any other instance of {@link CloseableIteration<Statement>}
 	 * @return a {@link Model} containing all statements obtained from the
-	 *         specified query result.
+	 *         specified source iteration.
 	 */
-	public static Model asModel(GraphQueryResult gqr)
+	public static Model asModel(CloseableIteration<? extends Statement, ? extends OpenRDFException> iteration)
 		throws QueryEvaluationException
 	{
 		Model model = new LinkedHashModel();
-		addAll(gqr, model);
+		addAll(iteration, model);
 		return model;
 	}
 
