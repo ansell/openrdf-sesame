@@ -1291,7 +1291,10 @@ public abstract class RepositoryConnectionTest {
 			result.next();
 			count++;
 		}
-		assertThat(count, is(equalTo(1)));
+		// TODO now that statement.equals includes context, the above three statements are considered distinct. 
+		// This duplicate filter test has become meaningless since it is _expected_ that nothing gets filtered out.
+		// We should look into reimplementing/renaming the enableDuplicateFilter to ignore context.
+		assertThat(count, is(equalTo(3)));
 	}
 
 	@Test

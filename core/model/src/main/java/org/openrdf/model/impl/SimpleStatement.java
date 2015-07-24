@@ -123,8 +123,8 @@ public class SimpleStatement implements Statement {
 				return false;
 			}
 
-			// The object is potentially the cheapest to check, as types
-			// of these references might be different.
+			// Of s, p, o, the object is potentially the cheapest to check, as
+			// types of these references might be different.
 
 			// In general the number of different predicates in sets of
 			// statements is the smallest, so predicate equality is checked
@@ -139,7 +139,8 @@ public class SimpleStatement implements Statement {
 	// Overrides Object.hashCode(), implements Statement.hashCode()
 	@Override
 	public int hashCode() {
-		return 961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode();
+		return 961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode()
+				+ (getContext() != null ? getContext().hashCode() : 0);
 	}
 
 	/**

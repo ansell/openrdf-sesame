@@ -54,7 +54,6 @@ public interface Statement extends Serializable {
 	 * @return The statement's context, or <tt>null</tt> in case of the null
 	 *         context or if not applicable.
 	 */
-	// FIXME should this return a set instead of a single context?
 	public Resource getContext();
 
 	/**
@@ -63,14 +62,14 @@ public interface Statement extends Serializable {
 	 * @param other
 	 *        The object to compare this statement to.
 	 * @return <tt>true</tt> if the other object is an instance of
-	 *         {@link Statement} and if their subjects, predicates and objects
-	 *         are equal.
+	 *         {@link Statement} and if their subjects, predicates, objects and
+	 *         contexts are equal.
 	 */
 	public boolean equals(Object other);
 
 	/**
 	 * The hash code of a statement is defined as:
-	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode()</tt>.
+	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode() ( + context.hashCode() if defined)</tt>
 	 * This is similar to how {@link String#hashCode String.hashCode()} is
 	 * defined.
 	 * 
