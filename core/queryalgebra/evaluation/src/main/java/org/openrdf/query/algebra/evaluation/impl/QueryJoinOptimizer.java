@@ -60,6 +60,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 	 * 
 	 * @param tupleExpr
 	 */
+	@Override
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
 		tupleExpr.visit(new JoinVisitor());
 	}
@@ -218,7 +219,6 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 			return subselects;
 		}
 
-		
 		/**
 		 * Determines an optimal ordering of subselect join arguments, based on
 		 * variable bindings. An ordering is considered optimal if for each
@@ -375,17 +375,22 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 		{
 			TupleExpr result = null;
 
-			double lowestCardinality = Double.MAX_VALUE;
-			for (TupleExpr tupleExpr : expressions) {
-				// Calculate a score for this tuple expression
-				double cardinality = getTupleExprCardinality(tupleExpr, cardinalityMap, varsMap, varFreqMap,
-						boundVars);
+			if (expressions.size() > 1) {
+				double lowestCardinality = Double.POSITIVE_INFINITY;
+				for (TupleExpr tupleExpr : expressions) {
+					// Calculate a score for this tuple expression
+					double cardinality = getTupleExprCardinality(tupleExpr, cardinalityMap, varsMap, varFreqMap,
+							boundVars);
 
-				if (cardinality < lowestCardinality) {
-					// More specific path expression found
-					lowestCardinality = cardinality;
-					result = tupleExpr;
+					if (cardinality <= lowestCardinality) {
+						// More specific path expression found
+						lowestCardinality = cardinality;
+						result = tupleExpr;
+					}
 				}
+			}
+			else {
+				result = expressions.get(0);
 			}
 
 			return result;
@@ -417,7 +422,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 				// Prefer patterns that bind variables from other tuple expressions
 				int foreignVarFreq = getForeignVarFreq(unboundVars, varFreqMap);
 				if (foreignVarFreq > 0) {
-					cardinality /= foreignVarFreq;
+					cardinality /= 1 + foreignVarFreq;
 				}
 			}
 
