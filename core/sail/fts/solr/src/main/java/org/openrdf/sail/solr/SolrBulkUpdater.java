@@ -29,8 +29,11 @@ import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.SearchDocument;
 
 public class SolrBulkUpdater implements BulkUpdater {
+
 	private final SolrClient client;
+
 	private final List<SolrInputDocument> addOrUpdateList = new ArrayList<SolrInputDocument>();
+
 	private final List<String> deleteList = new ArrayList<String>();
 
 	public SolrBulkUpdater(SolrClient client) {
@@ -38,31 +41,40 @@ public class SolrBulkUpdater implements BulkUpdater {
 	}
 
 	@Override
-	public void add(SearchDocument doc) throws IOException {
+	public void add(SearchDocument doc)
+		throws IOException
+	{
 		SolrDocument document = ((SolrSearchDocument)doc).getDocument();
 		addOrUpdateList.add(ClientUtils.toSolrInputDocument(document));
 	}
 
 	@Override
-	public void update(SearchDocument doc) throws IOException {
+	public void update(SearchDocument doc)
+		throws IOException
+	{
 		add(doc);
 	}
 
 	@Override
-	public void delete(SearchDocument doc) throws IOException {
+	public void delete(SearchDocument doc)
+		throws IOException
+	{
 		deleteList.add(doc.getId());
 	}
 
 	@Override
-	public void end() throws IOException {
+	public void end()
+		throws IOException
+	{
 		try {
-			if(!deleteList.isEmpty()) {
+			if (!deleteList.isEmpty()) {
 				client.deleteById(deleteList);
 			}
-			if(!addOrUpdateList.isEmpty()) {
+			if (!addOrUpdateList.isEmpty()) {
 				client.add(addOrUpdateList);
 			}
-		} catch(SolrServerException e) {
+		}
+		catch (SolrServerException e) {
 			throw new IOException(e);
 		}
 	}

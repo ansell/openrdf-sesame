@@ -23,10 +23,12 @@ import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchDocument;
 
 public class SolrDocumentScore implements DocumentScore {
-	private final SolrSearchDocument doc;
-	private final Map<String,List<String>> highlighting;
 
-	public SolrDocumentScore(SolrSearchDocument doc, Map<String,List<String>> highlighting) {
+	private final SolrSearchDocument doc;
+
+	private final Map<String, List<String>> highlighting;
+
+	public SolrDocumentScore(SolrSearchDocument doc, Map<String, List<String>> highlighting) {
 		this.doc = doc;
 		this.highlighting = highlighting;
 	}
@@ -38,7 +40,7 @@ public class SolrDocumentScore implements DocumentScore {
 
 	@Override
 	public float getScore() {
-		Number s = ((Number) doc.getDocument().get("score"));
+		Number s = ((Number)doc.getDocument().get("score"));
 		return (s != null) ? s.floatValue() : 0.0f;
 	}
 
