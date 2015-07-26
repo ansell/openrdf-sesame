@@ -68,10 +68,7 @@ public interface Statement extends Serializable {
 	public boolean equals(Object other);
 
 	/**
-	 * The hash code of a statement is defined as:
-	 * <tt>961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode() ( + context.hashCode() if defined)</tt>
-	 * This is similar to how {@link String#hashCode String.hashCode()} is
-	 * defined.
+	 * The hash code of a statement. 
 	 * 
 	 * @return A hash code for the statement.
 	 */

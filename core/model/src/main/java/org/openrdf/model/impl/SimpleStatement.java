@@ -56,13 +56,14 @@ public class SimpleStatement implements Statement {
 	 *--------------*/
 
 	/**
-	 * Creates a new Statement with the supplied subject, predicate and object. *
+	 * Creates a new Statement with the supplied subject, predicate and object.
+	 * *
 	 * <p>
 	 * Note that creating SimpleStatement objects directly via this constructor
 	 * is not the recommended approach. Instead, use a
 	 * {@link org.openrdf.model.ValueFactory ValueFactory} (obtained from your
-	 * repository or by using {@link SimpleValueFactory#getInstance()}) to create
-	 * new Statement objects.
+	 * repository or by using {@link SimpleValueFactory#getInstance()}) to
+	 * create new Statement objects.
 	 * 
 	 * @param subject
 	 *        The statement's subject, must not be <tt>null</tt>.
@@ -71,7 +72,6 @@ public class SimpleStatement implements Statement {
 	 * @param object
 	 *        The statement's object, must not be <tt>null</tt>.
 	 * @see {@link SimpleValueFactory#createStatement(Resource, IRI, Value)
-
 	 */
 	public SimpleStatement(Resource subject, IRI predicate, Value object) {
 		this.subject = Objects.requireNonNull(subject, "subject must not be null");
@@ -113,24 +113,16 @@ public class SimpleStatement implements Statement {
 		if (other instanceof Statement) {
 			Statement that = (Statement)other;
 
-			// check context equality first since it's probably cheapest
-			if (getContext() != null) {
-				if (!getContext().equals(that.getContext())) {
-					return false;
-				}
-			}
-			else if (that.getContext() != null) {
-				return false;
-			}
-
-			// Of s, p, o, the object is potentially the cheapest to check, as
-			// types of these references might be different.
-
-			// In general the number of different predicates in sets of
-			// statements is the smallest, so predicate equality is checked
-			// last.
-			return object.equals(that.getObject()) && subject.equals(that.getSubject())
-					&& predicate.equals(that.getPredicate());
+			/* We check context equality first since it's probably cheapest.
+			 * After that, the object is potentially the cheapest to check, as
+			 * types of these references might be different.
+			 *
+			 * In general the number of different predicates in sets of
+			 * statements is the smallest, so predicate equality is checked
+			 * last.
+			 */
+			return Objects.equals(getContext(), that.getContext()) && object.equals(that.getObject())
+				&& subject.equals(that.getSubject()) && predicate.equals(that.getPredicate());
 		}
 
 		return false;
@@ -139,8 +131,7 @@ public class SimpleStatement implements Statement {
 	// Overrides Object.hashCode(), implements Statement.hashCode()
 	@Override
 	public int hashCode() {
-		return 961 * subject.hashCode() + 31 * predicate.hashCode() + object.hashCode()
-				+ (getContext() != null ? getContext().hashCode() : 0);
+		return Objects.hash(subject, predicate, object, getContext());
 	}
 
 	/**
