@@ -17,33 +17,32 @@
 package org.openrdf.sail.solr;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.solr.common.SolrDocument;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
 public class SolrSearchDocument implements SearchDocument {
+
 	private final SolrDocument doc;
 
-	public SolrSearchDocument(){
+	public SolrSearchDocument() {
 		this(new SolrDocument());
 	}
 
-	public SolrSearchDocument(SolrDocument doc)
-	{
+	public SolrSearchDocument(SolrDocument doc) {
 		this.doc = doc;
 	}
 
-	public SolrSearchDocument(String id, String resourceId, String context)
-	{
+	public SolrSearchDocument(String id, String resourceId, String context) {
 		this();
 		doc.put(SearchFields.ID_FIELD_NAME, id);
 		doc.put(SearchFields.URI_FIELD_NAME, resourceId);
-		if(context != null) {
+		if (context != null) {
 			doc.put(SearchFields.CONTEXT_FIELD_NAME, context);
 		}
 	}
@@ -54,21 +53,21 @@ public class SolrSearchDocument implements SearchDocument {
 
 	@Override
 	public String getId() {
-		return (String) doc.get(SearchFields.ID_FIELD_NAME);
+		return (String)doc.get(SearchFields.ID_FIELD_NAME);
 	}
 
 	@Override
 	public String getResource() {
-		return (String) doc.get(SearchFields.URI_FIELD_NAME);
+		return (String)doc.get(SearchFields.URI_FIELD_NAME);
 	}
 
 	@Override
 	public String getContext() {
-		return (String) doc.get(SearchFields.CONTEXT_FIELD_NAME);
+		return (String)doc.get(SearchFields.CONTEXT_FIELD_NAME);
 	}
 
 	@Override
-	public Collection<String> getPropertyNames() {
+	public Set<String> getPropertyNames() {
 		return SolrIndex.getPropertyFields(doc.keySet());
 	}
 
@@ -81,6 +80,11 @@ public class SolrSearchDocument implements SearchDocument {
 	public void addProperty(String name, String text) {
 		addField(name, text, doc);
 		addField(SearchFields.TEXT_FIELD_NAME, text, doc);
+	}
+
+	@Override
+	public void addGeoProperty(String name, String text) {
+		addField(name, text, doc);
 	}
 
 	@Override
@@ -102,10 +106,10 @@ public class SolrSearchDocument implements SearchDocument {
 		return asStringList(doc.get(name));
 	}
 
-	private static void addField(String name, String value, Map<String,Object> document) {
+	private static void addField(String name, String value, Map<String, Object> document) {
 		Object oldValue = document.get(name);
 		Object newValue;
-		if(oldValue != null) {
+		if (oldValue != null) {
 			List<String> newList = makeModifiable(asStringList(oldValue));
 			newList.add(value);
 			newValue = newList;
@@ -116,11 +120,10 @@ public class SolrSearchDocument implements SearchDocument {
 		document.put(name, newValue);
 	}
 
-	private static List<String> makeModifiable(List<String> l)
-	{
+	private static List<String> makeModifiable(List<String> l) {
 		List<String> modList;
-		if(!(l instanceof ArrayList<?>)) {
-			modList = new ArrayList<String>(l.size()+1);
+		if (!(l instanceof ArrayList<?>)) {
+			modList = new ArrayList<String>(l.size() + 1);
 			modList.addAll(l);
 		}
 		else {
@@ -132,14 +135,14 @@ public class SolrSearchDocument implements SearchDocument {
 	@SuppressWarnings("unchecked")
 	private static List<String> asStringList(Object value) {
 		List<String> l;
-		if(value == null) {
+		if (value == null) {
 			l = null;
 		}
-		else if(value instanceof List<?>) {
-			l = (List<String>) value;
+		else if (value instanceof List<?>) {
+			l = (List<String>)value;
 		}
 		else {
-			l = Collections.singletonList((String) value);
+			l = Collections.singletonList((String)value);
 		}
 		return l;
 	}

@@ -44,6 +44,7 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.evaluation.iterator.CollectionIteration;
+import org.openrdf.query.algebra.evaluation.iterator.CrossProductIteration;
 import org.openrdf.query.algebra.evaluation.iterator.SilentIteration;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.repository.Repository;
@@ -299,7 +300,7 @@ public class RepositoryFederatedService implements FederatedService {
 			}
 
 			if (relevantBindingNames.size() == 0)
-				result = new ServiceCrossProductIteration(res, allBindings); // cross
+				result = new CrossProductIteration(res, allBindings); // cross
 																									// product
 			else
 				result = new ServiceJoinConversionIteration(res, allBindings); // common

@@ -29,14 +29,16 @@ import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
 import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.SearchQuery;
 
-
+/**
+ * To be removed, no longer used.
+ */
+@Deprecated
 public class LuceneQuery implements SearchQuery
 {
 	private final Query query;

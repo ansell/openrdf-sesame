@@ -33,7 +33,10 @@ import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 
-
+/**
+ * To be removed, no longer used.
+ */
+@Deprecated
 public class LuceneQuery implements SearchQuery
 {
 	private final Query query;

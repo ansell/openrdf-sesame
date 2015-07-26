@@ -16,40 +16,57 @@
  */
 package org.openrdf.sail.lucene4;
 
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-
+import org.apache.lucene.spatial.SpatialStrategy;
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Shape;
 
 /**
- *
  * @author MJAHale
  */
-public class LuceneDocument implements SearchDocument
-{
+public class LuceneDocument implements SearchDocument {
+
 	private final Document doc;
 
-	public LuceneDocument()
-	{
-		this(new Document());
+	private final SpatialContext geoContext;
+
+	private final SpatialPrefixTree grid;
+
+	/**
+	 * To be removed, no longer used.
+	 */
+	@Deprecated
+	public LuceneDocument() {
+		this(null, null);
 	}
 
-	public LuceneDocument(Document doc)
-	{
+	public LuceneDocument(SpatialContext ctx, SpatialPrefixTree grid) {
+		this(new Document(), ctx, grid);
+	}
+
+	public LuceneDocument(Document doc, SpatialContext ctx, SpatialPrefixTree grid) {
 		this.doc = doc;
+		this.geoContext = ctx;
+		this.grid = grid;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context)
+	public LuceneDocument(String id, String resourceId, String context, SpatialContext ctx,
+			SpatialPrefixTree grid)
 	{
-		this();
+		this(ctx, grid);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -87,10 +104,10 @@ public class LuceneDocument implements SearchDocument
 	}
 
 	@Override
-	public Collection<String> getPropertyNames() {
+	public Set<String> getPropertyNames() {
 		List<IndexableField> fields = doc.getFields();
-		List<String> names = new ArrayList<String>(fields.size());
-		for(IndexableField field : fields) {
+		Set<String> names = new HashSet<String>();
+		for (IndexableField field : fields) {
 			String name = field.name();
 			if (SearchFields.isPropertyField(name))
 				names.add(name);
@@ -139,5 +156,21 @@ public class LuceneDocument implements SearchDocument
 	@Override
 	public List<String> getProperty(String name) {
 		return Arrays.asList(doc.getValues(name));
+	}
+
+	@Override
+	public void addGeoProperty(String field, String value) {
+		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
+		try {
+			Shape shape = geoContext.readShapeFromWkt(value);
+			SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, LuceneIndex.GEO_FIELD_PREFIX
+					+ field);
+			for (IndexableField f : geoStrategy.createIndexableFields(shape)) {
+				doc.add(f);
+			}
+		}
+		catch (ParseException e) {
+			// ignore
+		}
 	}
 }
