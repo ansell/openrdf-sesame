@@ -113,16 +113,14 @@ public class SimpleStatement implements Statement {
 		if (other instanceof Statement) {
 			Statement that = (Statement)other;
 
-			/* We check context equality first since it's probably cheapest.
-			 * After that, the object is potentially the cheapest to check, as
-			 * types of these references might be different.
+			/* We check  object equality first since it's most likely to be different.
 			 *
-			 * In general the number of different predicates in sets of
-			 * statements is the smallest, so predicate equality is checked
-			 * last.
+			 * In general the number of different predicates and contexts in sets of
+			 * statements are the smallest (and therefore most likely to be identical), so 
+			 * these are checked last.
 			 */
-			return Objects.equals(getContext(), that.getContext()) && object.equals(that.getObject())
-				&& subject.equals(that.getSubject()) && predicate.equals(that.getPredicate());
+			return object.equals(that.getObject()) && subject.equals(that.getSubject())
+				&& predicate.equals(that.getPredicate()) && Objects.equals(getContext(), that.getContext());
 		}
 
 		return false;
