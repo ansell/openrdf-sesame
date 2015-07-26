@@ -7,11 +7,14 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.openrdf.OpenRDFException;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -211,7 +214,7 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		for (Resource subj : iteration.subjects()) {
 			// get rule properties
 			List<URI> ruleProps = getRuleProperties();
-			Map<Resource, Map<URI, Resource>> rulesByClass = getRulesForSubject(subj, ruleProps);
+			Map<Resource, Map<URI, List<Resource>>> rulesByClass = getRulesForSubject(subj, ruleProps);
 
 			// build class hierarchy
 			// TODO
@@ -219,9 +222,12 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 
 			// execute rules
 			for (Resource cls : classHierarchy) {
-				Map<URI, Resource> rules = rulesByClass.get(cls);
-				for (Map.Entry<URI, Resource> ruleEntry : rules.entrySet()) {
-					nofInferred += executeRule(subj, ruleEntry.getValue(), getRuleProperty(ruleEntry.getKey()));
+				Map<URI, List<Resource>> rules = rulesByClass.get(cls);
+				for (Map.Entry<URI, List<Resource>> ruleEntry : rules.entrySet()) {
+					RuleProperty ruleProperty = getRuleProperty(ruleEntry.getKey());
+					for(Resource rule : ruleEntry.getValue()) {
+						nofInferred += executeRule(subj, rule, ruleProperty);
+					}
 				}
 			}
 		}
@@ -250,17 +256,17 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		return nofInferred;
 	}
 
-	private Map<Resource, Map<URI, Resource>> getRulesForSubject(Resource subj, List<URI> ruleProps)
+	private Map<Resource, Map<URI, List<Resource>>> getRulesForSubject(Resource subj, List<URI> ruleProps)
 		throws OpenRDFException
 	{
-		Map<Resource, Map<URI, Resource>> rulesByClass = new HashMap<Resource, Map<URI, Resource>>();
+		Map<Resource, Map<URI, List<Resource>>> rulesByClass = new HashMap<Resource, Map<URI, List<Resource>>>();
 		// check each class of subj for rule properties
 		CloseableIteration<? extends Resource, ? extends OpenRDFException> classIter = Statements.getObjectResources(
 				subj, RDF.TYPE, this);
 		try {
 			while (classIter.hasNext()) {
 				Resource cls = classIter.next();
-				Map<URI, Resource> classRulesByProperty = getRulesForClass(cls, ruleProps);
+				Map<URI, List<Resource>> classRulesByProperty = getRulesForClass(cls, ruleProps);
 				if (!classRulesByProperty.isEmpty()) {
 					rulesByClass.put(cls, classRulesByProperty);
 				}
@@ -272,23 +278,77 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		return rulesByClass;
 	}
 
-	private Map<URI, Resource> getRulesForClass(Resource cls, List<URI> ruleProps)
+	private Map<URI, List<Resource>> getRulesForClass(Resource cls, List<URI> ruleProps)
 		throws OpenRDFException
 	{
-		Map<URI, Resource> classRulesByProperty = new HashMap<URI, Resource>();
+		Map<URI, List<Resource>> classRulesByProperty = new HashMap<URI, List<Resource>>();
 		for (URI ruleProp : ruleProps) {
+			List<Resource> rules = new ArrayList<Resource>(2);
 			CloseableIteration<? extends Resource, ? extends OpenRDFException> ruleIter = Statements.getObjectResources(
 					cls, ruleProp, this);
 			try {
 				while (ruleIter.hasNext()) {
-					classRulesByProperty.put(ruleProp, ruleIter.next());
+					rules.add(ruleIter.next());
 				}
 			}
 			finally {
 				ruleIter.close();
 			}
+			if(!rules.isEmpty()) {
+				if(rules.size() > 1) {
+					// sort by comments
+					final Map<Resource,String> comments = new HashMap<Resource,String>(rules.size());
+					for(Resource rule : rules) {
+						String comment = getHighestComment(rule);
+						if(comment != null) {
+							comments.put(rule, comment);
+						}
+					}
+					Collections.sort(rules, new Comparator<Resource>()
+					{
+						@Override
+						public int compare(Resource rule1, Resource rule2) {
+							String comment1 = comments.get(rule1);
+							String comment2 = comments.get(rule2);
+							if(comment1 != null && comment2 != null) {
+								return comment1.compareTo(comment2);
+							}
+							else if(comment1 != null && comment2 == null) {
+								return 1;
+							}
+							else if(comment1 == null && comment2 != null) {
+								return -1;
+							}
+							else {
+								return 0;
+							}
+						}
+					});
+				}
+				classRulesByProperty.put(ruleProp, rules);
+			}
 		}
 		return classRulesByProperty;
+	}
+
+	private String getHighestComment(Resource subj)
+		throws OpenRDFException
+	{
+		String comment = null;
+		CloseableIteration<? extends Literal,? extends OpenRDFException> iter = Statements.getObjectLiterals(subj, RDFS.COMMENT, this);
+		try {
+			while(iter.hasNext()) {
+				Literal l = iter.next();
+				String label = l.getLabel();
+				if((comment != null && label.compareTo(comment) > 0) || (comment == null)) {
+					comment = label;
+				}
+			}
+		}
+		finally {
+			iter.close();
+		}
+		return comment;
 	}
 
 	@Override

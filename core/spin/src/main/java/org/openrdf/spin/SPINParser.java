@@ -290,6 +290,7 @@ public class SPINParser {
 			else if (UPDATE_TYPES.contains(queryType)) {
 				return false;
 			}
+			// else try the next queryType
 		}
 		return false;
 	}
