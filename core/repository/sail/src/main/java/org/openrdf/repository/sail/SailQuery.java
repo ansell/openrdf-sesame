@@ -27,6 +27,7 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.impl.AbstractQuery;
 import org.openrdf.query.impl.FallbackDataset;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.sail.SailConnection;
 
 /**
  * @author Arjohn Kampman
@@ -36,18 +37,32 @@ public abstract class SailQuery extends AbstractQuery {
 	private final ParsedQuery parsedQuery;
 
 	private final SailRepositoryConnection con;
+	private final SailConnection sailCon;
 
+	protected SailQuery(ParsedQuery parsedQuery, SailConnection con) {
+		this.parsedQuery = parsedQuery;
+		this.sailCon = con;
+		this.con = null;
+	}
+
+	@Deprecated
 	protected SailQuery(ParsedQuery parsedQuery, SailRepositoryConnection con) {
 		this.parsedQuery = parsedQuery;
 		this.con = con;
+		this.sailCon = con.getSailConnection();
 	}
 
 	public ParsedQuery getParsedQuery() {
 		return parsedQuery;
 	}
 
+	@Deprecated
 	protected SailRepositoryConnection getConnection() {
 		return con;
+	}
+
+	protected SailConnection getSailConnection() {
+		return sailCon;
 	}
 
 	protected CloseableIteration<? extends BindingSet, QueryEvaluationException> enforceMaxQueryTime(

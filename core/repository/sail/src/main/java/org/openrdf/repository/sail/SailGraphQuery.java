@@ -43,8 +43,11 @@ import org.openrdf.sail.SailException;
  */
 public class SailGraphQuery extends SailQuery implements GraphQuery {
 
+	private final ValueFactory vf;
+
 	protected SailGraphQuery(ParsedGraphQuery tupleQuery, SailRepositoryConnection con) {
-		super(tupleQuery, con);
+		super(tupleQuery, con.getSailConnection());
+		this.vf = con.getValueFactory();
 	}
 
 	@Override
@@ -52,6 +55,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		return (ParsedGraphQuery)super.getParsedQuery();
 	}
 
+	@Override
 	public GraphQueryResult evaluate()
 		throws QueryEvaluationException
 	{
@@ -60,7 +64,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		try {
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
 			
-			SailConnection sailCon = getConnection().getSailConnection();
+			SailConnection sailCon = getSailConnection();
 			bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
 			// Filters out all partial and invalid matches
@@ -80,7 +84,6 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 			bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 			// Convert the BindingSet objects to actual RDF statements
-			final ValueFactory vf = getConnection().getRepository().getValueFactory();
 			CloseableIteration<Statement, QueryEvaluationException> stIter;
 			stIter = new ConvertingIteration<BindingSet, Statement, QueryEvaluationException>(bindingsIter) {
 
@@ -107,6 +110,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		}
 	}
 
+	@Override
 	public void evaluate(RDFHandler handler)
 		throws QueryEvaluationException, RDFHandlerException
 	{

@@ -33,7 +33,7 @@ import org.openrdf.sail.SailException;
 public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 
 	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailRepositoryConnection sailConnection) {
-		super(tupleQuery, sailConnection);
+		super(tupleQuery, sailConnection.getSailConnection());
 	}
 
 	@Override
@@ -41,6 +41,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 		return (ParsedBooleanQuery)super.getParsedQuery();
 	}
 
+	@Override
 	public boolean evaluate()
 		throws QueryEvaluationException
 	{
@@ -53,7 +54,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 		}
 
 		try {
-			SailConnection sailCon = getConnection().getSailConnection();
+			SailConnection sailCon = getSailConnection();
 
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
 			bindingsIter = sailCon.evaluate(tupleExpr, dataset, getBindings(), getIncludeInferred());
