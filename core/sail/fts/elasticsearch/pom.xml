@@ -14,7 +14,7 @@
 	<description>StackableSail implementation offering full-text search on literals, based on Elastic Search.</description>
 
 	<properties>
-		<elasticsearch.version>1.5.2</elasticsearch.version>
+		<elasticsearch.version>1.6.0</elasticsearch.version>
 	</properties>
 
 	<dependencies>
@@ -43,7 +43,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-lucene-test</artifactId>
+			<artifactId>sesame-lucene-testsuite</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

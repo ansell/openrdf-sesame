@@ -15,7 +15,6 @@
 
 	<modules>
 		<module>lucene-api</module>
-		<module>lucene-test</module>
 		<module>lucene</module>
 		<module>lucene4</module>
 		<module>lucenesail</module>
