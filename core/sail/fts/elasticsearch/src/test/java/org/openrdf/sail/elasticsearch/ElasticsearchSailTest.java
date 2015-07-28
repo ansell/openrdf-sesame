@@ -25,11 +25,11 @@ import org.openrdf.sail.lucene.AbstractLuceneSailTest;
 import org.openrdf.sail.lucene.LuceneSail;
 
 public class ElasticsearchSailTest extends AbstractLuceneSailTest {
-
 	private static final String DATA_DIR = "target/test-data";
 
 	@Override
-	protected void configure(LuceneSail sail) {
+	protected void configure(LuceneSail sail)
+	{
 		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, ElasticsearchIndex.class.getName());
 		sail.setParameter(LuceneSail.LUCENE_DIR_KEY, DATA_DIR);
 		sail.setParameter(ElasticsearchIndex.WAIT_FOR_STATUS_KEY, "green");
@@ -37,8 +37,7 @@ public class ElasticsearchSailTest extends AbstractLuceneSailTest {
 	}
 
 	@Override
-	public void tearDown()
-		throws IOException, RepositoryException
+	public void tearDown() throws IOException, RepositoryException
 	{
 		super.tearDown();
 		FileSystemUtils.deleteRecursively(new File(DATA_DIR));

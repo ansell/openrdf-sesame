@@ -16,53 +16,40 @@
  */
 package org.openrdf.sail.lucene3;
 
-import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.spatial.geohash.GeoHashUtils;
-import org.apache.lucene.spatial.tier.projections.CartesianTierPlotter;
-import org.apache.lucene.util.NumericUtils;
+
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
-import com.spatial4j.core.shape.Point;
-import com.spatial4j.core.shape.Shape;
 
 /**
+ *
  * @author MJAHale
  */
-public class LuceneDocument implements SearchDocument {
-
+public class LuceneDocument implements SearchDocument
+{
 	private final Document doc;
 
-	private final LuceneIndex index;
-
-	/**
-	 * To be removed, no longer used.
-	 */
-	@Deprecated
-	public LuceneDocument() {
-		this(null);
+	public LuceneDocument()
+	{
+		this(new Document());
 	}
 
-	public LuceneDocument(LuceneIndex index) {
-		this(new Document(), index);
-	}
-
-	public LuceneDocument(Document doc, LuceneIndex index) {
+	public LuceneDocument(Document doc)
+	{
 		this.doc = doc;
-		this.index = index;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, LuceneIndex index) {
-		this(index);
+	public LuceneDocument(String id, String resourceId, String context)
+	{
+		this();
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -105,16 +92,17 @@ public class LuceneDocument implements SearchDocument {
 	}
 
 	@Override
-	public Set<String> getPropertyNames() {
+	public Collection<String> getPropertyNames() {
 		List<Fieldable> fields = doc.getFields();
-		Set<String> names = new HashSet<String>();
-		for (Fieldable field : fields) {
+		List<String> names = new ArrayList<String>(fields.size());
+		for(Fieldable field : fields) {
 			String name = field.name();
 			if (SearchFields.isPropertyField(name))
 				names.add(name);
 		}
 		return names;
 	}
+
 
 	/**
 	 * Stores and indexes a property in a Document. We don't have to recalculate
@@ -152,27 +140,5 @@ public class LuceneDocument implements SearchDocument {
 	@Override
 	public List<String> getProperty(String name) {
 		return Arrays.asList(doc.getValues(name));
-	}
-
-	@Override
-	public void addGeoProperty(String field, String value) {
-		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
-		try {
-			Shape shape = index.getSpatialContext().readShapeFromWkt(value);
-			if (shape instanceof Point) {
-				Point p = (Point)shape;
-				doc.add(new Field(LuceneIndex.GEOHASH_FIELD_PREFIX + field, GeoHashUtils.encode(p.getY(),
-						p.getX()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
-				CartesianTiers tiers = index.getCartesianTiers(field);
-				for (CartesianTierPlotter ctp : tiers.getPlotters()) {
-					double boxId = ctp.getTierBoxId(p.getY(), p.getX());
-					doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId),
-							Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
-				}
-			}
-		}
-		catch (ParseException e) {
-			// ignore
-		}
 	}
 }

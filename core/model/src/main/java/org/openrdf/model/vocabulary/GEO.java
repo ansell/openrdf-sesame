@@ -21,8 +21,6 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * @since 2.8.5
- * @version 1.0
  * @see http://www.opengeospatial.org/standards/geosparql
  */
 public class GEO {

@@ -31,10 +31,6 @@ import org.openrdf.sail.lucene.SearchQuery;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
-/**
- * To be removed, no longer used.
- */
-@Deprecated
 public class ElasticsearchQuery implements SearchQuery {
 	private final SearchRequestBuilder request;
 	private final QueryBuilder qb;
@@ -60,7 +56,7 @@ public class ElasticsearchQuery implements SearchQuery {
 		{
 			@Override
 			public DocumentScore apply(SearchHit hit) {
-				return new ElasticsearchDocumentScore(hit, null);
+				return new ElasticsearchDocumentScore(hit);
 			}
 		});
 	}

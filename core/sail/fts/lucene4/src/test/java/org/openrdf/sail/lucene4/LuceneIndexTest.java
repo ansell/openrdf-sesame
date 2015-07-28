@@ -232,19 +232,16 @@ public class LuceneIndexTest {
 	}
 
 	/**
-	 * NB: this is a convenient but very slow way of getting termDocs. It is
-	 * sufficient for testing purposes.
-	 * 
-	 * @throws IOException
+	 * NB: this is a convenient but very slow way of getting termDocs.
+	 * It is sufficient for testing purposes.
+	 * @throws IOException 
 	 */
-	private static DocsEnum termDocs(IndexReader reader, Term term)
-		throws IOException
+	private static DocsEnum termDocs(IndexReader reader, Term term) throws IOException
 	{
 		return MultiFields.getTermDocsEnum(reader, MultiFields.getLiveDocs(reader), term.field(), term.bytes());
 	}
 
-	private static boolean next(DocsEnum docs)
-		throws IOException
+	private static boolean next(DocsEnum docs) throws IOException
 	{
 		return (docs.nextDoc() != DocsEnum.NO_MORE_DOCS);
 	}

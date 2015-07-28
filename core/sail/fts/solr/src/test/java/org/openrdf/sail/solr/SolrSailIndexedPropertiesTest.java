@@ -25,18 +25,17 @@ import org.openrdf.sail.lucene.AbstractLuceneSailIndexedPropertiesTest;
 import org.openrdf.sail.lucene.LuceneSail;
 
 public class SolrSailIndexedPropertiesTest extends AbstractLuceneSailIndexedPropertiesTest {
-
 	private static final String DATA_DIR = "target/test-data";
 
 	@Override
-	protected void configure(LuceneSail sail) {
+	protected void configure(LuceneSail sail)
+	{
 		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, SolrIndex.class.getName());
 		sail.setParameter(SolrIndex.SERVER_KEY, "embedded:");
 	}
 
 	@Override
-	public void tearDown()
-		throws IOException, RepositoryException
+	public void tearDown() throws IOException, RepositoryException
 	{
 		super.tearDown();
 		FileUtils.deleteDirectory(new File(DATA_DIR));

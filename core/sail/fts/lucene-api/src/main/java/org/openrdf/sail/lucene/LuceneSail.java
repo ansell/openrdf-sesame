@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * full-text search on all Literals. <h2>Setting up a LuceneSail</h2> LuceneSail
  * works in two modes: storing its data into a directory on the harddisk or into
  * a RAMDirectory in RAM (which is discarded when the program ends). Example
- * with storage in a folder: <pre>
+ * with storage in a folder: <code>
    // create a sesame memory sail
 	MemoryStore memoryStore = new MemoryStore();
 
@@ -68,8 +66,8 @@ import org.slf4j.LoggerFactory;
 	// create a Repository to access the sails
 	SailRepository repository = new SailRepository(lucenesail);
 	repository.initialize();
-	</pre> Example with storage in a RAM directory:
- * <pre>
+	</code> Example with storage in a RAM directory:
+ * <code>
    // create a sesame memory sail
 	MemoryStore memoryStore = new MemoryStore();
 
@@ -84,7 +82,7 @@ import org.slf4j.LoggerFactory;
 	// create a Repository to access the sails
 	SailRepository repository = new SailRepository(lucenesail);
 	repository.initialize();
-	</pre> <h2>Asking full-text queries</h2> Text queries are expressed using
+	</code> <h2>Asking full-text queries</h2> Text queries are expressed using
  * the virtual properties of the LuceneSail. An example query looks like this
  * (SERQL): <code>
  * SELECT Subject, Score, Snippet 
@@ -118,8 +116,7 @@ import org.slf4j.LoggerFactory;
  * <code>{@link org.openrdf.repository.RepositoryConnection#clear(org.openrdf.model.Resource[])}</code>
  * method with no arguments. <code>clear()</code>. This will delete the index.</li>
  * </ul>
- * <h2>Handling of Contexts</h2>
- * Each lucene document contains a field for every
+ * <h2>Handling of Contexts</h2> Each lucene document contains a field for every
  * contextIDs that contributed to the document. <b>NULL</b> contexts are marked
  * using the String {@link LuceneIndex#CONTEXT_NULL} ("null") and stored in the
  * lucene field {@link LuceneIndex#CONTEXT_FIELD_NAME} ("context"). This means
@@ -133,9 +130,9 @@ import org.slf4j.LoggerFactory;
  * one document) - if there are multiple C, remember the uri of D, delete D, and
  * query (s,p,o, ?) from the underlying store after committing the operation-
  * this returns the literals of D', add D' as new document This will probably be
- * both fast in the common case and capable enough in the multiple-C case.
- * <h2 name="indexedfieldssyntax">Defining the indexed Fields</h2>
- * The property {@link #INDEXEDFIELDS} is to configure which fields to index and
+ * both fast in the common case and capable enough in the multiple-C case. <h2 name="indexedfieldssyntax">
+ * Defining the indexed Fields</h2> The property "indexedfieldssyntax" set with
+ * the property {@link #INDEXEDFIELDS} is to configure which fields to index and
  * to project a property to another. Syntax:
  * 
  * <pre>
@@ -143,7 +140,6 @@ import org.slf4j.LoggerFactory;
  * index.1=http://www.w3.org/2000/01/rdf-schema#label
  * index.2=http://www.w3.org/2000/01/rdf-schema#comment
  * # project http://xmlns.com/foaf/0.1/name to rdfs:label
- * http\://xmlns.com/foaf/0.1/name=http\://www.w3.org/2000/01/rdf-schema#label
  * </pre>
  * 
  * <h2>Datatypes</h2> Datatypes are ignored in the LuceneSail.
@@ -285,14 +281,6 @@ public class LuceneSail extends NotifyingSailWrapper {
 	public static final String MAX_DOCUMENTS_KEY = "maxDocuments";
 
 	/**
-	 * Set this key to configure which fields contain WKT
-	 * and should be spatially indexed.
-	 * The value should be a space-separated list of URIs.
-	 * Default is http://www.opengis.net/ont/geosparql#asWKT.
-	 */
-	public static final String WKT_FIELDS = "wktFields";
-
-	/**
 	 * Set this key to configure the SearchIndex class implementation.
 	 * Default is org.openrdf.sail.lucene.LuceneIndex.
 	 */
@@ -350,9 +338,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 		throws SailException
 	{
 		try {
-			if(luceneIndex != null) {
-				luceneIndex.shutDown();
-			}
+			luceneIndex.shutDown();
 		}
 		catch (IOException e) {
 			throw new SailException(e);
@@ -568,13 +554,6 @@ public class LuceneSail extends NotifyingSailWrapper {
 					statement.getContext());
 		else
 			return statement;
-	}
-
-	protected Collection<SearchQueryInterpreter> getSearchQueryInterpreters() {
-		return Arrays.<SearchQueryInterpreter>asList(
-			new QuerySpecBuilder(incompleteQueryFails),
-			new DistanceQuerySpecBuilder(luceneIndex)
-		);
 	}
 }
 

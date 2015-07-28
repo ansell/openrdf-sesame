@@ -38,14 +38,7 @@ public interface SearchIndex {
 	void initialize(Properties parameters)
 		throws Exception;
 
-	/**
-	 * To be removed from interface, prefer {@link evaluate(SearchQueryEvaluator query)}.
-	 */
-	@Deprecated
 	Collection<BindingSet> evaluate(QuerySpec query)
-		throws SailException;
-
-	Collection<BindingSet> evaluate(SearchQueryEvaluator query)
 		throws SailException;
 
 	void beginReading()
@@ -67,11 +60,6 @@ public interface SearchIndex {
 	 * @return true if the given literal will be indexed by this LuceneIndex
 	 */
 	boolean accept(Literal literal);
-
-	/**
-	 * Returns true if the given property contains a geometry.
-	 */
-	boolean isGeoProperty(String propertyName);
 
 	/**
 	 * Begins a transaction.

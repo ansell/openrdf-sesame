@@ -26,19 +26,17 @@ import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
 import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.openrdf.model.Literal;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.serql.SeRQLParser;
-import org.openrdf.sail.SailException;
 
 public class QuerySpecBuilderTest {
 
@@ -68,10 +66,10 @@ public class QuerySpecBuilderTest {
 		ParsedQuery query = parser.parseQuery(buffer.toString(), null);
 		TupleExpr tupleExpr = query.getTupleExpr();
 		System.out.print(buffer.toString());
-		Collection<SearchQueryEvaluator> queries = process(interpreter, tupleExpr);
+		Set<QuerySpec> queries = interpreter.process(tupleExpr, new QueryBindingSet());
 		assertEquals(1, queries.size());
 
-		QuerySpec querySpec = (QuerySpec)queries.iterator().next();
+		QuerySpec querySpec = queries.iterator().next();
 		assertEquals("Subject", querySpec.getMatchesPattern().getSubjectVar().getName());
 		assertEquals("my Lucene query",
 				((Literal)querySpec.getQueryPattern().getObjectVar().getValue()).getLabel());
@@ -104,13 +102,13 @@ public class QuerySpecBuilderTest {
 		ParsedQuery query = parser.parseQuery(buffer.toString(), null);
 		TupleExpr tupleExpr = query.getTupleExpr();
 
-		Collection<SearchQueryEvaluator> queries = process(interpreter, tupleExpr);
+		Set<QuerySpec> queries = interpreter.process(tupleExpr, new QueryBindingSet());
 		assertEquals(2, queries.size());
-		Iterator<SearchQueryEvaluator> i = queries.iterator();
+		Iterator<QuerySpec> i = queries.iterator();
 		boolean matched1 = false;
 		boolean matched2 = false;
 		while (i.hasNext()) {
-			QuerySpec querySpec = (QuerySpec)i.next();
+			QuerySpec querySpec = i.next();
 			if ("sub1".equals(querySpec.getMatchesVariableName())) {
 				// Matched the first
 				assertEquals("sub1", querySpec.getMatchesPattern().getSubjectVar().getName());
@@ -215,15 +213,7 @@ public class QuerySpecBuilderTest {
 	{
 		ParsedQuery query = parser.parseQuery(queryString, null);
 		TupleExpr tupleExpr = query.getTupleExpr();
-		Collection<SearchQueryEvaluator> queries = process(interpreter, tupleExpr);
+		Set<QuerySpec> queries = interpreter.process(tupleExpr, new QueryBindingSet());
 		assertEquals("expect one query", 1, queries.size());
-	}
-
-	private Collection<SearchQueryEvaluator> process(SearchQueryInterpreter interpreter, TupleExpr tupleExpr)
-		throws SailException
-	{
-		List<SearchQueryEvaluator> queries = new ArrayList<SearchQueryEvaluator>();
-		interpreter.process(tupleExpr, new QueryBindingSet(), queries);
-		return queries;
 	}
 }

@@ -25,7 +25,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class GEOF {
 
-	public static final String NAMESPACE = "http://www.opengis.net/def/function/geosparql/";
+	private static final String NAMESPACE = "http://www.opengis.net/def/function/geosparql/";
 
 	public static final URI DISTANCE;
 	public static final URI BUFFER;
