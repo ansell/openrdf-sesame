@@ -16,7 +16,8 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.BinaryTupleOperator;
@@ -24,6 +25,7 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
@@ -63,10 +65,6 @@ public class EvaluationStatistics {
 
 	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
 
-		private static double VAR_CARDINALITY = 10;
-
-		private static double UNBOUND_SERVICE_CARDINALITY = 100000;
-
 		protected double cardinality;
 
 		public double getCardinality() {
@@ -75,47 +73,37 @@ public class EvaluationStatistics {
 
 		@Override
 		public void meet(EmptySet node) {
-			// no binding sets
-			cardinality = 0.0;
+			cardinality = 0;
 		}
 
 		@Override
 		public void meet(SingletonSet node) {
-			// one empty binding set
-			cardinality = 1.0;
+			cardinality = 1;
 		}
 
 		@Override
 		public void meet(BindingSetAssignment node) {
-			// actual cardinality is node.getBindingSets().size() binding sets
-			// but cost is cheap as we don't need to query the triple store
-			// so effective cardinality is 1 or a very slowly increasing function of node.getBindingSets().size().
-			cardinality = 1.0;
+			cardinality = 0;
 		}
 
 		@Override
 		public void meet(ZeroLengthPath node) {
-			Var subjVar = node.getSubjectVar();
-			Var objVar = node.getObjectVar();
-			if((subjVar != null && subjVar.hasValue()) || (objVar != null && objVar.hasValue())) {
-				// subj = obj
-				cardinality = 1.0;
-			}
-			else {
-				// actual cardinality = count(union(subjs, objs))
-				// but cost is equivalent to ?s ?p ?o ?c (impl scans all statements)
-				// so due to the lower actual cardinality we value it in preference to a fully unbound statement pattern.
-				cardinality = getSubjectCardinality(subjVar) * getObjectCardinality(objVar) * getContextCardinality(node.getContextVar());
-			}
+			// cardinality is the same as that of a statement pattern with three unbound vars. 
+			cardinality = 1000.0;
 		}
 
 		@Override
 		public void meet(ArbitraryLengthPath node) {
 
-			// actual cardinality = count(union(subjs, objs))
-			// but might require getting all statements
-			// so due to the lower actual cardinality we value it in preference to a fully unbound statement pattern.
-			cardinality = getSubjectCardinality(node.getSubjectVar()) * getObjectCardinality(node.getObjectVar()) * getContextCardinality(node.getContextVar());
+			List<Var> vars = new ArrayList<Var>();
+			vars.add(node.getSubjectVar());
+			vars.add(node.getObjectVar());
+
+			int constantVarCount = countConstantVars(vars);
+			double unboundVarFactor = (double)(node.getBindingNames().size() - constantVarCount)
+					/ node.getBindingNames().size();
+			
+			cardinality = Math.pow(1000.0, unboundVarFactor);
 		}
 
 		@Override
@@ -124,7 +112,7 @@ public class EvaluationStatistics {
 				// the URI is not available, may be computed in the course of the
 				// query
 				// => use high cost to order the SERVICE node late in the query plan
-				cardinality = UNBOUND_SERVICE_CARDINALITY;
+				cardinality = 100000;
 			}
 			else {
 				ServiceNodeAnalyzer serviceAnalyzer = new ServiceNodeAnalyzer();
@@ -153,70 +141,10 @@ public class EvaluationStatistics {
 		}
 
 		protected double getCardinality(StatementPattern sp) {
-			return getSubjectCardinality(sp) * getPredicateCardinality(sp) * getObjectCardinality(sp)
-					* getContextCardinality(sp);
-		}
-
-		/**
-		 * Override this if you are able to determine the cardinality based not
-		 * only on the subjectVar itself but also the other vars (e.g. the
-		 * predicate value might determine a subject subset).
-		 */
-		protected double getSubjectCardinality(StatementPattern sp) {
-			return getSubjectCardinality(sp.getSubjectVar());
-		}
-
-		protected double getSubjectCardinality(Var var) {
-			return getCardinality(VAR_CARDINALITY, var);
-		}
-
-		/**
-		 * Override this if you are able to determine the cardinality based not
-		 * only on the predicateVar itself but also the other vars (e.g. the
-		 * subject value might determine a predicate subset).
-		 */
-		protected double getPredicateCardinality(StatementPattern sp) {
-			return getPredicateCardinality(sp.getPredicateVar());
-		}
-
-		protected double getPredicateCardinality(Var var) {
-			return getCardinality(VAR_CARDINALITY, var);
-		}
-
-		/**
-		 * Override this if you are able to determine the cardinality based not
-		 * only on the objectVar itself but also the other vars (e.g. the
-		 * predicate value might determine an object subset).
-		 */
-		protected double getObjectCardinality(StatementPattern sp) {
-			return getObjectCardinality(sp.getObjectVar());
-		}
-
-		protected double getObjectCardinality(Var var) {
-			return getCardinality(VAR_CARDINALITY, var);
-		}
-
-		/**
-		 * Override this if you are able to determine the cardinality based not
-		 * only on the contextVar itself but also the other vars (e.g. the subject
-		 * value might determine a context subset).
-		 */
-		protected double getContextCardinality(StatementPattern sp) {
-			return getContextCardinality(sp.getContextVar());
-		}
-
-		protected double getContextCardinality(Var var) {
-			return getCardinality(VAR_CARDINALITY, var);
-		}
-
-		protected double getCardinality(double varCardinality, Var var) {
-			return (var == null || var.hasValue()) ? 1.0 : varCardinality;
-		}
-
-		protected double getCardinality(double varCardinality, Collection<Var> vars) {
+			List<Var> vars = sp.getVarList();
 			int constantVarCount = countConstantVars(vars);
-			double unboundVarFactor = vars.size() - constantVarCount;
-			return Math.pow(varCardinality, unboundVarFactor);
+			double unboundVarFactor = (double)(vars.size() - constantVarCount) / vars.size();
+			return Math.pow(1000.0, unboundVarFactor);
 		}
 
 		protected int countConstantVars(Iterable<Var> vars) {
