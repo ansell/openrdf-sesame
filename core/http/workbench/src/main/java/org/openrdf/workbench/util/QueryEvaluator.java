@@ -41,6 +41,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterRegistry;
+import org.openrdf.rio.Rio;
 import org.openrdf.workbench.exceptions.BadRequestException;
 
 /**
@@ -288,8 +289,8 @@ public final class QueryEvaluator {
 					offset, limit);
 		}
 		else {
-			final RDFFormat format = req.isParameterPresent(ACCEPT) ? RDFFormat.forMIMEType(req.getParameter(ACCEPT))
-					: null;
+			final RDFFormat format = req.isParameterPresent(ACCEPT) ? Rio.getWriterFormatForMIMEType(
+					req.getParameter(ACCEPT)).orElse(null) : null;
 			if (query instanceof GraphQuery) {
 				GraphQuery graphQuery = (GraphQuery)query;
 				if (null == format) {
@@ -297,7 +298,7 @@ public final class QueryEvaluator {
 							offset, limit);
 				}
 				else {
-					this.evaluateGraphQuery(RDFWriterRegistry.getInstance().get(format).getWriter(out), graphQuery);
+					this.evaluateGraphQuery(Rio.createWriter(format, out), graphQuery);
 				}
 			}
 			else if (query instanceof BooleanQuery) {

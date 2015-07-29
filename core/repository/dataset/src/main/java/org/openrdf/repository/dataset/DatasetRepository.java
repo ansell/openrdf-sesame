@@ -33,6 +33,7 @@ import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParserRegistry;
+import org.openrdf.rio.Rio;
 
 public class DatasetRepository extends RepositoryWrapper {
 
@@ -103,12 +104,8 @@ public class DatasetRepository extends RepositoryWrapper {
 		if (semiColonIdx >= 0) {
 			mimeType = mimeType.substring(0, semiColonIdx);
 		}
-		RDFFormat format = RDFParserRegistry.getInstance().getFileFormatForMIMEType(mimeType);
-
-		// Fall back to using file name extensions
-		if (format == null) {
-			format = RDFParserRegistry.getInstance().getFileFormatForFileName(url.getPath());
-		}
+		RDFFormat format = Rio.getParserFormatForMIMEType(mimeType).orElse(
+				Rio.getParserFormatForFileName(url.getPath()).orElseThrow(Rio.unsupportedFormat(mimeType)));
 
 		InputStream stream = urlCon.getInputStream();
 		try {

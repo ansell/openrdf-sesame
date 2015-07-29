@@ -27,11 +27,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 import org.openrdf.model.impl.SimpleBNode;
 import org.openrdf.model.impl.SimpleLiteral;
 import org.openrdf.model.impl.SimpleIRI;
@@ -77,7 +77,7 @@ public abstract class AbstractQueryResultIOTest {
 	{
 		String fileName = getFileName();
 
-		QueryResultFormat format;
+		Optional<QueryResultFormat> format;
 
 		if (getFormat() instanceof TupleQueryResultFormat) {
 			format = QueryResultIO.getParserFormatForFileName(fileName);
@@ -86,8 +86,8 @@ public abstract class AbstractQueryResultIOTest {
 			format = QueryResultIO.getBooleanParserFormatForFileName(fileName);
 		}
 
-		assertNotNull("Could not find parser for this format.", format);
-		assertEquals(getFormat(), format);
+		assertTrue("Could not find parser for this format.", format.isPresent());
+		assertEquals(getFormat(), format.get());
 	}
 
 	protected TupleQueryResult createTupleSingleVarMultipleBindingSets() {
@@ -121,7 +121,7 @@ public abstract class AbstractQueryResultIOTest {
 		solution9.addBinding("a", new SimpleLiteral("newline at the end \n", XMLSchema.STRING));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
-				solution5, solution6, solution7 , solution8, solution9);
+				solution5, solution6, solution7, solution8, solution9);
 
 		IteratingTupleQueryResult result = new IteratingTupleQueryResult(bindingNames, bindingSetList);
 
@@ -201,7 +201,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
 		writer.handleLinks(links);
@@ -210,7 +210,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 	}
@@ -221,7 +221,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.startDocument();
 		writer.handleStylesheet(stylesheetUrl);
 		writer.startHeader();
@@ -231,7 +231,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 	}
@@ -243,7 +243,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		for (String nextPrefix : namespaces.keySet()) {
 			writer.handleNamespace(nextPrefix, namespaces.get(nextPrefix));
 		}
@@ -256,7 +256,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 	}
@@ -271,7 +271,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		if (writer.getSupportedSettings().contains(BasicQueryWriterSettings.ADD_SESAME_QNAME)) {
 			// System.out.println("Enabling Sesame qname support");
 			writer.getWriterConfig().set(BasicQueryWriterSettings.ADD_SESAME_QNAME, true);
@@ -291,7 +291,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + result);
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 
@@ -314,7 +314,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 
 		// only do this test if the callback is enabled
 		if (writer.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK)) {
@@ -337,7 +337,7 @@ public abstract class AbstractQueryResultIOTest {
 			result = result.substring(callback.length() + 1, result.length() - 2);
 
 			ByteArrayInputStream in = new ByteArrayInputStream(result.getBytes("UTF-8"));
-			TupleQueryResult output = QueryResultIO.parse(in, format);
+			TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 			assertQueryResultsEqual(expected, output);
 		}
@@ -349,13 +349,13 @@ public abstract class AbstractQueryResultIOTest {
 		QueryEvaluationException, QueryResultHandlerException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		QueryResultIO.write(input, format, out);
+		QueryResultIO.writeTuple(input, format, out);
 		input.close();
 
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 	}
@@ -366,14 +366,14 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.handleStylesheet(stylesheetUrl);
 		QueryResults.report(input, writer);
 
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 	}
@@ -384,7 +384,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		// Test for handling when startDocument and startHeader are not called
 		writer.handleStylesheet(stylesheetUrl);
 		writer.handleLinks(links);
@@ -393,7 +393,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 	}
@@ -404,7 +404,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		// Test for handling when startDocument and startHeader are not called
 		writer.handleStylesheet(stylesheetUrl);
 		writer.startQueryResult(input.getBindingNames());
@@ -425,7 +425,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResult output = QueryResultIO.parse(in, format);
+		TupleQueryResult output = QueryResultIO.parseTuple(in, format);
 
 		assertQueryResultsEqual(expected, output);
 	}
@@ -443,7 +443,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		// Test for handling when startDocument and startHeader are not called
 		writer.startDocument();
 		writer.handleStylesheet(stylesheetUrl);
@@ -484,10 +484,10 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		QueryResultIO.write(input, format, out);
+		QueryResultIO.writeTuple(input, format, out);
 		out.flush();
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResultParser parser = QueryResultIO.createParser(format);
+		TupleQueryResultParser parser = QueryResultIO.createTupleParser(format);
 		// This should perform a full parse to verify the document, even though
 		// the handler is not set
 		parser.parse(in);
@@ -521,14 +521,14 @@ public abstract class AbstractQueryResultIOTest {
 		}
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		BooleanQueryResultWriter writer = QueryResultIO.createWriter(matchingBooleanFormat, out);
+		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(matchingBooleanFormat, out);
 		// Test for handling when handler is not set
 		writer.handleBoolean(input);
 
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		TupleQueryResultParser parser = QueryResultIO.createParser(format);
+		TupleQueryResultParser parser = QueryResultIO.createTupleParser(format);
 
 		try {
 			parser.parse(in);
@@ -547,7 +547,7 @@ public abstract class AbstractQueryResultIOTest {
 		QueryResultIO.writeBoolean(input, format, out);
 		out.flush();
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
+		boolean output = QueryResultIO.parseBoolean(in, format);
 
 		assertEquals(output, input);
 	}
@@ -557,14 +557,14 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
 		writer.handleLinks(links);
 		writer.handleBoolean(input);
 
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
+		boolean output = QueryResultIO.parseBoolean(in, format);
 
 		assertEquals(output, input);
 	}
@@ -575,7 +575,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
 		writer.handleLinks(links);
 		// Determine whether this writer also supports startQueryResult, if not,
 		// this test is irrelevant as it will fail early
@@ -606,7 +606,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
 		writer.handleLinks(links);
@@ -615,7 +615,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
+		boolean output = QueryResultIO.parseBoolean(in, format);
 
 		assertEquals(output, input);
 	}
@@ -626,7 +626,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
 		writer.startDocument();
 		writer.handleStylesheet(stylesheetUrl);
 		writer.startHeader();
@@ -636,7 +636,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
+		boolean output = QueryResultIO.parseBoolean(in, format);
 
 		assertEquals(output, input);
 	}
@@ -647,7 +647,7 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
 		for (String nextPrefix : namespaces.keySet()) {
 			writer.handleNamespace(nextPrefix, namespaces.get(nextPrefix));
 		}
@@ -660,7 +660,7 @@ public abstract class AbstractQueryResultIOTest {
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
+		boolean output = QueryResultIO.parseBoolean(in, format);
 
 		assertEquals(output, input);
 	}
@@ -670,14 +670,14 @@ public abstract class AbstractQueryResultIOTest {
 		UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		BooleanQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
 		writer.handleStylesheet(stylesheetUrl);
 		writer.handleBoolean(input);
 
 		// System.out.println("output: " + out.toString("UTF-8"));
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		boolean output = QueryResultIO.parse(in, format);
+		boolean output = QueryResultIO.parseBoolean(in, format);
 
 		assertEquals(output, input);
 	}
@@ -695,10 +695,10 @@ public abstract class AbstractQueryResultIOTest {
 		throws QueryResultParseException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		QueryResultIO.write(input, format, out);
+		QueryResultIO.writeBoolean(input, format, out);
 		out.flush();
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		BooleanQueryResultParser parser = QueryResultIO.createParser(format);
+		BooleanQueryResultParser parser = QueryResultIO.createBooleanParser(format);
 		assertEquals(input, parser.parse(in));
 	}
 
@@ -731,10 +731,10 @@ public abstract class AbstractQueryResultIOTest {
 		}
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		QueryResultIO.write(tqr, matchingTupleFormat, out);
+		QueryResultIO.writeTuple(tqr, matchingTupleFormat, out);
 		out.flush();
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-		BooleanQueryResultParser parser = QueryResultIO.createParser(format);
+		BooleanQueryResultParser parser = QueryResultIO.createBooleanParser(format);
 		try {
 			parser.parse(in);
 			Assert.fail("Did not find expected parse exception");

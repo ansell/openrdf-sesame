@@ -19,6 +19,7 @@ package org.openrdf.rio.helpers;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.spi.FileTypeDetector;
+import java.util.Optional;
 
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParserRegistry;
@@ -40,10 +41,10 @@ public class RioFileTypeDetector extends FileTypeDetector {
 	public String probeContentType(Path path)
 		throws IOException
 	{
-		RDFFormat result = Rio.getParserFormatForFileName(path.getFileName().toString());
+		Optional<RDFFormat> result = Rio.getParserFormatForFileName(path.getFileName().toString());
 
-		if (result != null) {
-			return result.getDefaultMIMEType();
+		if (result.isPresent()) {
+			return result.get().getDefaultMIMEType();
 		}
 
 		// Specification says to return null if we could not

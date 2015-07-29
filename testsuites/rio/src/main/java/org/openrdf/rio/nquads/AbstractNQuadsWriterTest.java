@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleValueFactory;
@@ -43,6 +42,7 @@ import org.openrdf.rio.RDFParserFactory;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterTest;
+import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.memory.MemoryStore;
@@ -84,8 +84,16 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 		URL ciaScheme = this.getClass().getResource("/cia-factbook/CIA-onto-enhanced.rdf");
 		URL ciaFacts = this.getClass().getResource("/cia-factbook/CIA-facts-enhanced.rdf");
 
-		con1.add(ciaScheme, ciaScheme.toExternalForm(), RDFFormat.forFileName(ciaScheme.toExternalForm()));
-		con1.add(ciaFacts, ciaFacts.toExternalForm(), RDFFormat.forFileName(ciaFacts.toExternalForm()));
+		con1.add(
+				ciaScheme,
+				ciaScheme.toExternalForm(),
+				Rio.getParserFormatForFileName(ciaScheme.toExternalForm()).orElseThrow(
+						Rio.unsupportedFormat(ciaScheme.toExternalForm())));
+		con1.add(
+				ciaFacts,
+				ciaFacts.toExternalForm(),
+				Rio.getParserFormatForFileName(ciaFacts.toExternalForm()).orElseThrow(
+						Rio.unsupportedFormat(ciaFacts.toExternalForm())));
 
 		StringWriter writer = new StringWriter();
 		RDFWriter rdfWriter = rdfWriterFactory.getWriter(writer);
@@ -111,8 +119,7 @@ public abstract class AbstractNQuadsWriterTest extends RDFWriterTest {
 	{
 		StatementCollector statementCollector = new StatementCollector();
 		parser.setRDFHandler(statementCollector);
-		parser.parse(this.getClass().getResourceAsStream("/testcases/nquads/test2.nq"),
-				"http://test.base.uri");
+		parser.parse(this.getClass().getResourceAsStream("/testcases/nquads/test2.nq"), "http://test.base.uri");
 
 		Assert.assertEquals(400, statementCollector.getStatements().size());
 

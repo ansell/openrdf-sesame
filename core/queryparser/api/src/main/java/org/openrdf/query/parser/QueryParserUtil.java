@@ -16,11 +16,6 @@
  */
 package org.openrdf.query.parser;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.openrdf.query.IncompatibleOperationException;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
@@ -35,13 +30,9 @@ public class QueryParserUtil {
 	public static QueryParser createParser(QueryLanguage ql)
 		throws UnsupportedQueryLanguageException
 	{
-		QueryParserFactory factory = QueryParserRegistry.getInstance().get(ql);
-
-		if (factory != null) {
-			return factory.getParser();
-		}
-
-		throw new UnsupportedQueryLanguageException("No factory available for query language " + ql);
+		QueryParserFactory factory = QueryParserRegistry.getInstance().get(ql).orElseThrow(
+				() -> new UnsupportedQueryLanguageException("No factory available for query language " + ql));
+		return factory.getParser();
 	}
 
 	/**

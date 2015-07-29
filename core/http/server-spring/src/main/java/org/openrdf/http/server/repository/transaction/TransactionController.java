@@ -250,12 +250,16 @@ public class TransactionController extends AbstractController {
 		try {
 			switch (action) {
 				case ADD:
-					conn.add(request.getInputStream(), baseURI,
-							Rio.getParserFormatForMIMEType(request.getContentType()));
+					conn.add(
+							request.getInputStream(),
+							baseURI,
+							Rio.getParserFormatForMIMEType(request.getContentType()).orElseThrow(
+									Rio.unsupportedFormat(request.getContentType())));
 					break;
 				case DELETE:
-					RDFParser parser = Rio.createParser(Rio.getParserFormatForMIMEType(request.getContentType()),
-							conn.getValueFactory());
+					RDFParser parser = Rio.createParser(
+							Rio.getParserFormatForMIMEType(request.getContentType()).orElseThrow(
+									Rio.unsupportedFormat(request.getContentType())), conn.getValueFactory());
 					parser.setRDFHandler(new WildcardRDFRemover(conn));
 					parser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 					parser.parse(request.getInputStream(), baseURI);

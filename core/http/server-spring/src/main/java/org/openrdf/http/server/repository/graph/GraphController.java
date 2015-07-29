@@ -179,10 +179,8 @@ public class GraphController extends AbstractController {
 
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 
-		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType);
-		if (rdfFormat == null) {
-			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType);
-		}
+		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType).orElseThrow(
+				() -> new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType));
 
 		ValueFactory vf = repository.getValueFactory();
 
@@ -225,8 +223,8 @@ public class GraphController extends AbstractController {
 	/**
 	 * Delete data from the graph.
 	 */
-	private ModelAndView getDeleteDataResult(Repository repository,
-			HttpServletRequest request, HttpServletResponse response)
+	private ModelAndView getDeleteDataResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response)
 		throws ClientHTTPException, ServerHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
@@ -237,11 +235,10 @@ public class GraphController extends AbstractController {
 
 		try {
 			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-			synchronized(repositoryCon)
-			{
+			synchronized (repositoryCon) {
 				repositoryCon.clear(graph);
 			}
-			
+
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
 		catch (RepositoryException e) {

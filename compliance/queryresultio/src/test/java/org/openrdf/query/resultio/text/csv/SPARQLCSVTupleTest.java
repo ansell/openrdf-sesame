@@ -70,7 +70,7 @@ public class SPARQLCSVTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testEndOfLine() throws Exception {
 		TupleQueryResultFormat format = getTupleFormat();
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
 		writer.handleLinks(Arrays.<String> asList());
@@ -83,7 +83,7 @@ public class SPARQLCSVTupleTest extends AbstractQueryResultIOTupleTest {
 	public void testEmptyResults() throws Exception {
 		TupleQueryResultFormat format = getTupleFormat();
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
 		writer.handleLinks(Arrays.<String> asList());
@@ -98,7 +98,7 @@ public class SPARQLCSVTupleTest extends AbstractQueryResultIOTupleTest {
 	{
 		TupleQueryResultFormat format = getTupleFormat();
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
 		writer.handleLinks(Arrays.<String> asList());
@@ -121,7 +121,7 @@ public class SPARQLCSVTupleTest extends AbstractQueryResultIOTupleTest {
 	{
 		TupleQueryResultFormat format = getTupleFormat();
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
 		writer.handleLinks(Arrays.<String> asList());

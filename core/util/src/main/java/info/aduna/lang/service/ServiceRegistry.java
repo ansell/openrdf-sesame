@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -30,8 +31,8 @@ import org.slf4j.LoggerFactory;
 /**
  * A registry that stores services by some key. Upon initialization, the
  * registry searches for service description files at
- * <tt>META-INF/services/&lt;service class name&gt;</tt> and initializes
- * itself accordingly.
+ * <tt>META-INF/services/&lt;service class name&gt;</tt> and initializes itself
+ * accordingly.
  * 
  * @see javax.imageio.spi.ServiceRegistry
  * @author Arjohn Kampman
@@ -51,11 +52,11 @@ public abstract class ServiceRegistry<K, S> {
 				if (services.hasNext()) {
 					S service = services.next();
 
-					S oldService = add(service);
+					Optional<S> oldService = add(service);
 
-					if (oldService != null) {
+					if (oldService.isPresent()) {
 						logger.warn("New service {} replaces existing service {}", service.getClass(),
-								oldService.getClass());
+								oldService.get().getClass());
 					}
 
 					logger.debug("Registered service class {}", service.getClass().getName());
@@ -78,10 +79,10 @@ public abstract class ServiceRegistry<K, S> {
 	 * @param service
 	 *        The service that should be added to the registry.
 	 * @return The previous service that was registered for the same key, or
-	 *         <tt>null</tt> if there was no such service.
+	 *         {@link Optional#empty()} if there was no such service.
 	 */
-	public S add(S service) {
-		return services.put(getKey(service), service);
+	public Optional<S> add(S service) {
+		return Optional.ofNullable(services.put(getKey(service), service));
 	}
 
 	/**
@@ -99,11 +100,11 @@ public abstract class ServiceRegistry<K, S> {
 	 * 
 	 * @param key
 	 *        The key identifying which service to get.
-	 * @return The service for the specified key, or <tt>null</tt> if no such
-	 *         service is avaiable.
+	 * @return The service for the specified key, or {@link Optional#empty()} if
+	 *         no such service is avaiable.
 	 */
-	public S get(K key) {
-		return services.get(key);
+	public Optional<S> get(K key) {
+		return Optional.ofNullable(services.get(key));
 	}
 
 	/**

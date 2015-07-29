@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.WeakHashMap;
 
 import javax.servlet.ServletConfig;
@@ -47,6 +48,8 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
+import org.openrdf.query.resultio.QueryResultFormat;
+import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.repository.RepositoryConnection;
@@ -54,6 +57,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPQueryEvaluationException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 import org.openrdf.workbench.base.TransformationServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.util.QueryEvaluator;
@@ -257,8 +261,7 @@ public class QueryServlet extends TransformationServlet {
 				final String queryLn = req.getParameter(EDIT_PARAMS[0]);
 				final String query = getQueryText(req);
 				final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
-				final IntegerLiteral limit = new IntegerLiteral(new BigInteger(
-						req.getParameter(EDIT_PARAMS[3])));
+				final IntegerLiteral limit = new IntegerLiteral(new BigInteger(req.getParameter(EDIT_PARAMS[3])));
 				builder.result(queryLn, query, infer, limit);
 				builder.end();
 			}
@@ -329,24 +332,24 @@ public class QueryServlet extends TransformationServlet {
 		String ext = "xml";
 		if (req.isParameterPresent(ACCEPT)) {
 			final String accept = req.getParameter(ACCEPT);
-			final RDFFormat format = RDFFormat.forMIMEType(accept);
-			if (format != null) {
-				result = format.getDefaultMIMEType();
-				ext = format.getDefaultFileExtension();
+			final Optional<RDFFormat> format = Rio.getWriterFormatForMIMEType(accept);
+			if (format.isPresent()) {
+				result = format.get().getDefaultMIMEType();
+				ext = format.get().getDefaultFileExtension();
 			}
 			else {
-				final TupleQueryResultFormat tupleFormat = TupleQueryResultFormat.forMIMEType(accept);
+				final Optional<QueryResultFormat> tupleFormat = QueryResultIO.getWriterFormatForMIMEType(accept);
 
-				if (tupleFormat != null) {
-					result = tupleFormat.getDefaultMIMEType();
-					ext = tupleFormat.getDefaultFileExtension();
+				if (tupleFormat.isPresent()) {
+					result = tupleFormat.get().getDefaultMIMEType();
+					ext = tupleFormat.get().getDefaultFileExtension();
 				}
 				else {
-					final BooleanQueryResultFormat booleanFormat = BooleanQueryResultFormat.forMIMEType(accept);
+					final Optional<QueryResultFormat> booleanFormat = QueryResultIO.getBooleanWriterFormatForMIMEType(accept);
 
-					if (booleanFormat != null) {
-						result = booleanFormat.getDefaultMIMEType();
-						ext = booleanFormat.getDefaultFileExtension();
+					if (booleanFormat.isPresent()) {
+						result = booleanFormat.get().getDefaultMIMEType();
+						ext = booleanFormat.get().getDefaultFileExtension();
 					}
 				}
 			}

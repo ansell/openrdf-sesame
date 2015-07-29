@@ -55,11 +55,14 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 import org.openrdf.repository.contextaware.ContextAwareRepository;
 import org.openrdf.repository.sail.SailRepository;
+import org.openrdf.repository.util.Repositories;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * A SPARQL 1.1 Update test, created by reading in a W3C working-group style manifest.  
+ * A SPARQL 1.1 Update test, created by reading in a W3C working-group style
+ * manifest.
  *
  * @author Jeen Broekstra
  */
@@ -136,48 +139,51 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	{
 		dataRep = createRepository();
 
-		URL graphURL = null;
-		RepositoryConnection conn = dataRep.getConnection();
-		try {
+		try (RepositoryConnection conn = dataRep.getConnection();) {
 			conn.clear();
 
 			if (inputDefaultGraph != null) {
-				graphURL = new URL(inputDefaultGraph.stringValue());
-				conn.add(graphURL, null, RDFFormat.forFileName(graphURL.toString()));
+				URL graphURL = new URL(inputDefaultGraph.stringValue());
+				conn.add(
+						graphURL,
+						null,
+						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+								Rio.unsupportedFormat(graphURL.toString())));
 			}
 
 			for (String ng : inputNamedGraphs.keySet()) {
-				graphURL = new URL(inputNamedGraphs.get(ng).stringValue());
-				conn.add(graphURL, null, RDFFormat.forFileName(graphURL.toString()),
-						dataRep.getValueFactory().createIRI(ng));
+				URL graphURL = new URL(inputNamedGraphs.get(ng).stringValue());
+				conn.add(
+						graphURL,
+						null,
+						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+								Rio.unsupportedFormat(graphURL.toString())), dataRep.getValueFactory().createIRI(ng));
 			}
-		}
-		finally {
-			conn.close();
 		}
 
 		expectedResultRepo = createRepository();
 
-		conn = expectedResultRepo.getConnection();
-
-		try {
+		try (RepositoryConnection conn = expectedResultRepo.getConnection();){
 			conn.clear();
 
 			if (resultDefaultGraph != null) {
-				graphURL = new URL(resultDefaultGraph.stringValue());
-				conn.add(graphURL, null, RDFFormat.forFileName(graphURL.toString()));
+				URL graphURL = new URL(resultDefaultGraph.stringValue());
+				conn.add(
+						graphURL,
+						null,
+						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+								Rio.unsupportedFormat(graphURL.toString())));
 			}
 
 			for (String ng : resultNamedGraphs.keySet()) {
-				graphURL = new URL(resultNamedGraphs.get(ng).stringValue());
-				conn.add(graphURL, null, RDFFormat.forFileName(graphURL.toString()),
-						dataRep.getValueFactory().createIRI(ng));
+				URL graphURL = new URL(resultNamedGraphs.get(ng).stringValue());
+				conn.add(
+						graphURL,
+						null,
+						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+								Rio.unsupportedFormat(graphURL.toString())), dataRep.getValueFactory().createIRI(ng));
 			}
 		}
-		finally {
-			conn.close();
-		}
-
 	}
 
 	protected ContextAwareRepository createRepository()
@@ -185,14 +191,12 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	{
 		ContextAwareRepository repo = newRepository();
 		repo.initialize();
-		RepositoryConnection con = repo.getConnection();
-		try {
+		
+		Repositories.consume(repo, con -> {
 			con.clear();
 			con.clearNamespaces();
-		}
-		finally {
-			con.close();
-		}
+		});
+		
 		return repo;
 	}
 
@@ -220,7 +224,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 			con.begin();
 			con.setReadContexts((IRI)null);
-			
+
 			Update update = con.prepareUpdate(QueryLanguage.SPARQL, updateString, requestFileURL);
 			if (this.dataset != null) {
 				update.setDataset(this.dataset);
@@ -228,7 +232,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 			update.execute();
 
 			con.commit();
-			
+
 			// check default graph
 			logger.info("checking default graph");
 			compareGraphs(Iterations.asList(con.getStatements(null, null, null, true, (Resource)null)),
@@ -241,8 +245,8 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 						Iterations.asList(erCon.getStatements(null, null, null, true, contextURI)));
 			}
 		}
-		catch(Exception e) {
-			if(con.isActive()) {
+		catch (Exception e) {
+			if (con.isActive()) {
 				con.rollback();
 			}
 			throw e;

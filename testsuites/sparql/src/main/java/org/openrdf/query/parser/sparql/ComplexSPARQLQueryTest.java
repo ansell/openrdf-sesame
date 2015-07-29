@@ -34,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
@@ -64,6 +63,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.Rio;
 
 /**
  * A set of compliance tests on SPARQL query functionality which can not be
@@ -1946,7 +1946,7 @@ public abstract class ComplexSPARQLQueryTest {
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
 			assertTrue(result.hasNext());
-			
+
 			Value x = result.next().getValue("x");
 			assertNotNull(x);
 			assertTrue(x instanceof IRI);
@@ -2138,7 +2138,9 @@ public abstract class ComplexSPARQLQueryTest {
 		logger.debug("loading dataset {}", dataFile);
 		InputStream dataset = ComplexSPARQLQueryTest.class.getResourceAsStream(dataFile);
 		try {
-			conn.add(dataset, "", RDFFormat.forFileName(dataFile), contexts);
+			conn.add(dataset, "",
+					Rio.getParserFormatForFileName(dataFile).orElseThrow(Rio.unsupportedFormat(dataFile)),
+					contexts);
 		}
 		finally {
 			dataset.close();

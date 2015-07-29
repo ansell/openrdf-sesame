@@ -73,8 +73,7 @@ public class SailRepositoryConfig extends AbstractRepositoryImplConfig {
 	}
 
 	@Override
-	public Resource export(Graph graph)
-	{
+	public Resource export(Graph graph) {
 		Resource repImplNode = super.export(graph);
 
 		if (sailImplConfig != null) {
@@ -96,11 +95,8 @@ public class SailRepositoryConfig extends AbstractRepositoryImplConfig {
 				Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, sailImplNode, SAILTYPE);
 
 				if (typeLit != null) {
-					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
-
-					if (factory == null) {
-						throw new RepositoryConfigException("Unsupported Sail type: " + typeLit.getLabel());
-					}
+					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel()).orElseThrow(
+							() -> new RepositoryConfigException("Unsupported Sail type: " + typeLit.getLabel()));
 
 					sailImplConfig = factory.getConfig();
 					sailImplConfig.parse(graph, sailImplNode);

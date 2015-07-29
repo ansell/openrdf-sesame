@@ -64,7 +64,6 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.openrdf.OpenRDFException;
 import org.openrdf.http.protocol.Protocol;
 import org.openrdf.http.protocol.UnauthorizedException;
@@ -87,6 +86,7 @@ import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
+import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
@@ -108,17 +108,16 @@ import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.ParseErrorLogger;
 
 /**
- * The SparqlSession provides low level HTTP methods for the HTTP communication of
- * the SPARQL repository as well as the HTTP Repository. All methods are
+ * The SparqlSession provides low level HTTP methods for the HTTP communication
+ * of the SPARQL repository as well as the HTTP Repository. All methods are
  * compliant to the SPARQL 1.1 protocol. For both Tuple and Graph queries there
  * is a variant which parses the result in the background, see
  * {@link BackgroundTupleResult} and {@link BackgroundGraphResult}. For boolean
  * queries the result is parsed in the current thread. All methods in this class
  * guarantee that HTTP connections are closed properly and returned to the
  * connection pool. Functionality specific to the Sesame HTTP protocol can be
- * found in {@link SesameSession} (which is used by Remote Repositories).
- * 
- * The methods in this class are not guaranteed to be thread-safe.
+ * found in {@link SesameSession} (which is used by Remote Repositories). The
+ * methods in this class are not guaranteed to be thread-safe.
  * 
  * @author Herko ter Horst
  * @author Arjohn Kampman
@@ -657,7 +656,7 @@ public class SparqlSession implements HttpClientDependent {
 		boolean submitted = false;
 
 		// Specify which formats we support
-		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
+		Set<QueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 		if (tqrFormats.isEmpty()) {
 			throw new RepositoryException("No tuple query result parsers have been registered");
 		}
@@ -668,17 +667,13 @@ public class SparqlSession implements HttpClientDependent {
 
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(response);
-			try {
-				TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
-				TupleQueryResultParser parser = QueryResultIO.createParser(format, getValueFactory());
-				BackgroundTupleResult tRes = new BackgroundTupleResult(parser, response.getEntity().getContent());
-				execute(tRes);
-				submitted = true;
-				return tRes;
-			}
-			catch (UnsupportedQueryResultFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
-			}
+			QueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats).orElseThrow(
+					() -> new RepositoryException("Server responded with an unsupported file format: " + mimeType));
+			TupleQueryResultParser parser = QueryResultIO.createTupleParser(format, getValueFactory());
+			BackgroundTupleResult tRes = new BackgroundTupleResult(parser, response.getEntity().getContent());
+			execute(tRes);
+			submitted = true;
+			return tRes;
 		}
 		finally {
 			if (!submitted)
@@ -696,7 +691,7 @@ public class SparqlSession implements HttpClientDependent {
 		UnauthorizedException, QueryInterruptedException
 	{
 		// Specify which formats we support
-		Set<TupleQueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
+		Set<QueryResultFormat> tqrFormats = TupleQueryResultParserRegistry.getInstance().getKeys();
 		if (tqrFormats.isEmpty()) {
 			throw new RepositoryException("No tuple query result parsers have been registered");
 		}
@@ -708,13 +703,12 @@ public class SparqlSession implements HttpClientDependent {
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(response);
 			try {
-				TupleQueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats);
-				TupleQueryResultParser parser = QueryResultIO.createParser(format, getValueFactory());
+				QueryResultFormat format = TupleQueryResultFormat.matchMIMEType(mimeType, tqrFormats).orElseThrow(
+						() -> new RepositoryException("Server responded with an unsupported file format: "
+								+ mimeType));
+				TupleQueryResultParser parser = QueryResultIO.createTupleParser(format, getValueFactory());
 				parser.setQueryResultHandler(handler);
 				parser.parseQueryResult(response.getEntity().getContent());
-			}
-			catch (UnsupportedQueryResultFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
 			}
 			catch (QueryResultParseException e) {
 				throw new RepositoryException("Malformed query result from server", e);
@@ -746,11 +740,11 @@ public class SparqlSession implements HttpClientDependent {
 	 * @throws QueryInterruptedException
 	 * @throws MalformedQueryException
 	 */
-	private HttpResponse sendTupleQueryViaHttp(HttpUriRequest method, Set<TupleQueryResultFormat> tqrFormats)
+	private HttpResponse sendTupleQueryViaHttp(HttpUriRequest method, Set<QueryResultFormat> tqrFormats)
 		throws RepositoryException, IOException, QueryInterruptedException, MalformedQueryException
 	{
 
-		for (TupleQueryResultFormat format : tqrFormats) {
+		for (QueryResultFormat format : tqrFormats) {
 			// Determine a q-value that reflects the user specified preference
 			int qValue = 10;
 
@@ -773,13 +767,7 @@ public class SparqlSession implements HttpClientDependent {
 		try {
 			return executeOK(method);
 		}
-		catch (RepositoryException e) {
-			throw e;
-		}
-		catch (MalformedQueryException e) {
-			throw e;
-		}
-		catch (QueryInterruptedException e) {
+		catch (RepositoryException | MalformedQueryException | QueryInterruptedException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
@@ -811,49 +799,44 @@ public class SparqlSession implements HttpClientDependent {
 
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(response);
-			try {
-				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
-				RDFParser parser = Rio.createParser(format, getValueFactory());
-				parser.setParserConfig(getParserConfig());
-				parser.setParseErrorListener(new ParseErrorLogger());
+			RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats).orElseThrow(
+					() -> new RepositoryException("Server responded with an unsupported file format: " + mimeType));
+			RDFParser parser = Rio.createParser(format, getValueFactory());
+			parser.setParserConfig(getParserConfig());
+			parser.setParseErrorListener(new ParseErrorLogger());
 
-				Charset charset = null;
+			Charset charset = null;
 
-				// SES-1793 : Do not attempt to check for a charset if the format is
-				// defined not to have a charset
-				// This prevents errors caused by people erroneously attaching a
-				// charset to a binary formatted document
-				HttpEntity entity = response.getEntity();
-				if (format.hasCharset() && entity != null && entity.getContentType() != null) {
-					// TODO copied from SPARQLGraphQuery repository, is this
-					// required?
-					try {
-						charset = ContentType.parse(entity.getContentType().getValue()).getCharset();
-					}
-					catch (IllegalCharsetNameException e) {
-						// work around for Joseki-3.2
-						// Content-Type: application/rdf+xml;
-						// charset=application/rdf+xml
-					}
-					if (charset == null) {
-						charset = UTF8;
-					}
+			// SES-1793 : Do not attempt to check for a charset if the format is
+			// defined not to have a charset
+			// This prevents errors caused by people erroneously attaching a
+			// charset to a binary formatted document
+			HttpEntity entity = response.getEntity();
+			if (format.hasCharset() && entity != null && entity.getContentType() != null) {
+				// TODO copied from SPARQLGraphQuery repository, is this
+				// required?
+				try {
+					charset = ContentType.parse(entity.getContentType().getValue()).getCharset();
 				}
-
-				if (entity == null) {
-					throw new RepositoryException("Server response was empty.");
+				catch (IllegalCharsetNameException e) {
+					// work around for Joseki-3.2
+					// Content-Type: application/rdf+xml;
+					// charset=application/rdf+xml
 				}
+				if (charset == null) {
+					charset = UTF8;
+				}
+			}
 
-				String baseURI = method.getURI().toASCIIString();
-				BackgroundGraphResult gRes = new BackgroundGraphResult(parser, entity.getContent(), charset,
-						baseURI);
-				execute(gRes);
-				submitted = true;
-				return gRes;
+			if (entity == null) {
+				throw new RepositoryException("Server response was empty.");
 			}
-			catch (UnsupportedQueryResultFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
-			}
+
+			String baseURI = method.getURI().toASCIIString();
+			BackgroundGraphResult gRes = new BackgroundGraphResult(parser, entity.getContent(), charset, baseURI);
+			execute(gRes);
+			submitted = true;
+			return gRes;
 		}
 		finally {
 			if (!submitted) {
@@ -883,15 +866,14 @@ public class SparqlSession implements HttpClientDependent {
 
 			String mimeType = getResponseMIMEType(response);
 			try {
-				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats);
+				RDFFormat format = RDFFormat.matchMIMEType(mimeType, rdfFormats).orElseThrow(
+						() -> new RepositoryException("Server responded with an unsupported file format: "
+								+ mimeType));
 				RDFParser parser = Rio.createParser(format, getValueFactory());
 				parser.setParserConfig(getParserConfig());
 				parser.setParseErrorListener(new ParseErrorLogger());
 				parser.setRDFHandler(handler);
 				parser.parse(response.getEntity().getContent(), method.getURI().toASCIIString());
-			}
-			catch (UnsupportedRDFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
 			}
 			catch (RDFParseException e) {
 				throw new RepositoryException("Malformed query result from server", e);
@@ -916,13 +898,7 @@ public class SparqlSession implements HttpClientDependent {
 		try {
 			return executeOK(method);
 		}
-		catch (RepositoryException e) {
-			throw e;
-		}
-		catch (MalformedQueryException e) {
-			throw e;
-		}
-		catch (QueryInterruptedException e) {
+		catch (RepositoryException | MalformedQueryException | QueryInterruptedException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
@@ -941,7 +917,7 @@ public class SparqlSession implements HttpClientDependent {
 		throws IOException, OpenRDFException
 	{
 		// Specify which formats we support using Accept headers
-		Set<BooleanQueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
+		Set<QueryResultFormat> booleanFormats = BooleanQueryResultParserRegistry.getInstance().getKeys();
 		if (booleanFormats.isEmpty()) {
 			throw new RepositoryException("No boolean query result parsers have been registered");
 		}
@@ -953,15 +929,14 @@ public class SparqlSession implements HttpClientDependent {
 			// if we get here, HTTP code is 200
 			String mimeType = getResponseMIMEType(response);
 			try {
-				BooleanQueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats);
-				BooleanQueryResultParser parser = QueryResultIO.createParser(format);
+				QueryResultFormat format = BooleanQueryResultFormat.matchMIMEType(mimeType, booleanFormats).orElseThrow(
+						() -> new RepositoryException("Server responded with an unsupported file format: "
+								+ mimeType));
+				BooleanQueryResultParser parser = QueryResultIO.createBooleanParser(format);
 				QueryResultCollector results = new QueryResultCollector();
 				parser.setQueryResultHandler(results);
 				parser.parseQueryResult(response.getEntity().getContent());
 				return results.getBoolean();
-			}
-			catch (UnsupportedQueryResultFormatException e) {
-				throw new RepositoryException("Server responded with an unsupported file format: " + mimeType);
 			}
 			catch (QueryResultParseException e) {
 				throw new RepositoryException("Malformed query result from server", e);
@@ -973,12 +948,11 @@ public class SparqlSession implements HttpClientDependent {
 
 	}
 
-	private HttpResponse sendBooleanQueryViaHttp(HttpUriRequest method,
-			Set<BooleanQueryResultFormat> booleanFormats)
+	private HttpResponse sendBooleanQueryViaHttp(HttpUriRequest method, Set<QueryResultFormat> booleanFormats)
 		throws IOException, OpenRDFException
 	{
 
-		for (BooleanQueryResultFormat format : booleanFormats) {
+		for (QueryResultFormat format : booleanFormats) {
 			// Determine a q-value that reflects the user specified preference
 			int qValue = 10;
 

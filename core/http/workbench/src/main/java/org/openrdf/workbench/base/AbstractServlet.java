@@ -18,6 +18,7 @@ package org.openrdf.workbench.base;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import javax.servlet.Servlet;
@@ -157,9 +158,9 @@ public abstract class AbstractServlet implements Servlet {
 			header = req.getHeader(ACCEPT);
 		}
 		if (header != null) {
-			TupleQueryResultFormat tupleFormat = QueryResultIO.getParserFormatForMIMEType(header);
-			if (tupleFormat != null) {
-				return tupleFormat;
+			Optional<QueryResultFormat> tupleFormat = QueryResultIO.getParserFormatForMIMEType(header);
+			if (tupleFormat.isPresent()) {
+				return tupleFormat.get();
 			}
 		}
 
@@ -171,9 +172,9 @@ public abstract class AbstractServlet implements Servlet {
 		String header = req.getHeader(ACCEPT);
 		if (header != null) {
 			// Then try boolean format
-			BooleanQueryResultFormat booleanFormat = QueryResultIO.getBooleanParserFormatForMIMEType(header);
-			if (booleanFormat != null) {
-				return booleanFormat;
+			Optional<QueryResultFormat> booleanFormat = QueryResultIO.getBooleanParserFormatForMIMEType(header);
+			if (booleanFormat.isPresent()) {
+				return booleanFormat.get();
 			}
 		}
 

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -61,6 +62,7 @@ import org.openrdf.query.impl.MutableTupleQueryResult;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParserRegistry;
+import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultParser;
@@ -109,6 +111,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected final boolean checkOrder;
 
 	protected final String[] ignoredTests;
+
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -200,13 +203,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 		throws Exception
 	{
 		// FIXME this reports a test error because we still rely on JUnit 3 here.
-		//org.junit.Assume.assumeFalse(Arrays.asList(ignoredTests).contains(this.getName()));
+		// org.junit.Assume.assumeFalse(Arrays.asList(ignoredTests).contains(this.getName()));
 		// FIXME temporary fix is to report as succeeded and just ignore.
 		if (Arrays.asList(ignoredTests).contains(this.getName())) {
 			logger.warn("Query test ignored: " + this.getName());
 			return;
 		}
-		
+
 		RepositoryConnection con = dataRep.getConnection();
 		// Some SPARQL Tests have non-XSD datatypes that must pass for the test
 		// suite to complete successfully
@@ -500,7 +503,7 @@ public abstract class SPARQLQueryTest extends TestCase {
 
 		try {
 			con.begin();
-			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString(), RDFFormat.TURTLE);
+			RDFFormat rdfFormat = Rio.getParserFormatForFileName(graphURI.toString()).orElse(RDFFormat.TURTLE);
 			RDFParser rdfParser = Rio.createParser(rdfFormat, dataRep.getValueFactory());
 			rdfParser.setVerifyData(false);
 			rdfParser.setDatatypeHandling(DatatypeHandling.IGNORE);
@@ -547,12 +550,12 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected final TupleQueryResult readExpectedTupleQueryResult()
 		throws Exception
 	{
-		TupleQueryResultFormat tqrFormat = QueryResultIO.getParserFormatForFileName(resultFileURL);
+		Optional<QueryResultFormat> tqrFormat = QueryResultIO.getParserFormatForFileName(resultFileURL);
 
-		if (tqrFormat != null) {
+		if (tqrFormat.isPresent()) {
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
-				TupleQueryResultParser parser = QueryResultIO.createParser(tqrFormat);
+				TupleQueryResultParser parser = QueryResultIO.createTupleParser(tqrFormat.get());
 				parser.setValueFactory(dataRep.getValueFactory());
 
 				TupleQueryResultBuilder qrBuilder = new TupleQueryResultBuilder();
@@ -574,13 +577,13 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected final boolean readExpectedBooleanQueryResult()
 		throws Exception
 	{
-		BooleanQueryResultFormat bqrFormat = BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(
+		Optional<QueryResultFormat> bqrFormat = BooleanQueryResultParserRegistry.getInstance().getFileFormatForFileName(
 				resultFileURL);
 
-		if (bqrFormat != null) {
+		if (bqrFormat.isPresent()) {
 			InputStream in = new URL(resultFileURL).openStream();
 			try {
-				return QueryResultIO.parse(in, bqrFormat);
+				return QueryResultIO.parseBoolean(in, bqrFormat.get());
 			}
 			finally {
 				in.close();
@@ -595,30 +598,26 @@ public abstract class SPARQLQueryTest extends TestCase {
 	protected final Set<Statement> readExpectedGraphQueryResult()
 		throws Exception
 	{
-		RDFFormat rdfFormat = Rio.getParserFormatForFileName(resultFileURL);
+		RDFFormat rdfFormat = Rio.getParserFormatForFileName(resultFileURL).orElseThrow(
+				Rio.unsupportedFormat(resultFileURL));
 
-		if (rdfFormat != null) {
-			RDFParser parser = Rio.createParser(rdfFormat);
-			parser.setDatatypeHandling(DatatypeHandling.IGNORE);
-			parser.setPreserveBNodeIDs(true);
-			parser.setValueFactory(dataRep.getValueFactory());
+		RDFParser parser = Rio.createParser(rdfFormat);
+		parser.setDatatypeHandling(DatatypeHandling.IGNORE);
+		parser.setPreserveBNodeIDs(true);
+		parser.setValueFactory(dataRep.getValueFactory());
 
-			Set<Statement> result = new LinkedHashSet<Statement>();
-			parser.setRDFHandler(new StatementCollector(result));
+		Set<Statement> result = new LinkedHashSet<Statement>();
+		parser.setRDFHandler(new StatementCollector(result));
 
-			InputStream in = new URL(resultFileURL).openStream();
-			try {
-				parser.parse(in, resultFileURL);
-			}
-			finally {
-				in.close();
-			}
-
-			return result;
+		InputStream in = new URL(resultFileURL).openStream();
+		try {
+			parser.parse(in, resultFileURL);
 		}
-		else {
-			throw new RuntimeException("Unable to determine file type of results file");
+		finally {
+			in.close();
 		}
+
+		return result;
 	}
 
 	public interface Factory {

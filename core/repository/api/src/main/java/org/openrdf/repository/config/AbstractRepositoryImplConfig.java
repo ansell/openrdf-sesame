@@ -93,11 +93,8 @@ public class AbstractRepositoryImplConfig implements RepositoryImplConfig {
 			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
 
 			if (typeLit != null) {
-				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel());
-
-				if (factory == null) {
-					throw new RepositoryConfigException("Unsupported repository type: " + typeLit.getLabel());
-				}
+				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel()).orElseThrow(
+						() -> new RepositoryConfigException("Unsupported repository type: " + typeLit.getLabel()));
 
 				RepositoryImplConfig implConfig = factory.getConfig();
 				implConfig.parse(graph, implNode);

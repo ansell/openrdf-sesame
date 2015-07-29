@@ -21,6 +21,22 @@ package org.openrdf.repository.config;
  * @author Jeen Broekstra
  */
 @Deprecated
-public abstract class RepositoryImplConfigBase extends AbstractRepositoryImplConfig {
+public class RepositoryImplConfigBase extends AbstractRepositoryImplConfig {
+
+	/**
+	 * Create a new RepositoryConfigImpl.
+	 */
+	public RepositoryImplConfigBase() {
+		super();
+	}
+
+	/**
+	 * Create a new RepositoryConfigImpl.
+	 */
+	public RepositoryImplConfigBase(String type) {
+		super(type);
+	}
+
+
 
 }
