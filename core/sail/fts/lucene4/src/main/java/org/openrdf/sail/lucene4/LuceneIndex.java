@@ -736,7 +736,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		SpatialStrategy strategy = new RecursivePrefixTreeStrategy(spt, GEO_FIELD_PREFIX
 				+ geoProperty.toString());
 		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(lon, lat, degs);
-		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.IsWithin, boundingCircle));
+		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.Intersects, boundingCircle));
 
 		TopDocs docs = search(new CustomScoreQuery(q, new FunctionQuery(
 				strategy.makeRecipDistanceValueSource(boundingCircle))));

@@ -19,12 +19,12 @@ package org.openrdf.sail.lucene;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.Highlighter;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 
 public class LuceneDocumentScore implements DocumentScore {
 
@@ -53,7 +53,7 @@ public class LuceneDocumentScore implements DocumentScore {
 				// don't require all fields
 				doc = index.getDocument(scoreDoc.doc, Collections.singleton(SearchFields.URI_FIELD_NAME));
 			}
-			fullDoc = new LuceneDocument(doc, index.getSpatialContext(), index.getSpatialPrefixTree());
+			fullDoc = new LuceneDocument(doc, index.getSpatialStrategyMapper());
 		}
 		return fullDoc;
 	}

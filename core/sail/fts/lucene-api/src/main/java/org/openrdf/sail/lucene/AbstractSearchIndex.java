@@ -32,6 +32,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
 import org.openrdf.model.vocabulary.GEO;
@@ -61,15 +62,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	}
 
 	protected int maxDocs;
-	protected SpatialContext geoContext;
 	protected Set<String> wktFields = Collections.singleton(GEO.AS_WKT.toString());
-
-	protected AbstractSearchIndex() {}
-
-	protected AbstractSearchIndex(SpatialContext geoContext)
-	{
-		this.geoContext = geoContext;
-	}
 
 	@Override
 	public void initialize(Properties parameters)
@@ -78,18 +71,13 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		String maxDocParam = parameters.getProperty(LuceneSail.MAX_DOCUMENTS_KEY);
 		maxDocs = (maxDocParam != null) ? Integer.parseInt(maxDocParam) : -1;
 
-		geoContext = SpatialContext.GEO;
-
 		String wktFieldParam = parameters.getProperty(LuceneSail.WKT_FIELDS);
 		if(wktFieldParam != null) {
 			wktFields = Sets.newHashSet(wktFieldParam.split("\\s+"));
 		}
 	}
 
-	public SpatialContext getSpatialContext()
-	{
-		return geoContext;
-	}
+	protected abstract SpatialContext getSpatialContext(String property);
 
 	/**
 	 * Returns whether the provided literal is accepted by the LuceneIndex to be
@@ -463,6 +451,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	/**
 	 * To be removed, prefer {@link evaluate(SearchQueryEvaluator query)}.
 	 */
+	@Override
 	@Deprecated
 	public Collection<BindingSet> evaluate(QuerySpec query)
 		throws SailException
@@ -482,6 +471,10 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		} else if(evaluator instanceof DistanceQuerySpec) {
 			DistanceQuerySpec query = (DistanceQuerySpec) evaluator;
 			Iterable<? extends DocumentDistance> result = evaluateQuery(query);
+			return generateBindingSets(query, result);
+		} else if(evaluator instanceof GeoRelationQuerySpec) {
+			GeoRelationQuerySpec query = (GeoRelationQuerySpec) evaluator;
+			Iterable<? extends DocumentScore> result = evaluateQuery(query);
 			return generateBindingSets(query, result);
 		} else {
 			throw new IllegalArgumentException("Unsupported "+SearchQueryEvaluator.class.getSimpleName()+": "+evaluator.getClass().getName());
@@ -626,16 +619,17 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		Literal from = query.getFrom();
 		double distance = query.getDistance();
 		URI units = query.getUnits();
+		URI geoProperty = query.getGeoProperty();
 		try {
 			if(!GEO.WKT_LITERAL.equals(from.getDatatype())) {
 				throw new MalformedQueryException("Unsupported datatype: "+from.getDatatype());
 			}
-			Shape shape = geoContext.readShapeFromWkt(from.getLabel());
+			Shape shape = getSpatialContext(geoProperty.toString()).readShapeFromWkt(from.getLabel());
 			if(!(shape instanceof Point)) {
 				throw new MalformedQueryException("Geometry literal is not a point: "+from.getLabel());
 			}
 			Point p = (Point) shape;
-			hits = geoQuery(query.getSubjectVar(), query.getGeoProperty(), p.getY(), p.getX(), units, distance, query.getDistanceVar());
+			hits = geoQuery(query.getSubjectVar(), geoProperty, p.getY(), p.getX(), units, distance, query.getDistanceVar());
 		}
 		catch (Exception e) {
 			logger.error("There was a problem evaluating distance query 'within " + distance + getUnitSymbol(units) + " of " + from.getLabel() + "'!", e);
@@ -665,6 +659,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
 
 		if(hits != null) {
+			double maxDistance = query.getDistance();
 			// for each hit ...
 			for (DocumentDistance hit : hits) {
 				// get the current hit
@@ -677,6 +672,83 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				String distanceVar = query.getDistanceVar();
 				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
 				for(String geometry : geometries) {
+					double distance = hit.getDistance();
+					// Distance queries are generally implemented by checking
+					// if indexed points intersect with a bounding disc.
+					// Unfortunately, this means the results may potentially also
+					// include other indexed shapes that intersect with the disc.
+					// The distances assigned to these other shapes may well be
+					// greater than the original bounding distance.
+					// We could exclude such results by checking if the shapes are points,
+					// but instead we do a faster sanity check of the distance.
+					// This has the potential (desirable?) side-effect of extending the distance function
+					// to arbitrary shapes.
+					if(distance < maxDistance) {
+						QueryBindingSet derivedBindings = new QueryBindingSet();
+						if(subjVar != null) {
+							Resource resource = getResource(doc);
+							derivedBindings.addBinding(subjVar, resource);
+						}
+						if(geoVar != null) {
+							derivedBindings.addBinding(geoVar, SearchFields.wktToLiteral(geometry));
+						}
+						if(distanceVar != null) {
+							derivedBindings.addBinding(distanceVar, SearchFields.distanceToLiteral(distance));
+						}
+	
+						bindingSets.add(derivedBindings);
+					}
+				}
+			}
+		}
+
+		// we succeeded
+		return bindingSets;
+	}
+
+	private Iterable<? extends DocumentScore> evaluateQuery(GeoRelationQuerySpec query) {
+		Iterable<? extends DocumentScore> hits = null;
+
+		Literal qgeom = query.getQueryGeometry();
+		URI geoProperty = query.getGeoProperty();
+		try {
+			if(!GEO.WKT_LITERAL.equals(qgeom.getDatatype())) {
+				throw new MalformedQueryException("Unsupported datatype: "+qgeom.getDatatype());
+			}
+			Shape qshape = getSpatialContext(geoProperty.toString()).readShapeFromWkt(qgeom.getLabel());
+			hits = geoRelationQuery(query.getRelation(), query.getSubjectVar(), geoProperty, qshape, query.getFunctionValueVar());
+		}
+		catch (Exception e) {
+			logger.error("There was a problem evaluating spatial relation query '" + query.getRelation() +" "+ qgeom.getLabel() + "'!", e);
+		}
+
+		return hits;
+	}
+
+	private Collection<BindingSet> generateBindingSets(GeoRelationQuerySpec query, Iterable<? extends DocumentScore> hits)
+		throws SailException
+	{
+		// Since one resource can be returned many times, it can lead now to
+		// multiple occurrences
+		// of the same binding tuple in the BINDINGS clause. This in turn leads to
+		// duplicate answers in the original SPARQL query.
+		// We want to avoid this, so BindingSets added to the result must be
+		// unique.
+		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
+
+		if(hits != null) {
+			// for each hit ...
+			for (DocumentScore hit : hits) {
+				// get the current hit
+				SearchDocument doc = hit.getDocument();
+				if (doc == null)
+					continue;
+
+				String subjVar = query.getSubjectVar();
+				String geoVar = query.getGeoVar();
+				String fVar = query.getFunctionValueVar();
+				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
+				for(String geometry : geometries) {
 					QueryBindingSet derivedBindings = new QueryBindingSet();
 					if(subjVar != null) {
 						Resource resource = getResource(doc);
@@ -685,8 +757,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					if(geoVar != null) {
 						derivedBindings.addBinding(geoVar, SearchFields.wktToLiteral(geometry));
 					}
-					if(distanceVar != null) {
-						derivedBindings.addBinding(distanceVar, SearchFields.distanceToLiteral(hit.getDistance()));
+					if(fVar != null) {
+						derivedBindings.addBinding(fVar, BooleanLiteralImpl.TRUE);
 					}
 
 					bindingSets.add(derivedBindings);
@@ -723,6 +795,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 	protected abstract Iterable<? extends DocumentScore> query(Resource subject, String q, URI property, boolean highlight) throws MalformedQueryException, IOException;
 	protected abstract Iterable<? extends DocumentDistance> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
+	protected abstract Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar, URI geoProperty, Shape shape, String valueVar) throws MalformedQueryException, IOException;
 
 	protected abstract BulkUpdater newBulkUpdate();
 }

@@ -40,6 +40,6 @@ public class SolrDocumentDistance implements DocumentDistance {
 	@Override
 	public double getDistance() {
 		Number s = ((Number)doc.getDocument().get(SolrIndex.DISTANCE_FIELD));
-		return (s != null) ? GeoUnits.fromKilometres(s.doubleValue(), units) : 0.0;
+		return (s != null) ? GeoUnits.fromKilometres(s.doubleValue(), units) : Double.NaN;
 	}
 }

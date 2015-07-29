@@ -30,11 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.spatial4j.core.context.SpatialContext;
-import com.spatial4j.core.shape.Shape;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -81,14 +76,18 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Bits;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.util.GeoUnits;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -104,7 +103,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
 	}
 
-	public static final String GEO_FIELD_PREFIX = "_geo_";
+	private static final String GEO_FIELD_PREFIX = "_geo_";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -131,7 +130,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
-	private SpatialPrefixTree spt;
+	private Function<? super String,? extends SpatialStrategy> geoStrategyMapper;
 
 	public LuceneIndex() {
 	}
@@ -151,11 +150,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public LuceneIndex(Directory directory, Analyzer analyzer)
 		throws IOException
 	{
-		super(SpatialContext.GEO);
 		this.directory = directory;
 		this.analyzer = analyzer;
-		this.spt = SpatialPrefixTreeFactory.makeSPT(Collections.<String, String> emptyMap(),
-				Thread.currentThread().getContextClassLoader(), geoContext);
+		this.geoStrategyMapper = createSpatialStrategyMapper(Collections.<String, String>emptyMap());
 
 		postInit();
 	}
@@ -170,8 +167,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// slightly hacky cast to cope with the fact that Properties is
 		// Map<Object,Object>
 		// even though it is effectively Map<String,String>
-		this.spt = SpatialPrefixTreeFactory.makeSPT((Map<String, String>)(Map<?, ?>)parameters,
-				Thread.currentThread().getContextClassLoader(), geoContext);
+		this.geoStrategyMapper = createSpatialStrategyMapper((Map<String, String>)(Map<?, ?>)parameters);
 
 		postInit();
 	}
@@ -223,6 +219,25 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
+	protected Function<String, ? extends SpatialStrategy> createSpatialStrategyMapper(Map<String,String> parameters) {
+		SpatialContext geoContext = SpatialContext.GEO;
+		final SpatialPrefixTree spt = SpatialPrefixTreeFactory.makeSPT(parameters,
+				Thread.currentThread().getContextClassLoader(), geoContext);
+		return new Function<String,SpatialStrategy>()
+		{
+			@Override
+			public SpatialStrategy apply(String field) {
+				return new RecursivePrefixTreeStrategy(spt, GEO_FIELD_PREFIX + field);
+			}
+			
+		};
+	}
+
+	@Override
+	protected SpatialContext getSpatialContext(String property) {
+		return geoStrategyMapper.apply(property).getSpatialContext();
+	}
+
 	// //////////////////////////////// Setters and getters
 
 	public Directory getDirectory() {
@@ -233,8 +248,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return analyzer;
 	}
 
-	public SpatialPrefixTree getSpatialPrefixTree() {
-		return spt;
+	public Function<? super String, ? extends SpatialStrategy> getSpatialStrategyMapper() {
+		return geoStrategyMapper;
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -318,7 +333,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document, geoContext, spt) : null;
+		return (document != null) ? new LuceneDocument(document, geoStrategyMapper) : null;
 	}
 
 	@Override
@@ -330,14 +345,14 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc, geoContext, spt);
+				return new LuceneDocument(doc, geoStrategyMapper);
 			}
 		});
 	}
 
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context) {
-		return new LuceneDocument(id, resourceId, context, geoContext, spt);
+		return new LuceneDocument(id, resourceId, context, geoStrategyMapper);
 	}
 
 	@Override
@@ -349,7 +364,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (IndexableField oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument, geoContext, spt);
+		return new LuceneDocument(newDocument, geoStrategyMapper);
 	}
 
 	@Override
@@ -723,10 +738,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws MalformedQueryException, IOException
 	{
 		double degs = GeoUnits.toDegrees(distance, units);
-		SpatialStrategy strategy = new RecursivePrefixTreeStrategy(spt, GEO_FIELD_PREFIX
-				+ geoProperty.toString());
+		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoProperty.toString());
 		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(lon, lat, degs);
-		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.IsWithin, boundingCircle));
+		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.Intersects, boundingCircle));
 
 		TopDocs docs = search(new CustomScoreQuery(q, new FunctionQuery(
 				strategy.makeRecipDistanceValueSource(boundingCircle))));
@@ -738,6 +752,15 @@ public class LuceneIndex extends AbstractLuceneIndex {
 						LuceneIndex.this);
 			}
 		});
+	}
+
+	@Override
+	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar,
+			URI geoProperty, Shape shape, String valueVar)
+		throws MalformedQueryException, IOException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**

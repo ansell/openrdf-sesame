@@ -71,8 +71,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.Iterables;
+import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.distance.DistanceUtils;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * @see LuceneSail
@@ -148,6 +151,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	private String queryAnalyzer = "standard";
 
+	private Function<? super String,? extends SpatialContext> geoContextMapper;
+
 	public ElasticsearchIndex() {
 	}
 
@@ -171,6 +176,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
+		geoContextMapper = Functions.constant(SpatialContext.GEO);
 		String dataDir = parameters.getProperty(LuceneSail.LUCENE_DIR_KEY);
 
 		NodeBuilder nodeBuilder = NodeBuilder.nodeBuilder();
@@ -271,6 +277,11 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	}
 
 	@Override
+	protected SpatialContext getSpatialContext(String property) {
+		return geoContextMapper.apply(property);
+	}
+
+	@Override
 	public void shutDown()
 		throws IOException
 	{
@@ -299,7 +310,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 				OPERATION_THREADED).execute().actionGet();
 		if (response.isExists()) {
 			return new ElasticsearchDocument(response.getId(), response.getType(), response.getIndex(),
-					response.getVersion(), response.getSource(), geoContext);
+					response.getVersion(), response.getSource(), geoContextMapper);
 		}
 		// no such Document
 		return null;
@@ -314,14 +325,14 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 			@Override
 			public SearchDocument apply(SearchHit hit) {
-				return new ElasticsearchDocument(hit, geoContext);
+				return new ElasticsearchDocument(hit, geoContextMapper);
 			}
 		});
 	}
 
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context) {
-		return new ElasticsearchDocument(id, documentType, indexName, resourceId, context, geoContext);
+		return new ElasticsearchDocument(id, documentType, indexName, resourceId, context, geoContextMapper);
 	}
 
 	@Override
@@ -330,7 +341,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		Map<String, Object> source = esDoc.getSource();
 		Map<String, Object> newDocument = new HashMap<String, Object>(source);
 		return new ElasticsearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getIndex(), esDoc.getVersion(),
-				newDocument, geoContext);
+				newDocument, geoContextMapper);
 	}
 
 	@Override
@@ -505,7 +516,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 			@Override
 			public DocumentScore apply(SearchHit hit) {
-				return new ElasticsearchDocumentScore(hit, geoContext);
+				return new ElasticsearchDocumentScore(hit, geoContextMapper);
 			}
 		});
 	}
@@ -564,6 +575,28 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 			throw new MalformedQueryException("Unsupported units: " + units);
 		}
 
+		final String fieldName = GEOHASH_FIELD_PREFIX + geoProperty.toString();
+		QueryBuilder qb = QueryBuilders.functionScoreQuery(
+				FilterBuilders.geoDistanceFilter(fieldName).lat(lat).lon(lon).distance(unitDist, unit),
+				ScoreFunctionBuilders.linearDecayFunction(fieldName, GeoHashUtils.encode(lat, lon),
+						new DistanceUnit.Distance(unitDist, unit)));
+		SearchRequestBuilder request = client.prepareSearch();
+		SearchHits hits = search(request, qb);
+		final FixedSourceDistance srcDistance = GeoDistance.DEFAULT.fixedSourceDistance(lat, lon, unit);
+		return Iterables.transform(hits, new Function<SearchHit, DocumentDistance>() {
+
+			@Override
+			public DocumentDistance apply(SearchHit hit) {
+				return new ElasticsearchDocumentDistance(hit, geoContextMapper, fieldName, units, srcDistance, unit);
+			}
+		});
+	}
+
+	@Override
+	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar,
+			URI geoProperty, Shape shape, String valueVar)
+		throws MalformedQueryException, IOException
+	{
 		final String fieldName = GEOHASH_FIELD_PREFIX + geoProperty.toString();
 		QueryBuilder qb = QueryBuilders.functionScoreQuery(
 				FilterBuilders.geoDistanceFilter(fieldName).lat(lat).lon(lon).distance(unitDist, unit),

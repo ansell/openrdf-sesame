@@ -51,6 +51,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * @see LuceneSail
@@ -86,6 +88,12 @@ public class SolrIndex extends AbstractSearchIndex {
 
 	public SolrClient getClient() {
 		return client;
+	}
+
+	@Override
+	protected SpatialContext getSpatialContext(String property) {
+		// this should really be based on the schema
+		return SpatialContext.GEO;
 	}
 
 	@Override
@@ -403,7 +411,6 @@ public class SolrIndex extends AbstractSearchIndex {
 		double kms = GeoUnits.toKilometres(distance, units);
 
 		SolrQuery q = new SolrQuery("{!geofilt score=recipDistance}");
-		// q.addFilterQuery("{!geofilt score=recipDistance filter=false}");
 		q.set(SpatialParams.FIELD, geoProperty.toString());
 		q.set(SpatialParams.POINT, lat + "," + lon);
 		q.set(SpatialParams.DISTANCE, Double.toString(kms));
@@ -412,9 +419,8 @@ public class SolrIndex extends AbstractSearchIndex {
 		// property field name
 		// instead we use wildcard + local part of the property URI
 		q.addField("*" + geoProperty.getLocalName());
-		if (distanceVar != null) {
-			q.addField(DISTANCE_FIELD + ":geodist()");
-		}
+		// always include the distance - needed for sanity checking
+		q.addField(DISTANCE_FIELD + ":geodist()");
 
 		QueryResponse response;
 		try {
@@ -431,6 +437,39 @@ public class SolrIndex extends AbstractSearchIndex {
 			public DocumentDistance apply(SolrDocument document) {
 				SolrSearchDocument doc = new SolrSearchDocument(document);
 				return new SolrDocumentDistance(doc, units);
+			}
+		});
+	}
+
+	@Override
+	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar,
+			URI geoProperty, Shape shape, String valueVar)
+		throws MalformedQueryException, IOException
+	{
+
+		SolrQuery q = new SolrQuery("\"Intersects()\"");
+		q.set(CommonParams.DF, geoProperty.toString());
+		q.addField(SearchFields.URI_FIELD_NAME);
+		// ':' is part of the fl parameter syntax so we can't use the full
+		// property field name
+		// instead we use wildcard + local part of the property URI
+		q.addField("*" + geoProperty.getLocalName());
+
+		QueryResponse response;
+		try {
+			response = search(q);
+		}
+		catch (SolrServerException e) {
+			throw new IOException(e);
+		}
+
+		SolrDocumentList results = response.getResults();
+		return Iterables.transform(results, new Function<SolrDocument, DocumentScore>() {
+
+			@Override
+			public DocumentScore apply(SolrDocument document) {
+				SolrSearchDocument doc = new SolrSearchDocument(document);
+				return new SolrDocumentScore(doc, null);
 			}
 		});
 	}

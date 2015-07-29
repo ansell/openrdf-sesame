@@ -19,15 +19,14 @@ package org.openrdf.sail.lucene;
 import java.text.ParseException;
 import java.util.List;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.ScoreDoc;
+import org.openrdf.model.URI;
+import org.openrdf.sail.lucene.util.GeoUnits;
+
 import com.google.common.collect.Sets;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.ScoreDoc;
-
-import org.openrdf.model.URI;
-import org.openrdf.sail.lucene.util.GeoUnits;
 
 public class LuceneDocumentDistance implements DocumentDistance {
 
@@ -57,7 +56,7 @@ public class LuceneDocumentDistance implements DocumentDistance {
 		if (fullDoc == null) {
 			Document doc = index.getDocument(scoreDoc.doc,
 					Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoProperty));
-			fullDoc = new LuceneDocument(doc, index.getSpatialContext(), index.getSpatialPrefixTree());
+			fullDoc = new LuceneDocument(doc, index.getSpatialStrategyMapper());
 		}
 		return fullDoc;
 	}
@@ -69,8 +68,8 @@ public class LuceneDocumentDistance implements DocumentDistance {
 		for (String wkt : wkts) {
 			Shape shape;
 			try {
-				shape = index.getSpatialContext().readShapeFromWkt(wkt);
-				double dist = index.getSpatialContext().calcDistance(shape.getCenter(), origin);
+				shape = index.getSpatialContext(geoProperty).readShapeFromWkt(wkt);
+				double dist = index.getSpatialContext(geoProperty).calcDistance(shape.getCenter(), origin);
 				min = Math.min(dist, min);
 			}
 			catch (ParseException e) {

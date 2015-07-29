@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import com.spatial4j.core.context.SpatialContext;
-
 public abstract class AbstractLuceneIndex extends AbstractSearchIndex {
 
 	/**
@@ -32,13 +30,6 @@ public abstract class AbstractLuceneIndex extends AbstractSearchIndex {
 	protected final Collection<AbstractReaderMonitor> oldmonitors = new LinkedList<AbstractReaderMonitor>();
 
 	protected abstract AbstractReaderMonitor getCurrentMonitor();
-
-	protected AbstractLuceneIndex() {}
-
-	protected AbstractLuceneIndex(SpatialContext geoContext)
-	{
-		super(geoContext);
-	}
 
 	@Override
 	public void beginReading()

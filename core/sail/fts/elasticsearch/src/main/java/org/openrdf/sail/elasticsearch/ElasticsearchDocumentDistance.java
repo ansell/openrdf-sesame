@@ -26,6 +26,7 @@ import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.sail.lucene.DocumentDistance;
 import org.openrdf.sail.lucene.SearchDocument;
 
+import com.google.common.base.Function;
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.distance.DistanceUtils;
 
@@ -33,7 +34,7 @@ public class ElasticsearchDocumentDistance implements DocumentDistance {
 
 	private final SearchHit hit;
 
-	private final SpatialContext geoContext;
+	private final Function<? super String,? extends SpatialContext> geoContextMapper;
 
 	private final String geoPointField;
 
@@ -45,11 +46,11 @@ public class ElasticsearchDocumentDistance implements DocumentDistance {
 
 	private ElasticsearchDocument fullDoc;
 
-	public ElasticsearchDocumentDistance(SearchHit hit, SpatialContext geoContext, String geoPointField,
+	public ElasticsearchDocumentDistance(SearchHit hit, Function<? super String,? extends SpatialContext> geoContextMapper, String geoPointField,
 			URI units, FixedSourceDistance srcDistance, DistanceUnit unit)
 	{
 		this.hit = hit;
-		this.geoContext = geoContext;
+		this.geoContextMapper = geoContextMapper;
 		this.geoPointField = geoPointField;
 		this.units = units;
 		this.srcDistance = srcDistance;
@@ -59,7 +60,7 @@ public class ElasticsearchDocumentDistance implements DocumentDistance {
 	@Override
 	public SearchDocument getDocument() {
 		if (fullDoc == null) {
-			fullDoc = new ElasticsearchDocument(hit, geoContext);
+			fullDoc = new ElasticsearchDocument(hit, geoContextMapper);
 		}
 		return fullDoc;
 	}

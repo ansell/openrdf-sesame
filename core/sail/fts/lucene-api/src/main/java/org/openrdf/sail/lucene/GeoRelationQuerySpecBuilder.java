@@ -25,10 +25,7 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.GEOF;
-import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.algebra.Compare;
-import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
@@ -41,10 +38,10 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.sail.SailException;
 
-public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
+public class GeoRelationQuerySpecBuilder implements SearchQueryInterpreter {
 	private SearchIndex index;
 
-	public DistanceQuerySpecBuilder(SearchIndex index) {
+	public GeoRelationQuerySpecBuilder(SearchIndex index) {
 		this.index = index;
 	}
 
@@ -53,60 +50,45 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 			final Collection<SearchQueryEvaluator> results) throws SailException {
 
 		tupleExpr.visit(new QueryModelVisitorBase<SailException>() {
-			final Map<String,DistanceQuerySpec> specs = new HashMap<String,DistanceQuerySpec>();
+			final Map<String,GeoRelationQuerySpec> specs = new HashMap<String,GeoRelationQuerySpec>();
 
 			@Override
 			public void meet(FunctionCall f) throws SailException {
-				if(GEOF.DISTANCE.stringValue().equals(f.getURI())) {
+				if(f.getURI().startsWith(GEOF.NAMESPACE)) {
 					List<ValueExpr> args = f.getArgs();
-					if(args.size() != 3) {
+					if(args.size() != 2) {
 						return;
 					}
 
-					Literal from = getLiteral(args.get(0));
-					String to = getVarName(args.get(1));
-					URI units = getURI(args.get(2));
+					Literal qshape = getLiteral(args.get(0));
+					String varShape = getVarName(args.get(1));
 
-					if(from == null || to == null || units == null) {
+					if(qshape == null || varShape == null) {
 						return;
 					}
 
 					Filter filter = null;
-					Literal dist = null;
-					String distanceVar = null;
+					String fVar = null;
 					QueryModelNode parent = f.getParentNode();
 					if(parent instanceof ExtensionElem) {
-						distanceVar = ((ExtensionElem)parent).getName();
+						fVar = ((ExtensionElem)parent).getName();
 						QueryModelNode extension = parent.getParentNode();
-						Object[] rv = getFilterAndDistance(extension.getParentNode(), distanceVar);
-						if(rv == null) {
-							return;
-						}
-						filter = (Filter) rv[0];
-						dist = (Literal) rv[1];
-					} else if(parent instanceof Compare) {
-						filter = (Filter) parent.getParentNode();
-						Compare compare = (Compare) parent;
-						CompareOp op = compare.getOperator();
-						if(op == CompareOp.LT && compare.getLeftArg() == f) {
-							dist = getLiteral(compare.getRightArg());
-						} else if(op == CompareOp.GT && compare.getRightArg() == f) {
-							dist = getLiteral(compare.getLeftArg());
-						}
+						filter = getFilter(extension.getParentNode(), fVar);
+					} else if(parent instanceof Filter) {
+						filter = (Filter) parent;
 					}
 
-					if(dist == null || !XMLSchema.DOUBLE.equals(dist.getDatatype())) {
+					if(filter == null) {
 						return;
 					}
 
-					DistanceQuerySpec spec = new DistanceQuerySpec();
+					GeoRelationQuerySpec spec = new GeoRelationQuerySpec();
+					spec.setRelation(f.getURI());
 					spec.setFunctionParent(parent);
-					spec.setFrom(from);
-					spec.setUnits(units);
-					spec.setDistance(dist.doubleValue());
-					spec.setDistanceVar(distanceVar);
+					spec.setQueryGeometry(qshape);
+					spec.setFunctionValueVar(fVar);
 					spec.setFilter(filter);
-					specs.put(to, spec);
+					specs.put(varShape, spec);
 				}
 			}
 
@@ -115,7 +97,7 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 				URI propertyName = (URI) sp.getPredicateVar().getValue();
 				if(propertyName != null && index.isGeoProperty(propertyName.toString()) && !sp.getObjectVar().hasValue()) {
 					String objectVarName = sp.getObjectVar().getName();
-					DistanceQuerySpec spec = specs.remove(objectVarName);
+					GeoRelationQuerySpec spec = specs.remove(objectVarName);
 					if(spec != null && isChildOf(sp, spec.getFilter())) {
 						spec.setGeometryPattern(sp);
 						results.add(spec);
@@ -132,41 +114,25 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 		return isChildOf(child.getParentNode(), parent);
 	}
 
-	private static Object[] getFilterAndDistance(QueryModelNode node, String compareArgVarName) {
-		Object[] rv = null;
+	private static Filter getFilter(QueryModelNode node, String varName) {
+		Filter filter = null;
 		if(node instanceof Filter) {
 			Filter f = (Filter) node;
 			ValueExpr condition = f.getCondition();
-			if(condition instanceof Compare) {
-				Compare compare = (Compare) condition;
-				CompareOp op = compare.getOperator();
-				Literal dist = null;
-				if(op == CompareOp.LT && compareArgVarName.equals(getVarName(compare.getLeftArg()))) {
-					dist = getLiteral(compare.getRightArg());
-				} else if(op == CompareOp.GT && compareArgVarName.equals(getVarName(compare.getRightArg()))) {
-					dist = getLiteral(compare.getLeftArg());
-				}
-				rv = new Object[] {f, dist};
+			if(varName.equals(getVarName(condition))) {
+				filter = f;
 			}
 		}
 		else if(node != null) {
-			rv = getFilterAndDistance(node.getParentNode(), compareArgVarName);
+			filter = getFilter(node.getParentNode(), varName);
 		}
-		return rv;
+		return filter;
 	}
 
 	private static Literal getLiteral(ValueExpr v) {
 		Value value = getValue(v);
 		if(value instanceof Literal) {
 			return (Literal) value;
-		}
-		return null;
-	}
-
-	private static URI getURI(ValueExpr v) {
-		Value value = getValue(v);
-		if(value instanceof URI) {
-			return (URI) value;
 		}
 		return null;
 	}

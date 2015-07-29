@@ -33,19 +33,19 @@ public class ElasticsearchDocumentScore implements DocumentScore {
 
 	private final SearchHit hit;
 
-	private final SpatialContext geoContext;
+	private final Function<? super String,? extends SpatialContext> geoContextMapper;
 
 	private ElasticsearchDocument fullDoc;
 
-	public ElasticsearchDocumentScore(SearchHit hit, SpatialContext geoContext) {
+	public ElasticsearchDocumentScore(SearchHit hit, Function<? super String,? extends SpatialContext> geoContextMapper) {
 		this.hit = hit;
-		this.geoContext = geoContext;
+		this.geoContextMapper = geoContextMapper;
 	}
 
 	@Override
 	public SearchDocument getDocument() {
 		if (fullDoc == null) {
-			fullDoc = new ElasticsearchDocument(hit, geoContext);
+			fullDoc = new ElasticsearchDocument(hit, geoContextMapper);
 		}
 		return fullDoc;
 	}
