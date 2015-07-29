@@ -21,12 +21,10 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.http.server.repository.transaction.ActiveTransactionRegistry;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;

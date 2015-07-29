@@ -55,7 +55,7 @@ public class TupleQueryResultView extends QueryResultView {
 	protected static final String DEFAULT_JSONP_CALLBACK_PARAMETER = "callback";
 
 	protected static final Pattern JSONP_VALIDATOR = Pattern.compile("^[A-Za-z]\\w+$");
-	
+
 	private static final TupleQueryResultView INSTANCE = new TupleQueryResultView();
 
 	public static TupleQueryResultView getInstance() {
@@ -87,27 +87,26 @@ public class TupleQueryResultView extends QueryResultView {
 				TupleQueryResultWriter qrWriter = qrWriterFactory.getWriter(out);
 				TupleQueryResult tupleQueryResult = (TupleQueryResult)model.get(QUERY_RESULT_KEY);
 
-				if(qrWriter.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK))
-				{
+				if (qrWriter.getSupportedSettings().contains(BasicQueryWriterSettings.JSONP_CALLBACK)) {
 					String parameter = request.getParameter(DEFAULT_JSONP_CALLBACK_PARAMETER);
-	
+
 					if (parameter != null) {
 						parameter = parameter.trim();
-	
+
 						if (parameter.isEmpty()) {
 							parameter = BasicQueryWriterSettings.JSONP_CALLBACK.getDefaultValue();
 						}
-	
+
 						// check callback function name is a valid javascript function
 						// name
 						if (!JSONP_VALIDATOR.matcher(parameter).matches()) {
 							throw new IOException("Callback function name was invalid");
 						}
-	
+
 						qrWriter.getWriterConfig().set(BasicQueryWriterSettings.JSONP_CALLBACK, parameter);
 					}
 				}
-				
+
 				QueryResults.report(tupleQueryResult, qrWriter);
 			}
 			catch (QueryInterruptedException e) {
