@@ -1179,7 +1179,6 @@ public abstract class SPARQLUpdateTest {
 		update.append(getNamespaceDeclarations());
 		update.append("CREATE GRAPH <" + graph1 + "> ");
 
-		con.begin();
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		try {
