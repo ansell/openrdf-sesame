@@ -105,6 +105,15 @@ public final class SearchFields {
 		}
 	}
 
+	public static Resource createContext(String idString) {
+		if(CONTEXT_NULL.equals(idString)) {
+			return null;
+		}
+		else {
+			return createResource(idString);
+		}
+	}
+
 	public static String getLiteralPropertyValueAsString(Statement statement) {
 		Value object = statement.getObject();
 		if(object instanceof Literal) {

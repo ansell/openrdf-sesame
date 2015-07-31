@@ -40,6 +40,7 @@ import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.util.MapOfListMaps;
@@ -475,7 +476,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			return generateBindingSets(query, result);
 		} else if(evaluator instanceof GeoRelationQuerySpec) {
 			GeoRelationQuerySpec query = (GeoRelationQuerySpec) evaluator;
-			Iterable<? extends SearchDocument> result = evaluateQuery(query);
+			Iterable<? extends DocumentResult> result = evaluateQuery(query);
 			return generateBindingSets(query, result);
 		} else {
 			throw new IllegalArgumentException("Unsupported "+SearchQueryEvaluator.class.getSimpleName()+": "+evaluator.getClass().getName());
@@ -630,7 +631,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				throw new MalformedQueryException("Geometry literal is not a point: "+from.getLabel());
 			}
 			Point p = (Point) shape;
-			hits = geoQuery(geoProperty, p, units, distance, query.getDistanceVar());
+			hits = geoQuery(geoProperty, p, units, distance, query.getDistanceVar(), query.getContextVar());
 		}
 		catch (Exception e) {
 			logger.error("There was a problem evaluating distance query 'within " + distance + getUnitSymbol(units) + " of " + from.getLabel() + "'!", e);
@@ -671,6 +672,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				String subjVar = query.getSubjectVar();
 				String geoVar = query.getGeoVar();
 				String distanceVar = query.getDistanceVar();
+				Var contextVar = query.getContextVar();
 				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
 				for(String geometry : geometries) {
 					double distance = hit.getDistance();
@@ -690,6 +692,12 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 							Resource resource = getResource(doc);
 							derivedBindings.addBinding(subjVar, resource);
 						}
+						if(contextVar != null && !contextVar.hasValue()) {
+							Resource ctx = SearchFields.createResource(doc.getContext());
+							if(ctx != null) {
+								derivedBindings.addBinding(contextVar.getName(), ctx);
+							}
+						}
 						if(geoVar != null) {
 							derivedBindings.addBinding(geoVar, SearchFields.wktToLiteral(geometry));
 						}
@@ -707,8 +715,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
-	private Iterable<? extends SearchDocument> evaluateQuery(GeoRelationQuerySpec query) {
-		Iterable<? extends SearchDocument> hits = null;
+	private Iterable<? extends DocumentResult> evaluateQuery(GeoRelationQuerySpec query) {
+		Iterable<? extends DocumentResult> hits = null;
 
 		Literal qgeom = query.getQueryGeometry();
 		URI geoProperty = query.getGeoProperty();
@@ -717,7 +725,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				throw new MalformedQueryException("Unsupported datatype: "+qgeom.getDatatype());
 			}
 			Shape qshape = parseShape(geoProperty.toString(), qgeom.getLabel());
-			hits = geoRelationQuery(query.getRelation(), geoProperty, qshape);
+			hits = geoRelationQuery(query.getRelation(), geoProperty, qshape, query.getContextVar());
 		}
 		catch (Exception e) {
 			logger.error("There was a problem evaluating spatial relation query '" + query.getRelation() +" "+ qgeom.getLabel() + "'!", e);
@@ -726,7 +734,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return hits;
 	}
 
-	private Collection<BindingSet> generateBindingSets(GeoRelationQuerySpec query, Iterable<? extends SearchDocument> hits)
+	private Collection<BindingSet> generateBindingSets(GeoRelationQuerySpec query, Iterable<? extends DocumentResult> hits)
 		throws SailException
 	{
 		// Since one resource can be returned many times, it can lead now to
@@ -739,16 +747,28 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 		if(hits != null) {
 			// for each hit ...
-			for (SearchDocument doc : hits) {
+			for (DocumentResult hit : hits) {
+				// get the current hit
+				SearchDocument doc = hit.getDocument();
+				if (doc == null)
+					continue;
+
 				String subjVar = query.getSubjectVar();
 				String geoVar = query.getGeoVar();
 				String fVar = query.getFunctionValueVar();
+				Var contextVar = query.getContextVar();
 				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
 				for(String geometry : geometries) {
 					QueryBindingSet derivedBindings = new QueryBindingSet();
 					if(subjVar != null) {
 						Resource resource = getResource(doc);
 						derivedBindings.addBinding(subjVar, resource);
+					}
+					if(contextVar != null && !contextVar.hasValue()) {
+						Resource ctx = SearchFields.createResource(doc.getContext());
+						if(ctx != null) {
+							derivedBindings.addBinding(contextVar.getName(), ctx);
+						}
 					}
 					if(geoVar != null) {
 						derivedBindings.addBinding(geoVar, SearchFields.wktToLiteral(geometry));
@@ -794,8 +814,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract SearchQuery parseQuery(String q, URI property) throws MalformedQueryException;
 
 	protected abstract Iterable<? extends DocumentScore> query(Resource subject, String q, URI property, boolean highlight) throws MalformedQueryException, IOException;
-	protected abstract Iterable<? extends DocumentDistance> geoQuery(URI geoProperty, Point p, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
-	protected abstract Iterable<? extends SearchDocument> geoRelationQuery(String relation, URI geoProperty, Shape shape) throws MalformedQueryException, IOException;
+	protected abstract Iterable<? extends DocumentDistance> geoQuery(URI geoProperty, Point p, URI units, double distance, String distanceVar, Var context) throws MalformedQueryException, IOException;
+	protected abstract Iterable<? extends DocumentResult> geoRelationQuery(String relation, URI geoProperty, Shape shape, Var context) throws MalformedQueryException, IOException;
 
 	protected abstract BulkUpdater newBulkUpdate();
 }

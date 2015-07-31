@@ -27,6 +27,7 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Var;
 
 public class GeoRelationQuerySpec implements SearchQueryEvaluator {
 	private String relation;
@@ -79,6 +80,10 @@ public class GeoRelationQuerySpec implements SearchQueryEvaluator {
 
 	public String getSubjectVar() {
 		return geoStatement.getSubjectVar().getName();
+	}
+
+	public Var getContextVar() {
+		return geoStatement.getContextVar();
 	}
 
 	public URI getGeoProperty() {
