@@ -102,7 +102,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			return;
 		}
 
-		String field = statement.getPredicate().toString();
+		String field = SearchFields.getFieldName(statement.getPredicate());
 		String text = ((Literal)object).getLabel();
 
 		// fetch the Document representing this Resource
@@ -154,7 +154,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 		if (document != null) {
 			// determine the values used in the index for this triple
-			String fieldName = statement.getPredicate().toString();
+			String fieldName = SearchFields.getFieldName(statement.getPredicate());
 			String text = ((Literal)object).getLabel();
 
 			// see if this triple occurs in this Document
@@ -285,7 +285,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 									// remove value from both property field and the
 									// corresponding text field
 									String label = ((Literal)r.getObject()).getLabel();
-									removedOfResource.put(r.getPredicate().toString(), label);
+									removedOfResource.put(SearchFields.getFieldName(r.getPredicate()), label);
 								}
 							}
 						}
@@ -419,7 +419,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		String text = SearchFields.getLiteralPropertyValueAsString(statement);
 		if (text == null)
 			return;
-		String field = statement.getPredicate().toString();
+		String field = SearchFields.getFieldName(statement.getPredicate());
 		document.addProperty(field, text);
 	}
 
@@ -535,7 +535,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 						// limit to the queried field, if there was one
 						Collection<String> fields;
 						if (query.getPropertyURI() != null) {
-							String fieldname = query.getPropertyURI().toString();
+							String fieldname = SearchFields.getFieldName(query.getPropertyURI());
 							fields = Collections.singletonList(fieldname);
 						}
 						else {
