@@ -35,6 +35,7 @@ import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.SpatialParams;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
@@ -404,7 +405,7 @@ public class SolrIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, URI geoProperty, double lat,
+	protected Iterable<? extends DocumentDistance> geoQuery(URI geoProperty, double lat,
 			double lon, final URI units, double distance, String distanceVar)
 		throws MalformedQueryException, IOException
 	{
@@ -442,12 +443,16 @@ public class SolrIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar,
-			URI geoProperty, Shape shape, String valueVar)
+	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape)
 		throws MalformedQueryException, IOException
 	{
-
-		SolrQuery q = new SolrQuery("\"Intersects()\"");
+		String spatialOp = toSpatialOp(relation);
+		if(spatialOp == null) {
+			return null;
+		}
+		String wkt = ((WKTShape)shape).toWKT();
+		SolrQuery q = new SolrQuery("\""+spatialOp+"("+wkt+")\"");
 		q.set(CommonParams.DF, geoProperty.toString());
 		q.addField(SearchFields.URI_FIELD_NAME);
 		// ':' is part of the fl parameter syntax so we can't use the full
@@ -472,6 +477,13 @@ public class SolrIndex extends AbstractSearchIndex {
 				return new SolrDocumentScore(doc, null);
 			}
 		});
+	}
+
+	private String toSpatialOp(String relation) {
+		if(GEOF.SF_INTERSECTS.stringValue().equals(relation)) {
+			return "Intersects";
+		}
+		return null;
 	}
 
 	/**

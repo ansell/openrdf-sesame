@@ -17,6 +17,7 @@
 package org.openrdf.sail.lucene;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -474,7 +475,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			return generateBindingSets(query, result);
 		} else if(evaluator instanceof GeoRelationQuerySpec) {
 			GeoRelationQuerySpec query = (GeoRelationQuerySpec) evaluator;
-			Iterable<? extends DocumentScore> result = evaluateQuery(query);
+			Iterable<? extends SearchDocument> result = evaluateQuery(query);
 			return generateBindingSets(query, result);
 		} else {
 			throw new IllegalArgumentException("Unsupported "+SearchQueryEvaluator.class.getSimpleName()+": "+evaluator.getClass().getName());
@@ -624,12 +625,12 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if(!GEO.WKT_LITERAL.equals(from.getDatatype())) {
 				throw new MalformedQueryException("Unsupported datatype: "+from.getDatatype());
 			}
-			Shape shape = getSpatialContext(geoProperty.toString()).readShapeFromWkt(from.getLabel());
+			Shape shape = parseShape(geoProperty.toString(), from.getLabel());
 			if(!(shape instanceof Point)) {
 				throw new MalformedQueryException("Geometry literal is not a point: "+from.getLabel());
 			}
 			Point p = (Point) shape;
-			hits = geoQuery(query.getSubjectVar(), geoProperty, p.getY(), p.getX(), units, distance, query.getDistanceVar());
+			hits = geoQuery(geoProperty, p, units, distance, query.getDistanceVar());
 		}
 		catch (Exception e) {
 			logger.error("There was a problem evaluating distance query 'within " + distance + getUnitSymbol(units) + " of " + from.getLabel() + "'!", e);
@@ -706,8 +707,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
-	private Iterable<? extends DocumentScore> evaluateQuery(GeoRelationQuerySpec query) {
-		Iterable<? extends DocumentScore> hits = null;
+	private Iterable<? extends SearchDocument> evaluateQuery(GeoRelationQuerySpec query) {
+		Iterable<? extends SearchDocument> hits = null;
 
 		Literal qgeom = query.getQueryGeometry();
 		URI geoProperty = query.getGeoProperty();
@@ -715,8 +716,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if(!GEO.WKT_LITERAL.equals(qgeom.getDatatype())) {
 				throw new MalformedQueryException("Unsupported datatype: "+qgeom.getDatatype());
 			}
-			Shape qshape = getSpatialContext(geoProperty.toString()).readShapeFromWkt(qgeom.getLabel());
-			hits = geoRelationQuery(query.getRelation(), query.getSubjectVar(), geoProperty, qshape, query.getFunctionValueVar());
+			Shape qshape = parseShape(geoProperty.toString(), qgeom.getLabel());
+			hits = geoRelationQuery(query.getRelation(), geoProperty, qshape);
 		}
 		catch (Exception e) {
 			logger.error("There was a problem evaluating spatial relation query '" + query.getRelation() +" "+ qgeom.getLabel() + "'!", e);
@@ -725,7 +726,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return hits;
 	}
 
-	private Collection<BindingSet> generateBindingSets(GeoRelationQuerySpec query, Iterable<? extends DocumentScore> hits)
+	private Collection<BindingSet> generateBindingSets(GeoRelationQuerySpec query, Iterable<? extends SearchDocument> hits)
 		throws SailException
 	{
 		// Since one resource can be returned many times, it can lead now to
@@ -738,12 +739,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 		if(hits != null) {
 			// for each hit ...
-			for (DocumentScore hit : hits) {
-				// get the current hit
-				SearchDocument doc = hit.getDocument();
-				if (doc == null)
-					continue;
-
+			for (SearchDocument doc : hits) {
 				String subjVar = query.getSubjectVar();
 				String geoVar = query.getGeoVar();
 				String fVar = query.getFunctionValueVar();
@@ -770,6 +766,10 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
+	protected Shape parseShape(String property, String value) throws ParseException {
+		return getSpatialContext(property).readShapeFromWkt(value);
+	}
+
 	/**
 	 * Returns the Resource corresponding with the specified Document.
 	 */
@@ -794,8 +794,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract SearchQuery parseQuery(String q, URI property) throws MalformedQueryException;
 
 	protected abstract Iterable<? extends DocumentScore> query(Resource subject, String q, URI property, boolean highlight) throws MalformedQueryException, IOException;
-	protected abstract Iterable<? extends DocumentDistance> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
-	protected abstract Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar, URI geoProperty, Shape shape, String valueVar) throws MalformedQueryException, IOException;
+	protected abstract Iterable<? extends DocumentDistance> geoQuery(URI geoProperty, Point p, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
+	protected abstract Iterable<? extends SearchDocument> geoRelationQuery(String relation, URI geoProperty, Shape shape) throws MalformedQueryException, IOException;
 
 	protected abstract BulkUpdater newBulkUpdate();
 }

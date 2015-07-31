@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -69,6 +70,9 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 	public static final Literal POLY1 = new LiteralImpl("POLYGON ((2.3294 48.8726, 2.2719 48.8643, 2.3370 48.8398, 2.3294 48.8726))", GEO.WKT_LITERAL);
 	public static final Literal POLY2 = new LiteralImpl("POLYGON ((2.3509 48.8429, 2.3785 48.8385, 2.3576 48.8487, 2.3509 48.8429))", GEO.WKT_LITERAL);
 
+	public static final Literal TEST_POINT = new LiteralImpl("POINT (2.2871 48.8630)", GEO.WKT_LITERAL);
+	public static final Literal TEST_POLY = new LiteralImpl("POLYGON ((2.315 48.855, 2.360 48.835, 2.370 48.850, 2.315 48.855))", GEO.WKT_LITERAL);
+
 	private static final double ERROR = 2.0;
 
 	protected LuceneSail sail;
@@ -98,11 +102,11 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		// add some statements to it
 		connection = repository.getConnection();
 		connection.begin();
-		connection.add(SUBJECT_1, GEO.AS_WKT, EIFFEL_TOWER);
+		connection.add(SUBJECT_1, GEO.AS_WKT, EIFFEL_TOWER, CONTEXT_1);
 		connection.add(SUBJECT_2, GEO.AS_WKT, ARC_TRIOMPHE);
-		connection.add(SUBJECT_3, GEO.AS_WKT, NOTRE_DAME);
+		connection.add(SUBJECT_3, GEO.AS_WKT, NOTRE_DAME, CONTEXT_2);
 		connection.add(SUBJECT_4, GEO.AS_WKT, POLY1);
-		connection.add(SUBJECT_5, GEO.AS_WKT, POLY2);
+		connection.add(SUBJECT_5, GEO.AS_WKT, POLY2, CONTEXT_3);
 		connection.commit();
 	}
 
@@ -119,11 +123,11 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		throws Exception
 	{
 		// are the triples stored in the underlying sail?
-		assertTrue(connection.hasStatement(SUBJECT_1, GEO.AS_WKT, EIFFEL_TOWER, false));
+		assertTrue(connection.hasStatement(SUBJECT_1, GEO.AS_WKT, EIFFEL_TOWER, false, CONTEXT_1));
 		assertTrue(connection.hasStatement(SUBJECT_2, GEO.AS_WKT, ARC_TRIOMPHE, false));
-		assertTrue(connection.hasStatement(SUBJECT_3, GEO.AS_WKT, NOTRE_DAME, false));
+		assertTrue(connection.hasStatement(SUBJECT_3, GEO.AS_WKT, NOTRE_DAME, false, CONTEXT_2));
 		assertTrue(connection.hasStatement(SUBJECT_4, GEO.AS_WKT, POLY1, false));
-		assertTrue(connection.hasStatement(SUBJECT_5, GEO.AS_WKT, POLY2, false));
+		assertTrue(connection.hasStatement(SUBJECT_5, GEO.AS_WKT, POLY2, false, CONTEXT_3));
 	}
 
 	@Test
@@ -135,7 +139,7 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 				+"prefix geof: <"+GEOF.NAMESPACE+">"
 				+"select ?toUri ?to where { ?toUri geo:asWKT ?to. filter(geof:distance(?from, ?to, ?units) < ?range) }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (2.2871 48.8630)", GEO.WKT_LITERAL));
+		query.setBinding("from", TEST_POINT);
 		query.setBinding("units", GEOF.UOM_METRE);
 		query.setBinding("range", sail.getValueFactory().createLiteral(1500.0));
 
@@ -168,12 +172,12 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		String queryStr =
 				 "prefix geo:  <"+GEO.NAMESPACE+">"
 				+"prefix geof: <"+GEOF.NAMESPACE+">"
-				+"select ?toUri ?dist where { ?toUri geo:asWKT ?to."
+				+"select ?toUri ?dist ?g where { graph ?g {?toUri geo:asWKT ?to.}"
 				+ " bind(geof:distance(?from, ?to, ?units) as ?dist)"
 				+ " filter(?dist < ?range)"
 				+ " }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		query.setBinding("from", sail.getValueFactory().createLiteral("POINT (2.2871 48.8630)", GEO.WKT_LITERAL));
+		query.setBinding("from", TEST_POINT);
 		query.setBinding("units", GEOF.UOM_METRE);
 		query.setBinding("range", sail.getValueFactory().createLiteral(1500.0));
 
@@ -194,6 +198,8 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 			Literal dist = expected.remove(subj);
 			assertNotNull(dist);
 			assertEquals(dist.doubleValue(), ((Literal)bindings.getValue("dist")).doubleValue(), ERROR);
+
+			assertNotNull(bindings.getValue("g"));
 		}
 		assertTrue(expected.isEmpty());
 		result.close();
@@ -207,21 +213,18 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 				+"prefix geof: <"+GEOF.NAMESPACE+">"
 				+"select ?matchUri ?match where { ?matchUri geo:asWKT ?match. filter(geof:sfIntersects(?pattern, ?match)) }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		query.setBinding("pattern", sail.getValueFactory().createLiteral("POLYGON ((2.32 48.86, 2.36 48.84, 2.37 48.85, 2.32 48.86))", GEO.WKT_LITERAL));
+		query.setBinding("pattern", TEST_POLY);
 
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		Map<URI,Literal> expected = new LinkedHashMap<URI,Literal>();
+		Map<URI,Literal> expected = new HashMap<URI,Literal>();
 		expected.put(SUBJECT_4, POLY1);
 		expected.put(SUBJECT_5, POLY2);
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
 			URI subj = (URI) bindings.getValue("matchUri");
-			// check ordering
-			URI expectedUri = expected.keySet().iterator().next();
-			assertEquals(expectedUri, subj);
 
 			Literal location = expected.remove(subj);
 			assertNotNull(location);
@@ -237,30 +240,29 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		String queryStr =
 				 "prefix geo:  <"+GEO.NAMESPACE+">"
 				+"prefix geof: <"+GEOF.NAMESPACE+">"
-				+"select ?matchUri ?intersects where { ?matchUri geo:asWKT ?match."
+				+"select ?matchUri ?intersects ?g where { graph ?g {?matchUri geo:asWKT ?match.}"
 				+ " bind(geof:sfIntersects(?pattern, ?match) as ?intersects)"
 				+ " filter(?intersects)"
 				+ " }";
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, queryStr);
-		query.setBinding("pattern", sail.getValueFactory().createLiteral("POLYGON ((2.32 48.86, 2.36 48.84, 2.37 48.85))", GEO.WKT_LITERAL));
+		query.setBinding("pattern", TEST_POLY);
 
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
-		Map<URI,Literal> expected = new LinkedHashMap<URI,Literal>();
+		Map<URI,Literal> expected = new HashMap<URI,Literal>();
 		expected.put(SUBJECT_4, sail.getValueFactory().createLiteral(true));
 		expected.put(SUBJECT_5, sail.getValueFactory().createLiteral(true));
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
 			URI subj = (URI) bindings.getValue("matchUri");
-			// check ordering
-			URI expectedUri = expected.keySet().iterator().next();
-			assertEquals(expectedUri, subj);
 
 			Literal location = expected.remove(subj);
 			assertNotNull(location);
-			assertEquals(location.booleanValue(), ((Literal)bindings.getValue("match")).booleanValue());
+			assertEquals(location.booleanValue(), ((Literal)bindings.getValue("intersects")).booleanValue());
+
+			assertNotNull(bindings.getValue("g"));
 		}
 		assertTrue(expected.isEmpty());
 		result.close();

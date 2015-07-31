@@ -78,6 +78,7 @@ import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Bits;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.util.GeoUnits;
@@ -86,7 +87,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.context.SpatialContextFactory;
+import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
 /**
@@ -220,9 +224,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	protected Function<String, ? extends SpatialStrategy> createSpatialStrategyMapper(Map<String,String> parameters) {
-		SpatialContext geoContext = SpatialContext.GEO;
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		SpatialContext geoContext = SpatialContextFactory.makeSpatialContext(parameters, classLoader);
 		final SpatialPrefixTree spt = SpatialPrefixTreeFactory.makeSPT(parameters,
-				Thread.currentThread().getContextClassLoader(), geoContext);
+				classLoader, geoContext);
 		return new Function<String,SpatialStrategy>()
 		{
 			@Override
@@ -733,13 +738,13 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty,
-			double lat, double lon, final URI units, double distance, String distanceVar)
+	protected Iterable<? extends DocumentDistance> geoQuery(final URI geoProperty,
+			Point p, final URI units, double distance, String distanceVar)
 		throws MalformedQueryException, IOException
 	{
 		double degs = GeoUnits.toDegrees(distance, units);
 		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoProperty.toString());
-		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(lon, lat, degs);
+		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(p, degs);
 		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.Intersects, boundingCircle));
 
 		TopDocs docs = search(new CustomScoreQuery(q, new FunctionQuery(
@@ -755,11 +760,49 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar,
-			URI geoProperty, Shape shape, String valueVar)
+	protected Iterable<? extends SearchDocument> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape)
 		throws MalformedQueryException, IOException
 	{
-		// TODO Auto-generated method stub
+		SpatialOperation op = toSpatialOp(relation);
+		if(op == null) {
+			return null;
+		}
+
+		final String geoField = geoProperty.toString();
+		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoField);
+		Query q = strategy.makeQuery(new SpatialArgs(op, shape));
+
+		TopDocs docs = search(q);
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, SearchDocument>() {
+
+			@Override
+			public SearchDocument apply(ScoreDoc scoredoc) {
+				Document doc = LuceneIndex.this.getDocument(scoredoc.doc, Sets.newHashSet(SearchFields.URI_FIELD_NAME, SearchFields.CONTEXT_FIELD_NAME, geoField));
+				return new LuceneDocument(doc, geoStrategyMapper);
+			}
+		});
+	}
+
+	private SpatialOperation toSpatialOp(String relation) {
+		if(GEOF.SF_INTERSECTS.stringValue().equals(relation)) {
+			return SpatialOperation.Intersects;
+		}
+		else if(GEOF.SF_DISJOINT.stringValue().equals(relation)) {
+			return SpatialOperation.IsDisjointTo;
+		}
+		else if(GEOF.SF_EQUALS.stringValue().equals(relation)) {
+			return SpatialOperation.IsEqualTo;
+		}
+		else if(GEOF.SF_OVERLAPS.stringValue().equals(relation)) {
+			return SpatialOperation.Overlaps;
+		}
+		else if(GEOF.EH_COVERED_BY.stringValue().equals(relation)) {
+			return SpatialOperation.IsWithin;
+		}
+		else if(GEOF.EH_COVERS.stringValue().equals(relation)) {
+			return SpatialOperation.Contains;
+		}
 		return null;
 	}
 
