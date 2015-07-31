@@ -382,7 +382,7 @@ public class QueryJoinOptimizer implements QueryOptimizer {
 					double cardinality = getTupleExprCardinality(tupleExpr, cardinalityMap, varsMap, varFreqMap,
 							boundVars);
 
-					if (cardinality <= lowestCardinality) {
+					if (cardinality < lowestCardinality || result == null) {
 						// More specific path expression found
 						lowestCardinality = cardinality;
 						result = tupleExpr;
