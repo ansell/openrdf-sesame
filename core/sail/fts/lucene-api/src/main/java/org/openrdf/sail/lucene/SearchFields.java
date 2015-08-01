@@ -112,6 +112,10 @@ public final class SearchFields {
 		return ((Literal)object).getLabel();
 	}
 
+	public static String getFieldName(URI property) {
+		return property.toString();
+	}
+
 	/**
 	 * Determines whether the specified field name is a property field name.
 	 */
