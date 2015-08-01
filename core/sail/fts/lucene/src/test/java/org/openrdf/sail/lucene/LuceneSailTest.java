@@ -32,11 +32,9 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
 public class LuceneSailTest extends AbstractLuceneSailTest {
-
 	private LuceneIndex index;
 
-	protected void configure(LuceneSail sail)
-		throws IOException
+	protected void configure(LuceneSail sail) throws IOException
 	{
 		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer());
 		sail.setLuceneIndex(index);

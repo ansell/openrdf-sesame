@@ -34,10 +34,6 @@ import org.openrdf.sail.lucene.SearchQuery;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
-/**
- * To be removed, no longer used.
- */
-@Deprecated
 public class SolrSearchQuery implements SearchQuery {
 	private final SolrQuery query;
 	private SolrIndex index;

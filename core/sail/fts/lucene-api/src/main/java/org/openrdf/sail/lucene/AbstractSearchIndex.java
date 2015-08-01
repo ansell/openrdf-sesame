@@ -32,10 +32,9 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.impl.LiteralImpl;
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.vocabulary.GEO;
-import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
@@ -46,10 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
-import com.spatial4j.core.context.SpatialContext;
-import com.spatial4j.core.shape.Point;
-import com.spatial4j.core.shape.Shape;
 
 public abstract class AbstractSearchIndex implements SearchIndex {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -61,15 +56,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	}
 
 	protected int maxDocs;
-	protected SpatialContext geoContext;
-	protected Set<String> wktFields = Collections.singleton(GEO.AS_WKT.toString());
-
-	protected AbstractSearchIndex() {}
-
-	protected AbstractSearchIndex(SpatialContext geoContext)
-	{
-		this.geoContext = geoContext;
-	}
 
 	@Override
 	public void initialize(Properties parameters)
@@ -77,18 +63,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	{
 		String maxDocParam = parameters.getProperty(LuceneSail.MAX_DOCUMENTS_KEY);
 		maxDocs = (maxDocParam != null) ? Integer.parseInt(maxDocParam) : -1;
-
-		geoContext = SpatialContext.GEO;
-
-		String wktFieldParam = parameters.getProperty(LuceneSail.WKT_FIELDS);
-		if(wktFieldParam != null) {
-			wktFields = Sets.newHashSet(wktFieldParam.split("\\s+"));
-		}
-	}
-
-	public SpatialContext getSpatialContext()
-	{
-		return geoContext;
 	}
 
 	/**
@@ -113,11 +87,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return true;
 	}
 
-	@Override
-	public boolean isGeoProperty(String propName) {
-		return (wktFields != null) && wktFields.contains(propName);
-	}
-
 
 
 	/**
@@ -128,12 +97,13 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		throws IOException
 	{
 		// determine stuff to store
-		String text = SearchFields.getLiteralPropertyValueAsString(statement);
-		if (text == null) {
+		Value object = statement.getObject();
+		if (!(object instanceof Literal)) {
 			return;
 		}
 
 		String field = statement.getPredicate().toString();
+		String text = ((Literal)object).getLabel();
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
@@ -145,7 +115,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		if (document == null) {
 			// there is no such Document: create one now
 			document = newDocument(id, resourceId, contextId);
-			addProperty(field, text, document);
+			document.addProperty(field, text);
 
 			// add it to the index
 			addDocument(document);
@@ -155,11 +125,11 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if (!document.hasProperty(field, text)) {
 				// create a copy of the old document; updating the retrieved
 				// Document instance works ok for stored properties but indexed data
-				// gets lost when doing an IndexWriter.updateDocument with it
+				// gets lots when doing an IndexWriter.updateDocument with it
 				SearchDocument newDocument = copyDocument(document);
 
 				// add the new triple to the cloned document
-				addProperty(field, text, newDocument);
+				newDocument.addProperty(field, text);
 
 				// update the index with the cloned document
 				updateDocument(newDocument);
@@ -171,8 +141,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	public final synchronized void removeStatement(Statement statement)
 		throws IOException
 	{
-		String text = SearchFields.getLiteralPropertyValueAsString(statement);
-		if (text == null) {
+		Value object = statement.getObject();
+		if (!(object instanceof Literal)) {
 			return;
 		}
 
@@ -185,6 +155,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		if (document != null) {
 			// determine the values used in the index for this triple
 			String fieldName = statement.getPredicate().toString();
+			String text = ((Literal)object).getLabel();
 
 			// see if this triple occurs in this Document
 			if (document.hasProperty(fieldName, text)) {
@@ -198,10 +169,21 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 					// there are more triples encoded in this Document: remove the
 					// document and add a new Document without this triple
 					SearchDocument newDocument = newDocument(id, resourceId, contextId);
-					boolean mutated = copyDocument(newDocument, document, Collections.singletonMap(fieldName, Collections.singleton(text)));
-					if(mutated) {
-						updateDocument(newDocument);
+
+					for (String oldFieldName : document.getPropertyNames()) {
+						newDocument.addProperty(oldFieldName);
+						List<String> oldValues = document.getProperty(oldFieldName);
+						if(oldValues != null) {
+							boolean isField = fieldName.equals(oldFieldName);
+							for(String oldValue : oldValues) {
+								if (!(isField && text.equals(oldValue))) {
+									newDocument.addProperty(oldFieldName, oldValue);
+								}
+							}
+						}
 					}
+
+					updateDocument(newDocument);
 				}
 			}
 		}
@@ -284,32 +266,55 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				else {
 					// update the Document
 
+					// create a copy of the old document; updating the retrieved
+					// Document instance works ok for stored properties but indexed
+					// data
+					// gets lots when doing an IndexWriter.updateDocument with it
+					SearchDocument newDocument = newDocument(id, resourceId, contextId);
+					// track if newDocument is actually different from document
+					boolean mutated = false;
+
 					// buffer the removed literal statements
-					Map<String, Set<String>> removedOfResource = null;
+					SetMultimap<String, String> removedOfResource = null;
 					{
 						List<Statement> removedStatements = stmtsToRemove.get(contextId);
 						if (removedStatements != null && !removedStatements.isEmpty()) {
-							removedOfResource = new HashMap<String,Set<String>>();
+							removedOfResource = HashMultimap.create();
 							for (Statement r : removedStatements) {
-								String val = SearchFields.getLiteralPropertyValueAsString(r);
-								if (val != null) {
+								if (r.getObject() instanceof Literal) {
 									// remove value from both property field and the
 									// corresponding text field
-									String field = r.getPredicate().toString();
-									Set<String> removedValues = removedOfResource.get(field);
-									if(removedValues == null)
-									{
-										removedValues = new HashSet<String>();
-										removedOfResource.put(field, removedValues);
-									}
-									removedValues.add(val);
+									String label = ((Literal)r.getObject()).getLabel();
+									removedOfResource.put(r.getPredicate().toString(), label);
 								}
 							}
 						}
 					}
 
-					SearchDocument newDocument = newDocument(id, resourceId, contextId);
-					boolean mutated = copyDocument(newDocument, document, removedOfResource);
+					// add all existing property fields
+					// but without adding the removed ones
+					// keep the predicate/value pairs to ensure that the statement
+					// cannot be added twice
+					SetMultimap<String, String> copiedProperties = HashMultimap.create();
+					for (String oldFieldName : document.getPropertyNames()) {
+						newDocument.addProperty(oldFieldName);
+						// which fields were removed?
+						Set<String> objectsRemoved = (removedOfResource != null) ? removedOfResource.get(oldFieldName) : null;
+
+						List<String> oldValues = document.getProperty(oldFieldName);
+						if(oldValues != null) {
+							for(String oldValue : oldValues) {
+								// do not copy removed statements to the new version of the
+								// document
+								if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
+									mutated = true;
+									continue;
+								}
+								newDocument.addProperty(oldFieldName, oldValue);
+								copiedProperties.put(oldFieldName, oldValue);
+							}
+						}
+					}
 
 					// add all statements to this document, except for those which
 					// are already there
@@ -317,12 +322,10 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 						List<Statement> addedToResource = stmtsToAdd.get(contextId);
 						String val;
 						if (addedToResource != null && !addedToResource.isEmpty()) {
-							PropertyCache propertyCache = new PropertyCache(newDocument);
 							for (Statement s : addedToResource) {
 								val = SearchFields.getLiteralPropertyValueAsString(s);
 								if (val != null) {
-									String field = s.getPredicate().toString();
-									if (!propertyCache.hasProperty(field, val)) {
+									if (!copiedProperties.containsEntry(s.getPredicate().stringValue(), val)) {
 										addProperty(s, newDocument);
 										mutated = true;
 									}
@@ -346,34 +349,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			}
 		}
 		updater.end();
-	}
-
-	/**
-	 * Creates a copy of the old document; updating the retrieved
-	 * Document instance works ok for stored properties but indexed data
-	 * gets lost when doing an IndexWriter.updateDocument with it.
-	 */
-	private boolean copyDocument(SearchDocument newDocument, SearchDocument document, Map<String,Set<String>> removedProperties)
-	{
-		// track if newDocument is actually different from document
-		boolean mutated = false;
-		for (String oldFieldName : document.getPropertyNames()) {
-			newDocument.addProperty(oldFieldName);
-			List<String> oldValues = document.getProperty(oldFieldName);
-			if(oldValues != null) {
-				// which fields were removed?
-				Set<String> objectsRemoved = (removedProperties != null) ? removedProperties.get(oldFieldName) : null;
-				for(String oldValue : oldValues) {
-					// do not copy removed properties to the new version of the document
-					if ((objectsRemoved != null) && (objectsRemoved.contains(oldValue))) {
-						mutated = true;
-					} else {
-						addProperty(oldFieldName, oldValue, newDocument);
-					}
-				}
-			}
-		}
-		return mutated;
 	}
 
 	private static int countPropertyValues(SearchDocument document)
@@ -441,51 +416,22 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	 *        the document to add to
 	 */
 	private void addProperty(Statement statement, SearchDocument document) {
-		String value = SearchFields.getLiteralPropertyValueAsString(statement);
-		if (value == null) {
+		String text = SearchFields.getLiteralPropertyValueAsString(statement);
+		if (text == null)
 			return;
-		}
 		String field = statement.getPredicate().toString();
-		addProperty(field, value, document);
-	}
-
-	private void addProperty(String field, String value, SearchDocument document) {
-		if(isGeoProperty(field)) {
-			document.addGeoProperty(field, value);
-		}
-		else {
-			document.addProperty(field, value);
-		}
+		document.addProperty(field, text);
 	}
 
 
-
-	/**
-	 * To be removed, prefer {@link evaluate(SearchQueryEvaluator query)}.
-	 */
-	@Deprecated
-	public Collection<BindingSet> evaluate(QuerySpec query)
-		throws SailException
-	{
-		Iterable<? extends DocumentScore> result = evaluateQuery(query);
-		return generateBindingSets(query, result);
-	}
 
 	@Override
-	public final Collection<BindingSet> evaluate(SearchQueryEvaluator evaluator)
-		throws SailException
+	public final Collection<BindingSet> evaluate(QuerySpec query) throws SailException
 	{
-		if(evaluator instanceof QuerySpec) {
-			QuerySpec query = (QuerySpec) evaluator;
-			Iterable<? extends DocumentScore> result = evaluateQuery(query);
-			return generateBindingSets(query, result);
-		} else if(evaluator instanceof DistanceQuerySpec) {
-			DistanceQuerySpec query = (DistanceQuerySpec) evaluator;
-			Iterable<? extends DocumentDistance> result = evaluateQuery(query);
-			return generateBindingSets(query, result);
-		} else {
-			throw new IllegalArgumentException("Unsupported "+SearchQueryEvaluator.class.getSimpleName()+": "+evaluator.getClass().getName());
-		}
+		Iterable<? extends DocumentScore> result = evaluateQuery(query);
+
+		// generate bindings
+		return generateBindingSets(query, result);
 	}
 
 	/**
@@ -499,18 +445,25 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	private Iterable<? extends DocumentScore> evaluateQuery(QuerySpec query) {
 		Iterable<? extends DocumentScore> hits = null;
 
+		// get the subject of the query
+		Resource subject = query.getSubject();
+
 		try {
 			// parse the query string to a lucene query
 
 			String sQuery = query.getQueryString();
 
 			if (!sQuery.isEmpty()) {
+				SearchQuery searchQuery = parseQuery(query.getQueryString(), query.getPropertyURI());
+
 				// if the query requests for the snippet, create a highlighter using
 				// this query
-				boolean highlight = (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null);
+				if (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null) {
+					searchQuery.highlight(query.getPropertyURI());
+				}
 
 				// distinguish the two cases of subject == null
-				hits = query(query.getSubject(), query.getQueryString(), query.getPropertyURI(), highlight);
+				hits = searchQuery.query(subject);
 			}
 			else {
 				hits = null;
@@ -561,6 +514,16 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				String matchVar = query.getMatchesVariableName();
 				if (matchVar != null) {
 					Resource resource = getResource(doc);
+					Value existing = derivedBindings.getValue(matchVar);
+					// if the existing binding contradicts the current binding, than
+					// we can safely skip this permutation
+					if ((existing != null) && (!existing.stringValue().equals(resource.stringValue()))) {
+						// invalidate the binding
+						derivedBindings = null;
+	
+						// and exit the loop
+						break;
+					}
 					derivedBindings.addBinding(matchVar, resource);
 				}
 	
@@ -573,7 +536,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 						Collection<String> fields;
 						if (query.getPropertyURI() != null) {
 							String fieldname = query.getPropertyURI().toString();
-							fields = Collections.singleton(fieldname);
+							fields = Collections.singletonList(fieldname);
 						}
 						else {
 							fields = doc.getPropertyNames();
@@ -620,84 +583,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
-	private Iterable<? extends DocumentDistance> evaluateQuery(DistanceQuerySpec query) {
-		Iterable<? extends DocumentDistance> hits = null;
-
-		Literal from = query.getFrom();
-		double distance = query.getDistance();
-		URI units = query.getUnits();
-		try {
-			if(!GEO.WKT_LITERAL.equals(from.getDatatype())) {
-				throw new MalformedQueryException("Unsupported datatype: "+from.getDatatype());
-			}
-			Shape shape = geoContext.readShapeFromWkt(from.getLabel());
-			if(!(shape instanceof Point)) {
-				throw new MalformedQueryException("Geometry literal is not a point: "+from.getLabel());
-			}
-			Point p = (Point) shape;
-			hits = geoQuery(query.getSubjectVar(), query.getGeoProperty(), p.getY(), p.getX(), units, distance, query.getDistanceVar());
-		}
-		catch (Exception e) {
-			logger.error("There was a problem evaluating distance query 'within " + distance + getUnitSymbol(units) + " of " + from.getLabel() + "'!", e);
-		}
-
-		return hits;
-	}
-
-	private static String getUnitSymbol(URI units)
-	{
-		if(GEOF.UOM_METRE.equals(units)) {
-			return "m";
-		} else {
-			return "";
-		}
-	}
-
-	private Collection<BindingSet> generateBindingSets(DistanceQuerySpec query, Iterable<? extends DocumentDistance> hits)
-		throws SailException
-	{
-		// Since one resource can be returned many times, it can lead now to
-		// multiple occurrences
-		// of the same binding tuple in the BINDINGS clause. This in turn leads to
-		// duplicate answers in the original SPARQL query.
-		// We want to avoid this, so BindingSets added to the result must be
-		// unique.
-		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
-
-		if(hits != null) {
-			// for each hit ...
-			for (DocumentDistance hit : hits) {
-				// get the current hit
-				SearchDocument doc = hit.getDocument();
-				if (doc == null)
-					continue;
-
-				String subjVar = query.getSubjectVar();
-				String geoVar = query.getGeoVar();
-				String distanceVar = query.getDistanceVar();
-				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
-				for(String geometry : geometries) {
-					QueryBindingSet derivedBindings = new QueryBindingSet();
-					if(subjVar != null) {
-						Resource resource = getResource(doc);
-						derivedBindings.addBinding(subjVar, resource);
-					}
-					if(geoVar != null) {
-						derivedBindings.addBinding(geoVar, SearchFields.wktToLiteral(geometry));
-					}
-					if(distanceVar != null) {
-						derivedBindings.addBinding(distanceVar, SearchFields.distanceToLiteral(hit.getDistance()));
-					}
-
-					bindingSets.add(derivedBindings);
-				}
-			}
-		}
-
-		// we succeeded
-		return bindingSets;
-	}
-
 	/**
 	 * Returns the Resource corresponding with the specified Document.
 	 */
@@ -715,14 +600,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	protected abstract void updateDocument(SearchDocument doc) throws IOException;
 	protected abstract void deleteDocument(SearchDocument doc) throws IOException;
 
-	/**
-	 * To be removed.
-	 */
-	@Deprecated
 	protected abstract SearchQuery parseQuery(String q, URI property) throws MalformedQueryException;
-
-	protected abstract Iterable<? extends DocumentScore> query(Resource subject, String q, URI property, boolean highlight) throws MalformedQueryException, IOException;
-	protected abstract Iterable<? extends DocumentDistance> geoQuery(String subjectVar, URI geoProperty, double lat, double lon, URI units, double distance, String distanceVar) throws MalformedQueryException, IOException;
 
 	protected abstract BulkUpdater newBulkUpdate();
 }

@@ -56,7 +56,6 @@ import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class SolrIndexTest {
-
 	private static final String DATA_DIR = "target/test-data";
 
 	public static final URI CONTEXT_1 = new URIImpl("urn:context1");
@@ -110,7 +109,6 @@ public class SolrIndexTest {
 			CONTEXT_2);
 
 	SolrIndex index;
-
 	SolrClient client;
 
 	@Before
@@ -145,8 +143,7 @@ public class SolrIndexTest {
 		long count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
-		QueryResponse response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME,
-				subject.toString())));
+		QueryResponse response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())));
 		Iterator<SolrDocument> docs = response.getResults().iterator();
 		assertTrue(docs.hasNext());
 
@@ -167,8 +164,7 @@ public class SolrIndexTest {
 		count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(1, count); // #docs should *not* have increased
 
-		response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME,
-				subject.toString())));
+		response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())));
 		docs = response.getResults().iterator();
 		assertTrue(docs.hasNext());
 
@@ -182,12 +178,10 @@ public class SolrIndexTest {
 		assertFalse(docs.hasNext());
 
 		// see if we can query for these literals
-		count = client.query(
-				new SolrQuery(SolrIndex.termQuery(SearchFields.TEXT_FIELD_NAME, object1.getLabel())).setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.TEXT_FIELD_NAME, object1.getLabel())).setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
-		count = client.query(
-				new SolrQuery(SolrIndex.termQuery(SearchFields.TEXT_FIELD_NAME, object2.getLabel())).setRows(0)).getResults().getNumFound();
+		count = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.TEXT_FIELD_NAME, object2.getLabel())).setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
 		// remove the first statement
@@ -200,8 +194,7 @@ public class SolrIndexTest {
 		count = client.query(new SolrQuery("*:*").setRows(0)).getResults().getNumFound();
 		assertEquals(1, count);
 
-		response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME,
-				subject.toString())));
+		response = client.query(new SolrQuery(SolrIndex.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())));
 		docs = response.getResults().iterator();
 		assertTrue(docs.hasNext());
 

@@ -1065,6 +1065,28 @@ public abstract class SPARQLUpdateTest {
 	}
 
 	@Test
+	public void testDeleteDataUnicode()
+		throws Exception
+	{
+		URI i18n = con.getValueFactory().createURI(EX_NS, "東京");
+		
+		con.add(i18n, FOAF.KNOWS, bob);
+		
+		logger.debug("executing testDeleteData");
+		StringBuilder update = new StringBuilder();
+		update.append(getNamespaceDeclarations());
+		update.append("DELETE DATA { ex:東京 foaf:knows ex:bob. } ");
+
+		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
+
+		assertTrue(con.hasStatement(i18n, FOAF.KNOWS, bob, true));
+		operation.execute();
+
+		String msg = "statement should have been deleted.";
+		assertFalse(msg, con.hasStatement(i18n, FOAF.KNOWS, bob, true));
+	}
+	
+	@Test
 	public void testDeleteDataMultiplePatterns()
 		throws Exception
 	{
@@ -1157,7 +1179,6 @@ public abstract class SPARQLUpdateTest {
 		update.append(getNamespaceDeclarations());
 		update.append("CREATE GRAPH <" + graph1 + "> ");
 
-		con.begin();
 		Update operation = con.prepareUpdate(QueryLanguage.SPARQL, update.toString());
 
 		try {

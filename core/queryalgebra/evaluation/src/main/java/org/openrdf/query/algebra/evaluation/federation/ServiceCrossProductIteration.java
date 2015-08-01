@@ -16,13 +16,15 @@
  */
 package org.openrdf.query.algebra.evaluation.federation;
 
+import java.util.Iterator;
 import java.util.List;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.LookAheadIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.algebra.evaluation.iterator.CrossProductIteration;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 
 /**
  * Iteration which forms the cross product of a list of materialized input bindings
@@ -41,13 +43,43 @@ import org.openrdf.query.algebra.evaluation.iterator.CrossProductIteration;
  * 
  * @author Andreas Schwarte
  */
-@Deprecated
-public class ServiceCrossProductIteration extends CrossProductIteration {
+public class ServiceCrossProductIteration extends LookAheadIteration<BindingSet, QueryEvaluationException> {
 
+	protected final List<BindingSet> inputBindings;
+	protected final CloseableIteration<BindingSet, QueryEvaluationException> resultIteration;
+
+	protected Iterator<BindingSet> inputBindingsIterator = null;
+	protected BindingSet currentInputBinding = null;
+	
 	public ServiceCrossProductIteration(
 			CloseableIteration<BindingSet, QueryEvaluationException> resultIteration,
 			List<BindingSet> inputBindings) {
-		super(resultIteration, inputBindings);
+		super();
+		this.resultIteration = resultIteration;
+		this.inputBindings = inputBindings;
 	}
 	
+	@Override
+	protected BindingSet getNextElement() throws QueryEvaluationException {
+		
+		if (currentInputBinding==null) {
+			inputBindingsIterator = inputBindings.iterator();
+			if (resultIteration.hasNext())
+				currentInputBinding = resultIteration.next();
+			else
+				return null;  // no more results
+		}	
+		
+		if (inputBindingsIterator.hasNext()) {
+			BindingSet next = inputBindingsIterator.next();
+			QueryBindingSet res = new QueryBindingSet(next.size() + currentInputBinding.size() );
+			res.addAll(next);
+			res.addAll(currentInputBinding);
+			if (!inputBindingsIterator.hasNext())
+				currentInputBinding = null;
+			return res;
+		}
+		
+		return null;
+	}	
 }

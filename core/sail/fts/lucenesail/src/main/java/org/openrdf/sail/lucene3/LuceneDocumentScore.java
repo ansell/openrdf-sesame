@@ -19,24 +19,22 @@ package org.openrdf.sail.lucene3;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.Highlighter;
+
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-
-public class LuceneDocumentScore implements DocumentScore {
-
+public class LuceneDocumentScore implements DocumentScore
+{
 	private final ScoreDoc scoreDoc;
-
 	private final Highlighter highlighter;
-
 	private final LuceneIndex index;
-
 	private LuceneDocument fullDoc;
 
 	public LuceneDocumentScore(ScoreDoc doc, Highlighter highlighter, LuceneIndex index) {
@@ -47,16 +45,17 @@ public class LuceneDocumentScore implements DocumentScore {
 
 	@Override
 	public SearchDocument getDocument() {
-		if (fullDoc == null) {
+		if(fullDoc == null)
+		{
 			Document doc;
-			if (highlighter != null) {
+			if(highlighter != null) {
 				doc = index.getDocument(scoreDoc.doc, null);
 			}
 			else {
 				// don't require all fields
 				doc = index.getDocument(scoreDoc.doc, Collections.singleton(SearchFields.URI_FIELD_NAME));
 			}
-			fullDoc = new LuceneDocument(doc, index);
+			fullDoc = new LuceneDocument(doc);
 		}
 		return fullDoc;
 	}
@@ -74,11 +73,11 @@ public class LuceneDocumentScore implements DocumentScore {
 	@Override
 	public Iterable<String> getSnippets(final String field) {
 		List<String> values = getDocument().getProperty(field);
-		if (values == null) {
+		if(values == null) {
 			return null;
 		}
-		return Iterables.transform(values, new Function<String, String>() {
-
+		return Iterables.transform(values, new Function<String,String>()
+		{
 			@Override
 			public String apply(String text) {
 				return index.getSnippet(field, text, highlighter);

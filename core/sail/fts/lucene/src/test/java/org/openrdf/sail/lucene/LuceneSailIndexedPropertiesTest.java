@@ -17,8 +17,8 @@
 package org.openrdf.sail.lucene;
 
 public class LuceneSailIndexedPropertiesTest extends AbstractLuceneSailIndexedPropertiesTest {
-
-	protected void configure(LuceneSail sail) {
+	protected void configure(LuceneSail sail)
+	{
 		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, LuceneIndex.class.getName());
 		sail.setParameter(LuceneSail.LUCENE_RAMDIR_KEY, "true");
 	}

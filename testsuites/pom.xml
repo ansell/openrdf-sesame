@@ -19,7 +19,6 @@
 		<module>sparql</module>
 		<module>geosparql</module>
 		<module>store</module>
-		<module>lucene</module>
 	</modules>
 
 	<name>OpenRDF Sesame test suites</name>

@@ -27,25 +27,20 @@ import org.openrdf.sail.lucene.SearchFields;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.spatial4j.core.context.SpatialContext;
 
 public class ElasticsearchDocumentScore implements DocumentScore {
-
 	private final SearchHit hit;
-
-	private final SpatialContext geoContext;
-
 	private ElasticsearchDocument fullDoc;
 
-	public ElasticsearchDocumentScore(SearchHit hit, SpatialContext geoContext) {
+	public ElasticsearchDocumentScore(SearchHit hit) {
 		this.hit = hit;
-		this.geoContext = geoContext;
 	}
 
 	@Override
 	public SearchDocument getDocument() {
-		if (fullDoc == null) {
-			fullDoc = new ElasticsearchDocument(hit, geoContext);
+		if(fullDoc == null)
+		{
+			fullDoc = new ElasticsearchDocument(hit);
 		}
 		return fullDoc;
 	}
@@ -63,11 +58,11 @@ public class ElasticsearchDocumentScore implements DocumentScore {
 	@Override
 	public Iterable<String> getSnippets(String field) {
 		HighlightField highlightField = hit.getHighlightFields().get(field);
-		if (highlightField == null) {
+		if(highlightField == null) {
 			return null;
 		}
-		return Iterables.transform(Arrays.asList(highlightField.getFragments()), new Function<Text, String>() {
-
+		return Iterables.transform(Arrays.asList(highlightField.getFragments()), new Function<Text,String>()
+		{
 			@Override
 			public String apply(Text fragment) {
 				return SearchFields.getSnippet(fragment.string());

@@ -11,7 +11,6 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.vocabulary.GEO;
 
 public final class SearchFields {
 
@@ -55,7 +54,7 @@ public final class SearchFields {
 	public static final String HIGHLIGHTER_POST_TAG = "</B>";
 	public static final Pattern HIGHLIGHTER_PATTERN = Pattern.compile("("+HIGHLIGHTER_PRE_TAG+".+?"+HIGHLIGHTER_POST_TAG+")");
 
-	private static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+	protected static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
 
 	private SearchFields() {}
 
@@ -107,12 +106,10 @@ public final class SearchFields {
 
 	public static String getLiteralPropertyValueAsString(Statement statement) {
 		Value object = statement.getObject();
-		if(object instanceof Literal) {
-			return ((Literal) object).getLabel();
-		}
-		else {
+		if (!(object instanceof Literal)) {
 			return null;
 		}
+		return ((Literal)object).getLabel();
 	}
 
 	/**
@@ -120,9 +117,7 @@ public final class SearchFields {
 	 */
 	public static boolean isPropertyField(String fieldName) {
 		return !ID_FIELD_NAME.equals(fieldName) && !URI_FIELD_NAME.equals(fieldName)
-				&& !TEXT_FIELD_NAME.equals(fieldName) && !CONTEXT_FIELD_NAME.equals(fieldName)
-				// geo/internal fields
-				&& fieldName.charAt(0) != '_';
+				&& !TEXT_FIELD_NAME.equals(fieldName) && !CONTEXT_FIELD_NAME.equals(fieldName);
 	}
 
 	public static String formIdString(String resourceId, String contextId) {
@@ -141,14 +136,6 @@ public final class SearchFields {
 	 */
 	public static Literal scoreToLiteral(float score) {
 		return valueFactory.createLiteral(score);
-	}
-
-	public static Literal wktToLiteral(String wkt) {
-		return valueFactory.createLiteral(wkt, GEO.WKT_LITERAL);
-	}
-
-	public static Literal distanceToLiteral(double d) {
-		return valueFactory.createLiteral(d);
 	}
 
 	public static String getSnippet(String highlightedValue)

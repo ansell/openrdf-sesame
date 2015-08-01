@@ -83,9 +83,7 @@ public class LuceneSailExample {
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
 			connection.begin();
-			connection.add(
-					LuceneSailExample.class.getResourceAsStream("/org/openrdf/sail/lucene/examples/foaf.rdfs"),
-					"", RDFFormat.RDFXML);
+			connection.add(LuceneSailExample.class.getResourceAsStream("/org/openrdf/sail/lucene/examples/foaf.rdfs"), "", RDFFormat.RDFXML);
 			connection.commit();
 
 			// search for resources that mention "person"
