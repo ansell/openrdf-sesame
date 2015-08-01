@@ -18,23 +18,15 @@ package org.openrdf.sail.solr;
 
 import org.openrdf.model.URI;
 import org.openrdf.sail.lucene.DocumentDistance;
-import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.util.GeoUnits;
 
-public class SolrDocumentDistance implements DocumentDistance {
-
-	private final SolrSearchDocument doc;
+public class SolrDocumentDistance extends SolrDocumentResult implements DocumentDistance {
 
 	private final URI units;
 
 	public SolrDocumentDistance(SolrSearchDocument doc, URI units) {
-		this.doc = doc;
+		super(doc);
 		this.units = units;
-	}
-
-	@Override
-	public SearchDocument getDocument() {
-		return doc;
 	}
 
 	@Override

@@ -16,33 +16,19 @@
  */
 package org.openrdf.sail.solr;
 
-import java.util.List;
-import java.util.Map;
+import org.openrdf.sail.lucene.DocumentResult;
+import org.openrdf.sail.lucene.SearchDocument;
 
-import org.openrdf.sail.lucene.DocumentScore;
+public class SolrDocumentResult implements DocumentResult {
 
-public class SolrDocumentScore extends SolrDocumentResult implements DocumentScore {
+	protected final SolrSearchDocument doc;
 
-	private final Map<String, List<String>> highlighting;
-
-	public SolrDocumentScore(SolrSearchDocument doc, Map<String, List<String>> highlighting) {
-		super(doc);
-		this.highlighting = highlighting;
+	public SolrDocumentResult(SolrSearchDocument doc) {
+		this.doc = doc;
 	}
 
 	@Override
-	public float getScore() {
-		Number s = ((Number)doc.getDocument().get("score"));
-		return (s != null) ? s.floatValue() : 0.0f;
-	}
-
-	@Override
-	public boolean isHighlighted() {
-		return (highlighting != null);
-	}
-
-	@Override
-	public Iterable<String> getSnippets(String field) {
-		return highlighting.get(field);
+	public SearchDocument getDocument() {
+		return doc;
 	}
 }

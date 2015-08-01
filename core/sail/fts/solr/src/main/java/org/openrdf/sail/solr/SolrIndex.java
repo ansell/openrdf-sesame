@@ -37,10 +37,12 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.DocumentDistance;
+import org.openrdf.sail.lucene.DocumentResult;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -51,8 +53,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.context.SpatialContextFactory;
+import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
 /**
@@ -68,11 +73,18 @@ public class SolrIndex extends AbstractSearchIndex {
 
 	private SolrClient client;
 
+	private Function<? super String,? extends SpatialContext> geoContextMapper;
+
 	@Override
 	public void initialize(Properties parameters)
 		throws Exception
 	{
 		super.initialize(parameters);
+		// slightly hacky cast to cope with the fact that Properties is
+		// Map<Object,Object>
+		// even though it is effectively Map<String,String>
+		this.geoContextMapper = createSpatialContextMapper((Map<String, String>)(Map<?, ?>)parameters);
+
 		String server = parameters.getProperty(SERVER_KEY);
 		if (server == null) {
 			throw new SailException("Missing " + SERVER_KEY + " parameter");
@@ -87,14 +99,20 @@ public class SolrIndex extends AbstractSearchIndex {
 		client = clientFactory.create(server);
 	}
 
+	protected Function<? super String, ? extends SpatialContext> createSpatialContextMapper(Map<String,String> parameters) {
+		// this should really be based on the schema
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		SpatialContext geoContext = SpatialContextFactory.makeSpatialContext(parameters, classLoader);
+		return Functions.constant(geoContext);
+	}
+
 	public SolrClient getClient() {
 		return client;
 	}
 
 	@Override
 	protected SpatialContext getSpatialContext(String property) {
-		// this should really be based on the schema
-		return SpatialContext.GEO;
+		return geoContextMapper.apply(property);
 	}
 
 	@Override
@@ -405,15 +423,26 @@ public class SolrIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(URI geoProperty, double lat,
-			double lon, final URI units, double distance, String distanceVar)
+	protected Iterable<? extends DocumentDistance> geoQuery(URI geoProperty, Point p,
+			final URI units, double distance, String distanceVar, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
 		double kms = GeoUnits.toKilometres(distance, units);
 
-		SolrQuery q = new SolrQuery("{!geofilt score=recipDistance}");
+		String qstr = "{!geofilt score=recipDistance}";
+		if(contextVar != null) {
+			Resource ctx = (Resource) contextVar.getValue();
+			String tq = termQuery(SearchFields.CONTEXT_FIELD_NAME, SearchFields.getContextID(ctx));
+			if(ctx != null) {
+				qstr = tq + " AND " + qstr;
+			}
+			else {
+				qstr = "-" + tq + " AND " +qstr;
+			}
+		}
+		SolrQuery q = new SolrQuery(qstr);
 		q.set(SpatialParams.FIELD, geoProperty.toString());
-		q.set(SpatialParams.POINT, lat + "," + lon);
+		q.set(SpatialParams.POINT, p.getY() + "," + p.getX());
 		q.set(SpatialParams.DISTANCE, Double.toString(kms));
 		q.addField(SearchFields.URI_FIELD_NAME);
 		// ':' is part of the fl parameter syntax so we can't use the full
@@ -422,6 +451,10 @@ public class SolrIndex extends AbstractSearchIndex {
 		q.addField("*" + geoProperty.getLocalName());
 		// always include the distance - needed for sanity checking
 		q.addField(DISTANCE_FIELD + ":geodist()");
+		boolean requireContext = (contextVar != null && !contextVar.hasValue());
+		if(requireContext) {
+			q.addField(SearchFields.CONTEXT_FIELD_NAME);
+		}
 
 		QueryResponse response;
 		try {
@@ -443,22 +476,37 @@ public class SolrIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation,
-			URI geoProperty, Shape shape)
+	protected Iterable<? extends DocumentResult> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
 		String spatialOp = toSpatialOp(relation);
 		if(spatialOp == null) {
 			return null;
 		}
-		String wkt = ((WKTShape)shape).toWKT();
-		SolrQuery q = new SolrQuery("\""+spatialOp+"("+wkt+")\"");
+		String wkt = toWkt(shape);
+		String qstr = "\""+spatialOp+"("+wkt+")\"";
+		if(contextVar != null) {
+			Resource ctx = (Resource) contextVar.getValue();
+			String tq = termQuery(SearchFields.CONTEXT_FIELD_NAME, SearchFields.getContextID(ctx));
+			if(ctx != null) {
+				qstr = tq + " AND " + qstr;
+			}
+			else {
+				qstr = "-" + tq + " AND " +qstr;
+			}
+		}
+		SolrQuery q = new SolrQuery(qstr);
 		q.set(CommonParams.DF, geoProperty.toString());
 		q.addField(SearchFields.URI_FIELD_NAME);
 		// ':' is part of the fl parameter syntax so we can't use the full
 		// property field name
 		// instead we use wildcard + local part of the property URI
 		q.addField("*" + geoProperty.getLocalName());
+		boolean requireContext = (contextVar != null && !contextVar.hasValue());
+		if(requireContext) {
+			q.addField(SearchFields.CONTEXT_FIELD_NAME);
+		}
 
 		QueryResponse response;
 		try {
@@ -469,12 +517,12 @@ public class SolrIndex extends AbstractSearchIndex {
 		}
 
 		SolrDocumentList results = response.getResults();
-		return Iterables.transform(results, new Function<SolrDocument, DocumentScore>() {
+		return Iterables.transform(results, new Function<SolrDocument, DocumentResult>() {
 
 			@Override
-			public DocumentScore apply(SolrDocument document) {
+			public DocumentResult apply(SolrDocument document) {
 				SolrSearchDocument doc = new SolrSearchDocument(document);
-				return new SolrDocumentScore(doc, null);
+				return new SolrDocumentResult(doc);
 			}
 		});
 	}
@@ -483,7 +531,18 @@ public class SolrIndex extends AbstractSearchIndex {
 		if(GEOF.SF_INTERSECTS.stringValue().equals(relation)) {
 			return "Intersects";
 		}
+		if(GEOF.SF_DISJOINT.stringValue().equals(relation)) {
+			return "IsDisjointTo";
+		}
+		if(GEOF.SF_WITHIN.stringValue().equals(relation)) {
+			return "IsWithin";
+		}
 		return null;
+	}
+
+	protected String toWkt(Shape s) {
+		throw new UnsupportedOperationException(
+				"This method is not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS: ");
 	}
 
 	/**
