@@ -142,8 +142,11 @@ public class ElasticsearchDocument implements SearchDocument {
 			Shape shape = geoContextMapper.apply(name).readShapeFromWkt(text);
 			if (shape instanceof Point) {
 				Point p = (Point)shape;
-				fields.put(ElasticsearchIndex.GEOHASH_FIELD_PREFIX + name,
+				fields.put(ElasticsearchIndex.GEOPOINT_FIELD_PREFIX + name,
 						GeoHashUtils.encode(p.getY(), p.getX()));
+			}
+			else {
+				fields.put(ElasticsearchIndex.GEOSHAPE_FIELD_PREFIX + name, ElasticsearchSpatialSupport.getSpatialSupport().toXContentBuilder(shape));
 			}
 		}
 		catch (ParseException e) {

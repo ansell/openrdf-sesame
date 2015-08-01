@@ -537,7 +537,7 @@ public class SolrIndex extends AbstractSearchIndex {
 		if(GEOF.SF_DISJOINT.stringValue().equals(relation)) {
 			return "IsDisjointTo";
 		}
-		if(GEOF.SF_WITHIN.stringValue().equals(relation)) {
+		if(GEOF.EH_COVERED_BY.stringValue().equals(relation)) {
 			return "IsWithin";
 		}
 		return null;

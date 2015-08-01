@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.elasticsearch.common.io.FileSystemUtils;
+import org.junit.Test;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.sail.lucene.AbstractLuceneSailGeoSPARQLTest;
 import org.openrdf.sail.lucene.LuceneSail;
@@ -34,6 +37,23 @@ public class ElasticsearchSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLT
 		sail.setParameter(LuceneSail.LUCENE_DIR_KEY, DATA_DIR);
 		sail.setParameter(ElasticsearchIndex.WAIT_FOR_STATUS_KEY, "green");
 		sail.setParameter(ElasticsearchIndex.WAIT_FOR_NODES_KEY, ">=1");
+	}
+
+	@Test
+	@Override
+	public void testIntersectionQuery()
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		super.testIntersectionQuery();
+	}
+
+
+	@Test
+	@Override
+	public void testComplexIntersectionQuery()
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		super.testComplexIntersectionQuery();
 	}
 
 	@Override

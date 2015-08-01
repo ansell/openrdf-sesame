@@ -41,11 +41,14 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoDistance.FixedSourceDistance;
 import org.elasticsearch.common.geo.GeoHashUtils;
+import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.GeoShapeFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
@@ -58,10 +61,12 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.DocumentDistance;
+import org.openrdf.sail.lucene.DocumentResult;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -74,7 +79,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.context.SpatialContextFactory;
 import com.spatial4j.core.distance.DistanceUtils;
+import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
 /**
@@ -130,7 +137,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 	public static final String ELASTICSEARCH_KEY_PREFIX = "elasticsearch.";
 
-	public static final String GEOHASH_FIELD_PREFIX = "_geohash_";
+	public static final String GEOPOINT_FIELD_PREFIX = "_geopoint_";
+	public static final String GEOSHAPE_FIELD_PREFIX = "_geoshape_";
 
 	// we do everything synchronously so no point using another thread
 	private static final boolean OPERATION_THREADED = false;
@@ -176,7 +184,10 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
-		geoContextMapper = Functions.constant(SpatialContext.GEO);
+		// slightly hacky cast to cope with the fact that Properties is
+		// Map<Object,Object>
+		// even though it is effectively Map<String,String>
+		geoContextMapper = createSpatialContextMapper((Map<String, String>)(Map<?, ?>)parameters);
 		String dataDir = parameters.getProperty(LuceneSail.LUCENE_DIR_KEY);
 
 		NodeBuilder nodeBuilder = NodeBuilder.nodeBuilder();
@@ -238,6 +249,13 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		}
 	}
 
+	protected Function<? super String, ? extends SpatialContext> createSpatialContextMapper(Map<String,String> parameters) {
+		// this should really be based on the schema
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		SpatialContext geoContext = SpatialContextFactory.makeSpatialContext(parameters, classLoader);
+		return Functions.constant(geoContext);
+	}
+
 	public Map<String, Object> getMappings()
 		throws IOException
 	{
@@ -268,7 +286,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 				"not_analyzed").endObject();
 		typeMapping.startObject(SearchFields.TEXT_FIELD_NAME).field("type", "string").field("index", "analyzed").endObject();
 		for (String wktField : wktFields) {
-			typeMapping.startObject(GEOHASH_FIELD_PREFIX + wktField).field("type", "geo_point").endObject();
+			typeMapping.startObject(GEOPOINT_FIELD_PREFIX + wktField).field("type", "geo_point").endObject();
+			typeMapping.startObject(GEOSHAPE_FIELD_PREFIX + wktField).field("type", "geo_shape").endObject();
 		}
 		typeMapping.endObject().endObject().endObject();
 
@@ -549,8 +568,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty,
-			double lat, double lon, final URI units, double distance, String distanceVar)
+	protected Iterable<? extends DocumentDistance> geoQuery(final URI geoProperty,
+			Point p, final URI units, double distance, String distanceVar, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
 		double unitDist;
@@ -575,11 +594,17 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 			throw new MalformedQueryException("Unsupported units: " + units);
 		}
 
-		final String fieldName = GEOHASH_FIELD_PREFIX + geoProperty.toString();
+		double lat = p.getY();
+		double lon = p.getX();
+		final String fieldName = GEOPOINT_FIELD_PREFIX + geoProperty.toString();
 		QueryBuilder qb = QueryBuilders.functionScoreQuery(
 				FilterBuilders.geoDistanceFilter(fieldName).lat(lat).lon(lon).distance(unitDist, unit),
 				ScoreFunctionBuilders.linearDecayFunction(fieldName, GeoHashUtils.encode(lat, lon),
 						new DistanceUnit.Distance(unitDist, unit)));
+		if(contextVar != null) {
+			qb = addContextTerm(qb, (Resource) contextVar.getValue());
+		}
+
 		SearchRequestBuilder request = client.prepareSearch();
 		SearchHits hits = search(request, qb);
 		final FixedSourceDistance srcDistance = GeoDistance.DEFAULT.fixedSourceDistance(lat, lon, unit);
@@ -592,26 +617,60 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		});
 	}
 
+	private QueryBuilder addContextTerm(QueryBuilder qb, Resource ctx) {
+		BoolQueryBuilder combinedQuery = QueryBuilders.boolQuery();
+		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.CONTEXT_FIELD_NAME,
+				SearchFields.getContextID(ctx));
+		if(ctx != null) {
+			// the specified named graph
+			combinedQuery.must(idQuery);
+		}
+		else {
+			// not the unnamed graph
+			combinedQuery.mustNot(idQuery);
+		}
+		combinedQuery.must(qb);
+		return combinedQuery;
+	}
+
 	@Override
-	protected Iterable<? extends DocumentScore> geoRelationQuery(String relation, String subjectVar,
-			URI geoProperty, Shape shape, String valueVar)
+	protected Iterable<? extends DocumentResult> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
-		final String fieldName = GEOHASH_FIELD_PREFIX + geoProperty.toString();
-		QueryBuilder qb = QueryBuilders.functionScoreQuery(
-				FilterBuilders.geoDistanceFilter(fieldName).lat(lat).lon(lon).distance(unitDist, unit),
-				ScoreFunctionBuilders.linearDecayFunction(fieldName, GeoHashUtils.encode(lat, lon),
-						new DistanceUnit.Distance(unitDist, unit)));
+		ShapeRelation spatialOp = toSpatialOp(relation);
+		if(spatialOp == null) {
+			return null;
+		}
+		final String fieldName = GEOSHAPE_FIELD_PREFIX + geoProperty.toString();
+		GeoShapeFilterBuilder fb = FilterBuilders.geoShapeFilter(fieldName, ElasticsearchSpatialSupport.getSpatialSupport().toShapeBuilder(shape), spatialOp);
+		QueryBuilder qb = QueryBuilders.matchAllQuery();
+		if(contextVar != null) {
+			qb = addContextTerm(qb, (Resource) contextVar.getValue());
+		}
+
 		SearchRequestBuilder request = client.prepareSearch();
-		SearchHits hits = search(request, qb);
-		final FixedSourceDistance srcDistance = GeoDistance.DEFAULT.fixedSourceDistance(lat, lon, unit);
-		return Iterables.transform(hits, new Function<SearchHit, DocumentDistance>() {
+		SearchHits hits = search(request, QueryBuilders.filteredQuery(qb, fb));
+		return Iterables.transform(hits, new Function<SearchHit, DocumentResult>() {
 
 			@Override
-			public DocumentDistance apply(SearchHit hit) {
-				return new ElasticsearchDocumentDistance(hit, geoContext, fieldName, units, srcDistance, unit);
+			public DocumentResult apply(SearchHit hit) {
+				return new ElasticsearchDocumentResult(hit, geoContextMapper);
 			}
 		});
+	}
+
+	private ShapeRelation toSpatialOp(String relation) {
+		if(GEOF.SF_INTERSECTS.stringValue().equals(relation)) {
+			return ShapeRelation.INTERSECTS;
+		}
+		if(GEOF.SF_DISJOINT.stringValue().equals(relation)) {
+			return ShapeRelation.DISJOINT;
+		}
+		if(GEOF.EH_COVERED_BY.stringValue().equals(relation)) {
+			return ShapeRelation.WITHIN;
+		}
+		return null;
 	}
 
 	/**

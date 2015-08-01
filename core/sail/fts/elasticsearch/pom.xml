@@ -14,7 +14,7 @@
 	<description>StackableSail implementation offering full-text search on literals, based on Elastic Search.</description>
 
 	<properties>
-		<elasticsearch.version>1.6.0</elasticsearch.version>
+		<elasticsearch.version>1.7.0</elasticsearch.version>
 	</properties>
 
 	<dependencies>
@@ -51,6 +51,12 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${slf4j.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.vividsolutions</groupId>
+			<artifactId>jts</artifactId>
+			<version>1.13</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

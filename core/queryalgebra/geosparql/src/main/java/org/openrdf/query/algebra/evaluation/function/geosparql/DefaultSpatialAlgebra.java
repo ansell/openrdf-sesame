@@ -6,6 +6,7 @@ import java.util.Collections;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 import com.spatial4j.core.shape.ShapeCollection;
+import com.spatial4j.core.shape.SpatialRelation;
 import com.spatial4j.core.shape.impl.BufferedLineString;
 
 final class DefaultSpatialAlgebra implements SpatialAlgebra {
@@ -144,17 +145,17 @@ final class DefaultSpatialAlgebra implements SpatialAlgebra {
 
 	@Override
 	public boolean equals(Shape s1, Shape s2) {
-		return notSupported();
+		return s1.equals(s2);
 	}
 
 	@Override
 	public boolean sfDisjoint(Shape s1, Shape s2) {
-		return notSupported();
+		return SpatialRelation.DISJOINT == s1.relate(s2);
 	}
 
 	@Override
 	public boolean sfIntersects(Shape s1, Shape s2) {
-		return notSupported();
+		return SpatialRelation.INTERSECTS == s1.relate(s2);
 	}
 
 	@Override
@@ -184,7 +185,7 @@ final class DefaultSpatialAlgebra implements SpatialAlgebra {
 
 	@Override
 	public boolean ehDisjoint(Shape s1, Shape s2) {
-		return notSupported();
+		return SpatialRelation.DISJOINT == s1.relate(s2);
 	}
 
 	@Override
@@ -199,12 +200,12 @@ final class DefaultSpatialAlgebra implements SpatialAlgebra {
 
 	@Override
 	public boolean ehCovers(Shape s1, Shape s2) {
-		return notSupported();
+		return SpatialRelation.CONTAINS == s1.relate(s2);
 	}
 
 	@Override
 	public boolean ehCoveredBy(Shape s1, Shape s2) {
-		return notSupported();
+		return SpatialRelation.WITHIN == s1.relate(s2);
 	}
 
 	@Override
