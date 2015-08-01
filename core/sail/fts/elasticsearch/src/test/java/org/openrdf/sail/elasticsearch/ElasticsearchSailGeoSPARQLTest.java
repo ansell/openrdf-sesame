@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.elasticsearch.common.io.FileSystemUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -40,6 +41,7 @@ public class ElasticsearchSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLT
 	}
 
 	@Test
+	@Ignore // JTS is required
 	@Override
 	public void testIntersectionQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
@@ -49,6 +51,7 @@ public class ElasticsearchSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLT
 
 
 	@Test
+	@Ignore // JTS is required
 	@Override
 	public void testComplexIntersectionQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException

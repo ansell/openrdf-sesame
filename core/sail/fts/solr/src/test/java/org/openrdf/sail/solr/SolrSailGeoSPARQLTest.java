@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -39,6 +40,7 @@ public class SolrSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
 
 	
 	@Test
+	@Ignore // JTS is required
 	@Override
 	public void testIntersectionQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
@@ -48,6 +50,7 @@ public class SolrSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
 
 
 	@Test
+	@Ignore // JTS is required
 	@Override
 	public void testComplexIntersectionQuery()
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
