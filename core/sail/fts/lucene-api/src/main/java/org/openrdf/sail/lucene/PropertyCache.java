@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.lucene;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,13 +43,18 @@ class PropertyCache {
 		else {
 			found = false;
 			List<String> docValues = doc.getProperty(name);
-			cachedValues = new HashSet<String>(docValues.size());
-			for(String docValue : docValues) {
-				cachedValues.add(docValue);
-				if(docValue.equals(value)) {
-					found = true;
-					// don't break - cache all docValues
+			if(docValues != null) {
+				cachedValues = new HashSet<String>(docValues.size());
+				for(String docValue : docValues) {
+					cachedValues.add(docValue);
+					if(docValue.equals(value)) {
+						found = true;
+						// don't break - cache all docValues
+					}
 				}
+			}
+			else {
+				cachedValues = Collections.emptySet();
 			}
 			setCachedValues(name, cachedValues);
 		}

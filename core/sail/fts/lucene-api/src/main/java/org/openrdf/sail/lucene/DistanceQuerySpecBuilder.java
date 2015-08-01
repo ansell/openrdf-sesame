@@ -79,6 +79,9 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 						distanceVar = ((ExtensionElem)parent).getName();
 						QueryModelNode extension = parent.getParentNode();
 						Object[] rv = getFilterAndDistance(extension.getParentNode(), distanceVar);
+						if(rv == null) {
+							return;
+						}
 						filter = (Filter) rv[0];
 						dist = (Literal) rv[1];
 					} else if(parent instanceof Compare) {
@@ -110,7 +113,7 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 			@Override
 			public void meet(StatementPattern sp) {
 				URI propertyName = (URI) sp.getPredicateVar().getValue();
-				if(propertyName != null && index.isGeoProperty(propertyName.toString()) && !sp.getObjectVar().hasValue()) {
+				if(propertyName != null && index.isGeoField(SearchFields.getPropertyField(propertyName)) && !sp.getObjectVar().hasValue()) {
 					String objectVarName = sp.getObjectVar().getName();
 					DistanceQuerySpec spec = specs.remove(objectVarName);
 					if(spec != null && isChildOf(sp, spec.getFilter())) {
@@ -130,6 +133,7 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 	}
 
 	private static Object[] getFilterAndDistance(QueryModelNode node, String compareArgVarName) {
+		Object[] rv = null;
 		if(node instanceof Filter) {
 			Filter f = (Filter) node;
 			ValueExpr condition = f.getCondition();
@@ -142,10 +146,13 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 				} else if(op == CompareOp.GT && compareArgVarName.equals(getVarName(compare.getRightArg()))) {
 					dist = getLiteral(compare.getLeftArg());
 				}
-				return new Object[] {f, dist};
+				rv = new Object[] {f, dist};
 			}
 		}
-		return getFilterAndDistance(node.getParentNode(), compareArgVarName);
+		else if(node != null) {
+			rv = getFilterAndDistance(node.getParentNode(), compareArgVarName);
+		}
+		return rv;
 	}
 
 	private static Literal getLiteral(ValueExpr v) {

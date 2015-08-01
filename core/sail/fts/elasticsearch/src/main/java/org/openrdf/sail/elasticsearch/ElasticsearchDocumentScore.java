@@ -22,32 +22,16 @@ import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.highlight.HighlightField;
 import org.openrdf.sail.lucene.DocumentScore;
-import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
 
-public class ElasticsearchDocumentScore implements DocumentScore {
+public class ElasticsearchDocumentScore extends ElasticsearchDocumentResult implements DocumentScore {
 
-	private final SearchHit hit;
-
-	private final SpatialContext geoContext;
-
-	private ElasticsearchDocument fullDoc;
-
-	public ElasticsearchDocumentScore(SearchHit hit, SpatialContext geoContext) {
-		this.hit = hit;
-		this.geoContext = geoContext;
-	}
-
-	@Override
-	public SearchDocument getDocument() {
-		if (fullDoc == null) {
-			fullDoc = new ElasticsearchDocument(hit, geoContext);
-		}
-		return fullDoc;
+	public ElasticsearchDocumentScore(SearchHit hit, Function<? super String,? extends SpatialContext> geoContextMapper) {
+		super(hit, geoContextMapper);
 	}
 
 	@Override

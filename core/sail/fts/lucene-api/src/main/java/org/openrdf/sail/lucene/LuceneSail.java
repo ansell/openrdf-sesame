@@ -34,8 +34,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -386,15 +385,17 @@ public class LuceneSail extends NotifyingSailWrapper {
 			catch(IOException e) {
 				throw new SailException("Could read "+INDEXEDFIELDS+": " + indexedfieldsString, e);
 			}
+			ValueFactory vf = getValueFactory();
 			indexedFields = new HashSet<URI>();
 			indexedFieldsMapping = new HashMap<URI, URI>();
 			for (Object key : prop.keySet()) {
-				if (key.toString().startsWith("index.")) {
-					indexedFields.add(new URIImpl(prop.getProperty(key.toString())));
+				String keyStr = key.toString();
+				if (keyStr.startsWith("index.")) {
+					indexedFields.add(vf.createURI(prop.getProperty(keyStr)));
 				}
 				else {
-					indexedFieldsMapping.put(new URIImpl(key.toString()),
-							new URIImpl(prop.getProperty(key.toString())));
+					indexedFieldsMapping.put(vf.createURI(keyStr),
+							vf.createURI(prop.getProperty(keyStr)));
 				}
 			}
 		}
@@ -499,6 +500,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 				TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, reindexQuery);
 				TupleQueryResult res = query.evaluate();
 				Resource current = null;
+				ValueFactory vf = getValueFactory();
 				List<Statement> statements = new ArrayList<Statement>();
 				while (res.hasNext()) {
 					BindingSet set = res.next();
@@ -519,7 +521,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 						current = r;
 						statements.clear();
 					}
-					statements.add(new ContextStatementImpl(r, p, o, c));
+					statements.add(vf.createStatement(r, p, o, c));
 				}
 			}
 			finally {
@@ -564,7 +566,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 			return null;
 
 		if (predicateChanged)
-			return new ContextStatementImpl(statement.getSubject(), p, statement.getObject(),
+			return getValueFactory().createStatement(statement.getSubject(), p, statement.getObject(),
 					statement.getContext());
 		else
 			return statement;
@@ -573,7 +575,8 @@ public class LuceneSail extends NotifyingSailWrapper {
 	protected Collection<SearchQueryInterpreter> getSearchQueryInterpreters() {
 		return Arrays.<SearchQueryInterpreter>asList(
 			new QuerySpecBuilder(incompleteQueryFails),
-			new DistanceQuerySpecBuilder(luceneIndex)
+			new DistanceQuerySpecBuilder(luceneIndex),
+			new GeoRelationQuerySpecBuilder(luceneIndex)
 		);
 	}
 }

@@ -12,5 +12,10 @@
         <literal datatype="http://www.w3.org/2001/XMLSchema#double">1734.1436502836782</literal>
       </binding>
     </result>
+    <result>
+      <binding name="dist">
+        <literal datatype="http://www.w3.org/2001/XMLSchema#double">0.0</literal>
+      </binding>
+    </result>
   </results>
 </sparql>

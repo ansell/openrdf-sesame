@@ -87,7 +87,7 @@ public class SolrSearchQuery implements SearchQuery {
 	@Override
 	public void highlight(URI property) {
 		query.setHighlight(true);
-		String field = (property != null) ? property.toString() : "*";
+		String field = (property != null) ? SearchFields.getPropertyField(property) : "*";
 		query.addHighlightField(field);
 		query.setHighlightSimplePre(SearchFields.HIGHLIGHTER_PRE_TAG);
 		query.setHighlightSimplePost(SearchFields.HIGHLIGHTER_POST_TAG);

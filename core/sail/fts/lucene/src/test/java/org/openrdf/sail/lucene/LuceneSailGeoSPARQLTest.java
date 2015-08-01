@@ -20,6 +20,11 @@ import java.io.IOException;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.repository.RepositoryException;
 
 public class LuceneSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
 
@@ -31,5 +36,25 @@ public class LuceneSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
 	{
 		index = new LuceneIndex(new RAMDirectory(), new StandardAnalyzer());
 		sail.setLuceneIndex(index);
+	}
+
+
+	@Test
+	@Ignore // JTS is required
+	@Override
+	public void testIntersectionQuery()
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		super.testIntersectionQuery();
+	}
+
+
+	@Test
+	@Ignore // JTS is required
+	@Override
+	public void testComplexIntersectionQuery()
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		super.testComplexIntersectionQuery();
 	}
 }

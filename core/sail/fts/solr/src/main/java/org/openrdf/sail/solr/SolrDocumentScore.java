@@ -20,22 +20,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.openrdf.sail.lucene.DocumentScore;
-import org.openrdf.sail.lucene.SearchDocument;
 
-public class SolrDocumentScore implements DocumentScore {
-
-	private final SolrSearchDocument doc;
+public class SolrDocumentScore extends SolrDocumentResult implements DocumentScore {
 
 	private final Map<String, List<String>> highlighting;
 
 	public SolrDocumentScore(SolrSearchDocument doc, Map<String, List<String>> highlighting) {
-		this.doc = doc;
+		super(doc);
 		this.highlighting = highlighting;
-	}
-
-	@Override
-	public SearchDocument getDocument() {
-		return doc;
 	}
 
 	@Override

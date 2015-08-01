@@ -20,6 +20,10 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.sail.lucene.AbstractLuceneSailGeoSPARQLTest;
 import org.openrdf.sail.lucene.LuceneSail;
@@ -33,6 +37,27 @@ public class SolrSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
 		sail.setParameter(LuceneSail.INDEX_CLASS_KEY, SolrIndex.class.getName());
 		sail.setParameter(SolrIndex.SERVER_KEY, "embedded:");
 	}
+
+	
+	@Test
+	@Ignore // JTS is required
+	@Override
+	public void testIntersectionQuery()
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		super.testIntersectionQuery();
+	}
+
+
+	@Test
+	@Ignore // JTS is required
+	@Override
+	public void testComplexIntersectionQuery()
+		throws RepositoryException, MalformedQueryException, QueryEvaluationException
+	{
+		super.testComplexIntersectionQuery();
+	}
+
 
 	@Override
 	public void tearDown()

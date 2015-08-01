@@ -12,11 +12,13 @@ import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
 
 abstract class GeometricUnaryFunction implements Function {
+
 	@Override
 	public Value evaluate(ValueFactory valueFactory, Value... args)
-			throws ValueExprEvaluationException {
-		if(args.length != 1) {
-			throw new ValueExprEvaluationException(getURI()+" requires exactly 1 argument, got " + args.length);
+		throws ValueExprEvaluationException
+	{
+		if (args.length != 1) {
+			throw new ValueExprEvaluationException(getURI() + " requires exactly 1 argument, got " + args.length);
 		}
 
 		SpatialContext geoContext = SpatialSupport.getSpatialContext();
@@ -26,7 +28,8 @@ abstract class GeometricUnaryFunction implements Function {
 		String wkt;
 		try {
 			wkt = SpatialSupport.getWktWriter().toWkt(result);
-		} catch(IOException ioe) {
+		}
+		catch (IOException ioe) {
 			throw new ValueExprEvaluationException(ioe);
 		}
 		return valueFactory.createLiteral(wkt, GEO.WKT_LITERAL);

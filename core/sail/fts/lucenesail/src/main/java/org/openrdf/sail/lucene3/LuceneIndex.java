@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -71,11 +71,13 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractLuceneIndex;
 import org.openrdf.sail.lucene.AbstractReaderMonitor;
 import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.DocumentDistance;
+import org.openrdf.sail.lucene.DocumentResult;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -89,6 +91,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.context.SpatialContextFactory;
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -131,7 +136,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
-	private final Map<String, CartesianTiers> geoFieldsToTiers = new HashMap<String, CartesianTiers>();
+	private Function<? super String,? extends SpatialStrategy> geoStrategyMapper;
 
 	public LuceneIndex() {
 	}
@@ -151,13 +156,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public LuceneIndex(Directory directory, Analyzer analyzer)
 		throws IOException
 	{
-		super(SpatialContext.GEO);
 		this.directory = directory;
 		this.analyzer = analyzer;
-		for (String geoProperty : wktFields) {
-			CartesianTiers tiers = new CartesianTiers(geoProperty);
-			this.geoFieldsToTiers.put(geoProperty, tiers);
-		}
+		this.geoStrategyMapper = createSpatialStrategyMapper(Collections.<String, String>emptyMap());
 
 		postInit();
 	}
@@ -169,16 +170,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
-		String minMileProp = parameters.getProperty("minMiles");
-		String maxMileProp = parameters.getProperty("maxMiles");
-		int maxTier = (minMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(minMileProp))
-				: CartesianTiers.DEFAULT_MAX_TIER;
-		int minTier = (maxMileProp != null) ? CartesianTiers.getTier(Double.parseDouble(maxMileProp))
-				: CartesianTiers.DEFAULT_MIN_TIER;
-		for (String geoProperty : wktFields) {
-			CartesianTiers tiers = new CartesianTiers(geoProperty, minTier, maxTier);
-			this.geoFieldsToTiers.put(geoProperty, tiers);
-		}
+		// slightly hacky cast to cope with the fact that Properties is
+		// Map<Object,Object>
+		// even though it is effectively Map<String,String>
+		this.geoStrategyMapper = createSpatialStrategyMapper((Map<String, String>)(Map<?, ?>)parameters);
 
 		postInit();
 	}
@@ -237,6 +232,30 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
+	protected Function<String, ? extends SpatialStrategy> createSpatialStrategyMapper(Map<String,String> parameters) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		final SpatialContext geoContext = SpatialContextFactory.makeSpatialContext(parameters, classLoader);
+		String minMileProp = parameters.get("minMiles");
+		String maxMileProp = parameters.get("maxMiles");
+		final int maxTier = (minMileProp != null) ? SpatialStrategy.getTier(Double.parseDouble(minMileProp))
+				: SpatialStrategy.DEFAULT_MAX_TIER;
+		final int minTier = (maxMileProp != null) ? SpatialStrategy.getTier(Double.parseDouble(maxMileProp))
+				: SpatialStrategy.DEFAULT_MIN_TIER;
+
+		return new Function<String,SpatialStrategy>()
+		{
+			@Override
+			public SpatialStrategy apply(String field) {
+				return new SpatialStrategy(field, minTier, maxTier, geoContext);
+			}
+		};
+	}
+
+	@Override
+	protected SpatialContext getSpatialContext(String property) {
+		return geoStrategyMapper.apply(property).getSpatialContext();
+	}
+
 	// //////////////////////////////// Setters and getters
 
 	public Directory getDirectory() {
@@ -247,8 +266,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return analyzer;
 	}
 
-	public CartesianTiers getCartesianTiers(String geoProperty) {
-		return geoFieldsToTiers.get(geoProperty);
+	public Function<? super String, ? extends SpatialStrategy> getSpatialStrategyMapper() {
+		return geoStrategyMapper;
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -332,7 +351,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document, this) : null;
+		return (document != null) ? new LuceneDocument(document, geoStrategyMapper) : null;
 	}
 
 	@Override
@@ -344,14 +363,14 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc, LuceneIndex.this);
+				return new LuceneDocument(doc, geoStrategyMapper);
 			}
 		});
 	}
 
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context) {
-		return new LuceneDocument(id, resourceId, context, this);
+		return new LuceneDocument(id, resourceId, context, geoStrategyMapper);
 	}
 
 	@Override
@@ -363,7 +382,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (Fieldable oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument, this);
+		return new LuceneDocument(newDocument, geoStrategyMapper);
 	}
 
 	@Override
@@ -722,20 +741,38 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty,
-			double lat, double lon, final URI units, double distance, String distanceVar)
+	protected Iterable<? extends DocumentDistance> geoQuery(final URI geoProperty,
+			Point p, final URI units, double distance, String distanceVar, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
 		final double miles = GeoUnits.toMiles(distance, units);
+		double lon = p.getX();
+		double lat = p.getY();
 
-		CartesianTiers tiers = geoFieldsToTiers.get(geoProperty.stringValue());
+		final String geoField = SearchFields.getPropertyField(geoProperty);
+		SpatialStrategy tiers = getSpatialStrategyMapper().apply(geoField);
 		FixedCartesianPolyFilterBuilder cpf = new FixedCartesianPolyFilterBuilder(tiers.getFieldPrefix(),
 				tiers.getMinTier(), tiers.getMaxTier());
 		Filter cartesianFilter = cpf.getBoundingArea(lat, lon, miles);
-		final DistanceFilter filter = new GeoHashDistanceFilter(cartesianFilter, lat, lon, miles,
-				GEOHASH_FIELD_PREFIX + geoProperty.toString());
+		final DistanceFilter distanceFilter = new GeoHashDistanceFilter(cartesianFilter, lat, lon, miles,
+				GEOHASH_FIELD_PREFIX + geoField);
 
-		CustomScoreQuery customScore = new CustomScoreQuery(new MatchAllDocsQuery()) {
+		Query q;
+		if(contextVar != null) {
+			Resource ctx = (Resource) contextVar.getValue();
+			q = new TermQuery(new Term(SearchFields.CONTEXT_FIELD_NAME,
+					SearchFields.getContextID(ctx)));
+			if(ctx == null) {
+				BooleanQuery notQuery = new BooleanQuery();
+				notQuery.add(q, Occur.MUST_NOT);
+				q = notQuery;
+			}
+		}
+		else {
+			q = new MatchAllDocsQuery();
+		}
+		CustomScoreQuery customScore = new CustomScoreQuery(q) {
+			private static final long serialVersionUID = -4637297669739149113L;
 
 			@Override
 			protected CustomScoreProvider getCustomScoreProvider(IndexReader reader) {
@@ -743,7 +780,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 					@Override
 					public float customScore(int doc, float subQueryScore, float valSrcScore) {
-						Double distance = filter.getDistance(doc);
+						Double distance = distanceFilter.getDistance(doc);
 						if (distance == null) {
 							return 0.0f;
 						}
@@ -755,14 +792,24 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			}
 		};
 
-		TopDocs docs = getIndexSearcher().search(customScore, filter, getMaxDocs());
+		TopDocs docs = getIndexSearcher().search(customScore, distanceFilter, getMaxDocs());
+		final boolean requireContext = (contextVar != null && !contextVar.hasValue());
 		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentDistance>() {
 
 			@Override
 			public DocumentDistance apply(ScoreDoc doc) {
-				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, filter, LuceneIndex.this);
+				return new LuceneDocumentDistance(doc, geoField, units, distanceFilter, requireContext, LuceneIndex.this);
 			}
 		});
+	}
+
+	@Override
+	protected Iterable<? extends DocumentResult> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape, Var contextVar)
+		throws MalformedQueryException, IOException
+	{
+		// not supported
+		return null;
 	}
 
 	/**
@@ -861,7 +908,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			return new QueryParser(Version.LUCENE_35, propertyURI.toString(), this.queryAnalyzer);
+			return new QueryParser(Version.LUCENE_35, SearchFields.getPropertyField(propertyURI), this.queryAnalyzer);
 	}
 
 	/**

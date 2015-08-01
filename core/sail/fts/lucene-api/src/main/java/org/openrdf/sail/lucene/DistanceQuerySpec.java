@@ -27,6 +27,7 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Var;
 
 public class DistanceQuerySpec implements SearchQueryEvaluator {
 	private QueryModelNode functionParent;
@@ -88,6 +89,10 @@ public class DistanceQuerySpec implements SearchQueryEvaluator {
 
 	public String getSubjectVar() {
 		return geoStatement.getSubjectVar().getName();
+	}
+
+	public Var getContextVar() {
+		return geoStatement.getContextVar();
 	}
 
 	public URI getGeoProperty() {

@@ -16,11 +16,7 @@
  */
 package org.openrdf.sail.lucene;
 
-public interface DocumentDistance
+public interface DocumentDistance extends DocumentResult
 {
-	/**
-	 * Returns null if the document no longer exists.
-	 */
-	SearchDocument getDocument();
 	double getDistance();
 }

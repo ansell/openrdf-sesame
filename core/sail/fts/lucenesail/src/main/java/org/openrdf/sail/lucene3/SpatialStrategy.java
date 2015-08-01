@@ -20,13 +20,17 @@ import org.apache.lucene.spatial.tier.projections.CartesianTierPlotter;
 import org.apache.lucene.spatial.tier.projections.FixedSinusoidalProjector;
 import org.apache.lucene.spatial.tier.projections.IProjector;
 
-public class CartesianTiers {
+import com.spatial4j.core.context.SpatialContext;
+
+public class SpatialStrategy {
 
 	public static final int DEFAULT_MIN_TIER = 2;
 
 	public static final int DEFAULT_MAX_TIER = 15;
 
 	private static final CartesianTierPlotter utils = new CartesianTierPlotter(0, null, null);
+
+	private final SpatialContext context;
 
 	private final IProjector projector = new FixedSinusoidalProjector();
 
@@ -42,11 +46,12 @@ public class CartesianTiers {
 		return utils.bestFit(miles);
 	}
 
-	public CartesianTiers(String field) {
-		this(field, DEFAULT_MIN_TIER, DEFAULT_MAX_TIER);
+	public SpatialStrategy(String field) {
+		this(field, DEFAULT_MIN_TIER, DEFAULT_MAX_TIER, SpatialContext.GEO);
 	}
 
-	public CartesianTiers(String field, int minTier, int maxTier) {
+	public SpatialStrategy(String field, int minTier, int maxTier, SpatialContext context) {
+		this.context = context;
 		this.fieldPrefix = CartesianTierPlotter.DEFALT_FIELD_PREFIX + field + "_";
 		this.minTier = minTier;
 		this.maxTier = maxTier;
@@ -54,6 +59,10 @@ public class CartesianTiers {
 		for (int tier = minTier; tier <= maxTier; tier++) {
 			plotters[tier - minTier] = new CartesianTierPlotter(tier, projector, fieldPrefix);
 		}
+	}
+
+	public SpatialContext getSpatialContext() {
+		return context;
 	}
 
 	public String getFieldPrefix() {

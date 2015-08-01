@@ -25,13 +25,11 @@ import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.spatial.SpatialStrategy;
-import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
-import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
-import com.spatial4j.core.context.SpatialContext;
+import com.google.common.base.Function;
 import com.spatial4j.core.shape.Shape;
 
 /**
@@ -41,32 +39,28 @@ public class LuceneDocument implements SearchDocument {
 
 	private final Document doc;
 
-	private final SpatialContext geoContext;
-
-	private final SpatialPrefixTree grid;
+	private final Function<? super String, ? extends SpatialStrategy> geoStrategyMapper;
 
 	/**
 	 * To be removed, no longer used.
 	 */
 	@Deprecated
 	public LuceneDocument() {
-		this(null, null);
+		this(null);
 	}
 
-	public LuceneDocument(SpatialContext ctx, SpatialPrefixTree grid) {
-		this(new Document(), ctx, grid);
+	public LuceneDocument(Function<? super String, ? extends SpatialStrategy> geoStrategyMapper) {
+		this(new Document(), geoStrategyMapper);
 	}
 
-	public LuceneDocument(Document doc, SpatialContext ctx, SpatialPrefixTree grid) {
+	public LuceneDocument(Document doc, Function<? super String, ? extends SpatialStrategy> geoStrategyMapper) {
 		this.doc = doc;
-		this.geoContext = ctx;
-		this.grid = grid;
+		this.geoStrategyMapper = geoStrategyMapper;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, SpatialContext ctx,
-			SpatialPrefixTree grid)
+	public LuceneDocument(String id, String resourceId, String context, Function<? super String, ? extends SpatialStrategy> geoStrategyMapper)
 	{
-		this(ctx, grid);
+		this(geoStrategyMapper);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -162,9 +156,8 @@ public class LuceneDocument implements SearchDocument {
 	public void addGeoProperty(String field, String value) {
 		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
 		try {
-			Shape shape = geoContext.readShapeFromWkt(value);
-			SpatialStrategy geoStrategy = new RecursivePrefixTreeStrategy(grid, LuceneIndex.GEO_FIELD_PREFIX
-					+ field);
+			SpatialStrategy geoStrategy = geoStrategyMapper.apply(field);
+			Shape shape = geoStrategy.getSpatialContext().readShapeFromWkt(value);
 			for (IndexableField f : geoStrategy.createIndexableFields(shape)) {
 				doc.add(f);
 			}
