@@ -62,6 +62,11 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 	}
 
 	@Override
+	public Literal createLiteral(boolean b) {
+		return b ? BooleanLiteralImpl.TRUE : BooleanLiteralImpl.FALSE;
+	}
+
+	@Override
 	public Literal createLiteral(String value) {
 		return new LiteralImpl(value, XMLSchema.STRING);
 	}

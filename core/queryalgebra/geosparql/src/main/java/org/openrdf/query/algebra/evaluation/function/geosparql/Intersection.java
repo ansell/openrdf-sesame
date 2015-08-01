@@ -6,10 +6,12 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import com.spatial4j.core.shape.Shape;
 
 /**
- * The GeoSPARQL {@link Function} geof:intersection,
- * as defined in <a href="http://www.opengeospatial.org/standards/geosparql">OGC GeoSPARQL - A Geographic Query Language for RDF Data</a>.
+ * The GeoSPARQL {@link Function} geof:intersection, as defined in <a
+ * href="http://www.opengeospatial.org/standards/geosparql">OGC GeoSPARQL - A
+ * Geographic Query Language for RDF Data</a>.
  */
 public class Intersection extends GeometricBinaryFunction {
+
 	@Override
 	public String getURI() {
 		return GEOF.INTERSECTION.stringValue();

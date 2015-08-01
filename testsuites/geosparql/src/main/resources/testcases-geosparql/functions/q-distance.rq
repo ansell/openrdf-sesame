@@ -6,5 +6,4 @@ select distinct (geof:distance(?xGeom, ?yGeom, <http://www.opengis.net/def/uom/O
 where {
 	?x geo:asWKT ?xGeom.
 	?y geo:asWKT ?yGeom.
-	filter (?x != ?y)
 }
