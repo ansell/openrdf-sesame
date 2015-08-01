@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.elasticsearch;
 
+import java.util.Map;
+
 import org.elasticsearch.common.geo.builders.ShapeBuilder;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
@@ -49,7 +51,7 @@ abstract class ElasticsearchSpatialSupport {
 	}
 
 	protected abstract ShapeBuilder toShapeBuilder(Shape s);
-	protected abstract XContentBuilder toXContentBuilder(Shape s);
+	protected abstract Map<String,Object> toGeoJSON(Shape s);
 
 	private static final class DefaultElasticsearchSpatialSupport extends ElasticsearchSpatialSupport {
 		@Override
@@ -60,7 +62,7 @@ abstract class ElasticsearchSpatialSupport {
 		}
 
 		@Override
-		protected XContentBuilder toXContentBuilder(Shape s) {
+		protected XContentBuilder toGeoJSON(Shape s) {
 			throw new UnsupportedOperationException(
 					"This shape is not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS: "
 							+ s.getClass().getName());

@@ -146,7 +146,7 @@ public class ElasticsearchDocument implements SearchDocument {
 						GeoHashUtils.encode(p.getY(), p.getX()));
 			}
 			else {
-				fields.put(ElasticsearchIndex.GEOSHAPE_FIELD_PREFIX + name, ElasticsearchSpatialSupport.getSpatialSupport().toXContentBuilder(shape));
+				fields.put(ElasticsearchIndex.GEOSHAPE_FIELD_PREFIX + name, ElasticsearchSpatialSupport.getSpatialSupport().toGeoJSON(shape));
 			}
 		}
 		catch (ParseException e) {
