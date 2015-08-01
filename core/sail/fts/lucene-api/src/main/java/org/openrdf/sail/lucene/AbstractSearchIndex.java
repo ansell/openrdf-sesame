@@ -626,7 +626,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if(!GEO.WKT_LITERAL.equals(from.getDatatype())) {
 				throw new MalformedQueryException("Unsupported datatype: "+from.getDatatype());
 			}
-			Shape shape = parseShape(geoProperty.toString(), from.getLabel());
+			Shape shape = parseQueryShape(geoProperty.toString(), from.getLabel());
 			if(!(shape instanceof Point)) {
 				throw new MalformedQueryException("Geometry literal is not a point: "+from.getLabel());
 			}
@@ -724,7 +724,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if(!GEO.WKT_LITERAL.equals(qgeom.getDatatype())) {
 				throw new MalformedQueryException("Unsupported datatype: "+qgeom.getDatatype());
 			}
-			Shape qshape = parseShape(geoProperty.toString(), qgeom.getLabel());
+			Shape qshape = parseQueryShape(geoProperty.toString(), qgeom.getLabel());
 			hits = geoRelationQuery(query.getRelation(), geoProperty, qshape, query.getContextVar());
 		}
 		catch (Exception e) {
@@ -786,7 +786,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		return bindingSets;
 	}
 
-	protected Shape parseShape(String property, String value) throws ParseException {
+	protected Shape parseQueryShape(String property, String value) throws ParseException {
 		return getSpatialContext(property).readShapeFromWkt(value);
 	}
 

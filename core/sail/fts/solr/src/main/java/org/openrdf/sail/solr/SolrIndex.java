@@ -17,6 +17,7 @@
 package org.openrdf.sail.solr;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -58,7 +59,9 @@ import com.google.common.collect.Iterables;
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.context.SpatialContextFactory;
 import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Rectangle;
 import com.spatial4j.core.shape.Shape;
+import com.spatial4j.core.shape.SpatialRelation;
 
 /**
  * @see LuceneSail
@@ -540,9 +543,65 @@ public class SolrIndex extends AbstractSearchIndex {
 		return null;
 	}
 
+	@Override
+	protected Shape parseQueryShape(String property, String value) throws ParseException {
+		Shape s = super.parseQueryShape(property, value);
+		// workaround to preserve WKT string
+		return new WktShape(s, value);
+	}
+
 	protected String toWkt(Shape s) {
-		throw new UnsupportedOperationException(
-				"This method is not supported due to licensing issues. Feel free to provide your own implementation by using something like JTS: ");
+		return ((WktShape)s).wkt;
+	}
+
+	private static class WktShape implements Shape {
+		final Shape s;
+		final String wkt;
+
+		WktShape(Shape s, String wkt) {
+			this.s = s;
+			this.wkt = wkt;
+		}
+
+		@Override
+		public SpatialRelation relate(Shape other) {
+			return s.relate(other);
+		}
+
+		@Override
+		public Rectangle getBoundingBox() {
+			return s.getBoundingBox();
+		}
+
+		@Override
+		public boolean hasArea() {
+			return s.hasArea();
+		}
+
+		@Override
+		public double getArea(SpatialContext ctx) {
+			return s.getArea(ctx);
+		}
+
+		@Override
+		public Point getCenter() {
+			return s.getCenter();
+		}
+
+		@Override
+		public Shape getBuffered(double distance, SpatialContext ctx) {
+			return s.getBuffered(distance, ctx);
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return s.isEmpty();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			return s.equals(other);
+		}
 	}
 
 	/**
