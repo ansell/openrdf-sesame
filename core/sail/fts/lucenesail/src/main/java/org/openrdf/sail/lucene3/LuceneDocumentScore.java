@@ -18,47 +18,27 @@ package org.openrdf.sail.lucene3;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.openrdf.sail.lucene.DocumentScore;
-import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
-public class LuceneDocumentScore implements DocumentScore {
-
-	private final ScoreDoc scoreDoc;
+public class LuceneDocumentScore extends LuceneDocumentResult implements DocumentScore {
 
 	private final Highlighter highlighter;
 
-	private final LuceneIndex index;
-
-	private LuceneDocument fullDoc;
-
-	public LuceneDocumentScore(ScoreDoc doc, Highlighter highlighter, LuceneIndex index) {
-		this.scoreDoc = doc;
-		this.highlighter = highlighter;
-		this.index = index;
+	private static Set<String> requiredFields(boolean all) {
+		return all ? null : Collections.singleton(SearchFields.URI_FIELD_NAME);
 	}
 
-	@Override
-	public SearchDocument getDocument() {
-		if (fullDoc == null) {
-			Document doc;
-			if (highlighter != null) {
-				doc = index.getDocument(scoreDoc.doc, null);
-			}
-			else {
-				// don't require all fields
-				doc = index.getDocument(scoreDoc.doc, Collections.singleton(SearchFields.URI_FIELD_NAME));
-			}
-			fullDoc = new LuceneDocument(doc, index);
-		}
-		return fullDoc;
+	public LuceneDocumentScore(ScoreDoc doc, Highlighter highlighter, LuceneIndex index) {
+		super(doc, index, requiredFields(highlighter != null));
+		this.highlighter = highlighter;
 	}
 
 	@Override

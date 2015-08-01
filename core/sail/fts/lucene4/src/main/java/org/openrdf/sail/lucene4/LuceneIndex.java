@@ -79,12 +79,15 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractLuceneIndex;
 import org.openrdf.sail.lucene.AbstractReaderMonitor;
 import org.openrdf.sail.lucene.BulkUpdater;
 import org.openrdf.sail.lucene.DocumentDistance;
+import org.openrdf.sail.lucene.DocumentResult;
 import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
@@ -97,7 +100,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.context.SpatialContextFactory;
+import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
 /**
@@ -114,7 +120,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
 	}
 
-	public static final String GEO_FIELD_PREFIX = "_geo_";
+	private static final String GEO_FIELD_PREFIX = "_geo_";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -141,7 +147,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
-	private SpatialPrefixTree spt;
+	private Function<? super String,? extends SpatialStrategy> geoStrategyMapper;
 
 	public LuceneIndex() {
 	}
@@ -161,11 +167,9 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public LuceneIndex(Directory directory, Analyzer analyzer)
 		throws IOException
 	{
-		super(SpatialContext.GEO);
 		this.directory = directory;
 		this.analyzer = analyzer;
-		this.spt = SpatialPrefixTreeFactory.makeSPT(Collections.<String, String> emptyMap(),
-				Thread.currentThread().getContextClassLoader(), geoContext);
+		this.geoStrategyMapper = createSpatialStrategyMapper(Collections.<String, String>emptyMap());
 
 		postInit();
 	}
@@ -180,8 +184,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// slightly hacky cast to cope with the fact that Properties is
 		// Map<Object,Object>
 		// even though it is effectively Map<String,String>
-		this.spt = SpatialPrefixTreeFactory.makeSPT((Map<String, String>)(Map<?, ?>)parameters,
-				Thread.currentThread().getContextClassLoader(), geoContext);
+		this.geoStrategyMapper = createSpatialStrategyMapper((Map<String, String>)(Map<?, ?>)parameters);
 
 		postInit();
 	}
@@ -233,6 +236,26 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
+	protected Function<String, ? extends SpatialStrategy> createSpatialStrategyMapper(Map<String,String> parameters) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		SpatialContext geoContext = SpatialContextFactory.makeSpatialContext(parameters, classLoader);
+		final SpatialPrefixTree spt = SpatialPrefixTreeFactory.makeSPT(parameters,
+				classLoader, geoContext);
+		return new Function<String,SpatialStrategy>()
+		{
+			@Override
+			public SpatialStrategy apply(String field) {
+				return new RecursivePrefixTreeStrategy(spt, GEO_FIELD_PREFIX + field);
+			}
+			
+		};
+	}
+
+	@Override
+	protected SpatialContext getSpatialContext(String property) {
+		return geoStrategyMapper.apply(property).getSpatialContext();
+	}
+
 	// //////////////////////////////// Setters and getters
 
 	public Directory getDirectory() {
@@ -243,8 +266,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return analyzer;
 	}
 
-	public SpatialPrefixTree getSpatialPrefixTree() {
-		return spt;
+	public Function<? super String, ? extends SpatialStrategy> getSpatialStrategyMapper() {
+		return geoStrategyMapper;
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -328,7 +351,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document, geoContext, spt) : null;
+		return (document != null) ? new LuceneDocument(document, geoStrategyMapper) : null;
 	}
 
 	@Override
@@ -340,14 +363,14 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc, geoContext, spt);
+				return new LuceneDocument(doc, geoStrategyMapper);
 			}
 		});
 	}
 
 	@Override
 	protected SearchDocument newDocument(String id, String resourceId, String context) {
-		return new LuceneDocument(id, resourceId, context, geoContext, spt);
+		return new LuceneDocument(id, resourceId, context, geoStrategyMapper);
 	}
 
 	@Override
@@ -359,7 +382,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (IndexableField oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument, geoContext, spt);
+		return new LuceneDocument(newDocument, geoStrategyMapper);
 	}
 
 	@Override
@@ -728,26 +751,92 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	}
 
 	@Override
-	protected Iterable<? extends DocumentDistance> geoQuery(String subjectVar, final URI geoProperty,
-			double lat, double lon, final URI units, double distance, String distanceVar)
+	protected Iterable<? extends DocumentDistance> geoQuery(final URI geoProperty,
+			Point p, final URI units, double distance, String distanceVar, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
 		double degs = GeoUnits.toDegrees(distance, units);
-		SpatialStrategy strategy = new RecursivePrefixTreeStrategy(spt, GEO_FIELD_PREFIX
-				+ geoProperty.toString());
-		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(lon, lat, degs);
+		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoProperty.toString());
+		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(p, degs);
 		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.Intersects, boundingCircle));
+		if(contextVar != null) {
+			q = addContextTerm(q, (Resource) contextVar.getValue());
+		}
 
 		TopDocs docs = search(new CustomScoreQuery(q, new FunctionQuery(
 				strategy.makeRecipDistanceValueSource(boundingCircle))));
+		final boolean requireContext = (contextVar != null && !contextVar.hasValue());
 		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentDistance>() {
 
 			@Override
 			public DocumentDistance apply(ScoreDoc doc) {
 				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, boundingCircle.getCenter(),
-						LuceneIndex.this);
+						requireContext, LuceneIndex.this);
 			}
 		});
+	}
+
+	private Query addContextTerm(Query q, Resource ctx) {
+		BooleanQuery combinedQuery = new BooleanQuery();
+		TermQuery idQuery = new TermQuery(new Term(SearchFields.CONTEXT_FIELD_NAME,
+				SearchFields.getContextID(ctx)));
+		// the specified named graph or not the unnamed graph
+		combinedQuery.add(idQuery, ctx != null ? Occur.MUST : Occur.MUST_NOT);
+		combinedQuery.add(q, Occur.MUST);
+		return combinedQuery;
+	}
+
+	@Override
+	protected Iterable<? extends DocumentResult> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape, Var contextVar)
+		throws MalformedQueryException, IOException
+	{
+		SpatialOperation op = toSpatialOp(relation);
+		if(op == null) {
+			return null;
+		}
+
+		final String geoField = geoProperty.toString();
+		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoField);
+		Query q = strategy.makeQuery(new SpatialArgs(op, shape));
+		if(contextVar != null) {
+			q = addContextTerm(q, (Resource) contextVar.getValue());
+		}
+
+		TopDocs docs = search(q);
+		final Set<String> fields = Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoField);
+		if(contextVar != null && !contextVar.hasValue()) {
+			fields.add(SearchFields.CONTEXT_FIELD_NAME);
+		}
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentResult>() {
+
+			@Override
+			public DocumentResult apply(ScoreDoc doc) {
+				return new LuceneDocumentResult(doc, LuceneIndex.this, fields);
+			}
+		});
+	}
+
+	private SpatialOperation toSpatialOp(String relation) {
+		if(GEOF.SF_INTERSECTS.stringValue().equals(relation)) {
+			return SpatialOperation.Intersects;
+		}
+		else if(GEOF.SF_DISJOINT.stringValue().equals(relation)) {
+			return SpatialOperation.IsDisjointTo;
+		}
+		else if(GEOF.SF_EQUALS.stringValue().equals(relation)) {
+			return SpatialOperation.IsEqualTo;
+		}
+		else if(GEOF.SF_OVERLAPS.stringValue().equals(relation)) {
+			return SpatialOperation.Overlaps;
+		}
+		else if(GEOF.EH_COVERED_BY.stringValue().equals(relation)) {
+			return SpatialOperation.IsWithin;
+		}
+		else if(GEOF.EH_COVERS.stringValue().equals(relation)) {
+			return SpatialOperation.Contains;
+		}
+		return null;
 	}
 
 	/**

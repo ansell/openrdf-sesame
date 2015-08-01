@@ -32,6 +32,7 @@ import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
+import com.google.common.base.Function;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
 
@@ -42,7 +43,7 @@ public class LuceneDocument implements SearchDocument {
 
 	private final Document doc;
 
-	private final LuceneIndex index;
+	private final Function<? super String, ? extends SpatialStrategy> geoStrategyMapper;
 
 	/**
 	 * To be removed, no longer used.
@@ -52,17 +53,18 @@ public class LuceneDocument implements SearchDocument {
 		this(null);
 	}
 
-	public LuceneDocument(LuceneIndex index) {
-		this(new Document(), index);
+	public LuceneDocument(Function<? super String, ? extends SpatialStrategy> geoStrategyMapper) {
+		this(new Document(), geoStrategyMapper);
 	}
 
-	public LuceneDocument(Document doc, LuceneIndex index) {
+	public LuceneDocument(Document doc, Function<? super String, ? extends SpatialStrategy> geoStrategyMapper) {
 		this.doc = doc;
-		this.index = index;
+		this.geoStrategyMapper = geoStrategyMapper;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context, LuceneIndex index) {
-		this(index);
+	public LuceneDocument(String id, String resourceId, String context, Function<? super String, ? extends SpatialStrategy> geoStrategyMapper)
+	{
+		this(geoStrategyMapper);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -157,14 +159,14 @@ public class LuceneDocument implements SearchDocument {
 	@Override
 	public void addGeoProperty(String field, String value) {
 		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
+		SpatialStrategy geoStrategy = geoStrategyMapper.apply(field);
 		try {
-			Shape shape = index.getSpatialContext().readShapeFromWkt(value);
+			Shape shape = geoStrategy.getSpatialContext().readShapeFromWkt(value);
 			if (shape instanceof Point) {
 				Point p = (Point)shape;
 				doc.add(new Field(LuceneIndex.GEOHASH_FIELD_PREFIX + field, GeoHashUtils.encode(p.getY(),
 						p.getX()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
-				CartesianTiers tiers = index.getCartesianTiers(field);
-				for (CartesianTierPlotter ctp : tiers.getPlotters()) {
+				for (CartesianTierPlotter ctp : geoStrategy.getPlotters()) {
 					double boxId = ctp.getTierBoxId(p.getY(), p.getX());
 					doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId),
 							Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));

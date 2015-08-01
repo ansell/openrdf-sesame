@@ -16,49 +16,37 @@
  */
 package org.openrdf.sail.lucene3;
 
-import org.apache.lucene.document.Document;
+import java.util.Set;
+
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.tier.DistanceFilter;
 import org.openrdf.model.URI;
 import org.openrdf.sail.lucene.DocumentDistance;
-import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.lucene.util.GeoUnits;
 
 import com.google.common.collect.Sets;
 
-public class LuceneDocumentDistance implements DocumentDistance {
-
-	private final ScoreDoc scoreDoc;
-
-	private final String geoProperty;
+public class LuceneDocumentDistance extends LuceneDocumentResult implements DocumentDistance {
 
 	private final URI units;
 
 	private final DistanceFilter distanceFilter;
 
-	private final LuceneIndex index;
-
-	private LuceneDocument fullDoc;
-
-	public LuceneDocumentDistance(ScoreDoc doc, String geoProperty, URI units, DistanceFilter df,
-			LuceneIndex index)
-	{
-		this.scoreDoc = doc;
-		this.geoProperty = geoProperty;
-		this.units = units;
-		this.distanceFilter = df;
-		this.index = index;
+	private static Set<String> requiredFields(String geoProperty, boolean includeContext) {
+		Set<String> fields = Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoProperty);
+		if(includeContext) {
+			fields.add(SearchFields.CONTEXT_FIELD_NAME);
+		}
+		return fields;
 	}
 
-	@Override
-	public SearchDocument getDocument() {
-		if (fullDoc == null) {
-			Document doc = index.getDocument(scoreDoc.doc,
-					Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoProperty));
-			fullDoc = new LuceneDocument(doc, index);
-		}
-		return fullDoc;
+	public LuceneDocumentDistance(ScoreDoc doc, String geoProperty, URI units, DistanceFilter df,
+			boolean includeContext, LuceneIndex index)
+	{
+		super(doc, index, requiredFields(geoProperty, includeContext));
+		this.units = units;
+		this.distanceFilter = df;
 	}
 
 	@Override
