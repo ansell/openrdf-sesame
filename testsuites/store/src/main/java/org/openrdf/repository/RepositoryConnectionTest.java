@@ -497,27 +497,6 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
-	public void testAddReaderInTxn()
-		throws Exception
-	{
-		// add file default-graph.ttl to repository, no context
-		InputStream defaultGraph = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX
-				+ "default-graph.ttl");
-		
-		InputStreamReader reader = new InputStreamReader(defaultGraph);
-		try {
-			testCon.begin();
-			testCon.add(reader, "", RDFFormat.TURTLE);
-			testCon.commit();
-		}
-		finally {
-			defaultGraph.close();
-		}
-		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameBob, false));
-		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameAlice, false));
-	}
-	
-	@Test
 	public void testAddGzipInputStream()
 		throws Exception
 	{
