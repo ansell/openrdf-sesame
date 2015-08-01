@@ -693,7 +693,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 							derivedBindings.addBinding(subjVar, resource);
 						}
 						if(contextVar != null && !contextVar.hasValue()) {
-							Resource ctx = SearchFields.createResource(doc.getContext());
+							Resource ctx = SearchFields.createContext(doc.getContext());
 							if(ctx != null) {
 								derivedBindings.addBinding(contextVar.getName(), ctx);
 							}
@@ -765,7 +765,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 						derivedBindings.addBinding(subjVar, resource);
 					}
 					if(contextVar != null && !contextVar.hasValue()) {
-						Resource ctx = SearchFields.createResource(doc.getContext());
+						Resource ctx = SearchFields.createContext(doc.getContext());
 						if(ctx != null) {
 							derivedBindings.addBinding(contextVar.getName(), ctx);
 						}

@@ -80,6 +80,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.util.GeoUnits;
 import org.slf4j.Logger;
@@ -739,29 +740,43 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	@Override
 	protected Iterable<? extends DocumentDistance> geoQuery(final URI geoProperty,
-			Point p, final URI units, double distance, String distanceVar)
+			Point p, final URI units, double distance, String distanceVar, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
 		double degs = GeoUnits.toDegrees(distance, units);
 		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoProperty.toString());
 		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(p, degs);
 		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.Intersects, boundingCircle));
+		if(contextVar != null) {
+			q = addContextTerm(q, (Resource) contextVar.getValue());
+		}
 
 		TopDocs docs = search(new CustomScoreQuery(q, new FunctionQuery(
 				strategy.makeRecipDistanceValueSource(boundingCircle))));
+		final boolean requireContext = (contextVar != null && !contextVar.hasValue());
 		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentDistance>() {
 
 			@Override
 			public DocumentDistance apply(ScoreDoc doc) {
 				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, boundingCircle.getCenter(),
-						LuceneIndex.this);
+						requireContext, LuceneIndex.this);
 			}
 		});
 	}
 
+	private Query addContextTerm(Query q, Resource ctx) {
+		BooleanQuery combinedQuery = new BooleanQuery();
+		TermQuery idQuery = new TermQuery(new Term(SearchFields.CONTEXT_FIELD_NAME,
+				SearchFields.getContextID(ctx)));
+		// the specified named graph or not the unnamed graph
+		combinedQuery.add(idQuery, ctx != null ? Occur.MUST : Occur.MUST_NOT);
+		combinedQuery.add(q, Occur.MUST);
+		return combinedQuery;
+	}
+
 	@Override
-	protected Iterable<? extends SearchDocument> geoRelationQuery(String relation,
-			URI geoProperty, Shape shape)
+	protected Iterable<? extends DocumentResult> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape, Var contextVar)
 		throws MalformedQueryException, IOException
 	{
 		SpatialOperation op = toSpatialOp(relation);
@@ -772,14 +787,20 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		final String geoField = geoProperty.toString();
 		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoField);
 		Query q = strategy.makeQuery(new SpatialArgs(op, shape));
+		if(contextVar != null) {
+			q = addContextTerm(q, (Resource) contextVar.getValue());
+		}
 
 		TopDocs docs = search(q);
-		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, SearchDocument>() {
+		final Set<String> fields = Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoField);
+		if(contextVar != null && !contextVar.hasValue()) {
+			fields.add(SearchFields.CONTEXT_FIELD_NAME);
+		}
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentResult>() {
 
 			@Override
-			public SearchDocument apply(ScoreDoc scoredoc) {
-				Document doc = LuceneIndex.this.getDocument(scoredoc.doc, Sets.newHashSet(SearchFields.URI_FIELD_NAME, SearchFields.CONTEXT_FIELD_NAME, geoField));
-				return new LuceneDocument(doc, geoStrategyMapper);
+			public DocumentResult apply(ScoreDoc doc) {
+				return new LuceneDocumentResult(doc, LuceneIndex.this, fields);
 			}
 		});
 	}

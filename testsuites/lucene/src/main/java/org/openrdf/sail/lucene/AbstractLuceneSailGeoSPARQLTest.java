@@ -186,7 +186,6 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		// check the results
 		Map<URI,Literal> expected = new LinkedHashMap<URI,Literal>();
 		expected.put(SUBJECT_1, sail.getValueFactory().createLiteral(760.0));
-		expected.put(SUBJECT_2, sail.getValueFactory().createLiteral(1332.5));
 
 		while(result.hasNext()) {
 			BindingSet bindings = result.next();
@@ -251,7 +250,6 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 
 		// check the results
 		Map<URI,Literal> expected = new HashMap<URI,Literal>();
-		expected.put(SUBJECT_4, sail.getValueFactory().createLiteral(true));
 		expected.put(SUBJECT_5, sail.getValueFactory().createLiteral(true));
 
 		while(result.hasNext()) {
@@ -259,7 +257,7 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 			URI subj = (URI) bindings.getValue("matchUri");
 
 			Literal location = expected.remove(subj);
-			assertNotNull(location);
+			assertNotNull("Expected subject: "+subj, location);
 			assertEquals(location.booleanValue(), ((Literal)bindings.getValue("intersects")).booleanValue());
 
 			assertNotNull(bindings.getValue("g"));
