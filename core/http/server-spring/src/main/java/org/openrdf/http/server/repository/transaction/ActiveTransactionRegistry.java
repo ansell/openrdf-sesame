@@ -142,8 +142,6 @@ public enum ActiveTransactionRegistry {
 			}
 			else {
 				activeConnections.invalidate(transactionId);
-				final Lock txnLock = entry.getLock();
-				txnLock.unlock();
 				logger.debug("deregistered transaction {}", transactionId);
 			}
 		}
@@ -178,12 +176,10 @@ public enum ActiveTransactionRegistry {
 		}
 
 		txnLock.lockInterruptibly();
-		/* Another thread might have deregistered the transaction while we were acquiring the lock */
-		final CacheEntry entry = activeConnections.getIfPresent(transactionId);
-		if (entry == null) {
-			throw new RepositoryException("transaction with id " + transactionId + " is no longer registered!");
-		}
-		return entry.getConnection();
+
+		final RepositoryConnection conn = activeConnections.getIfPresent(transactionId).getConnection();
+
+		return conn;
 	}
 
 	/**

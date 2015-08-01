@@ -32,8 +32,7 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatementImpl;
-import org.openrdf.model.impl.URIImpl;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -374,13 +373,14 @@ public class LuceneSail extends NotifyingSailWrapper {
 			}
 			indexedFields = new HashSet<URI>();
 			indexedFieldsMapping = new HashMap<URI, URI>();
+			ValueFactory vf = getValueFactory();
 			for (Object key : prop.keySet()) {
 				if (key.toString().startsWith("index.")) {
-					indexedFields.add(new URIImpl(prop.getProperty(key.toString())));
+					indexedFields.add(vf.createURI(prop.getProperty(key.toString())));
 				}
 				else {
-					indexedFieldsMapping.put(new URIImpl(key.toString()),
-							new URIImpl(prop.getProperty(key.toString())));
+					indexedFieldsMapping.put(vf.createURI(key.toString()),
+							vf.createURI(prop.getProperty(key.toString())));
 				}
 			}
 		}
@@ -480,6 +480,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 			});
 			// repo.initialize(); we don't need to initialize, that should be done
 			// already by others
+			ValueFactory vf = getValueFactory();
 			SailRepositoryConnection connection = repo.getConnection();
 			try {
 				TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SPARQL, reindexQuery);
@@ -505,7 +506,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 						current = r;
 						statements.clear();
 					}
-					statements.add(new ContextStatementImpl(r, p, o, c));
+					statements.add(vf.createStatement(r, p, o, c));
 				}
 			}
 			finally {
@@ -550,7 +551,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 			return null;
 
 		if (predicateChanged)
-			return new ContextStatementImpl(statement.getSubject(), p, statement.getObject(),
+			return getValueFactory().createStatement(statement.getSubject(), p, statement.getObject(),
 					statement.getContext());
 		else
 			return statement;
