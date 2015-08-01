@@ -64,7 +64,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	}
 
 	protected int maxDocs;
-	protected Set<String> wktFields = Collections.singleton(GEO.AS_WKT.toString());
+	protected Set<String> wktFields = Collections.singleton(SearchFields.getPropertyField(GEO.AS_WKT));
 
 	@Override
 	public void initialize(Properties parameters)
@@ -104,8 +104,8 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 	}
 
 	@Override
-	public boolean isGeoProperty(String propName) {
-		return (wktFields != null) && wktFields.contains(propName);
+	public boolean isGeoField(String fieldName) {
+		return (wktFields != null) && wktFields.contains(fieldName);
 	}
 
 
@@ -123,7 +123,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			return;
 		}
 
-		String field = statement.getPredicate().toString();
+		String field = SearchFields.getPropertyField(statement.getPredicate());
 
 		// fetch the Document representing this Resource
 		String resourceId = SearchFields.getResourceID(statement.getSubject());
@@ -174,7 +174,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 		if (document != null) {
 			// determine the values used in the index for this triple
-			String fieldName = statement.getPredicate().toString();
+			String fieldName = SearchFields.getPropertyField(statement.getPredicate());
 
 			// see if this triple occurs in this Document
 			if (document.hasProperty(fieldName, text)) {
@@ -285,7 +285,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 								if (val != null) {
 									// remove value from both property field and the
 									// corresponding text field
-									String field = r.getPredicate().toString();
+									String field = SearchFields.getPropertyField(r.getPredicate());
 									Set<String> removedValues = removedOfResource.get(field);
 									if(removedValues == null)
 									{
@@ -311,7 +311,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 							for (Statement s : addedToResource) {
 								val = SearchFields.getLiteralPropertyValueAsString(s);
 								if (val != null) {
-									String field = s.getPredicate().toString();
+									String field = SearchFields.getPropertyField(s.getPredicate());
 									if (!propertyCache.hasProperty(field, val)) {
 										addProperty(s, newDocument);
 										mutated = true;
@@ -435,12 +435,12 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		if (value == null) {
 			return;
 		}
-		String field = statement.getPredicate().toString();
+		String field = SearchFields.getPropertyField(statement.getPredicate());
 		addProperty(field, value, document);
 	}
 
 	private void addProperty(String field, String value, SearchDocument document) {
-		if(isGeoProperty(field)) {
+		if(isGeoField(field)) {
 			document.addGeoProperty(field, value);
 		}
 		else {
@@ -567,7 +567,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 						// limit to the queried field, if there was one
 						Collection<String> fields;
 						if (query.getPropertyURI() != null) {
-							String fieldname = query.getPropertyURI().toString();
+							String fieldname = SearchFields.getPropertyField(query.getPropertyURI());
 							fields = Collections.singleton(fieldname);
 						}
 						else {
@@ -626,7 +626,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if(!GEO.WKT_LITERAL.equals(from.getDatatype())) {
 				throw new MalformedQueryException("Unsupported datatype: "+from.getDatatype());
 			}
-			Shape shape = parseQueryShape(geoProperty.toString(), from.getLabel());
+			Shape shape = parseQueryShape(SearchFields.getPropertyField(geoProperty), from.getLabel());
 			if(!(shape instanceof Point)) {
 				throw new MalformedQueryException("Geometry literal is not a point: "+from.getLabel());
 			}
@@ -673,7 +673,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				String geoVar = query.getGeoVar();
 				String distanceVar = query.getDistanceVar();
 				Var contextVar = query.getContextVar();
-				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
+				List<String> geometries = doc.getProperty(SearchFields.getPropertyField(query.getGeoProperty()));
 				for(String geometry : geometries) {
 					double distance = hit.getDistance();
 					// Distance queries are generally implemented by checking
@@ -724,7 +724,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 			if(!GEO.WKT_LITERAL.equals(qgeom.getDatatype())) {
 				throw new MalformedQueryException("Unsupported datatype: "+qgeom.getDatatype());
 			}
-			Shape qshape = parseQueryShape(geoProperty.toString(), qgeom.getLabel());
+			Shape qshape = parseQueryShape(SearchFields.getPropertyField(geoProperty), qgeom.getLabel());
 			hits = geoRelationQuery(query.getRelation(), geoProperty, qshape, query.getContextVar());
 		}
 		catch (Exception e) {
@@ -757,7 +757,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				String geoVar = query.getGeoVar();
 				String fVar = query.getFunctionValueVar();
 				Var contextVar = query.getContextVar();
-				List<String> geometries = doc.getProperty(query.getGeoProperty().toString());
+				List<String> geometries = doc.getProperty(SearchFields.getPropertyField(query.getGeoProperty()));
 				for(String geometry : geometries) {
 					QueryBindingSet derivedBindings = new QueryBindingSet();
 					if(subjVar != null) {

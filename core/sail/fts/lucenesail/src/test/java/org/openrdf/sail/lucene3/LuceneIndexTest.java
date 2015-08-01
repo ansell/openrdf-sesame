@@ -451,7 +451,7 @@ public class LuceneIndexTest {
 	 * @param document
 	 */
 	private void assertStatement(Statement statement, Document document) {
-		Field[] fields = document.getFields(statement.getPredicate().toString());
+		Field[] fields = document.getFields(SearchFields.getPropertyField(statement.getPredicate()));
 		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
 		for (Field f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
@@ -465,7 +465,7 @@ public class LuceneIndexTest {
 	 * @param document
 	 */
 	private void assertNoStatement(Statement statement, Document document) {
-		Field[] fields = document.getFields(statement.getPredicate().toString());
+		Field[] fields = document.getFields(SearchFields.getPropertyField(statement.getPredicate()));
 		if (fields == null)
 			return;
 		for (Field f : fields) {

@@ -512,7 +512,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
 		SearchRequestBuilder request = client.prepareSearch();
 		if (highlight) {
-			String field = (propertyURI != null) ? propertyURI.toString() : "*";
+			String field = (propertyURI != null) ? SearchFields.getPropertyField(propertyURI) : "*";
 			request.addHighlightedField(field);
 			request.setHighlighterPreTags(SearchFields.HIGHLIGHTER_PRE_TAG);
 			request.setHighlighterPostTags(SearchFields.HIGHLIGHTER_POST_TAG);
@@ -596,7 +596,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 		double lat = p.getY();
 		double lon = p.getX();
-		final String fieldName = GEOPOINT_FIELD_PREFIX + geoProperty.toString();
+		final String fieldName = GEOPOINT_FIELD_PREFIX + SearchFields.getPropertyField(geoProperty);
 		QueryBuilder qb = QueryBuilders.functionScoreQuery(
 				FilterBuilders.geoDistanceFilter(fieldName).lat(lat).lon(lon).distance(unitDist, unit),
 				ScoreFunctionBuilders.linearDecayFunction(fieldName, GeoHashUtils.encode(lat, lon),
@@ -642,7 +642,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		if(spatialOp == null) {
 			return null;
 		}
-		final String fieldName = GEOSHAPE_FIELD_PREFIX + geoProperty.toString();
+		final String fieldName = GEOSHAPE_FIELD_PREFIX + SearchFields.getPropertyField(geoProperty);
 		GeoShapeFilterBuilder fb = FilterBuilders.geoShapeFilter(fieldName, ElasticsearchSpatialSupport.getSpatialSupport().toShapeBuilder(shape), spatialOp);
 		QueryBuilder qb = QueryBuilders.matchAllQuery();
 		if(contextVar != null) {
@@ -700,7 +700,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			query.defaultField(propertyURI.toString()).analyzer(queryAnalyzer);
+			query.defaultField(SearchFields.getPropertyField(propertyURI)).analyzer(queryAnalyzer);
 		return query;
 	}
 

@@ -113,7 +113,7 @@ public class DistanceQuerySpecBuilder implements SearchQueryInterpreter {
 			@Override
 			public void meet(StatementPattern sp) {
 				URI propertyName = (URI) sp.getPredicateVar().getValue();
-				if(propertyName != null && index.isGeoProperty(propertyName.toString()) && !sp.getObjectVar().hasValue()) {
+				if(propertyName != null && index.isGeoField(SearchFields.getPropertyField(propertyName)) && !sp.getObjectVar().hasValue()) {
 					String objectVarName = sp.getObjectVar().getName();
 					DistanceQuerySpec spec = specs.remove(objectVarName);
 					if(spec != null && isChildOf(sp, spec.getFilter())) {

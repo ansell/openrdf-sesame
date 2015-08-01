@@ -447,7 +447,7 @@ public class ElasticsearchIndexTest {
 	 * @param document
 	 */
 	private void assertStatement(Statement statement, SearchDocument document) {
-		List<String> fields = document.getProperty(statement.getPredicate().toString());
+		List<String> fields = document.getProperty(SearchFields.getPropertyField(statement.getPredicate()));
 		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
 		for (String f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f))
@@ -461,7 +461,7 @@ public class ElasticsearchIndexTest {
 	 * @param document
 	 */
 	private void assertNoStatement(Statement statement, SearchDocument document) {
-		List<String> fields = document.getProperty(statement.getPredicate().toString());
+		List<String> fields = document.getProperty(SearchFields.getPropertyField(statement.getPredicate()));
 		if (fields == null)
 			return;
 		for (String f : fields) {

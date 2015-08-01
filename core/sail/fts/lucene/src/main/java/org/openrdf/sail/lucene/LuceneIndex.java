@@ -744,7 +744,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws MalformedQueryException, IOException
 	{
 		double degs = GeoUnits.toDegrees(distance, units);
-		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoProperty.toString());
+		final String geoField = SearchFields.getPropertyField(geoProperty);
+		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoField);
 		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(p, degs);
 		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.Intersects, boundingCircle));
 		if(contextVar != null) {
@@ -758,7 +759,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 			@Override
 			public DocumentDistance apply(ScoreDoc doc) {
-				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, boundingCircle.getCenter(),
+				return new LuceneDocumentDistance(doc, geoField, units, boundingCircle.getCenter(),
 						requireContext, LuceneIndex.this);
 			}
 		});
@@ -784,7 +785,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			return null;
 		}
 
-		final String geoField = geoProperty.toString();
+		final String geoField = SearchFields.getPropertyField(geoProperty);
 		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoField);
 		Query q = strategy.makeQuery(new SpatialArgs(op, shape));
 		if(contextVar != null) {
@@ -917,7 +918,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			return new QueryParser(propertyURI.toString(), this.queryAnalyzer);
+			return new QueryParser(SearchFields.getPropertyField(propertyURI), this.queryAnalyzer);
 	}
 
 	/**

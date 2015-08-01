@@ -749,12 +749,13 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		double lon = p.getX();
 		double lat = p.getY();
 
-		SpatialStrategy tiers = getSpatialStrategyMapper().apply(geoProperty.stringValue());
+		final String geoField = SearchFields.getPropertyField(geoProperty);
+		SpatialStrategy tiers = getSpatialStrategyMapper().apply(geoField);
 		FixedCartesianPolyFilterBuilder cpf = new FixedCartesianPolyFilterBuilder(tiers.getFieldPrefix(),
 				tiers.getMinTier(), tiers.getMaxTier());
 		Filter cartesianFilter = cpf.getBoundingArea(lat, lon, miles);
 		final DistanceFilter distanceFilter = new GeoHashDistanceFilter(cartesianFilter, lat, lon, miles,
-				GEOHASH_FIELD_PREFIX + geoProperty.toString());
+				GEOHASH_FIELD_PREFIX + geoField);
 
 		Query q;
 		if(contextVar != null) {
@@ -797,7 +798,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 			@Override
 			public DocumentDistance apply(ScoreDoc doc) {
-				return new LuceneDocumentDistance(doc, geoProperty.toString(), units, distanceFilter, requireContext, LuceneIndex.this);
+				return new LuceneDocumentDistance(doc, geoField, units, distanceFilter, requireContext, LuceneIndex.this);
 			}
 		});
 	}
@@ -907,7 +908,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			return new QueryParser(Version.LUCENE_35, propertyURI.toString(), this.queryAnalyzer);
+			return new QueryParser(Version.LUCENE_35, SearchFields.getPropertyField(propertyURI), this.queryAnalyzer);
 	}
 
 	/**

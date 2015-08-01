@@ -355,7 +355,7 @@ public class SolrIndex extends AbstractSearchIndex {
 		SolrQuery q = prepareQuery(propertyURI, new SolrQuery(query));
 		if (highlight) {
 			q.setHighlight(true);
-			String field = (propertyURI != null) ? propertyURI.toString() : "*";
+			String field = (propertyURI != null) ? SearchFields.getPropertyField(propertyURI) : "*";
 			q.addHighlightField(field);
 			q.setHighlightSimplePre(SearchFields.HIGHLIGHTER_PRE_TAG);
 			q.setHighlightSimplePost(SearchFields.HIGHLIGHTER_POST_TAG);
@@ -444,7 +444,7 @@ public class SolrIndex extends AbstractSearchIndex {
 			}
 		}
 		SolrQuery q = new SolrQuery(qstr);
-		q.set(SpatialParams.FIELD, geoProperty.toString());
+		q.set(SpatialParams.FIELD, SearchFields.getPropertyField(geoProperty));
 		q.set(SpatialParams.POINT, p.getY() + "," + p.getX());
 		q.set(SpatialParams.DISTANCE, Double.toString(kms));
 		q.addField(SearchFields.URI_FIELD_NAME);
@@ -500,7 +500,7 @@ public class SolrIndex extends AbstractSearchIndex {
 			}
 		}
 		SolrQuery q = new SolrQuery(qstr);
-		q.set(CommonParams.DF, geoProperty.toString());
+		q.set(CommonParams.DF, SearchFields.getPropertyField(geoProperty));
 		q.addField(SearchFields.URI_FIELD_NAME);
 		// ':' is part of the fl parameter syntax so we can't use the full
 		// property field name
@@ -632,7 +632,7 @@ public class SolrIndex extends AbstractSearchIndex {
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			query.set(CommonParams.DF, propertyURI.toString());
+			query.set(CommonParams.DF, SearchFields.getPropertyField(propertyURI));
 		return query;
 	}
 

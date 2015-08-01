@@ -124,6 +124,10 @@ public final class SearchFields {
 		}
 	}
 
+	public static String getPropertyField(URI property) {
+		return property.toString();
+	}
+
 	/**
 	 * Determines whether the specified field name is a property field name.
 	 */
