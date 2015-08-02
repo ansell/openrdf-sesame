@@ -687,7 +687,7 @@ public class SesameSession extends SparqlSession {
 			boolean preserveNodeIds, Resource... contexts)
 		throws UnauthorizedException, RDFParseException, RepositoryException, IOException
 	{
-		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, null, contexts);
+		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, Action.ADD, contexts);
 	}
 
 	@Override

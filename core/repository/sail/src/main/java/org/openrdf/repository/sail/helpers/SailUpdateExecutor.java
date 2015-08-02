@@ -477,7 +477,7 @@ public class SailUpdateExecutor {
 
 		try {
 			// TODO process update context somehow? dataset, base URI, etc.
-			parser.parse(new ByteArrayInputStream(deleteDataExpr.getDataBlock().getBytes()), "");
+			parser.parse(new ByteArrayInputStream(deleteDataExpr.getDataBlock().getBytes("UTF-8")), "");
 		}
 		catch (RDFParseException e) {
 			throw new SailException(e);

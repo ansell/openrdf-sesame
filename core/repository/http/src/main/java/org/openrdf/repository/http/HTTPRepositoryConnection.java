@@ -673,7 +673,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase implements HttpC
 						removeModel(toRemove);
 						toRemove = null;
 					}
-					if (toAdd != null && MAX_STATEMENT_BUFFER_SIZE >= toAdd.size()) {
+					if (toAdd != null && MAX_STATEMENT_BUFFER_SIZE <= toAdd.size()) {
 						addModel(toAdd);
 						toAdd = null;
 					}
@@ -683,7 +683,7 @@ class HTTPRepositoryConnection extends RepositoryConnectionBase implements HttpC
 						addModel(toAdd);
 						toAdd = null;
 					}
-					if (toRemove != null && MAX_STATEMENT_BUFFER_SIZE >= toRemove.size()) {
+					if (toRemove != null && MAX_STATEMENT_BUFFER_SIZE <= toRemove.size()) {
 						removeModel(toRemove);
 						toRemove = null;
 					}
