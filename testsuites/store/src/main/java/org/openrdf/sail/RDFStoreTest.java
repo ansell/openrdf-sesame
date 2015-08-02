@@ -819,8 +819,9 @@ public abstract class RDFStoreTest {
 		throws Exception
 	{
 		Statement st = vf.createStatement(picasso, RDF.TYPE, painter);
-		assertEquals(st, vf.createStatement(picasso, RDF.TYPE, painter, context1));
-		assertEquals(st, vf.createStatement(picasso, RDF.TYPE, painter, context2));
+		assertEquals(st, vf.createStatement(picasso, RDF.TYPE, painter));
+		assertNotEquals(st, vf.createStatement(picasso, RDF.TYPE, painter, context1));
+		assertNotEquals(st, vf.createStatement(picasso, RDF.TYPE, painter, context2));
 	}
 
 	@Test

@@ -329,12 +329,19 @@ public class Models {
 	}
 
 	/**
-	 * Compares two RDF models, and returns <tt>true</tt> if they contain
-	 * isomorphic graphs. RDF models are isomorphic graphs if statements from one
-	 * model can be mapped 1:1 on to statements in the other model. In this
-	 * mapping, blank nodes are not considered mapped when having an identical
-	 * internal id, but are mapped from one model to the other by looking at the
-	 * statements in which the blank nodes occur.
+	 * Compares two RDF models, and returns <tt>true</tt> if they consist of
+	 * isomorphic graphs and the isomorphic graph identifiers map 1:1 to each
+	 * other. RDF graphs are isomorphic graphs if statements from one graphs can
+	 * be mapped 1:1 on to statements in the other graphs. In this mapping, blank
+	 * nodes are not considered mapped when having an identical internal id, but
+	 * are mapped from one graph to the other by looking at the statements in
+	 * which the blank nodes occur.
+	 * <p>
+	 * A Model can consist of more than one graph (denoted by context
+	 * identifiers). Two models are considered isomorphic if for each of the
+	 * graphs in one model, an isomorphic graph exists in the other model, and
+	 * the context identifiers of these graphs are either identical or (in the
+	 * case of blank nodes) map 1:1 on each other.
 	 * 
 	 * @see <a href="http://www.w3.org/TR/rdf11-concepts/#graph-isomorphism">RDF
 	 *      Concepts &amp; Abstract Syntax, section 3.6 (Graph Comparison)</a>
@@ -405,7 +412,9 @@ public class Models {
 		List<Statement> model1BNodes = new ArrayList<Statement>(model1.size());
 
 		for (Statement st : model1) {
-			if (st.getSubject() instanceof BNode || st.getObject() instanceof BNode) {
+			if (st.getSubject() instanceof BNode || st.getObject() instanceof BNode
+					|| st.getContext() instanceof BNode)
+			{
 				model1BNodes.add(st);
 			}
 			else {
@@ -449,6 +458,10 @@ public class Models {
 
 				if (st1.getObject() instanceof BNode && st2.getObject() instanceof BNode) {
 					newBNodeMapping.put((BNode)st1.getObject(), (BNode)st2.getObject());
+				}
+
+				if (st1.getContext() instanceof BNode && st2.getContext() instanceof BNode) {
+					newBNodeMapping.put((BNode)st1.getContext(), (BNode)st2.getContext());
 				}
 
 				// FIXME: this recursive implementation has a high risk of
@@ -549,6 +562,44 @@ public class Models {
 		else {
 			// objects are not (both) bNodes
 			if (!obj1.equals(obj2)) {
+				return false;
+			}
+		}
+
+		Resource context1 = st1.getContext();
+		Resource context2 = st2.getContext();
+
+		// no match if in different contexts
+		if (context1 == null) {
+			return context2 == null;
+		}
+		else if (context2 == null) {
+			return false;
+		}
+
+		if (context1 instanceof BNode && context2 instanceof BNode) {
+			BNode mappedBNode = bNodeMapping.get(context1);
+
+			if (mappedBNode != null) {
+				// bNode 'context1' was already mapped to some other bNode
+				if (!context2.equals(mappedBNode)) {
+					// 'context1' and 'context2' do not match
+					return false;
+				}
+			}
+			else {
+				// 'context1' was not yet mapped. we need to check if 'context2' is
+				// a
+				// possible mapping candidate
+				if (bNodeMapping.containsValue(context2)) {
+					// 'context2' is already mapped to some other value.
+					return false;
+				}
+			}
+		}
+		else {
+			// contexts are not (both) bNodes
+			if (!context1.equals(context1)) {
 				return false;
 			}
 		}
