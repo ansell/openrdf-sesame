@@ -233,7 +233,7 @@ public class SesameSession extends SparqlSession {
 				url.addParameter(Protocol.CONTEXT_PARAM_NAME, encodedContexts[i]);
 			}
 
-			final HttpUriRequest method = useTransaction ? new HttpPost(url.build()) : new HttpGet(url.build());
+			final HttpUriRequest method = useTransaction ? new HttpPut(url.build()) : new HttpGet(url.build());
 
 			String response = EntityUtils.toString(executeOK(method).getEntity());
 			try {
@@ -428,8 +428,8 @@ public class SesameSession extends SparqlSession {
 
 	public void getStatements(Resource subj, URI pred, Value obj, boolean includeInferred, RDFHandler handler,
 			Resource... contexts)
-		throws IOException, RDFHandlerException, RepositoryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RDFHandlerException, RepositoryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		checkRepositoryURL();
 
@@ -457,7 +457,7 @@ public class SesameSession extends SparqlSession {
 				url.setParameter(Protocol.ACTION_PARAM_NAME, Action.GET.toString());
 			}
 
-			HttpUriRequest method = useTransaction ? new HttpPost(url.build()) : new HttpGet(url.build());
+			HttpUriRequest method = useTransaction ? new HttpPut(url.build()) : new HttpGet(url.build());
 
 			try {
 				getRDF(method, handler, true);
@@ -490,7 +490,7 @@ public class SesameSession extends SparqlSession {
 			params.add(new BasicNameValuePair(Protocol.ISOLATION_LEVEL_PARAM_NAME,
 					isolationLevel.getURI().stringValue()));
 		}
-		
+
 		method.setEntity(new UrlEncodedFormEntity(params, UTF8));
 		HttpResponse response = execute(method);
 		int code = response.getStatusLine().getStatusCode();
@@ -520,11 +520,11 @@ public class SesameSession extends SparqlSession {
 			throw new IllegalStateException("Transaction URL has not been set");
 		}
 
-		HttpPost method = null;
+		HttpPut method = null;
 		try {
 			URIBuilder url = new URIBuilder(transactionURL);
 			url.addParameter(Protocol.ACTION_PARAM_NAME, Action.COMMIT.toString());
-			method = new HttpPost(url.build());
+			method = new HttpPut(url.build());
 		}
 		catch (URISyntaxException e) {
 			logger.error("could not create URL for transaction commit", e);
@@ -557,13 +557,13 @@ public class SesameSession extends SparqlSession {
 			throw new IllegalStateException("Transaction URL has not been set");
 		}
 
-		String requestURL = appendAction(transactionURL, Action.ROLLBACK);
-		HttpPost method = new HttpPost(requestURL);
+		String requestURL = transactionURL;
+		HttpDelete method = new HttpDelete(requestURL);
 
 		final HttpResponse response = execute(method);
 		try {
 			int code = response.getStatusLine().getStatusCode();
-			if (code == HttpURLConnection.HTTP_OK) {
+			if (code == HttpURLConnection.HTTP_NO_CONTENT) {
 				// we're done.
 				transactionURL = null;
 			}
@@ -667,14 +667,14 @@ public class SesameSession extends SparqlSession {
 
 	public void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
 			boolean preserveNodeIds, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
+				throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, Action.ADD, contexts);
 	}
 
 	protected void upload(InputStream contents, String baseURI, RDFFormat dataFormat, boolean overwrite,
 			boolean preserveNodeIds, Action action, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
+				throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		// Set Content-Length to -1 as we don't know it and we also don't want to
 		// cache
@@ -685,7 +685,7 @@ public class SesameSession extends SparqlSession {
 
 	public void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite,
 			boolean preserveNodeIds, Resource... contexts)
-		throws UnauthorizedException, RDFParseException, RepositoryException, IOException
+				throws UnauthorizedException, RDFParseException, RepositoryException, IOException
 	{
 		upload(contents, baseURI, dataFormat, overwrite, preserveNodeIds, Action.ADD, contexts);
 	}
@@ -700,8 +700,8 @@ public class SesameSession extends SparqlSession {
 
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
-		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
-				includeInferred, maxQueryTime, bindings);
+		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset, includeInferred,
+				maxQueryTime, bindings);
 
 		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
 
@@ -716,8 +716,13 @@ public class SesameSession extends SparqlSession {
 				: getUpdateURL();
 
 		HttpEntityEnclosingRequest method = null;
-		method = new HttpPost(requestURL);
-
+		if (transactionURL != null) {
+			method = new HttpPut(requestURL);
+		}
+		else {
+			method = new HttpPost(requestURL);
+		}
+		
 		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 		List<NameValuePair> queryParams = getUpdateMethodParameters(ql, update, baseURI, dataset,
@@ -728,9 +733,9 @@ public class SesameSession extends SparqlSession {
 		return (HttpUriRequest)method;
 	}
 
-	protected void upload(final Reader contents, String baseURI, final RDFFormat dataFormat,
-			boolean overwrite, boolean preserveNodeIds, Action action, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
+	protected void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite,
+			boolean preserveNodeIds, Action action, Resource... contexts)
+				throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		final Charset charset = dataFormat.hasCharset() ? dataFormat.getCharset() : Charset.forName("UTF-8");
 
@@ -743,8 +748,8 @@ public class SesameSession extends SparqlSession {
 			}
 
 			public Header getContentType() {
-				return new BasicHeader("Content-Type", dataFormat.getDefaultMIMEType() + "; charset="
-						+ charset.name());
+				return new BasicHeader("Content-Type",
+						dataFormat.getDefaultMIMEType() + "; charset=" + charset.name());
 			}
 
 			public boolean isRepeatable() {
@@ -785,7 +790,7 @@ public class SesameSession extends SparqlSession {
 
 	protected void upload(HttpEntity reqEntity, String baseURI, boolean overwrite, boolean preserveNodeIds,
 			Action action, Resource... contexts)
-		throws IOException, RDFParseException, RepositoryException, UnauthorizedException
+				throws IOException, RDFParseException, RepositoryException, UnauthorizedException
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
 
@@ -820,7 +825,7 @@ public class SesameSession extends SparqlSession {
 
 			// Select appropriate HTTP method
 			HttpEntityEnclosingRequest method;
-			if (overwrite) {
+			if (overwrite || useTransaction) {
 				method = new HttpPut(url.build());
 			}
 			else {
