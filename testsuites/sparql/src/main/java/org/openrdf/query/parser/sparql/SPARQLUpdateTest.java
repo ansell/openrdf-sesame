@@ -1068,7 +1068,7 @@ public abstract class SPARQLUpdateTest {
 	public void testDeleteDataUnicode()
 		throws Exception
 	{
-		URI i18n = con.getValueFactory().createURI(EX_NS, "東京");
+		IRI i18n = con.getValueFactory().createIRI(EX_NS, "東京");
 		
 		con.add(i18n, FOAF.KNOWS, bob);
 		
