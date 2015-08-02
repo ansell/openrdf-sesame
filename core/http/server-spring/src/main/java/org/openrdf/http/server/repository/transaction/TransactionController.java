@@ -134,7 +134,10 @@ public class TransactionController extends AbstractController {
 					"unable to find registerd connection for transaction id '" + transactionId + "'");
 		}
 
-		final Action action = Action.valueOf(request.getParameter(Protocol.ACTION_PARAM_NAME));
+		// if no action is specified in the request, it's a rollback (since it's
+		// the only txn operation that does not require the action parameter).
+		final String actionParam = request.getParameter(Protocol.ACTION_PARAM_NAME);
+		final Action action = actionParam != null ? Action.valueOf(actionParam) : Action.ROLLBACK;
 		switch (action) {
 			case QUERY:
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
@@ -263,21 +266,6 @@ public class TransactionController extends AbstractController {
 					conn.commit();
 					conn.close();
 					ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
-					break;
-				case ROLLBACK:
-					try {
-						conn.rollback();
-					}
-					finally {
-						try {
-							if (conn.isOpen()) {
-								conn.close();
-							}
-						}
-						finally {
-							ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
-						}
-					}
 					break;
 				default:
 					logger.warn("transaction modification action '{}' not recognized", action);
