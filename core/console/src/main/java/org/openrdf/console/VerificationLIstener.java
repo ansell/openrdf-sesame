@@ -19,12 +19,12 @@ package org.openrdf.console;
 import org.openrdf.model.Statement;
 import org.openrdf.rio.ParseErrorListener;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 
 /**
  * @author Dale Visser
  */
-class VerificationListener extends RDFHandlerBase implements ParseErrorListener {
+class VerificationListener extends AbstractRDFHandler implements ParseErrorListener {
 
 	private final ConsoleIO consoleIO;
 

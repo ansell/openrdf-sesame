@@ -26,7 +26,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.github.jsonldjava.core.JsonLdError;
@@ -39,7 +39,7 @@ import com.github.jsonldjava.utils.JsonUtils;
  * 
  * @author Peter Ansell
  */
-public class JSONLDParser extends RDFParserBase implements RDFParser {
+public class JSONLDParser extends AbstractRDFParser implements RDFParser {
 
 	/**
 	 * Default constructor

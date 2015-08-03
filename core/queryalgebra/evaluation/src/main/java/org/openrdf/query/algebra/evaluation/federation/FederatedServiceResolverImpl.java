@@ -36,7 +36,7 @@ import org.openrdf.query.QueryEvaluationException;
  * @author Andreas Schwarte
  * @author James Leigh
  */
-public class FederatedServiceResolverImpl extends FederatedServiceResolverBase implements FederatedServiceResolver, HttpClientDependent, SesameClientDependent {
+public class FederatedServiceResolverImpl extends AbstractFederatedServiceResolver implements FederatedServiceResolver, HttpClientDependent, SesameClientDependent {
 
 	public FederatedServiceResolverImpl() {
 		super();

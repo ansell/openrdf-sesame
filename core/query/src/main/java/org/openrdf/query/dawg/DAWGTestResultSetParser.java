@@ -39,15 +39,15 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.Binding;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.BindingImpl;
+import org.openrdf.query.impl.SimpleBinding;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 
 /**
  * @author Arjohn Kampman
  */
-public class DAWGTestResultSetParser extends RDFHandlerBase {
+public class DAWGTestResultSetParser extends AbstractRDFHandler {
 
 	/*-----------*
 	 * Constants *
@@ -174,6 +174,6 @@ public class DAWGTestResultSetParser extends RDFHandlerBase {
 	{
 		Literal name = GraphUtil.getUniqueObjectLiteral(graph, bindingNode, VARIABLE);
 		Value value = GraphUtil.getUniqueObject(graph, bindingNode, VALUE);
-		return new BindingImpl(name.getLabel(), value);
+		return new SimpleBinding(name.getLabel(), value);
 	}
 }

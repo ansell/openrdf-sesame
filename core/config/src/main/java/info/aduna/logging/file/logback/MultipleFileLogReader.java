@@ -36,7 +36,7 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 
 import info.aduna.logging.LogReader;
 import info.aduna.logging.LogRecord;
-import info.aduna.logging.base.LogReaderBase;
+import info.aduna.logging.base.AbstractLogReader;
 
 /**
  * Date range-enabled wrapper for FileLogReader. Reads multiple logfiles chunked
@@ -44,7 +44,7 @@ import info.aduna.logging.base.LogReaderBase;
  * 
  * @author alex
  */
-public class MultipleFileLogReader extends LogReaderBase implements LogReader {
+public class MultipleFileLogReader extends AbstractLogReader implements LogReader {
 
 	private Date startDate = null;
 

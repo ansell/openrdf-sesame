@@ -37,7 +37,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.QueryParserUtil;
@@ -157,7 +157,7 @@ public class CustomGraphQueryInferencer extends NotifyingSailWrapper {
 			matcherQuery = CustomGraphQueryInferencerConfig.buildMatcherQueryFromRuleQuery(language, queryText);
 		}
 		customMatcher = QueryParserUtil.parseGraphQuery(language, matcherQuery, null);
-		customQuery.getTupleExpr().visit(new QueryModelVisitorBase<SailException>() {
+		customQuery.getTupleExpr().visit(new AbstractQueryModelVisitor<SailException>() {
 
 			@Override
 			public void meet(StatementPattern statement)

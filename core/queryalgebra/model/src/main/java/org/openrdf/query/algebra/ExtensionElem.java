@@ -16,7 +16,7 @@
  */
 package org.openrdf.query.algebra;
 
-public class ExtensionElem extends QueryModelNodeBase {
+public class ExtensionElem extends AbstractQueryModelNode {
 
 	/*-----------*
 	 * Variables *

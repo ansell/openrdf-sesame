@@ -22,13 +22,13 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.QueryModelNodeBase;
+import org.openrdf.query.algebra.AbstractQueryModelNode;
 import org.openrdf.query.algebra.QueryModelVisitor;
 
 /**
  * An abstract superclass for operators which have (zero or more) arguments.
  */
-public abstract class AbstractNaryOperator<Expr extends QueryModelNode> extends QueryModelNodeBase {
+public abstract class AbstractNaryOperator<Expr extends QueryModelNode> extends AbstractQueryModelNode {
 
 	private static final long serialVersionUID = 2645544440976923085L;
 

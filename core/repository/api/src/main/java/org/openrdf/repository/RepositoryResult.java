@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.CloseableIterationBase;
+import info.aduna.iteration.AbstractCloseableIteration;
 import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
@@ -51,7 +51,7 @@ import info.aduna.iteration.Iterations;
  * @author Jeen Broekstra
  * @author Arjohn Kampman
  */
-public class RepositoryResult<T> extends CloseableIterationBase<T, RepositoryException> {
+public class RepositoryResult<T> extends AbstractCloseableIteration<T, RepositoryException> {
 
 	private volatile Iteration<? extends T, RepositoryException> wrappedIter;
 

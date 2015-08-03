@@ -138,7 +138,7 @@ public class PrefixDeclProcessor {
 		return sb.toString();
 	}
 
-	private static class QNameProcessor extends ASTVisitorBase {
+	private static class QNameProcessor extends AbstractASTVisitor {
 
 		private Map<String, String> prefixMap;
 

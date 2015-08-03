@@ -57,7 +57,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 import org.openrdf.rio.helpers.XMLParserSettings;
 
 /**
@@ -101,7 +101,7 @@ import org.openrdf.rio.helpers.XMLParserSettings;
  * @see org.openrdf.rio.ParseLocationListener
  * @author Arjohn Kampman
  */
-public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
+public class RDFXMLParser extends AbstractRDFParser implements ErrorHandler {
 
 	/*-----------*
 	 * Variables *
@@ -1242,7 +1242,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportWarning(String)}, adding line- and
+	 * Overrides {@link AbstractRDFParser#reportWarning(String)}, adding line- and
 	 * column number information to the error.
 	 */
 	@Override
@@ -1257,7 +1257,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding
+	 * Overrides {@link AbstractRDFParser#reportError(String, RioSetting)}, adding
 	 * line- and column number information to the error.
 	 */
 	@Override
@@ -1274,7 +1274,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportFatalError(String)}, adding line- and
+	 * Overrides {@link AbstractRDFParser#reportFatalError(String)}, adding line- and
 	 * column number information to the error.
 	 */
 	@Override
@@ -1291,7 +1291,7 @@ public class RDFXMLParser extends RDFParserBase implements ErrorHandler {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportFatalError(Exception)}, adding line-
+	 * Overrides {@link AbstractRDFParser#reportFatalError(Exception)}, adding line-
 	 * and column number information to the error.
 	 */
 	@Override

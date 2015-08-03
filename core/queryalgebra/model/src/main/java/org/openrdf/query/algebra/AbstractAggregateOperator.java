@@ -1,0 +1,66 @@
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
+ *
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+package org.openrdf.query.algebra;
+
+/**
+ * Base class for shared functionality of aggregate operators (e.g. DISTINCT
+ * setting)
+ * 
+ * @author Jeen Broekstra
+ */
+public abstract class AbstractAggregateOperator extends UnaryValueOperator implements AggregateOperator {
+
+	private static final long serialVersionUID = 4016064683034358205L;
+
+	private boolean distinct = false;
+
+	public AbstractAggregateOperator(ValueExpr arg) {
+		this(arg, false);
+	}
+
+	public AbstractAggregateOperator(ValueExpr arg, boolean distinct) {
+		super();
+		if (arg != null) {
+			setArg(arg);
+		}
+		setDistinct(distinct);
+	}
+
+	public void setDistinct(boolean distinct) {
+		this.distinct = distinct;
+	}
+
+	public boolean isDistinct() {
+		return this.distinct;
+	}
+
+    @Override
+    public int hashCode() {
+        int distHash = (isDistinct() ? 1 : 0);
+        if (arg == null) {
+            return 73 + distHash;
+        } else {
+            return arg.hashCode() + distHash;
+        }
+    }
+
+	@Override
+	public AbstractAggregateOperator clone() {
+		return (AbstractAggregateOperator)super.clone();
+	}
+
+}

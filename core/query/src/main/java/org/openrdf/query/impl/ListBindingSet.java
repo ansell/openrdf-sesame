@@ -92,7 +92,7 @@ public class ListBindingSet implements BindingSet {
 		Value value = getValue(bindingName);
 
 		if (value != null) {
-			return new BindingImpl(bindingName, value);
+			return new SimpleBinding(bindingName, value);
 		}
 
 		return null;
@@ -209,7 +209,7 @@ public class ListBindingSet implements BindingSet {
 		}
 
 		public Binding next() {
-			Binding result = new BindingImpl(bindingNames.get(index), values.get(index));
+			Binding result = new SimpleBinding(bindingNames.get(index), values.get(index));
 			findNextElement();
 			return result;
 		}

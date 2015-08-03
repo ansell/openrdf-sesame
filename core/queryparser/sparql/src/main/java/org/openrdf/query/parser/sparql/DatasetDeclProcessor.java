@@ -23,7 +23,7 @@ import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.parser.sparql.ast.ASTDatasetClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
 import org.openrdf.query.parser.sparql.ast.ASTOperation;
@@ -50,7 +50,7 @@ public class DatasetDeclProcessor {
 	public static Dataset process(ASTOperationContainer qc)
 		throws MalformedQueryException
 	{
-		DatasetImpl dataset = null;
+		SimpleDataset dataset = null;
 
 		ASTOperation op = qc.getOperation();
 		if (op != null) {
@@ -58,7 +58,7 @@ public class DatasetDeclProcessor {
 			List<ASTDatasetClause> datasetClauses = op.getDatasetClauseList();
 
 			if (!datasetClauses.isEmpty()) {
-				dataset = new DatasetImpl();
+				dataset = new SimpleDataset();
 
 				for (ASTDatasetClause dc : datasetClauses) {
 

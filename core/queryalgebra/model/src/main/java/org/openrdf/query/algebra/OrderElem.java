@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 /**
  * @author Arjohn Kampman
  */
-public class OrderElem extends QueryModelNodeBase {
+public class OrderElem extends AbstractQueryModelNode {
 
 	/*-----------*
 	 * Variables *

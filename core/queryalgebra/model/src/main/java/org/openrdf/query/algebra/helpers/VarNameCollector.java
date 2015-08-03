@@ -26,7 +26,7 @@ import org.openrdf.query.algebra.Var;
  * A QueryModelVisitor that collects the names of (non-constant) variables that
  * are used in a query model.
  */
-public class VarNameCollector extends QueryModelVisitorBase<RuntimeException> {
+public class VarNameCollector extends AbstractQueryModelVisitor<RuntimeException> {
 
 	public static Set<String> process(QueryModelNode node) {
 		VarNameCollector collector = new VarNameCollector();

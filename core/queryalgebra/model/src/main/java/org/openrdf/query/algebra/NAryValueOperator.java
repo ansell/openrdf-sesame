@@ -24,7 +24,7 @@ import java.util.List;
  * 
  * @author Jeen
  */
-public abstract class NAryValueOperator extends QueryModelNodeBase implements ValueExpr {
+public abstract class NAryValueOperator extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

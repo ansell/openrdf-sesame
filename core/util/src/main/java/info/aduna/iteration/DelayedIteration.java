@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
  * or memory. Subclasses must implement the <tt>createIteration</tt> method,
  * which is called once when the iteration is first needed.
  */
-public abstract class DelayedIteration<E, X extends Exception> extends CloseableIterationBase<E, X> {
+public abstract class DelayedIteration<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
 	 * Variables *

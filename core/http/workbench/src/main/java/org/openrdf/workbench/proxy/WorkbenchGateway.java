@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.workbench.base.BaseServlet;
+import org.openrdf.workbench.base.AbstractServlet;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.BasicServletConfig;
 import org.openrdf.workbench.util.TupleResultBuilder;
@@ -38,7 +38,7 @@ import org.openrdf.workbench.util.TupleResultBuilder;
  * All requests are serviced by this Servlet, though it usually delegates to
  * other Servlets.
  */
-public class WorkbenchGateway extends BaseServlet {
+public class WorkbenchGateway extends AbstractServlet {
 
 	private static final String DEFAULT_SERVER = "default-server";
 

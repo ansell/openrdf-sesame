@@ -16,7 +16,7 @@
  */
 package org.openrdf.query.algebra;
 
-public class ProjectionElem extends QueryModelNodeBase {
+public class ProjectionElem extends AbstractQueryModelNode {
 
 	/*-----------*
 	 * Variables *

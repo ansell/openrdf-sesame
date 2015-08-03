@@ -40,7 +40,7 @@ import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.Update;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -901,7 +901,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		IRI[] removeContexts = getRemoveContexts();
 		IRI insertContext = getInsertContext();
 		if (readContexts.length > 0 || removeContexts.length > 0 || insertContext != null) {
-			DatasetImpl ds = new DatasetImpl();
+			SimpleDataset ds = new SimpleDataset();
 			for (IRI graph : readContexts) {
 				ds.addDefaultGraph(graph);
 			}

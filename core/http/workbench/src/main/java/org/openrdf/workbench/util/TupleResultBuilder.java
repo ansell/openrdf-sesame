@@ -28,7 +28,7 @@ import org.openrdf.model.util.LiteralUtilException;
 import org.openrdf.query.Binding;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.impl.BindingImpl;
+import org.openrdf.query.impl.SimpleBinding;
 import org.openrdf.query.resultio.QueryResultWriter;
 
 /**
@@ -165,7 +165,7 @@ public class TupleResultBuilder {
 				throw new QueryResultHandlerException("Could not convert an object to a Value", e);
 			}
 		}
-		return new BindingImpl(name, nextValue);
+		return new SimpleBinding(name, nextValue);
 	}
 
 	/**

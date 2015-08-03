@@ -26,7 +26,7 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class Avg extends AggregateOperatorBase {
+public class Avg extends AbstractAggregateOperator {
 
 	public Avg(ValueExpr arg) {
 		super(arg);

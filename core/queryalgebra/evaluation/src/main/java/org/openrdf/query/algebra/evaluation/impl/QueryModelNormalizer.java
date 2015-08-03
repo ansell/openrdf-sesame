@@ -39,7 +39,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
@@ -48,7 +48,7 @@ import org.openrdf.query.algebra.helpers.VarNameCollector;
  * 
  * @author Arjohn Kampman
  */
-public class QueryModelNormalizer extends QueryModelVisitorBase<RuntimeException> implements QueryOptimizer {
+public class QueryModelNormalizer extends AbstractQueryModelVisitor<RuntimeException> implements QueryOptimizer {
 
 	public QueryModelNormalizer() {
 	}
@@ -283,7 +283,7 @@ public class QueryModelNormalizer extends QueryModelVisitorBase<RuntimeException
 		return problemVars.isEmpty();
 	}
 
-	private static class BindingCollector extends QueryModelVisitorBase<RuntimeException> {
+	private static class BindingCollector extends AbstractQueryModelVisitor<RuntimeException> {
 
 		private QueryModelNode nodeToIgnore;
 

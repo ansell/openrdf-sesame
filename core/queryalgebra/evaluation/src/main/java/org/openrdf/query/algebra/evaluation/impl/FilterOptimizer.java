@@ -35,7 +35,7 @@ import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.algebra.helpers.VarNameCollector;
 
 /**
@@ -54,7 +54,7 @@ public class FilterOptimizer implements QueryOptimizer {
 	 * Inner class FilterFinder *
 	 *--------------------------*/
 
-	protected static class FilterFinder extends QueryModelVisitorBase<RuntimeException> {
+	protected static class FilterFinder extends AbstractQueryModelVisitor<RuntimeException> {
 
 		protected final TupleExpr tupleExpr;
 
@@ -73,7 +73,7 @@ public class FilterOptimizer implements QueryOptimizer {
 	 * Inner class FilterRelocator *
 	 *-----------------------------*/
 
-	protected static class FilterRelocator extends QueryModelVisitorBase<RuntimeException> {
+	protected static class FilterRelocator extends AbstractQueryModelVisitor<RuntimeException> {
 
 		public static void relocate(Filter filter) {
 			filter.visit(new FilterRelocator(filter));

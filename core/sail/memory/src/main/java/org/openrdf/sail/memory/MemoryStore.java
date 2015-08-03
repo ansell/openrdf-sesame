@@ -36,7 +36,7 @@ import org.openrdf.sail.base.SailDataset;
 import org.openrdf.sail.base.SailSink;
 import org.openrdf.sail.base.SailStore;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.NotifyingSailBase;
+import org.openrdf.sail.helpers.AbstractNotifyingSail;
 import org.openrdf.sail.memory.model.MemIRI;
 
 /**
@@ -51,7 +51,7 @@ import org.openrdf.sail.memory.model.MemIRI;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class MemoryStore extends NotifyingSailBase implements FederatedServiceResolverClient {
+public class MemoryStore extends AbstractNotifyingSail implements FederatedServiceResolverClient {
 
 	/*-----------*
 	 * Constants *

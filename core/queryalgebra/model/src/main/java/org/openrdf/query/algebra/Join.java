@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.algebra.helpers.TupleExprs;
 
 /**

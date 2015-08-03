@@ -22,7 +22,7 @@ import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * @author Arjohn Kampman
@@ -36,7 +36,7 @@ public class IterativeEvaluationOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new IEOVisitor());
 	}
 
-	protected static class IEOVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class IEOVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meet(Union union) {

@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
 /**
  * @author MJAHale
  */
-public abstract class LookAheadIterator<E> extends CloseableIteratorBase<E> {
+public abstract class LookAheadIterator<E> extends AbstractCloseableIterator<E> {
 
 	/*-----------*
 	 * Variables *

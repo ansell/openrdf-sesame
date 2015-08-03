@@ -33,7 +33,7 @@ import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.iterator.BadlyDesignedLeftJoinIterator;
 import org.openrdf.sail.federation.algebra.NaryJoin;
 import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
@@ -46,7 +46,7 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
  * @see ParallelLeftJoinCursor
  * @author James Leigh
  */
-public class FederationStrategy extends EvaluationStrategyImpl {
+public class FederationStrategy extends SimpleEvaluationStrategy {
 
 	private final Executor executor;
 

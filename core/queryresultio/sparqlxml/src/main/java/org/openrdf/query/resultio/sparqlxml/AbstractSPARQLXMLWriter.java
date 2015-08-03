@@ -52,20 +52,19 @@ import org.slf4j.LoggerFactory;
 import info.aduna.xml.XMLWriter;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.Literals;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SESAMEQNAME;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.resultio.AbstractQueryResultWriter;
 import org.openrdf.query.resultio.BasicQueryWriterSettings;
 import org.openrdf.query.resultio.QueryResultWriter;
-import org.openrdf.query.resultio.QueryResultWriterBase;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.XMLWriterSettings;
@@ -76,7 +75,7 @@ import org.openrdf.rio.helpers.XMLWriterSettings;
  * 
  * @author Peter Ansell
  */
-abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements QueryResultWriter {
+abstract class AbstractSPARQLXMLWriter extends AbstractQueryResultWriter implements QueryResultWriter {
 
 	/*-----------*
 	 * Variables *
@@ -107,11 +106,11 @@ abstract class SPARQLXMLWriterBase extends QueryResultWriterBase implements Quer
 	 * Constructors *
 	 *--------------*/
 
-	public SPARQLXMLWriterBase(OutputStream out) {
+	public AbstractSPARQLXMLWriter(OutputStream out) {
 		this(new XMLWriter(out));
 	}
 
-	public SPARQLXMLWriterBase(XMLWriter xmlWriter) {
+	public AbstractSPARQLXMLWriter(XMLWriter xmlWriter) {
 		this.xmlWriter = xmlWriter;
 		this.xmlWriter.setPrettyPrint(true);
 	}

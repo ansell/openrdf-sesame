@@ -34,7 +34,7 @@ import org.openrdf.rio.RDFHandlerException;
  * 
  * @author Arjohn Kampman
  */
-public class ContextStatementCollector extends RDFHandlerBase {
+public class ContextStatementCollector extends AbstractRDFHandler {
 
 	/*-----------*
 	 * Variables *

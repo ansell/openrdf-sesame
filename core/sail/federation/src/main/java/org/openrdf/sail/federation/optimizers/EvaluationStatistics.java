@@ -27,7 +27,7 @@ import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.federation.algebra.NaryJoin;
 
 /**
@@ -60,7 +60,7 @@ public class EvaluationStatistics {
 	 * Inner class CardinalityCalculator *
 	 *-----------------------------------*/
 
-	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
+	protected static class CardinalityCalculator extends AbstractQueryModelVisitor<RuntimeException> {
 
 		protected double cardinality;
 

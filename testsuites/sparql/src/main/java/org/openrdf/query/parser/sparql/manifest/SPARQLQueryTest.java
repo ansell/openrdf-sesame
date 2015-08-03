@@ -56,7 +56,7 @@ import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.dawg.DAWGTestResultSetUtil;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.impl.MutableTupleQueryResult;
 import org.openrdf.query.impl.TupleQueryResultBuilder;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
@@ -717,10 +717,10 @@ public abstract class SPARQLQueryTest extends TestCase {
 			namedGraphsQuery.setBinding("action", action);
 			TupleQueryResult namedGraphs = namedGraphsQuery.evaluate();
 
-			DatasetImpl dataset = null;
+			SimpleDataset dataset = null;
 
 			if (defaultGraphURI != null || namedGraphs.hasNext()) {
-				dataset = new DatasetImpl();
+				dataset = new SimpleDataset();
 
 				if (defaultGraphURI != null) {
 					dataset.addDefaultGraph(defaultGraphURI);

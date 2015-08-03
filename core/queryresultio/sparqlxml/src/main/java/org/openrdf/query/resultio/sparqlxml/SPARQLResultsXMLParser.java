@@ -35,7 +35,7 @@ import org.openrdf.query.resultio.TupleQueryResultParser;
  * XML Format</a> for the definition of this format. The parser assumes that the
  * XML is wellformed.
  */
-public class SPARQLResultsXMLParser extends SPARQLXMLParserBase implements TupleQueryResultParser {
+public class SPARQLResultsXMLParser extends AbstractSPARQLXMLParser implements TupleQueryResultParser {
 
 	/*-------------*
 	 * Construtors *

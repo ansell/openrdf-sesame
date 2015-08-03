@@ -36,7 +36,7 @@ import org.openrdf.query.parser.serql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class ProjectionAliasProcessor extends ASTVisitorBase {
+class ProjectionAliasProcessor extends AbstractASTVisitor {
 
 	@Override
 	public Object visit(ASTSelect node, Object data)

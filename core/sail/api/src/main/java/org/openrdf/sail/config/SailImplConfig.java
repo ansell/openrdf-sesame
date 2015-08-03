@@ -20,12 +20,14 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 
 /**
+ * Configuration of a Sail implementation.
+ * 
  * @author Arjohn Kampman
  */
 public interface SailImplConfig {
 
 	public String getType();
-	
+
 	public long getIterationCacheSyncThreshold();
 
 	/**

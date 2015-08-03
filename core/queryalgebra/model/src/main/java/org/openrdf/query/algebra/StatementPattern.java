@@ -27,7 +27,7 @@ import java.util.Set;
  * Statement patterns can be targeted at one of three context scopes: all
  * contexts, null context only, or named contexts only.
  */
-public class StatementPattern extends QueryModelNodeBase implements TupleExpr {
+public class StatementPattern extends AbstractQueryModelNode implements TupleExpr {
 
 	/*------------*
 	 * enum Scope *

@@ -45,7 +45,7 @@ import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
@@ -94,7 +94,7 @@ public abstract class AbstractNQuadsParserUnitTest {
 		throws Exception
 	{
 		RDFParser nquadsParser = createRDFParser();
-		nquadsParser.setRDFHandler(new RDFHandlerBase());
+		nquadsParser.setRDFHandler(new AbstractRDFHandler());
 
 		InputStream in = AbstractNQuadsParserUnitTest.class.getResourceAsStream(NQUADS_TEST_FILE);
 		try {
@@ -116,7 +116,7 @@ public abstract class AbstractNQuadsParserUnitTest {
 		throws Exception
 	{
 		RDFParser nquadsParser = createRDFParser();
-		nquadsParser.setRDFHandler(new RDFHandlerBase());
+		nquadsParser.setRDFHandler(new AbstractRDFHandler());
 
 		InputStream in = AbstractNQuadsParserUnitTest.class.getResourceAsStream(NTRIPLES_TEST_FILE);
 		try {

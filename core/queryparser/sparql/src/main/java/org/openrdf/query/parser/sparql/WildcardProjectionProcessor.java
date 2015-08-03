@@ -40,7 +40,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * @author arjohn
  * @author Jeen Broekstra
  */
-public class WildcardProjectionProcessor extends ASTVisitorBase {
+public class WildcardProjectionProcessor extends AbstractASTVisitor {
 
 	public static void process(ASTQueryContainer qc)
 		throws MalformedQueryException
@@ -131,7 +131,7 @@ public class WildcardProjectionProcessor extends ASTVisitorBase {
 	 * Inner class QueryVariableCollector *
 	 *------------------------------------*/
 
-	private static class QueryVariableCollector extends ASTVisitorBase {
+	private static class QueryVariableCollector extends AbstractASTVisitor {
 
 		private Set<String> variableNames = new LinkedHashSet<String>();
 
@@ -180,7 +180,7 @@ public class WildcardProjectionProcessor extends ASTVisitorBase {
 	 * Inner class SelectClauseCollector  *
 	 *------------------------------------*/
 
-	private static class SelectClauseCollector extends ASTVisitorBase {
+	private static class SelectClauseCollector extends AbstractASTVisitor {
 
 		private Set<ASTSelect> selectClauses = new LinkedHashSet<ASTSelect>();
 

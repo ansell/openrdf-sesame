@@ -28,12 +28,12 @@ import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 
 /**
  * @author Arjohn Kampman
  */
-public class DAWGTestBooleanParser extends RDFHandlerBase {
+public class DAWGTestBooleanParser extends AbstractRDFHandler {
 
 	/*-----------*
 	 * Variables *

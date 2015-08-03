@@ -21,7 +21,7 @@ package org.openrdf.query.algebra;
  * 
  * @author Jeen Broekstra
  */
-public class Sample extends AggregateOperatorBase {
+public class Sample extends AbstractAggregateOperator {
 
 	public Sample(ValueExpr arg) {
 		super(arg);

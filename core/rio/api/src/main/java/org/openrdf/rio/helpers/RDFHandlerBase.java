@@ -16,39 +16,11 @@
  */
 package org.openrdf.rio.helpers;
 
-import org.openrdf.model.Statement;
-
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
-
 /**
- * Base class for {@link RDFHandler}s with dummy implementations of all
- * methods.
+ * @deprecated since 4.0 Use {@link AbstractRDFHandler} instead.
+ * @author Jeen Broekstra
  */
-public class RDFHandlerBase implements RDFHandler {
+@Deprecated
+public abstract class RDFHandlerBase extends AbstractRDFHandler {
 
-	public void startRDF()
-		throws RDFHandlerException
-	{
-	}
-
-	public void endRDF()
-		throws RDFHandlerException
-	{
-	}
-
-	public void handleNamespace(String prefix, String uri)
-		throws RDFHandlerException
-	{
-	}
-
-	public void handleStatement(Statement st)
-		throws RDFHandlerException
-	{
-	}
-
-	public void handleComment(String comment)
-		throws RDFHandlerException
-	{
-	}
 }

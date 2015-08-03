@@ -99,14 +99,14 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.Update;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.repository.contextaware.ContextAwareConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 import org.openrdf.sail.memory.MemoryStore;
 
 @RunWith(Parameterized.class)
@@ -998,7 +998,7 @@ public abstract class RepositoryConnectionTest {
 		BooleanQuery query = testCon.prepareBooleanQuery(QueryLanguage.SPARQL, queryBuilder.toString());
 		query.setBinding(NAME, nameBob);
 		assertThat(query.evaluate(), is(equalTo(true)));
-		DatasetImpl dataset = new DatasetImpl();
+		SimpleDataset dataset = new SimpleDataset();
 
 		// default graph: {context1}
 		dataset.addDefaultGraph(context1);
@@ -1717,7 +1717,7 @@ public abstract class RepositoryConnectionTest {
 		testCon.remove(stmt);
 		testCon.commit();
 
-		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+		testCon.exportStatements(null, null, null, false, new AbstractRDFHandler() {
 
 			@Override
 			public void handleStatement(Statement st)
@@ -1740,7 +1740,7 @@ public abstract class RepositoryConnectionTest {
 				"DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.commit();
 
-		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+		testCon.exportStatements(null, null, null, false, new AbstractRDFHandler() {
 
 			@Override
 			public void handleStatement(Statement st)
@@ -1763,7 +1763,7 @@ public abstract class RepositoryConnectionTest {
 		testCon.remove(stmt);
 		testCon.commit();
 
-		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+		testCon.exportStatements(null, null, null, false, new AbstractRDFHandler() {
 
 			@Override
 			public void handleStatement(Statement st)
@@ -1787,7 +1787,7 @@ public abstract class RepositoryConnectionTest {
 				"DELETE DATA {<" + URN_TEST_S1 + "> <" + URN_TEST_P1 + "> <" + URN_TEST_O1 + ">}").execute();
 		testCon.commit();
 
-		testCon.exportStatements(null, null, null, false, new RDFHandlerBase() {
+		testCon.exportStatements(null, null, null, false, new AbstractRDFHandler() {
 
 			@Override
 			public void handleStatement(Statement st)
@@ -2112,7 +2112,7 @@ public abstract class RepositoryConnectionTest {
 		testCon.add(vf.createIRI(URN_TEST_S1), vf.createIRI(URN_TEST_P1), vf.createIRI(URN_TEST_O1), g1);
 		testCon.add(vf.createIRI("urn:test:s2"), vf.createIRI(URN_TEST_P2), vf.createIRI("urn:test:o2"), g2);
 		Update up = testCon.prepareUpdate(QueryLanguage.SPARQL, SPARQL_DEL_ALL);
-		DatasetImpl ds = new DatasetImpl();
+		SimpleDataset ds = new SimpleDataset();
 		ds.addDefaultGraph(g1);
 		ds.addDefaultRemoveGraph(g1);
 		up.setDataset(ds);
@@ -2212,7 +2212,7 @@ public abstract class RepositoryConnectionTest {
 		throws RepositoryException, MalformedQueryException, QueryEvaluationException
 	{
 		TupleQuery qry = testCon.prepareTupleQuery(QueryLanguage.SPARQL, "SELECT * { ?s ?p ?o }");
-		DatasetImpl dataset = new DatasetImpl();
+		SimpleDataset dataset = new SimpleDataset();
 		dataset.addDefaultGraph(defaultGraph);
 		qry.setDataset(dataset);
 		TupleQueryResult result = qry.evaluate();

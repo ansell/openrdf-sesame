@@ -31,14 +31,14 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 
 /**
  * @author Damyan Ognyanov
  */
 public class BackgroundGraphResultHangTest {
 
-	static class DummyParser extends RDFParserBase {
+	static class DummyParser extends AbstractRDFParser {
 
 		@Override
 		public RDFFormat getRDFFormat() {

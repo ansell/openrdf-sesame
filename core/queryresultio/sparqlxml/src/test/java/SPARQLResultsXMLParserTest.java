@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.TupleQueryResultHandlerBase;
+import org.openrdf.query.AbstractTupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLParser;
 
@@ -63,7 +63,7 @@ public class SPARQLResultsXMLParserTest {
 		return countingHandler.getCount();
 	}
 
-	static class CountingTupleQueryResultHandler extends TupleQueryResultHandlerBase
+	static class CountingTupleQueryResultHandler extends AbstractTupleQueryResultHandler
 	{
 		private int count;
 

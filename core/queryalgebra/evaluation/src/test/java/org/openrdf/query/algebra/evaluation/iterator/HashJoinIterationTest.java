@@ -28,7 +28,7 @@ import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 
 import static org.junit.Assert.*;
@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  */
 public class HashJoinIterationTest {
 	private final ValueFactory vf = ValueFactoryImpl.getInstance();
-	private final EvaluationStrategy evaluator = new EvaluationStrategyImpl(null, null);
+	private final EvaluationStrategy evaluator = new SimpleEvaluationStrategy(null, null);
 
 	@Test
 	public void testCartesianJoin() throws QueryEvaluationException {

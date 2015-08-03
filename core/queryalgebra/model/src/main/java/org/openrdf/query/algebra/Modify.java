@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 /**
  * @author jeen
  */
-public class Modify extends QueryModelNodeBase implements UpdateExpr {
+public class Modify extends AbstractQueryModelNode implements UpdateExpr {
 
 	private TupleExpr deleteExpr;
 

@@ -44,7 +44,7 @@ import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 
 public class ConstructorBuilder {
@@ -70,7 +70,7 @@ public class ConstructorBuilder {
 		return buildConstructor(bodyExpr, bodyExpr, false, distinct, reduced);
 	}
 
-	private class BasicPatternVerifier extends QueryModelVisitorBase<RuntimeException> {
+	private class BasicPatternVerifier extends AbstractQueryModelVisitor<RuntimeException> {
 
 		private boolean basicPattern = true;
 

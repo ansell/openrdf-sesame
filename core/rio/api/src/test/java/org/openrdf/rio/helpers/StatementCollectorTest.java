@@ -177,7 +177,7 @@ public class StatementCollectorTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.rio.helpers.RDFHandlerBase#startRDF()}.
+	 * Test method for {@link org.openrdf.rio.helpers.AbstractRDFHandler#startRDF()}.
 	 */
 	@Test
 	public final void testStartRDF()
@@ -188,7 +188,7 @@ public class StatementCollectorTest {
 	}
 
 	/**
-	 * Test method for {@link org.openrdf.rio.helpers.RDFHandlerBase#endRDF()}.
+	 * Test method for {@link org.openrdf.rio.helpers.AbstractRDFHandler#endRDF()}.
 	 */
 	@Test
 	public final void testEndRDF()
@@ -201,7 +201,7 @@ public class StatementCollectorTest {
 
 	/**
 	 * Test method for
-	 * {@link org.openrdf.rio.helpers.RDFHandlerBase#handleComment(java.lang.String)}
+	 * {@link org.openrdf.rio.helpers.AbstractRDFHandler#handleComment(java.lang.String)}
 	 * .
 	 * 
 	 * @throws Exception

@@ -30,12 +30,12 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
 import org.openrdf.sail.config.SailConfigException;
-import org.openrdf.sail.config.SailImplConfigBase;
+import org.openrdf.sail.config.AbstractSailImplConfig;
 
 /**
  * @author Arjohn Kampman
  */
-public class NativeStoreConfig extends SailImplConfigBase {
+public class NativeStoreConfig extends AbstractSailImplConfig {
 
 	/*-----------*
 	 * Variables *

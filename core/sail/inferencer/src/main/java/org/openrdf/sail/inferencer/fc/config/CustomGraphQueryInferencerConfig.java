@@ -40,7 +40,7 @@ import org.openrdf.model.vocabulary.SP;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.QueryParserUtil;
-import org.openrdf.sail.config.DelegatingSailImplConfigBase;
+import org.openrdf.sail.config.AbstractDelegatingSailImplConfig;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfig;
 
@@ -50,7 +50,7 @@ import org.openrdf.sail.config.SailImplConfig;
  * 
  * @author Dale Visser
  */
-public final class CustomGraphQueryInferencerConfig extends DelegatingSailImplConfigBase {
+public final class CustomGraphQueryInferencerConfig extends AbstractDelegatingSailImplConfig {
 
 	public static final Pattern SPARQL_PATTERN, SERQL_PATTERN;
 

@@ -26,7 +26,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * A query optimizer that optimize disjunctive constraints on tuple expressions.
@@ -43,7 +43,7 @@ public class DisjunctiveConstraintOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new OrSameTermOptimizer());
 	}
 
-	protected static class OrSameTermOptimizer extends QueryModelVisitorBase<RuntimeException> {
+	protected static class OrSameTermOptimizer extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meet(Filter filter) {

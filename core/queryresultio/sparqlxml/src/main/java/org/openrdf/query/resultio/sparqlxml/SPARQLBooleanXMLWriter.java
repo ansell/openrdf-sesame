@@ -30,7 +30,7 @@ import org.openrdf.query.resultio.BooleanQueryResultWriter;
  * <a href="http://www.w3.org/TR/rdf-sparql-XMLres/">SPARQL Query Results XML
  * Format</a>.
  */
-public class SPARQLBooleanXMLWriter extends SPARQLXMLWriterBase implements BooleanQueryResultWriter {
+public class SPARQLBooleanXMLWriter extends AbstractSPARQLXMLWriter implements BooleanQueryResultWriter {
 
 	/*--------------*
 	 * Constructors *

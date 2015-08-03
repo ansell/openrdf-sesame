@@ -28,7 +28,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.impl.IteratingTupleQueryResult;
 import org.openrdf.query.resultio.QueryResultParseException;
 import org.openrdf.query.resultio.TupleQueryResultParser;
 
@@ -37,7 +37,7 @@ import org.openrdf.query.resultio.TupleQueryResultParser;
  * 
  * @author James Leigh
  */
-public class BackgroundTupleResult extends TupleQueryResultImpl implements Runnable, TupleQueryResultHandler {
+public class BackgroundTupleResult extends IteratingTupleQueryResult implements Runnable, TupleQueryResultHandler {
 
 	private volatile boolean closed;
 

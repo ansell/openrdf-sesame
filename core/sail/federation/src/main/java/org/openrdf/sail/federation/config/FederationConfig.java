@@ -16,7 +16,7 @@
  */
 package org.openrdf.sail.federation.config;
 
-import static org.openrdf.repository.config.RepositoryImplConfigBase.create;
+import static org.openrdf.repository.config.AbstractRepositoryImplConfig.create;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,7 +37,7 @@ import org.openrdf.model.util.ModelException;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.sail.config.SailConfigException;
-import org.openrdf.sail.config.SailImplConfigBase;
+import org.openrdf.sail.config.AbstractSailImplConfig;
 
 /**
  * Lists the members of a federation and which properties describe a resource
@@ -45,7 +45,7 @@ import org.openrdf.sail.config.SailImplConfigBase;
  * 
  * @author James Leigh
  */
-public class FederationConfig extends SailImplConfigBase {
+public class FederationConfig extends AbstractSailImplConfig {
 
 	/** http://www.openrdf.org/config/sail/federation# */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/federation#";

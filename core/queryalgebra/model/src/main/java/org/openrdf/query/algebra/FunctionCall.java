@@ -24,7 +24,7 @@ import java.util.List;
  * 
  * @author Arjohn Kampman
  */
-public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
+public class FunctionCall extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

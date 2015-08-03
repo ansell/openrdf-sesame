@@ -187,7 +187,7 @@ public class TupleExprBuilderTest {
 
 	}
 
-	private class ServiceNodeFinder extends ASTVisitorBase {
+	private class ServiceNodeFinder extends AbstractASTVisitor {
 
 		private List<String> graphPatterns = new ArrayList<String>();
 

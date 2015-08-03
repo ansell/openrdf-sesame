@@ -34,7 +34,7 @@ import org.openrdf.query.resultio.helpers.QueryResultCollector;
  *      Results JSON Format</a>
  * @author Peter Ansell
  */
-public class SPARQLBooleanJSONParser extends SPARQLJSONParserBase implements BooleanQueryResultParser {
+public class SPARQLBooleanJSONParser extends AbstractSPARQLJSONParser implements BooleanQueryResultParser {
 
 	/**
 	 * Default constructor.

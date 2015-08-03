@@ -37,7 +37,7 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.JSONLDMode;
 import org.openrdf.rio.helpers.JSONLDSettings;
-import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.AbstractRDFWriter;
 import org.openrdf.rio.helpers.StatementCollector;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -52,7 +52,7 @@ import com.github.jsonldjava.utils.JsonUtils;
  * 
  * @author Peter Ansell
  */
-public class JSONLDWriter extends RDFWriterBase implements RDFWriter {
+public class JSONLDWriter extends AbstractRDFWriter implements RDFWriter {
 
 	private final Model model = new LinkedHashModel();
 

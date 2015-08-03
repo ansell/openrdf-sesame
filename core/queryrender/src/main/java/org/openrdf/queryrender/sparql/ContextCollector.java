@@ -28,7 +28,7 @@ import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * <p>
@@ -41,7 +41,7 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
  * @author Blazej Bulka
  * @since 2.7.0
  */
-public class ContextCollector extends QueryModelVisitorBase<Exception> {
+public class ContextCollector extends AbstractQueryModelVisitor<Exception> {
 
 	/**
 	 * Maps TupleExpr to contexts. This map contains only top-level expression

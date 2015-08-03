@@ -68,7 +68,7 @@ import org.openrdf.query.QueryInterruptedException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.UnsupportedQueryLanguageException;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.resultio.BooleanQueryResultWriterRegistry;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.Repository;
@@ -296,9 +296,9 @@ public class RepositoryController extends AbstractController {
 		String[] defaultGraphURIs = request.getParameterValues(DEFAULT_GRAPH_PARAM_NAME);
 		String[] namedGraphURIs = request.getParameterValues(NAMED_GRAPH_PARAM_NAME);
 
-		DatasetImpl dataset = null;
+		SimpleDataset dataset = null;
 		if (defaultGraphURIs != null || namedGraphURIs != null) {
-			dataset = new DatasetImpl();
+			dataset = new SimpleDataset();
 
 			if (defaultGraphURIs != null) {
 				for (String defaultGraphURI : defaultGraphURIs) {

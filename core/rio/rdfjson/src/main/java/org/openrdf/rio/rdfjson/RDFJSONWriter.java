@@ -43,7 +43,7 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.WriterConfig;
 import org.openrdf.rio.helpers.BasicWriterSettings;
-import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.AbstractRDFWriter;
 
 /**
  * {@link RDFWriter} implementation for the RDF/JSON format
@@ -51,7 +51,7 @@ import org.openrdf.rio.helpers.RDFWriterBase;
  * @author Peter Ansell p_ansell@yahoo.com
  * @since 2.7.0
  */
-public class RDFJSONWriter extends RDFWriterBase implements RDFWriter {
+public class RDFJSONWriter extends AbstractRDFWriter implements RDFWriter {
 
 	private Writer writer;
 

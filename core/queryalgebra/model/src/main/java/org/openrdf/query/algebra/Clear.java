@@ -21,7 +21,7 @@ import org.openrdf.query.algebra.StatementPattern.Scope;
 /**
  * @author jeen
  */
-public class Clear extends QueryModelNodeBase implements UpdateExpr {
+public class Clear extends AbstractQueryModelNode implements UpdateExpr {
 
 	private ValueConstant graph;
 

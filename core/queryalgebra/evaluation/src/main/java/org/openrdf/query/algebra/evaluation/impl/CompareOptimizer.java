@@ -28,7 +28,7 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * A query optimizer that replaces {@link Compare} operators with
@@ -46,7 +46,7 @@ public class CompareOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new CompareVisitor());
 	}
 
-	protected static class CompareVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected static class CompareVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meet(Compare compare) {

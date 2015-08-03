@@ -25,7 +25,7 @@ import org.openrdf.query.algebra.QueryModelNode;
  * alternative, the static utility method {@link #printTree(QueryModelNode)} can
  * be used.
  */
-public class QueryModelTreePrinter extends QueryModelVisitorBase<RuntimeException> {
+public class QueryModelTreePrinter extends AbstractQueryModelVisitor<RuntimeException> {
 
 	/*-----------*
 	 * Constants *

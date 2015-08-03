@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 /**
  * An iterator that does not contain any elements.
  */
-public class EmptyIteration<E, X extends Exception> extends CloseableIterationBase<E, X> {
+public class EmptyIteration<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*--------------*
 	 * Constructors *

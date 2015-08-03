@@ -41,7 +41,7 @@ import org.openrdf.sail.base.SailSource;
 import org.openrdf.sail.base.SailStore;
 import org.openrdf.sail.base.SnapshotSailStore;
 import org.openrdf.sail.helpers.DirectoryLockManager;
-import org.openrdf.sail.helpers.NotifyingSailBase;
+import org.openrdf.sail.helpers.AbstractNotifyingSail;
 
 /**
  * A SAIL implementation using B-Tree indexing on disk for storing and querying
@@ -50,7 +50,7 @@ import org.openrdf.sail.helpers.NotifyingSailBase;
  * @author Arjohn Kampman
  * @author jeen
  */
-public class NativeStore extends NotifyingSailBase implements FederatedServiceResolverClient {
+public class NativeStore extends AbstractNotifyingSail implements FederatedServiceResolverClient {
 
 	/*-----------*
 	 * Variables *

@@ -17,14 +17,14 @@
  
 package info.aduna.platform.support;
 
-import info.aduna.platform.PlatformBase;
+import info.aduna.platform.AbstractPlatform;
 
 import java.io.File;
 
 /**
  * Platform implementation for *nix platforms.
  */
-public class PosixPlatform extends PlatformBase {
+public class PosixPlatform extends AbstractPlatform {
 
 	public String getName() {
 		return "POSIX-compatible";

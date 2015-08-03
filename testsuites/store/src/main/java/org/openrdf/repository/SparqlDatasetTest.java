@@ -34,7 +34,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 
 public abstract class SparqlDatasetTest {
 
@@ -51,7 +51,7 @@ public abstract class SparqlDatasetTest {
 
 	private ValueFactory vf;
 
-	private DatasetImpl dataset;
+	private SimpleDataset dataset;
 
 	private IRI graph1 = new SimpleIRI("http://example.org/graph1");
 
@@ -141,7 +141,7 @@ public abstract class SparqlDatasetTest {
 		ringo = createUser("ringo", "Ringo Starr", "ringo@example.org", graph1);
 		conn = repository.getConnection();
 
-		dataset = new DatasetImpl();
+		dataset = new SimpleDataset();
 		dataset.addDefaultGraph(graph1);
 	}
 

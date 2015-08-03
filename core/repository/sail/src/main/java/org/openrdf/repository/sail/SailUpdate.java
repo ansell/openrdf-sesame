@@ -31,7 +31,7 @@ import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.impl.AbstractOperation;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.helpers.SailUpdateExecutor;
@@ -129,7 +129,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 			return sparqlDefinedDataset;
 		}
 		else {
-			DatasetImpl mergedDataset = new DatasetImpl();
+			SimpleDataset mergedDataset = new SimpleDataset();
 
 			boolean merge = false;
 

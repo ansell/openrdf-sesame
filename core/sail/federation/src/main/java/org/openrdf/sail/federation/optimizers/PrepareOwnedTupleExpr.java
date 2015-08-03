@@ -40,7 +40,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.rio.turtle.TurtleUtil;
 import org.openrdf.sail.federation.algebra.NaryJoin;
@@ -51,7 +51,7 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
  * 
  * @author James Leigh
  */
-public class PrepareOwnedTupleExpr extends QueryModelVisitorBase<RepositoryException> implements
+public class PrepareOwnedTupleExpr extends AbstractQueryModelVisitor<RepositoryException> implements
 		QueryOptimizer
 {
 

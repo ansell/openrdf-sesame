@@ -20,7 +20,7 @@ package org.openrdf.query.algebra;
  * An abstract superclass for binary value operators which, by definition, has
  * two arguments.
  */
-public abstract class BinaryValueOperator extends QueryModelNodeBase implements ValueExpr {
+public abstract class BinaryValueOperator extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

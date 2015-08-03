@@ -16,13 +16,13 @@
  */
 package org.openrdf.sail.inferencer.fc.config;
 
-import org.openrdf.sail.config.DelegatingSailImplConfigBase;
+import org.openrdf.sail.config.AbstractDelegatingSailImplConfig;
 import org.openrdf.sail.config.SailImplConfig;
 
 /**
  * @author Arjohn Kampman
  */
-public class ForwardChainingRDFSInferencerConfig extends DelegatingSailImplConfigBase {
+public class ForwardChainingRDFSInferencerConfig extends AbstractDelegatingSailImplConfig {
 
 	public ForwardChainingRDFSInferencerConfig() {
 		super(ForwardChainingRDFSInferencerFactory.SAIL_TYPE);

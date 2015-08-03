@@ -99,7 +99,7 @@ import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.parser.sparql.ast.ASTAbs;
@@ -225,7 +225,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
 /**
  * @author Arjohn Kampman
  */
-public class TupleExprBuilder extends ASTVisitorBase {
+public class TupleExprBuilder extends AbstractASTVisitor {
 
 	/*-----------*
 	 * Variables *
@@ -717,7 +717,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
-	private class GroupFinder extends QueryModelVisitorBase<VisitorException> {
+	private class GroupFinder extends AbstractQueryModelVisitor<VisitorException> {
 
 		private Group group;
 
@@ -1873,7 +1873,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		}
 	}
 
-	protected class VarCollector extends QueryModelVisitorBase<VisitorException> {
+	protected class VarCollector extends AbstractQueryModelVisitor<VisitorException> {
 
 		private final Set<Var> collectedVars = new HashSet<Var>();
 
@@ -1891,7 +1891,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	}
 
-	protected class SameTermCollector extends QueryModelVisitorBase<VisitorException> {
+	protected class SameTermCollector extends AbstractQueryModelVisitor<VisitorException> {
 
 		private final Set<SameTerm> collectedSameTerms = new HashSet<SameTerm>();
 
@@ -1909,7 +1909,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	}
 
-	private class VarReplacer extends QueryModelVisitorBase<VisitorException> {
+	private class VarReplacer extends AbstractQueryModelVisitor<VisitorException> {
 
 		private Var toBeReplaced;
 
@@ -2932,7 +2932,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return new Avg(ve, node.isDistinct());
 	}
 
-	static class AggregateCollector extends QueryModelVisitorBase<VisitorException> {
+	static class AggregateCollector extends AbstractQueryModelVisitor<VisitorException> {
 
 		private Collection<AggregateOperator> operators = new ArrayList<AggregateOperator>();
 
@@ -3002,7 +3002,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 	}
 
-	static class AggregateOperatorReplacer extends QueryModelVisitorBase<VisitorException> {
+	static class AggregateOperatorReplacer extends AbstractQueryModelVisitor<VisitorException> {
 
 		private Var replacement;
 

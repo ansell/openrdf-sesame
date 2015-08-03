@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * A tuple expression that contains zero solutions.
  */
-public class EmptySet extends QueryModelNodeBase implements TupleExpr {
+public class EmptySet extends AbstractQueryModelNode implements TupleExpr {
 
 	public Set<String> getBindingNames() {
 		return getAssuredBindingNames();

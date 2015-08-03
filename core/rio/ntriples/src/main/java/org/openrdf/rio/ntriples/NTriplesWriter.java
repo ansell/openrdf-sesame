@@ -32,7 +32,7 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.NTriplesWriterSettings;
-import org.openrdf.rio.helpers.RDFWriterBase;
+import org.openrdf.rio.helpers.AbstractRDFWriter;
 
 /**
  * An implementation of the RDFWriter interface that writes RDF documents in
@@ -40,7 +40,7 @@ import org.openrdf.rio.helpers.RDFWriterBase;
  * href="http://www.w3.org/TR/rdf-testcases/#ntriples">this section</a> of the
  * RDF Test Cases document.
  */
-public class NTriplesWriter extends RDFWriterBase implements RDFWriter {
+public class NTriplesWriter extends AbstractRDFWriter implements RDFWriter {
 
 	/*-----------*
 	 * Variables *

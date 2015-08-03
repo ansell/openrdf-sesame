@@ -38,7 +38,7 @@ import org.openrdf.query.parser.serql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-class ProjectionProcessor extends ASTVisitorBase {
+class ProjectionProcessor extends AbstractASTVisitor {
 
 	public static void process(ASTQueryContainer qc)
 		throws MalformedQueryException
@@ -113,7 +113,7 @@ class ProjectionProcessor extends ASTVisitorBase {
 	 * collected variable names can be acquired by calling
 	 * {@link #getVariableNames}.
 	 */
-	private static class VariableCollector extends ASTVisitorBase {
+	private static class VariableCollector extends AbstractASTVisitor {
 
 		public static Set<String> process(Node node)
 			throws VisitorException

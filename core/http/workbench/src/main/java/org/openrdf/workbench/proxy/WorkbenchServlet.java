@@ -42,14 +42,14 @@ import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.workbench.base.BaseServlet;
+import org.openrdf.workbench.base.AbstractServlet;
 import org.openrdf.workbench.exceptions.BadRequestException;
 import org.openrdf.workbench.exceptions.MissingInitParameterException;
 import org.openrdf.workbench.util.BasicServletConfig;
 import org.openrdf.workbench.util.DynamicHttpRequest;
 import org.openrdf.workbench.util.TupleResultBuilder;
 
-public class WorkbenchServlet extends BaseServlet {
+public class WorkbenchServlet extends AbstractServlet {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(WorkbenchServlet.class);
 

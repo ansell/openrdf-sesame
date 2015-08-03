@@ -46,7 +46,7 @@ import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.BasicParserSettings;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 import org.openrdf.rio.helpers.TurtleParserSettings;
 
 /**
@@ -71,7 +71,7 @@ import org.openrdf.rio.helpers.TurtleParserSettings;
  * 
  * @author Arjohn Kampman
  */
-public class TurtleParser extends RDFParserBase {
+public class TurtleParser extends AbstractRDFParser {
 
 	/*-----------*
 	 * Variables *
@@ -1375,7 +1375,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportWarning(String)}, adding line number
+	 * Overrides {@link AbstractRDFParser#reportWarning(String)}, adding line number
 	 * information to the error.
 	 */
 	@Override
@@ -1384,7 +1384,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportError(String, RioSetting)}, adding
+	 * Overrides {@link AbstractRDFParser#reportError(String, RioSetting)}, adding
 	 * line number information to the error.
 	 */
 	@Override
@@ -1395,7 +1395,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportFatalError(String)}, adding line
+	 * Overrides {@link AbstractRDFParser#reportFatalError(String)}, adding line
 	 * number information to the error.
 	 */
 	@Override
@@ -1406,7 +1406,7 @@ public class TurtleParser extends RDFParserBase {
 	}
 
 	/**
-	 * Overrides {@link RDFParserBase#reportFatalError(Exception)}, adding line
+	 * Overrides {@link AbstractRDFParser#reportFatalError(Exception)}, adding line
 	 * number information to the error.
 	 */
 	@Override

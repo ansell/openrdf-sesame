@@ -22,7 +22,7 @@ package info.aduna.iteration;
  * <tt>S</tt> (the source type) to an iteration over objects of type
  * <tt>T</tt> (the target type).
  */
-public abstract class ConvertingIteration<S, T, X extends Exception> extends CloseableIterationBase<T, X> {
+public abstract class ConvertingIteration<S, T, X extends Exception> extends AbstractCloseableIteration<T, X> {
 
 	/*-----------*
 	 * Variables *

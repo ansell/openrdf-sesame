@@ -21,7 +21,7 @@ import org.openrdf.model.Value;
 /**
  * A ValueExpr with a constant value.
  */
-public class ValueConstant extends QueryModelNodeBase implements ValueExpr {
+public class ValueConstant extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

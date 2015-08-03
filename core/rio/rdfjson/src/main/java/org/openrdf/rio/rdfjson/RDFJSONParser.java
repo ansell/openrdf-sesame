@@ -44,7 +44,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.RioSetting;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.RDFJSONParserSettings;
-import org.openrdf.rio.helpers.RDFParserBase;
+import org.openrdf.rio.helpers.AbstractRDFParser;
 
 /**
  * {@link RDFParser} implementation for the RDF/JSON format
@@ -52,7 +52,7 @@ import org.openrdf.rio.helpers.RDFParserBase;
  * @author Peter Ansell
  * @since 2.7.0
  */
-public class RDFJSONParser extends RDFParserBase implements RDFParser {
+public class RDFJSONParser extends AbstractRDFParser implements RDFParser {
 
 	private final RDFFormat actualFormat;
 

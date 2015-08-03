@@ -46,7 +46,7 @@ import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.function.numeric.Rand;
 import org.openrdf.query.algebra.evaluation.function.rdfterm.STRUUID;
 import org.openrdf.query.algebra.evaluation.function.rdfterm.UUID;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
@@ -73,7 +73,7 @@ public class ConstantOptimizer implements QueryOptimizer {
 		tupleExpr.visit(new ConstantVisitor());
 	}
 
-	protected class ConstantVisitor extends QueryModelVisitorBase<RuntimeException> {
+	protected class ConstantVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
 		@Override
 		public void meet(Or or) {

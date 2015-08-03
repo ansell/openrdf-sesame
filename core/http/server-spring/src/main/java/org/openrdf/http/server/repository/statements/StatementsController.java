@@ -70,7 +70,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.query.UpdateExecutionException;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -196,7 +196,7 @@ public class StatementsController extends AbstractController {
 		String[] defaultGraphURIs = request.getParameterValues(USING_GRAPH_PARAM_NAME);
 		String[] namedGraphURIs = request.getParameterValues(USING_NAMED_GRAPH_PARAM_NAME);
 
-		DatasetImpl dataset = new DatasetImpl();
+		SimpleDataset dataset = new SimpleDataset();
 
 		if (defaultRemoveGraphURIs != null) {
 			for (String graphURI : defaultRemoveGraphURIs) {

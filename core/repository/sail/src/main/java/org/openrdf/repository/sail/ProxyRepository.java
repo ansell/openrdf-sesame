@@ -23,7 +23,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.base.RepositoryBase;
+import org.openrdf.repository.base.AbstractRepository;
 import org.openrdf.repository.sail.config.RepositoryResolver;
 import org.openrdf.repository.sail.config.RepositoryResolverClient;
 
@@ -48,7 +48,7 @@ import org.openrdf.repository.sail.config.RepositoryResolverClient;
  * 
  * @author Dale Visser
  */
-public class ProxyRepository extends RepositoryBase implements RepositoryResolverClient {
+public class ProxyRepository extends AbstractRepository implements RepositoryResolverClient {
 
 	private File dataDir;
 

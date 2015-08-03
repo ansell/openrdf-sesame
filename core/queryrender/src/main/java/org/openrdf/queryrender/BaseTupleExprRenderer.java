@@ -34,7 +34,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.query.parser.ParsedQuery;
 
 /**
@@ -45,7 +45,7 @@ import org.openrdf.query.parser.ParsedQuery;
  * @author Michael Grove
  * @since 2.7.0
  */
-public abstract class BaseTupleExprRenderer extends QueryModelVisitorBase<Exception> {
+public abstract class BaseTupleExprRenderer extends AbstractQueryModelVisitor<Exception> {
 
 	/**
 	 * A map of the extensions specified in the query.

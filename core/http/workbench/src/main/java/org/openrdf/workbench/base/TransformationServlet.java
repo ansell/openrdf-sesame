@@ -37,7 +37,7 @@ import org.openrdf.workbench.util.CookieHandler;
 import org.openrdf.workbench.util.TupleResultBuilder;
 import org.openrdf.workbench.util.WorkbenchRequest;
 
-public abstract class TransformationServlet extends BaseRepositoryServlet {
+public abstract class TransformationServlet extends AbstractRepositoryServlet {
 
 	protected static final ParserConfig NON_VERIFYING_PARSER_CONFIG;
 	

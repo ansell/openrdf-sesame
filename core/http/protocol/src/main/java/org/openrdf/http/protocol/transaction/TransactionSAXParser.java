@@ -40,8 +40,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.Binding;
-import org.openrdf.query.impl.BindingImpl;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.SimpleBinding;
+import org.openrdf.query.impl.SimpleDataset;
 
 /**
  * Parses an RDF transaction document into a collection of
@@ -62,7 +62,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 
 	private SPARQLUpdateOperation currentSPARQLUpdate = null;
 
-	private DatasetImpl currentDataset;
+	private SimpleDataset currentDataset;
 
 	public TransactionSAXParser() {
 		this(new SimpleValueFactory());
@@ -151,7 +151,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 			currentSPARQLUpdate.setUpdateString(text);
 		}
 		else if (TransactionXMLConstants.DATASET_TAG.equals(tagName)) {
-			currentDataset = new DatasetImpl();
+			currentDataset = new SimpleDataset();
 		}
 		else if (TransactionXMLConstants.DEFAULT_INSERT_GRAPH.equals(tagName)) {
 			currentDataset.setDefaultInsertGraph(valueFactory.createIRI(text));
@@ -200,7 +200,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 						v = valueFactory.createLiteral(value);
 					}
 				}
-				bindings.add(new BindingImpl(name, v));
+				bindings.add(new SimpleBinding(name, v));
 			}
 		}
 	}

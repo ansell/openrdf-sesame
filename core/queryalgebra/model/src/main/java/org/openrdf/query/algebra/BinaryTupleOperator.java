@@ -20,7 +20,7 @@ package org.openrdf.query.algebra;
  * An abstract superclass for binary tuple operators which, by definition, has
  * two arguments.
  */
-public abstract class BinaryTupleOperator extends QueryModelNodeBase implements TupleExpr {
+public abstract class BinaryTupleOperator extends AbstractQueryModelNode implements TupleExpr {
 
 	/*-----------*
 	 * Variables *

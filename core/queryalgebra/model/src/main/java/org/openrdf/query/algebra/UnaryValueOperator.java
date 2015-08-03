@@ -20,7 +20,7 @@ package org.openrdf.query.algebra;
  * An abstract superclass for unary value operators which, by definition, has
  * one argument.
  */
-public abstract class UnaryValueOperator extends QueryModelNodeBase implements ValueExpr {
+public abstract class UnaryValueOperator extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

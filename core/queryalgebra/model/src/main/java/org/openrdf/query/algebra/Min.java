@@ -19,7 +19,7 @@ package org.openrdf.query.algebra;
 /**
  * @author David Huynh
  */
-public class Min extends  AggregateOperatorBase {
+public class Min extends  AbstractAggregateOperator {
 
 	public Min(ValueExpr arg) {
 		super(arg);

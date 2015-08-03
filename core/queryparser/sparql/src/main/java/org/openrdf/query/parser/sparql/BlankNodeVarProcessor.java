@@ -38,7 +38,7 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
  * 
  * @author Arjohn Kampman
  */
-public class BlankNodeVarProcessor extends ASTVisitorBase {
+public class BlankNodeVarProcessor extends AbstractASTVisitor {
 
 	
 	public static Set<String> process(ASTOperationContainer qc)
@@ -58,7 +58,7 @@ public class BlankNodeVarProcessor extends ASTVisitorBase {
 	 * Inner class BlankNodeToVarConverter *
 	 *-------------------------------------*/
 
-	private static class BlankNodeToVarConverter extends ASTVisitorBase {
+	private static class BlankNodeToVarConverter extends AbstractASTVisitor {
 
 		private int anonVarNo = 1;
 

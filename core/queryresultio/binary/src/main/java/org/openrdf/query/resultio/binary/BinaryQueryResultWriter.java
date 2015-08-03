@@ -54,7 +54,7 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.resultio.QueryResultWriterBase;
+import org.openrdf.query.resultio.AbstractQueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 
@@ -64,7 +64,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  * 
  * @author Arjohn Kampman
  */
-public class BinaryQueryResultWriter extends QueryResultWriterBase implements TupleQueryResultWriter {
+public class BinaryQueryResultWriter extends AbstractQueryResultWriter implements TupleQueryResultWriter {
 
 	/*-----------*
 	 * Variables *

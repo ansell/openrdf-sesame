@@ -30,12 +30,12 @@ import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultParser;
 import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultParseException;
-import org.openrdf.query.resultio.QueryResultParserBase;
+import org.openrdf.query.resultio.AbstractQueryResultParser;
 
 /**
  * Reader for the plain text boolean result format.
  */
-public class BooleanTextParser extends QueryResultParserBase implements BooleanQueryResultParser {
+public class BooleanTextParser extends AbstractQueryResultParser implements BooleanQueryResultParser {
 
 	/*--------------*
 	 * Constructors *

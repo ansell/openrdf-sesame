@@ -35,14 +35,14 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.EmptySet;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.QueryModelNode;
-import org.openrdf.query.algebra.QueryModelNodeBase;
+import org.openrdf.query.algebra.AbstractQueryModelNode;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
@@ -56,7 +56,7 @@ import org.openrdf.sail.federation.algebra.OwnedTupleExpr;
  * 
  * @author James Leigh
  */
-public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryException> implements
+public class FederationJoinOptimizer extends AbstractQueryModelVisitor<RepositoryException> implements
 		QueryOptimizer
 {
 
@@ -261,7 +261,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 		}
 	}
 
-	private class OwnerScanner extends QueryModelVisitorBase<RepositoryException> {
+	private class OwnerScanner extends AbstractQueryModelVisitor<RepositoryException> {
 
 		private boolean shared;
 
@@ -396,7 +396,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 
 	}
 
-	private class LocalScanner extends QueryModelVisitorBase<RepositoryException> {
+	private class LocalScanner extends AbstractQueryModelVisitor<RepositoryException> {
 
 		private boolean isLocal;
 
@@ -509,7 +509,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 			}
 		}
 		else if (local) {
-			QueryModelNodeBase replacement = new NaryJoin();
+			AbstractQueryModelNode replacement = new NaryJoin();
 			for (LocalJoin v : vars) {
 				Var var = v.getVar();
 				NaryJoin join = v.getJoin();
@@ -549,7 +549,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 		return replacement;
 	}
 
-	private QueryModelNodeBase optimizeReplacementJoin(QueryModelNodeBase candidate, NaryJoin join)
+	private AbstractQueryModelNode optimizeReplacementJoin(AbstractQueryModelNode candidate, NaryJoin join)
 		throws RepositoryException
 	{
 		boolean multipleOwners = false;
@@ -565,7 +565,7 @@ public class FederationJoinOptimizer extends QueryModelVisitorBase<RepositoryExc
 				break;
 			}
 		}
-		QueryModelNodeBase replacement = candidate;
+		AbstractQueryModelNode replacement = candidate;
 		if (multipleOwners) {
 			// no subject exists on multiple members,
 			// but in the same member

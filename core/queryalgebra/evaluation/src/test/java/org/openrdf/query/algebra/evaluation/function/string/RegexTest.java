@@ -41,7 +41,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
-import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.SimpleEvaluationStrategy;
 import org.openrdf.query.impl.EmptyBindingSet;
 
 /**
@@ -160,7 +160,7 @@ public class RegexTest {
 	}
 
 	private Literal evaluate(Value... args) throws ValueExprEvaluationException, QueryEvaluationException {
-		EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(new TripleSource() {
+		SimpleEvaluationStrategy strategy = new SimpleEvaluationStrategy(new TripleSource() {
 			public ValueFactory getValueFactory() {
 				return vf;
 			}

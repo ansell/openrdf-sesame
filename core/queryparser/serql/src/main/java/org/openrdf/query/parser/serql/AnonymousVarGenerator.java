@@ -28,7 +28,7 @@ import org.openrdf.query.parser.serql.ast.VisitorException;
  * Inserts anonymous variables into the abstract syntax tree at places where
  * such variables are already implicitly present.
  */
-public class AnonymousVarGenerator extends ASTVisitorBase {
+public class AnonymousVarGenerator extends AbstractASTVisitor {
 
 	private int anonymousVarNo = 1;
 

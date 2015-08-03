@@ -34,7 +34,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.ZeroLengthPath;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 
 /**
  * Supplies various query model statistics to the query engine/optimizer.
@@ -63,7 +63,7 @@ public class EvaluationStatistics {
 	 * Inner class CardinalityCalculator *
 	 *-----------------------------------*/
 
-	protected static class CardinalityCalculator extends QueryModelVisitorBase<RuntimeException> {
+	protected static class CardinalityCalculator extends AbstractQueryModelVisitor<RuntimeException> {
 
 		protected double cardinality;
 
@@ -207,7 +207,7 @@ public class EvaluationStatistics {
 	}
 
 	// count the number of triple patterns
-	private static class ServiceNodeAnalyzer extends QueryModelVisitorBase<RuntimeException> {
+	private static class ServiceNodeAnalyzer extends AbstractQueryModelVisitor<RuntimeException> {
 
 		private int count = 0;
 

@@ -35,7 +35,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.resultio.QueryResultWriterBase;
+import org.openrdf.query.resultio.AbstractQueryResultWriter;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.TupleQueryResultWriter;
 
@@ -46,7 +46,7 @@ import org.openrdf.query.resultio.TupleQueryResultWriter;
  *      Query Results CSV Format</a>
  * @author Jeen Broekstra
  */
-public class SPARQLResultsCSVWriter extends QueryResultWriterBase implements TupleQueryResultWriter {
+public class SPARQLResultsCSVWriter extends AbstractQueryResultWriter implements TupleQueryResultWriter {
 
 	private Writer writer;
 

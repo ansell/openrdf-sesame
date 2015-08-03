@@ -26,13 +26,13 @@ import ch.qos.logback.core.util.StatusPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import info.aduna.app.logging.base.LogConfigurationBase;
+import info.aduna.app.logging.base.AbstractLogConfiguration;
 import info.aduna.app.util.ConfigurationUtil;
 import info.aduna.io.IOUtil;
 import info.aduna.logging.LogReader;
 import info.aduna.logging.file.logback.FileLogReader;
 
-public class LogbackConfiguration extends LogConfigurationBase {
+public class LogbackConfiguration extends AbstractLogConfiguration {
 
 	public static final String LOGGING_DIR_PROPERTY = "info.aduna.logging.dir";
 

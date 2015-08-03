@@ -23,7 +23,7 @@ package org.openrdf.query.algebra;
  * 
  * @author Arjohn Kampman
  */
-public class Bound extends QueryModelNodeBase implements ValueExpr {
+public class Bound extends AbstractQueryModelNode implements ValueExpr {
 
 	/*-----------*
 	 * Variables *

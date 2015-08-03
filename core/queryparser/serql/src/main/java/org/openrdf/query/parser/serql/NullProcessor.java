@@ -70,7 +70,7 @@ class NullProcessor {
 		}
 	}
 
-	private static class NullVisitor extends ASTVisitorBase {
+	private static class NullVisitor extends AbstractASTVisitor {
 
 		protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 

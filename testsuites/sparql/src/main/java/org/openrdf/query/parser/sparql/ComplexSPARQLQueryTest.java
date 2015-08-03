@@ -56,8 +56,8 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandlerBase;
-import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.AbstractTupleQueryResultHandler;
+import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -878,7 +878,7 @@ public abstract class ComplexSPARQLQueryTest {
 		queryBuilder.append("{ ?publisher <http://purl.org/dc/elements/1.1/publisher> ?publisher }");
 
 		conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate(
-				new TupleQueryResultHandlerBase() {
+				new AbstractTupleQueryResultHandler() {
 
 					public void handleSolution(BindingSet bindingSet) {
 						fail("nobody is self published");
@@ -1703,7 +1703,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		DatasetImpl dt = new DatasetImpl();
+		SimpleDataset dt = new SimpleDataset();
 		dt.addDefaultGraph(this.alice);
 		tq.setDataset(dt);
 
@@ -1765,7 +1765,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("WHERE { ?child rdfs:subClassOf+ ?parent . }");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
-		DatasetImpl dt = new DatasetImpl();
+		SimpleDataset dt = new SimpleDataset();
 		dt.addDefaultGraph(this.alice);
 		dt.addDefaultGraph(this.bob);
 		tq.setDataset(dt);
