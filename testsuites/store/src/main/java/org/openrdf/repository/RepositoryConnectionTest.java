@@ -497,6 +497,27 @@ public abstract class RepositoryConnectionTest {
 	}
 
 	@Test
+	public void testAddReaderInTxn()
+		throws Exception
+	{
+		// add file default-graph.ttl to repository, no context
+		InputStream defaultGraph = RepositoryConnectionTest.class.getResourceAsStream(TEST_DIR_PREFIX
+				+ "default-graph.ttl");
+		
+		InputStreamReader reader = new InputStreamReader(defaultGraph);
+		try {
+			testCon.begin();
+			testCon.add(reader, "", RDFFormat.TURTLE);
+			testCon.commit();
+		}
+		finally {
+			defaultGraph.close();
+		}
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameBob, false));
+		assertTrue(NEWLY_ADDED, testCon.hasStatement(null, publisher, nameAlice, false));
+	}
+	
+	@Test
 	public void testAddGzipInputStream()
 		throws Exception
 	{
@@ -1291,7 +1312,10 @@ public abstract class RepositoryConnectionTest {
 			result.next();
 			count++;
 		}
-		assertThat(count, is(equalTo(1)));
+		// TODO now that statement.equals includes context, the above three statements are considered distinct. 
+		// This duplicate filter test has become meaningless since it is _expected_ that nothing gets filtered out.
+		// We should look into reimplementing/renaming the enableDuplicateFilter to ignore context.
+		assertThat(count, is(equalTo(3)));
 	}
 
 	@Test

@@ -21,6 +21,7 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +30,7 @@ import org.springframework.web.servlet.View;
 
 import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
+import org.openrdf.http.server.repository.transaction.ActiveTransactionRegistry;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
@@ -56,8 +58,10 @@ public class ExportStatementsView implements View {
 	public static final String CONTEXTS_KEY = "contexts";
 
 	public static final String USE_INFERENCING_KEY = "useInferencing";
-	
+
 	public static final String CONNECTION_KEY = "connection";
+
+	public static final String TRANSACTION_ID_KEY = "transactionID";
 
 	public static final String FACTORY_KEY = "factory";
 
@@ -80,53 +84,63 @@ public class ExportStatementsView implements View {
 	public void render(Map model, HttpServletRequest request, HttpServletResponse response)
 		throws Exception
 	{
-		Resource subj = (Resource)model.get(SUBJECT_KEY);
-		IRI pred = (IRI)model.get(PREDICATE_KEY);
-		Value obj = (Value)model.get(OBJECT_KEY);
-		Resource[] contexts = (Resource[])model.get(CONTEXTS_KEY);
-		boolean useInferencing = (Boolean)model.get(USE_INFERENCING_KEY);
-		RepositoryConnection conn = (RepositoryConnection)model.get(CONNECTION_KEY);
-
-		boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
-
-		RDFWriterFactory rdfWriterFactory = (RDFWriterFactory)model.get(FACTORY_KEY);
-
-		RDFFormat rdfFormat = rdfWriterFactory.getRDFFormat();
-
+		UUID txnId = null;
 		try {
-			OutputStream out = response.getOutputStream();
-			RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+			txnId = (UUID)model.get(TRANSACTION_ID_KEY);
+			Resource subj = (Resource)model.get(SUBJECT_KEY);
+			IRI pred = (IRI)model.get(PREDICATE_KEY);
+			Value obj = (Value)model.get(OBJECT_KEY);
+			Resource[] contexts = (Resource[])model.get(CONTEXTS_KEY);
+			boolean useInferencing = (Boolean)model.get(USE_INFERENCING_KEY);
+			RepositoryConnection conn = (RepositoryConnection)model.get(CONNECTION_KEY);
 
-			response.setStatus(SC_OK);
+			boolean headersOnly = (Boolean)model.get(HEADERS_ONLY);
 
-			String mimeType = rdfFormat.getDefaultMIMEType();
-			if (rdfFormat.hasCharset()) {
-				Charset charset = rdfFormat.getCharset();
-				mimeType += "; charset=" + charset.name();
-			}
-			response.setContentType(mimeType);
+			RDFWriterFactory rdfWriterFactory = (RDFWriterFactory)model.get(FACTORY_KEY);
 
-			String filename = "statements";
-			if (rdfFormat.getDefaultFileExtension() != null) {
-				filename += "." + rdfFormat.getDefaultFileExtension();
-			}
-			response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+			RDFFormat rdfFormat = rdfWriterFactory.getRDFFormat();
 
-			if (!headersOnly) {
-				if (conn == null) {
-					conn = RepositoryInterceptor.getRepositoryConnection(request);
+			try {
+				OutputStream out = response.getOutputStream();
+				RDFWriter rdfWriter = rdfWriterFactory.getWriter(out);
+
+				response.setStatus(SC_OK);
+
+				String mimeType = rdfFormat.getDefaultMIMEType();
+				if (rdfFormat.hasCharset()) {
+					Charset charset = rdfFormat.getCharset();
+					mimeType += "; charset=" + charset.name();
 				}
-				synchronized (conn) {
-					conn.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+				response.setContentType(mimeType);
+
+				String filename = "statements";
+				if (rdfFormat.getDefaultFileExtension() != null) {
+					filename += "." + rdfFormat.getDefaultFileExtension();
 				}
+				response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+
+				if (!headersOnly) {
+					if (conn == null) {
+						conn = RepositoryInterceptor.getRepositoryConnection(request);
+					}
+					synchronized (conn) {
+						conn.exportStatements(subj, pred, obj, useInferencing, rdfWriter, contexts);
+					}
+				}
+				out.close();
 			}
-			out.close();
+			catch (RDFHandlerException e) {
+				throw new ServerHTTPException("Serialization error: " + e.getMessage(), e);
+			}
+			catch (RepositoryException e) {
+				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
+			}
 		}
-		catch (RDFHandlerException e) {
-			throw new ServerHTTPException("Serialization error: " + e.getMessage(), e);
-		}
-		catch (RepositoryException e) {
-			throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
+		finally {
+			if (txnId != null) {
+				ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(txnId);
+			}
 		}
 	}
+
 }
