@@ -45,8 +45,9 @@
 						<artifactId>maven-javadoc-plugin</artifactId>
 						<configuration>
 							<encoding>utf8</encoding>
-							<source>1.6</source>
+							<source>1.8</source>
 							<quiet>true</quiet>
+							<additionalparam>${javadoc.opts}</additionalparam>
 						</configuration>
 						<executions>				
 							<execution>
