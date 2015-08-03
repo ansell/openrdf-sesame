@@ -247,11 +247,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-sail-rdbms</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
