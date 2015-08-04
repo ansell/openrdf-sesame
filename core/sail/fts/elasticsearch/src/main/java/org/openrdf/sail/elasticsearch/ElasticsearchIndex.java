@@ -17,6 +17,7 @@
 package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -287,12 +288,25 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		typeMapping.startObject(SearchFields.TEXT_FIELD_NAME).field("type", "string").field("index", "analyzed").endObject();
 		for (String wktField : wktFields) {
 			typeMapping.startObject(GEOPOINT_FIELD_PREFIX + wktField).field("type", "geo_point").endObject();
-			typeMapping.startObject(GEOSHAPE_FIELD_PREFIX + wktField).field("type", "geo_shape").endObject();
+			if(supportsShapes(wktField)) {
+				typeMapping.startObject(GEOSHAPE_FIELD_PREFIX + wktField).field("type", "geo_shape").endObject();
+			}
 		}
 		typeMapping.endObject().endObject().endObject();
 
 		doAcknowledgedRequest(client.admin().indices().preparePutMapping(indexName).setType(documentType).setSource(
 				typeMapping));
+	}
+
+	private boolean supportsShapes(String field) {
+		SpatialContext geoContext = geoContextMapper.apply(field);
+		try {
+			geoContext.readShapeFromWkt("POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))");
+			return true;
+		}
+		catch (ParseException e) {
+			return false;
+		}
 	}
 
 	@Override
