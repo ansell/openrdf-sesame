@@ -102,12 +102,22 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		// add some statements to it
 		connection = repository.getConnection();
 		connection.begin();
+		loadPoints();
+		loadPolygons();
+		connection.commit();
+	}
+
+	protected void loadPoints() throws RepositoryException
+	{
 		connection.add(SUBJECT_1, GEO.AS_WKT, EIFFEL_TOWER, CONTEXT_1);
 		connection.add(SUBJECT_2, GEO.AS_WKT, ARC_TRIOMPHE);
 		connection.add(SUBJECT_3, GEO.AS_WKT, NOTRE_DAME, CONTEXT_2);
+	}
+
+	protected void loadPolygons() throws RepositoryException
+	{
 		connection.add(SUBJECT_4, GEO.AS_WKT, POLY1);
 		connection.add(SUBJECT_5, GEO.AS_WKT, POLY2, CONTEXT_3);
-		connection.commit();
 	}
 
 	@After
@@ -127,9 +137,19 @@ public abstract class AbstractLuceneSailGeoSPARQLTest {
 		throws Exception
 	{
 		// are the triples stored in the underlying sail?
+		checkPoints();
+		checkPolygons();
+	}
+
+	protected void checkPoints() throws RepositoryException
+	{
 		assertTrue(connection.hasStatement(SUBJECT_1, GEO.AS_WKT, EIFFEL_TOWER, false, CONTEXT_1));
 		assertTrue(connection.hasStatement(SUBJECT_2, GEO.AS_WKT, ARC_TRIOMPHE, false));
 		assertTrue(connection.hasStatement(SUBJECT_3, GEO.AS_WKT, NOTRE_DAME, false, CONTEXT_2));
+	}
+
+	protected void checkPolygons() throws RepositoryException
+	{
 		assertTrue(connection.hasStatement(SUBJECT_4, GEO.AS_WKT, POLY1, false));
 		assertTrue(connection.hasStatement(SUBJECT_5, GEO.AS_WKT, POLY2, false, CONTEXT_3));
 	}

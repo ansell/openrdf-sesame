@@ -547,18 +547,18 @@ public class SolrIndex extends AbstractSearchIndex {
 	protected Shape parseQueryShape(String property, String value) throws ParseException {
 		Shape s = super.parseQueryShape(property, value);
 		// workaround to preserve WKT string
-		return new WktShape(s, value);
+		return (s instanceof Point) ? new WktPoint((Point)s, value) : new WktShape<Shape>(s, value);
 	}
 
 	protected String toWkt(Shape s) {
-		return ((WktShape)s).wkt;
+		return ((WktShape<?>)s).wkt;
 	}
 
-	private static class WktShape implements Shape {
-		final Shape s;
+	private static class WktShape<S extends Shape> implements Shape {
+		final S s;
 		final String wkt;
 
-		WktShape(Shape s, String wkt) {
+		WktShape(S s, String wkt) {
 			this.s = s;
 			this.wkt = wkt;
 		}
@@ -602,6 +602,28 @@ public class SolrIndex extends AbstractSearchIndex {
 		public boolean equals(Object other) {
 			return s.equals(other);
 		}
+	}
+
+	private static class WktPoint extends WktShape<Point> implements Point {
+		WktPoint(Point p, String wkt) {
+			super(p, wkt);
+		}
+
+		@Override
+		public void reset(double x, double y) {
+			s.reset(x, y);
+		}
+
+		@Override
+		public double getX() {
+			return s.getX();
+		}
+
+		@Override
+		public double getY() {
+			return s.getY();
+		}
+	
 	}
 
 	/**
