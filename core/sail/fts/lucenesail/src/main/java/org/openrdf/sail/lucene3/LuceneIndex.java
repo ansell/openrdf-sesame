@@ -764,6 +764,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 					SearchFields.getContextID(ctx)));
 			if(ctx == null) {
 				BooleanQuery notQuery = new BooleanQuery();
+				notQuery.add(new MatchAllDocsQuery(), Occur.MUST); // required for negation
 				notQuery.add(q, Occur.MUST_NOT);
 				q = notQuery;
 			}
