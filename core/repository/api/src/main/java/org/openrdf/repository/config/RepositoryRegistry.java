@@ -25,19 +25,21 @@ import info.aduna.lang.service.ServiceRegistry;
  */
 public class RepositoryRegistry extends ServiceRegistry<String, RepositoryFactory> {
 
-	private static RepositoryRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class RepositoryRegistryHolder {
+
+		public static final RepositoryRegistry instance = new RepositoryRegistry();
+	}
 
 	/**
-	 * Gets the default QueryParserRegistry.
+	 * Gets the default RepositoryRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized RepositoryRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new RepositoryRegistry();
-		}
-
-		return defaultRegistry;
+	public static RepositoryRegistry getInstance() {
+		return RepositoryRegistryHolder.instance;
 	}
 
 	public RepositoryRegistry() {

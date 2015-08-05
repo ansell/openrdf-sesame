@@ -28,19 +28,21 @@ public class BooleanQueryResultParserRegistry extends
 		FileFormatServiceRegistry<BooleanQueryResultFormat, BooleanQueryResultParserFactory>
 {
 
-	private static BooleanQueryResultParserRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class BooleanQueryResultParserRegistryHolder {
+
+		public static final BooleanQueryResultParserRegistry instance = new BooleanQueryResultParserRegistry();
+	}
 
 	/**
 	 * Gets the default BooleanQueryResultParserRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized BooleanQueryResultParserRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new BooleanQueryResultParserRegistry();
-		}
-
-		return defaultRegistry;
+	public static BooleanQueryResultParserRegistry getInstance() {
+		return BooleanQueryResultParserRegistryHolder.instance;
 	}
 
 	public BooleanQueryResultParserRegistry() {

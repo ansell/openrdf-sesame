@@ -25,19 +25,21 @@ import info.aduna.lang.service.ServiceRegistry;
  */
 public class LanguageHandlerRegistry extends ServiceRegistry<String, LanguageHandler> {
 
-	private static LanguageHandlerRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class LanguageHandlerRegistryHolder {
+
+		public static final LanguageHandlerRegistry instance = new LanguageHandlerRegistry();
+	}
 
 	/**
-	 * Gets the default QueryParserRegistry.
+	 * Gets the default LanguageHandlerRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized LanguageHandlerRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new LanguageHandlerRegistry();
-		}
-
-		return defaultRegistry;
+	public static LanguageHandlerRegistry getInstance() {
+		return LanguageHandlerRegistryHolder.instance;
 	}
 
 	public LanguageHandlerRegistry() {

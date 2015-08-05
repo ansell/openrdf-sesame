@@ -25,19 +25,21 @@ import info.aduna.lang.service.FileFormatServiceRegistry;
  */
 public class RDFParserRegistry extends FileFormatServiceRegistry<RDFFormat, RDFParserFactory> {
 
-	private static RDFParserRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class RDFParserRegistryHolder {
+
+		public static final RDFParserRegistry instance = new RDFParserRegistry();
+	}
 
 	/**
 	 * Gets the default RDFParserRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized RDFParserRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new RDFParserRegistry();
-		}
-
-		return defaultRegistry;
+	public static RDFParserRegistry getInstance() {
+		return RDFParserRegistryHolder.instance;
 	}
 
 	public RDFParserRegistry() {

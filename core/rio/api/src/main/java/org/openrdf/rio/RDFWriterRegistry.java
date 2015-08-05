@@ -25,19 +25,21 @@ import info.aduna.lang.service.FileFormatServiceRegistry;
  */
 public class RDFWriterRegistry extends FileFormatServiceRegistry<RDFFormat, RDFWriterFactory> {
 
-	private static RDFWriterRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class RDFWriterRegistryHolder {
+
+		public static final RDFWriterRegistry instance = new RDFWriterRegistry();
+	}
 
 	/**
 	 * Gets the default RDFWriterRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized RDFWriterRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new RDFWriterRegistry();
-		}
-
-		return defaultRegistry;
+	public static RDFWriterRegistry getInstance() {
+		return RDFWriterRegistryHolder.instance;
 	}
 
 	public RDFWriterRegistry() {

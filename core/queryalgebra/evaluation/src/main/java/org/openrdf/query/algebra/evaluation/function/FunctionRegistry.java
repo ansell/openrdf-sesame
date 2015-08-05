@@ -23,19 +23,21 @@ import info.aduna.lang.service.ServiceRegistry;
  */
 public class FunctionRegistry extends ServiceRegistry<String, Function> {
 
-	private static FunctionRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class FunctionRegistryHolder {
+
+		public static final FunctionRegistry instance = new FunctionRegistry();
+	}
 
 	/**
 	 * Gets the default FunctionRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized FunctionRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new FunctionRegistry();
-		}
-
-		return defaultRegistry;
+	public static FunctionRegistry getInstance() {
+		return FunctionRegistryHolder.instance;
 	}
 
 	public FunctionRegistry() {
@@ -43,8 +45,7 @@ public class FunctionRegistry extends ServiceRegistry<String, Function> {
 	}
 
 	@Override
-	protected String getKey(Function function)
-	{
+	protected String getKey(Function function) {
 		return function.getURI();
 	}
 }

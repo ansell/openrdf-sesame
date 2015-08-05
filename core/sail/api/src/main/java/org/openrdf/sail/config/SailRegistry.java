@@ -25,19 +25,21 @@ import info.aduna.lang.service.ServiceRegistry;
  */
 public class SailRegistry extends ServiceRegistry<String, SailFactory> {
 
-	private static SailRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class SailRegistryHolder {
+
+		public static final SailRegistry instance = new SailRegistry();
+	}
 
 	/**
 	 * Gets the default SailRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized SailRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new SailRegistry();
-		}
-
-		return defaultRegistry;
+	public static SailRegistry getInstance() {
+		return SailRegistryHolder.instance;
 	}
 
 	public SailRegistry() {
