@@ -28,19 +28,21 @@ public class BooleanQueryResultWriterRegistry extends
 		FileFormatServiceRegistry<BooleanQueryResultFormat, BooleanQueryResultWriterFactory>
 {
 
-	private static BooleanQueryResultWriterRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class BooleanQueryResultWriterRegistryHolder {
+
+		public static final BooleanQueryResultWriterRegistry instance = new BooleanQueryResultWriterRegistry();
+	}
 
 	/**
 	 * Gets the default BooleanQueryResultWriterRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized BooleanQueryResultWriterRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new BooleanQueryResultWriterRegistry();
-		}
-
-		return defaultRegistry;
+	public static BooleanQueryResultWriterRegistry getInstance() {
+		return BooleanQueryResultWriterRegistryHolder.instance;
 	}
 
 	public BooleanQueryResultWriterRegistry() {

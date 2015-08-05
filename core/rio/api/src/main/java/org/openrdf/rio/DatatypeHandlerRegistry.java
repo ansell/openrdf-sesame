@@ -25,19 +25,21 @@ import info.aduna.lang.service.ServiceRegistry;
  */
 public class DatatypeHandlerRegistry extends ServiceRegistry<String, DatatypeHandler> {
 
-	private static DatatypeHandlerRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class DatatypeHandlerRegistryHolder {
+
+		public static final DatatypeHandlerRegistry instance = new DatatypeHandlerRegistry();
+	}
 
 	/**
-	 * Gets the default QueryParserRegistry.
+	 * Gets the default DatatypeHandlerRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized DatatypeHandlerRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new DatatypeHandlerRegistry();
-		}
-
-		return defaultRegistry;
+	public static DatatypeHandlerRegistry getInstance() {
+		return DatatypeHandlerRegistryHolder.instance;
 	}
 
 	public DatatypeHandlerRegistry() {

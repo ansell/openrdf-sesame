@@ -27,19 +27,21 @@ import org.openrdf.query.QueryLanguage;
  */
 public class QueryParserRegistry extends ServiceRegistry<QueryLanguage, QueryParserFactory> {
 
-	private static QueryParserRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class QueryParserRegistryHolder {
+
+		public static final QueryParserRegistry instance = new QueryParserRegistry();
+	}
 
 	/**
 	 * Gets the default QueryParserRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized QueryParserRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new QueryParserRegistry();
-		}
-
-		return defaultRegistry;
+	public static QueryParserRegistry getInstance() {
+		return QueryParserRegistryHolder.instance;
 	}
 
 	public QueryParserRegistry() {

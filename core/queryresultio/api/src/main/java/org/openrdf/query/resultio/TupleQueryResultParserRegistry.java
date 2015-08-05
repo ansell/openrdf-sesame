@@ -28,19 +28,21 @@ public class TupleQueryResultParserRegistry extends
 		FileFormatServiceRegistry<TupleQueryResultFormat, TupleQueryResultParserFactory>
 {
 
-	private static TupleQueryResultParserRegistry defaultRegistry;
+	/**
+	 * Internal helper class to avoid continuous synchronized checking.
+	 */
+	private static class TupleQueryResultParserRegistryHolder {
+
+		public static final TupleQueryResultParserRegistry instance = new TupleQueryResultParserRegistry();
+	}
 
 	/**
 	 * Gets the default TupleQueryResultParserRegistry.
 	 * 
 	 * @return The default registry.
 	 */
-	public static synchronized TupleQueryResultParserRegistry getInstance() {
-		if (defaultRegistry == null) {
-			defaultRegistry = new TupleQueryResultParserRegistry();
-		}
-
-		return defaultRegistry;
+	public static TupleQueryResultParserRegistry getInstance() {
+		return TupleQueryResultParserRegistryHolder.instance;
 	}
 
 	public TupleQueryResultParserRegistry() {
