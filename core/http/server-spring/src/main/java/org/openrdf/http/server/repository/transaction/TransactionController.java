@@ -140,6 +140,10 @@ public class TransactionController extends AbstractController {
 		final Action action = actionParam != null ? Action.valueOf(actionParam) : Action.ROLLBACK;
 		switch (action) {
 			case QUERY:
+				// TODO SES-2238 note that we allow POST requests for backward
+				// compatibility reasons with earlier
+				// 2.8.x releases, even though according to the protocol spec only
+				// PUT is allowed.
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn query request", reqMethod);
 					result = processQuery(connection, transactionId, request, response);
@@ -151,7 +155,7 @@ public class TransactionController extends AbstractController {
 				}
 				break;
 			case GET:
-				if ("PUT".equals(reqMethod)) {
+				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn get/export statements request", reqMethod);
 					result = getExportStatementsResult(connection, transactionId, request, response);
 					logger.info("{} txn get/export statements request finished");
@@ -162,7 +166,7 @@ public class TransactionController extends AbstractController {
 				}
 				break;
 			case SIZE:
-				if ("PUT".equals(reqMethod)) {
+				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn size request", reqMethod);
 					result = getSize(connection, transactionId, request, response);
 					logger.info("{} txn size request finished");
@@ -176,14 +180,12 @@ public class TransactionController extends AbstractController {
 				// modification operations - we can process these and then
 				// immediately release the connection back to the registry.
 				try {
-					if ("PUT".equals(reqMethod)) {
-						// TODO filter for appropriate PUT operations
-						logger.info("PUT txn operation");
-						result = processModificationOperation(connection, action, request, response);
-						logger.info("PUT txn operation request finished.");
-					}
-					else if ("DELETE".equals(reqMethod)) {
-						logger.info("DELETE transaction");
+					// TODO Action.ROLLBACK check is for backward compatibility with
+					// older 2.8.x releases only. It's not in the protocol spec.
+					if ("DELETE".equals(reqMethod) || (action.equals(Action.ROLLBACK)
+							&& ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod))))
+					{
+						logger.info("transaction rollback");
 						try {
 							connection.rollback();
 						}
@@ -192,7 +194,13 @@ public class TransactionController extends AbstractController {
 							connection.close();
 						}
 						result = new ModelAndView(EmptySuccessView.getInstance());
-						logger.info("DELETE transaction request finished.");
+						logger.info("transaction rollback request finished.");
+					}
+					else if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
+						// TODO filter for appropriate PUT operations
+						logger.info("{} txn operation", reqMethod);
+						result = processModificationOperation(connection, action, request, response);
+						logger.info("PUT txn operation request finished.");
 					}
 					else {
 						throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
