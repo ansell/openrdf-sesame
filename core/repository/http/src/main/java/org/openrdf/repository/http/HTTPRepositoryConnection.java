@@ -396,7 +396,8 @@ class HTTPRepositoryConnection extends AbstractRepositoryConnection implements H
 			baseURI = file.toURI().toString();
 		}
 		if (dataFormat == null) {
-			dataFormat = Rio.getParserFormatForFileName(file.getName());
+			dataFormat = Rio.getParserFormatForFileName(file.getName()).orElseThrow(
+					Rio.unsupportedFormat(file.getName()));
 		}
 
 		InputStream in = new FileInputStream(file);
@@ -440,12 +441,8 @@ class HTTPRepositoryConnection extends AbstractRepositoryConnection implements H
 			if (semiColonIdx >= 0) {
 				mimeType = mimeType.substring(0, semiColonIdx);
 			}
-			dataFormat = Rio.getParserFormatForMIMEType(mimeType);
-
-			// Fall back to using file name extensions
-			if (dataFormat == null) {
-				dataFormat = Rio.getParserFormatForFileName(url.getPath());
-			}
+			dataFormat = Rio.getParserFormatForMIMEType(mimeType).orElse(
+					Rio.getParserFormatForFileName(url.getPath()).orElseThrow(Rio.unsupportedFormat(mimeType)));
 		}
 
 		try {
@@ -460,9 +457,9 @@ class HTTPRepositoryConnection extends AbstractRepositoryConnection implements H
 		throws IOException, RDFParseException, RepositoryException
 	{
 		if (this.getRepository().useCompatibleMode()) {
-		
+
 			dataFormat = getBackwardCompatibleFormat(dataFormat);
-			
+
 			if (!isActive()) {
 				// Send bytes directly to the server
 				client.upload(in, baseURI, dataFormat, false, false, contexts);
@@ -481,18 +478,21 @@ class HTTPRepositoryConnection extends AbstractRepositoryConnection implements H
 	}
 
 	private RDFFormat getBackwardCompatibleFormat(RDFFormat format) {
-		// In Sesame 2.8, the default MIME-type for N-Triples changed. To stay backward compatible, we 'fake' the 
-		// default MIME-type back to the older value (text/plain) when running in compatibility mode.  
+		// In Sesame 2.8, the default MIME-type for N-Triples changed. To stay
+		// backward compatible, we 'fake' the
+		// default MIME-type back to the older value (text/plain) when running in
+		// compatibility mode.
 		if (NTRIPLES.equals(format)) {
-			// create a new format constant with identical properties as the N-Triples format, just with a different
+			// create a new format constant with identical properties as the
+			// N-Triples format, just with a different
 			// default MIME-type.
 			return new RDFFormat(NTRIPLES.getName(), Arrays.asList("text/plain"), NTRIPLES.getCharset(),
 					NTRIPLES.getFileExtensions(), NTRIPLES.supportsNamespaces(), NTRIPLES.supportsContexts());
 		}
-		
+
 		return format;
 	}
-	
+
 	public void add(Reader reader, String baseURI, RDFFormat dataFormat, Resource... contexts)
 		throws IOException, RDFParseException, RepositoryException
 	{
@@ -500,7 +500,7 @@ class HTTPRepositoryConnection extends AbstractRepositoryConnection implements H
 		if (this.getRepository().useCompatibleMode()) {
 
 			dataFormat = getBackwardCompatibleFormat(dataFormat);
-			
+
 			if (!isActive()) {
 				// Send bytes directly to the server
 				client.upload(reader, baseURI, dataFormat, false, false, contexts);

@@ -23,13 +23,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.impl.SimpleNamespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.openrdf.rio.DatatypeHandler;
 import org.openrdf.rio.DatatypeHandlerRegistry;
 import org.openrdf.rio.LanguageHandler;
@@ -257,9 +257,9 @@ public class BasicParserSettings {
 			for (String nextHandler : Arrays.asList(DatatypeHandler.XMLSCHEMA, DatatypeHandler.RDFDATATYPES,
 					DatatypeHandler.DBPEDIA, DatatypeHandler.VIRTUOSOGEOMETRY, DatatypeHandler.GEOSPARQL))
 			{
-				DatatypeHandler nextdt = registry.get(nextHandler);
-				if (nextdt != null) {
-					defaultDatatypeHandlers.add(nextdt);
+				Optional<DatatypeHandler> nextdt = registry.get(nextHandler);
+				if (nextdt.isPresent()) {
+					defaultDatatypeHandlers.add(nextdt.get());
 				}
 				else {
 					log.warn("Could not find DatatypeHandler : {}", nextHandler);
@@ -279,9 +279,9 @@ public class BasicParserSettings {
 		try {
 			LanguageHandlerRegistry registry = LanguageHandlerRegistry.getInstance();
 			for (String nextHandler : Arrays.asList(LanguageHandler.RFC3066)) {
-				LanguageHandler nextlang = registry.get(nextHandler);
-				if (nextlang != null) {
-					defaultLanguageHandlers.add(nextlang);
+				Optional<LanguageHandler> nextlang = registry.get(nextHandler);
+				if (nextlang.isPresent()) {
+					defaultLanguageHandlers.add(nextlang.get());
 				}
 				else {
 					log.warn("Could not find LanguageHandler : {}", nextHandler);

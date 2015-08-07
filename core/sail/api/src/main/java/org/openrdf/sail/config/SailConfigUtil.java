@@ -16,6 +16,8 @@
  */
 package org.openrdf.sail.config;
 
+import java.util.Optional;
+
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -31,10 +33,10 @@ public class SailConfigUtil {
 			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.SAILTYPE);
 
 			if (typeLit != null) {
-				SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel());
+				Optional<SailFactory> factory = SailRegistry.getInstance().get(typeLit.getLabel());
 
-				if (factory != null) {
-					SailImplConfig implConfig = factory.getConfig();
+				if (factory.isPresent()) {
+					SailImplConfig implConfig = factory.get().getConfig();
 					implConfig.parse(graph, implNode);
 					return implConfig;
 				}

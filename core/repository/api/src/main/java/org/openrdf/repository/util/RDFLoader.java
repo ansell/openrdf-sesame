@@ -96,7 +96,8 @@ public class RDFLoader {
 			baseURI = file.toURI().toString();
 		}
 		if (dataFormat == null) {
-			dataFormat = Rio.getParserFormatForFileName(file.getName());
+			dataFormat = Rio.getParserFormatForFileName(file.getName()).orElseThrow(
+					() -> new UnsupportedRDFormatException("Could not find RDF format for file: " + file.getName()));
 		}
 
 		InputStream in = new FileInputStream(file);
@@ -168,12 +169,11 @@ public class RDFLoader {
 			if (semiColonIdx >= 0) {
 				mimeType = mimeType.substring(0, semiColonIdx);
 			}
-			dataFormat = Rio.getParserFormatForMIMEType(mimeType);
+			dataFormat = Rio.getParserFormatForMIMEType(mimeType).orElseGet(
+					() -> Rio.getParserFormatForFileName(url.getPath()).orElseThrow(
+							() -> new UnsupportedRDFormatException("Could not find RDF format for URL: "
+									+ url.getPath())));
 
-			// Fall back to using file name extensions
-			if (dataFormat == null) {
-				dataFormat = Rio.getParserFormatForFileName(url.getPath());
-			}
 		}
 
 		try {
@@ -265,7 +265,7 @@ public class RDFLoader {
 					continue;
 				}
 
-				RDFFormat format = Rio.getParserFormatForFileName(entry.getName(), dataFormat);
+				RDFFormat format = Rio.getParserFormatForFileName(entry.getName()).orElse(dataFormat);
 
 				try {
 					// Prevent parser (Xerces) from closing the input stream

@@ -107,7 +107,7 @@ public class SPARQLTSVTupleTest extends AbstractQueryResultIOTupleTest {
 	{
 		TupleQueryResultFormat format = getTupleFormat();
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
-		TupleQueryResultWriter writer = QueryResultIO.createWriter(format, out);
+		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
 		writer.startDocument();
 		writer.startHeader();
 		writer.handleLinks(Arrays.<String> asList());

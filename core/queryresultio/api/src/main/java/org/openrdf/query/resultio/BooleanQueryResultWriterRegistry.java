@@ -25,7 +25,7 @@ import info.aduna.lang.service.FileFormatServiceRegistry;
  * @author Arjohn Kampman
  */
 public class BooleanQueryResultWriterRegistry extends
-		FileFormatServiceRegistry<BooleanQueryResultFormat, BooleanQueryResultWriterFactory>
+		FileFormatServiceRegistry<QueryResultFormat, BooleanQueryResultWriterFactory>
 {
 
 	/**
@@ -50,7 +50,7 @@ public class BooleanQueryResultWriterRegistry extends
 	}
 
 	@Override
-	protected BooleanQueryResultFormat getKey(BooleanQueryResultWriterFactory factory) {
+	protected QueryResultFormat getKey(BooleanQueryResultWriterFactory factory) {
 		return factory.getBooleanQueryResultFormat();
 	}
 }

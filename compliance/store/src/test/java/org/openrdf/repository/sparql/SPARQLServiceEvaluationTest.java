@@ -32,7 +32,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -51,6 +50,7 @@ import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -127,7 +127,8 @@ public class SPARQLServiceEvaluationTest {
 
 		RepositoryConnection con = rep.getConnection();
 		try {
-			con.add(dataset, "", RDFFormat.forFileName(datasetFile));
+			con.add(dataset, "",
+					Rio.getParserFormatForFileName(datasetFile).orElseThrow(Rio.unsupportedFormat(datasetFile)));
 		}
 		finally {
 			dataset.close();

@@ -51,6 +51,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.QueryResultIO;
 import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 
 public class ProtocolTest {
 
@@ -161,44 +162,48 @@ public class ProtocolTest {
 	{
 		TupleQueryResult queryResult = evaluateTupleQuery(TestServer.REPOSITORY_URL, "select * from {X} P {Y}",
 				QueryLanguage.SERQL);
-		QueryResultIO.write(queryResult, TupleQueryResultFormat.SPARQL, System.out);
+		QueryResultIO.writeTuple(queryResult, TupleQueryResultFormat.SPARQL, System.out);
 	}
-	
+
 	/**
-	 * Checks that the server accepts a direct POST with a content type of "application/sparql-query".
+	 * Checks that the server accepts a direct POST with a content type of
+	 * "application/sparql-query".
 	 */
 	@Test
-	public void testQueryDirect_POST() throws Exception
+	public void testQueryDirect_POST()
+		throws Exception
 	{
 		String query = "DESCRIBE <monkey:pod>";
 		String location = TestServer.REPOSITORY_URL;
-		
+
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpPost post = new HttpPost(location);
 		HttpEntity entity = new StringEntity(query, ContentType.create(Protocol.SPARQL_QUERY_MIME_TYPE));
 		post.setEntity(entity);
-		
+
 		CloseableHttpResponse response = httpclient.execute(post);
 
 		System.out.println("Query Direct POST Status: " + response.getStatusLine());
 		int statusCode = response.getStatusLine().getStatusCode();
 		assertEquals(true, statusCode >= 200 && statusCode < 400);
 	}
-	
+
 	/**
-	 * Checks that the server accepts a direct POST with a content type of "application/sparql-update".
+	 * Checks that the server accepts a direct POST with a content type of
+	 * "application/sparql-update".
 	 */
 	@Test
-	public void testUpdateDirect_POST() throws Exception
+	public void testUpdateDirect_POST()
+		throws Exception
 	{
 		String query = "delete where { <monkey:pod> ?p ?o }";
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
-		
+
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpPost post = new HttpPost(location);
 		HttpEntity entity = new StringEntity(query, ContentType.create(Protocol.SPARQL_UPDATE_MIME_TYPE));
 		post.setEntity(entity);
-		
+
 		CloseableHttpResponse response = httpclient.execute(post);
 
 		System.out.println("Update Direct Post Status: " + response.getStatusLine());
@@ -320,7 +325,8 @@ public class ProtocolTest {
 					contentType = contentType.substring(0, charPos);
 				}
 
-				RDFFormat format = RDFFormat.forMIMEType(contentType);
+				RDFFormat format = Rio.getParserFormatForMIMEType(contentType).orElseThrow(
+						Rio.unsupportedFormat(contentType));
 				assertNotNull(format);
 			}
 			else {
@@ -579,7 +585,7 @@ public class ProtocolTest {
 		conn.setRequestMethod("PUT");
 		conn.setDoOutput(true);
 
-		RDFFormat dataFormat = RDFFormat.forFileName(file, RDFFormat.RDFXML);
+		RDFFormat dataFormat = Rio.getParserFormatForFileName(file).orElse(RDFFormat.RDFXML);
 		conn.setRequestProperty("Content-Type", dataFormat.getDefaultMIMEType());
 
 		InputStream dataStream = ProtocolTest.class.getResourceAsStream(file);
@@ -648,7 +654,7 @@ public class ProtocolTest {
 			int responseCode = conn.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_OK) {
 				// Process query results
-				return QueryResultIO.parse(conn.getInputStream(), TupleQueryResultFormat.SPARQL);
+				return QueryResultIO.parseTuple(conn.getInputStream(), TupleQueryResultFormat.SPARQL);
 			}
 			else {
 				String response = "location " + location + " responded: " + conn.getResponseMessage() + " ("

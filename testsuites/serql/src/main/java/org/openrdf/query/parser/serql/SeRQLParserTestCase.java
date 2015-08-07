@@ -45,6 +45,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class SeRQLParserTestCase extends TestCase {
@@ -146,7 +147,7 @@ public abstract class SeRQLParserTestCase extends TestCase {
 		RepositoryConnection con = manifestRep.getConnection();
 
 		URL manifestURL = SeRQLParserTestCase.class.getResource(MANIFEST_FILE);
-		RDFFormat format = RDFFormat.forFileName(MANIFEST_FILE, RDFFormat.TURTLE);
+		RDFFormat format = Rio.getParserFormatForFileName(MANIFEST_FILE).orElse(RDFFormat.TURTLE);
 		con.add(manifestURL, base(manifestURL.toExternalForm()), format);
 
 		String query = "SELECT testName, query, result " + "FROM {} mf:name {testName}; "

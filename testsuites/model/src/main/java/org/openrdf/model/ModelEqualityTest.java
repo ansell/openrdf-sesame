@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
@@ -110,10 +111,10 @@ public abstract class ModelEqualityTest {
 
 		Model model = createEmptyModel();
 		
-		RDFFormat rdfFormat = Rio.getParserFormatForFileName(fileName);
-		assertNotNull("Unable to determine RDF format for file: " + fileName, rdfFormat);
+		Optional<RDFFormat> rdfFormat = Rio.getParserFormatForFileName(fileName);
+		assertTrue("Unable to determine RDF format for file: " + fileName, rdfFormat.isPresent());
 
-		RDFParser parser = Rio.createParser(rdfFormat);
+		RDFParser parser = Rio.createParser(rdfFormat.get());
 		parser.setDatatypeHandling(DatatypeHandling.IGNORE);
 		parser.setPreserveBNodeIDs(true);
 		parser.setRDFHandler(new StatementCollector(model));

@@ -19,8 +19,8 @@ package org.openrdf.rio.rdfjson;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 
 /**
  * @author Peter Ansell
@@ -29,12 +29,18 @@ public class RDFJSONMimeTypeTest {
 
 	@Test
 	public void testApplicationRDFJSON() {
-		assertEquals(RDFFormat.RDFJSON, RDFFormat.forMIMEType("application/rdf+json"));
+		assertEquals(
+				RDFFormat.RDFJSON,
+				Rio.getParserFormatForMIMEType("application/rdf+json").orElseThrow(
+						Rio.unsupportedFormat(RDFFormat.RDFJSON)));
 	}
 
 	@Test
 	public void testApplicationRDFJSONUtf8() {
-		assertEquals(RDFFormat.RDFJSON, RDFFormat.forMIMEType("application/rdf+json;charset=UTF-8"));
+		assertEquals(
+				RDFFormat.RDFJSON,
+				Rio.getParserFormatForMIMEType("application/rdf+json;charset=UTF-8").orElseThrow(
+						Rio.unsupportedFormat(RDFFormat.RDFJSON)));
 	}
 
 }

@@ -46,13 +46,8 @@ public class RDFParserRegistry extends FileFormatServiceRegistry<RDFFormat, RDFP
 		super(RDFParserFactory.class);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	protected RDFFormat getKey(RDFParserFactory factory) {
-		RDFFormat key = factory.getRDFFormat();
-		if (!RDFFormat.values().contains(key)) {
-			RDFFormat.register(key);
-		}
-		return key;
+		return factory.getRDFFormat();
 	}
 }

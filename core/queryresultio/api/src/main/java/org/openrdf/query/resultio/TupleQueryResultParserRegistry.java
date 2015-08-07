@@ -25,7 +25,7 @@ import info.aduna.lang.service.FileFormatServiceRegistry;
  * @author Arjohn Kampman
  */
 public class TupleQueryResultParserRegistry extends
-		FileFormatServiceRegistry<TupleQueryResultFormat, TupleQueryResultParserFactory>
+		FileFormatServiceRegistry<QueryResultFormat, TupleQueryResultParserFactory>
 {
 
 	/**
@@ -50,7 +50,7 @@ public class TupleQueryResultParserRegistry extends
 	}
 
 	@Override
-	protected TupleQueryResultFormat getKey(TupleQueryResultParserFactory factory) {
+	protected QueryResultFormat getKey(TupleQueryResultParserFactory factory) {
 		return factory.getTupleQueryResultFormat();
 	}
 }

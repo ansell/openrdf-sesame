@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Abstract representation of a file format. File formats are identified by a
@@ -348,45 +349,26 @@ public class FileFormat {
 	 * @param fileFormats
 	 *        The file formats to match the MIME type against.
 	 * @return A FileFormat object if the MIME type was recognized, or
-	 *         <tt>null</tt> otherwise.
+	 *         {@link Optional#empty()} otherwise.
 	 * @see #matchMIMEType(String, Iterable, FileFormat)
 	 */
-	public static <FF extends FileFormat> FF matchMIMEType(String mimeType, Iterable<FF> fileFormats) {
-		return matchMIMEType(mimeType, fileFormats, null);
-	}
-
-	/**
-	 * Tries to match the specified MIME type with the MIME types of the supplied
-	 * file formats. The supplied fallback format will be returned when no
-	 * matching format was found.
-	 * 
-	 * @param mimeType
-	 *        A MIME type, e.g. "text/plain".
-	 * @param fileFormats
-	 *        The file formats to match the MIME type against.
-	 * @param fallback
-	 *        The file format to return if no matching format can be found.
-	 * @return A FileFormat that matches the MIME type, or the fallback format if
-	 *         the extension was not recognized.
-	 */
-	public static <FF extends FileFormat> FF matchMIMEType(String mimeType, Iterable<FF> fileFormats,
-			FF fallback)
+	public static <FF extends FileFormat> Optional<FF> matchMIMEType(String mimeType, Iterable<FF> fileFormats)
 	{
 		// First try to match with the default MIME type
 		for (FF fileFormat : fileFormats) {
 			if (fileFormat.hasDefaultMIMEType(mimeType)) {
-				return fileFormat;
+				return Optional.of(fileFormat);
 			}
 		}
 
 		// Try alternative MIME types too
 		for (FF fileFormat : fileFormats) {
 			if (fileFormat.hasMIMEType(mimeType)) {
-				return fileFormat;
+				return Optional.of(fileFormat);
 			}
 		}
 
-		return fallback;
+		return Optional.empty();
 	}
 
 	/**
@@ -398,31 +380,10 @@ public class FileFormat {
 	 * @param fileFormats
 	 *        The file formats to match the file name extension against.
 	 * @return A FileFormat that matches the file name extension, or
-	 *         <tt>null</tt> otherwise.
+	 *         {@link Optional#empty()} otherwise.
 	 * @see #matchFileName(String, Iterable, FileFormat)
 	 */
-	public static <FF extends FileFormat> FF matchFileName(String fileName, Iterable<FF> fileFormats) {
-		return matchFileName(fileName, fileFormats, null);
-	}
-
-	/**
-	 * Tries to match the specified file name with the file extensions of the
-	 * supplied file formats. This method will try to match "extensions"
-	 * recursively, allowing it to find the file type of e.g. compressed files
-	 * (e.g. "example.rdf.gz"). The supplied fallback format will be returned
-	 * when the file name extension was not recognized.
-	 * 
-	 * @param fileName
-	 *        A file name.
-	 * @param fileFormats
-	 *        The file formats to match the file name extension against.
-	 * @param fallback
-	 *        The file format to return if no matching format can be found.
-	 * @return A FileFormat that matches the file name extension, or the fallback
-	 *         format if the extension was not recognized.
-	 */
-	public static <FF extends FileFormat> FF matchFileName(String fileName, Iterable<FF> fileFormats,
-			FF fallback)
+	public static <FF extends FileFormat> Optional<FF> matchFileName(String fileName, Iterable<FF> fileFormats)
 	{
 		// Strip any directory info from the file name
 		int lastPathSepIdx = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
@@ -437,14 +398,14 @@ public class FileFormat {
 			// First try to match with the default file extension of the formats
 			for (FF fileFormat : fileFormats) {
 				if (fileFormat.hasDefaultFileExtension(ext)) {
-					return fileFormat;
+					return Optional.of(fileFormat);
 				}
 			}
 
 			// Try alternative file extensions too
 			for (FF fileFormat : fileFormats) {
 				if (fileFormat.hasFileExtension(ext)) {
-					return fileFormat;
+					return Optional.of(fileFormat);
 				}
 			}
 
@@ -453,6 +414,6 @@ public class FileFormat {
 			fileName = fileName.substring(0, dotIdx);
 		}
 
-		return fallback;
+		return Optional.empty();
 	}
 }

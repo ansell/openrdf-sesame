@@ -672,7 +672,7 @@ public class SimpleEvaluationStrategy implements EvaluationStrategy {
 		throws QueryEvaluationException
 	{
 		final Iterator<BindingSet> iter = bsa.getBindingSets().iterator();
-		if(bindings.size() == 0) { // empty binding set
+		if (bindings.size() == 0) { // empty binding set
 			return new CloseableIteratorIteration<BindingSet, QueryEvaluationException>(iter);
 		}
 
@@ -687,7 +687,7 @@ public class SimpleEvaluationStrategy implements EvaluationStrategy {
 				throws QueryEvaluationException
 			{
 				QueryBindingSet result = null;
-				while(result == null && iter.hasNext()) {
+				while (result == null && iter.hasNext()) {
 					final BindingSet assignedBindings = iter.next();
 					for (String name : assignedBindings.getBindingNames()) {
 						final Value assignedValue = assignedBindings.getValue(name);
@@ -696,10 +696,10 @@ public class SimpleEvaluationStrategy implements EvaluationStrategy {
 							// existing bindings.
 							Value bValue = b.getValue(name);
 							if (bValue == null || assignedValue.equals(bValue)) {
-								if(result == null) {
+								if (result == null) {
 									result = new QueryBindingSet(b);
 								}
-								if(bValue == null) {
+								if (bValue == null) {
 									// we are not overwriting an existing binding.
 									result.addBinding(name, assignedValue);
 								}
@@ -813,7 +813,8 @@ public class SimpleEvaluationStrategy implements EvaluationStrategy {
 		OrderComparator cmp = new OrderComparator(this, node, vcmp);
 		boolean reduced = isReducedOrDistinct(node);
 		long limit = getLimit(node);
-		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced, iterationCacheSyncThreshold);
+		return new OrderIterator(evaluate(node.getArg(), bindings), cmp, limit, reduced,
+				iterationCacheSyncThreshold);
 	}
 
 	public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(BinaryTupleOperator expr,
@@ -1596,11 +1597,8 @@ public class SimpleEvaluationStrategy implements EvaluationStrategy {
 	public Value evaluate(FunctionCall node, BindingSet bindings)
 		throws ValueExprEvaluationException, QueryEvaluationException
 	{
-		Function function = FunctionRegistry.getInstance().get(node.getURI());
-
-		if (function == null) {
-			throw new QueryEvaluationException("Unknown function '" + node.getURI() + "'");
-		}
+		Function function = FunctionRegistry.getInstance().get(node.getURI()).orElseThrow(
+				() -> new QueryEvaluationException("Unknown function '" + node.getURI() + "'"));
 
 		// the NOW function is a special case as it needs to keep a shared return
 		// value for the duration of the query.

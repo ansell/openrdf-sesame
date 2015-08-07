@@ -19,6 +19,7 @@ package org.openrdf.rio.turtle;
 import junit.framework.TestCase;
 
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.Rio;
 
 /**
  * @author James Leigh
@@ -26,15 +27,23 @@ import org.openrdf.rio.RDFFormat;
 public class TurtleMimeTypeTest extends TestCase {
 
 	public void testTextTurtle() {
-		assertEquals(RDFFormat.TURTLE, RDFFormat.forMIMEType("text/turtle"));
+		assertEquals(
+				RDFFormat.TURTLE,
+				Rio.getParserFormatForMIMEType("text/turtle").orElseThrow(Rio.unsupportedFormat(RDFFormat.TURTLE)));
 	}
 
 	public void testTextTurtleUtf8() {
-		assertEquals(RDFFormat.TURTLE, RDFFormat.forMIMEType("text/turtle;charset=UTF-8"));
+		assertEquals(
+				RDFFormat.TURTLE,
+				Rio.getParserFormatForMIMEType("text/turtle;charset=UTF-8").orElseThrow(
+						Rio.unsupportedFormat(RDFFormat.TURTLE)));
 	}
 
 	public void testApplicationXTurtle() {
-		assertEquals(RDFFormat.TURTLE, RDFFormat.forMIMEType("application/x-turtle"));
+		assertEquals(
+				RDFFormat.TURTLE,
+				Rio.getParserFormatForMIMEType("application/x-turtle").orElseThrow(
+						Rio.unsupportedFormat(RDFFormat.TURTLE)));
 	}
 
 }

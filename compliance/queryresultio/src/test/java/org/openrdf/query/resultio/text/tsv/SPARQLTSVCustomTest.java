@@ -85,7 +85,7 @@ public class SPARQLTSVCustomTest {
 		throws IOException, TupleQueryResultHandlerException, QueryEvaluationException
 	{
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		QueryResultIO.write(tqr, TupleQueryResultFormat.TSV, output);
+		QueryResultIO.writeTuple(tqr, TupleQueryResultFormat.TSV, output);
 		String result = new String(output.toByteArray(), Charset.forName("UTF-8"));
 		return result;
 	}

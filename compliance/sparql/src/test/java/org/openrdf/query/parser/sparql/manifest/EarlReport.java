@@ -28,7 +28,6 @@ import junit.framework.TestResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
@@ -48,6 +47,7 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
+import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -66,7 +66,7 @@ public class EarlReport {
 	protected static Resource asserterNode;
 
 	private static Logger logger = LoggerFactory.getLogger(EarlReport.class);
-	
+
 	public static void main(String[] args)
 		throws Exception
 	{
@@ -104,19 +104,20 @@ public class EarlReport {
 
 		logger.info("running query evaluation tests..");
 		W3CApprovedSPARQL11QueryTest.suite().run(testResult);
-		
+
 		logger.info("running syntax tests...");
 		W3CApprovedSPARQL11SyntaxTest.suite().run(testResult);
-		
+
 		logger.info("running update tests...");
 		W3CApprovedSPARQL11UpdateTest.suite().run(testResult);
 		logger.info("tests complete, generating EARL report...");
-		
+
 		con.commit();
 
-		RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(RDFFormat.TURTLE);
-		File outFile = File.createTempFile("sesame-sparql-compliance", "."
-				+ RDFFormat.TURTLE.getDefaultFileExtension());
+		RDFWriterFactory factory = RDFWriterRegistry.getInstance().get(RDFFormat.TURTLE).orElseThrow(
+				Rio.unsupportedFormat(RDFFormat.TURTLE));
+		File outFile = File.createTempFile("sesame-sparql-compliance",
+				"." + RDFFormat.TURTLE.getDefaultFileExtension());
 		FileOutputStream out = new FileOutputStream(outFile);
 		try {
 			con.export(factory.getWriter(out));

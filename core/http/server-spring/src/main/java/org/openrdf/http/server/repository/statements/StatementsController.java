@@ -123,7 +123,9 @@ public class StatementsController extends AbstractController {
 				logger.info("POST transaction to repository");
 				result = getTransactionResultResult(repository, request, response);
 			}
-			else if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType) || request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME)) {
+			else if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType)
+					|| request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME))
+			{
 				logger.info("POST SPARQL update request to repository");
 				result = getSparqlUpdateResult(repository, request, response);
 			}
@@ -155,7 +157,7 @@ public class StatementsController extends AbstractController {
 		ProtocolUtil.logRequestParameters(request);
 
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
-		
+
 		String sparqlUpdateString;
 		if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType)) {
 			// The query should be the entire body
@@ -165,7 +167,8 @@ public class StatementsController extends AbstractController {
 			catch (IOException e) {
 				throw new ClientHTTPException(SC_BAD_REQUEST, "Error reading request message body", e);
 			}
-			if (sparqlUpdateString.isEmpty()) sparqlUpdateString = null;
+			if (sparqlUpdateString.isEmpty())
+				sparqlUpdateString = null;
 		}
 		else {
 			sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
@@ -407,16 +410,15 @@ public class StatementsController extends AbstractController {
 
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
 
-		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType);
-		if (rdfFormat == null) {
-			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType);
-		}
+		RDFFormat rdfFormat = Rio.getParserFormatForMIMEType(mimeType).orElseThrow(
+				() -> new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported MIME type: " + mimeType));
 
 		ValueFactory vf = repository.getValueFactory();
 
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		IRI baseURI = ProtocolUtil.parseURIParam(request, BASEURI_PARAM_NAME, vf);
-		final boolean preserveNodeIds = ProtocolUtil.parseBooleanParam(request, Protocol.PRESERVE_BNODE_ID_PARAM_NAME, false);
+		final boolean preserveNodeIds = ProtocolUtil.parseBooleanParam(request,
+				Protocol.PRESERVE_BNODE_ID_PARAM_NAME, false);
 
 		if (baseURI == null) {
 			baseURI = vf.createIRI("foo:bar");
@@ -430,11 +432,11 @@ public class StatementsController extends AbstractController {
 				if (!repositoryCon.isActive()) {
 					repositoryCon.begin();
 				}
-				
+
 				if (preserveNodeIds) {
 					repositoryCon.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 				}
-				
+
 				if (replaceCurrent) {
 					repositoryCon.clear(contexts);
 				}
