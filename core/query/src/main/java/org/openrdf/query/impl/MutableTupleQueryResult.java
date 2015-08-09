@@ -49,7 +49,7 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 
 	private Set<String> bindingNames = new LinkedHashSet<String>();
 
-	private List<BindingSet> bindingSets = new LinkedList<BindingSet>();
+	private List<BindingSet> bindingSets = new ArrayList<BindingSet>();
 
 	/**
 	 * The index of the next element that will be returned by a call to
