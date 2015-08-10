@@ -20,7 +20,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -104,12 +107,20 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			}
 
 			// sizes are equal. compare on binding names
-			if (!o2.getBindingNames().equals(o1.getBindingNames())) {
-				if (!o2.getBindingNames().containsAll(o1.getBindingNames())) {
-					return -1;
-				}
-				if (!o1.getBindingNames().containsAll(o2.getBindingNames())) {
-					return 1;
+			if (!o1.getBindingNames().equals(o2.getBindingNames())) {
+				final ArrayList<String> o1bindingNamesOrdered = new ArrayList<String>(o1.getBindingNames());
+				Collections.sort(o1bindingNamesOrdered);
+				
+				final ArrayList<String> o2bindingNamesOrdered = new ArrayList<String>(o2.getBindingNames());
+				Collections.sort(o2bindingNamesOrdered);
+
+				for (int i = 0; i < o1bindingNamesOrdered.size(); i++) {
+					String o1bn = o1bindingNamesOrdered.get(i);
+					String o2bn = o2bindingNamesOrdered.get(i);
+					int compare = o1bn.compareTo(o2bn);
+					if (compare != 0) {
+						return compare;
+					}
 				}
 			}
 

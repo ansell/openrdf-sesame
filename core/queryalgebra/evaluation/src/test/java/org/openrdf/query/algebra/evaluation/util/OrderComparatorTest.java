@@ -27,6 +27,7 @@ import org.junit.Test;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
@@ -35,6 +36,7 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 
@@ -161,6 +163,17 @@ public class OrderComparatorTest {
 		cmp.setIterator(Arrays.asList(POS).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) < 0);
+	}
+	
+	@Test
+	public void testDisjunctBindingNames() throws Exception {
+		OrderComparator sud = new OrderComparator(strategy, order, cmp);
+		QueryBindingSet a = new QueryBindingSet();
+		QueryBindingSet b = new QueryBindingSet();
+		a.addBinding("a", ValueFactoryImpl.getInstance().createLiteral("a"));
+		b.addBinding("b", ValueFactoryImpl.getInstance().createLiteral("b"));
+		assertTrue(sud.compare(a, b) != 0);
+		assertTrue(sud.compare(a, b) != sud.compare(b, a));
 	}
 
 	@Before
