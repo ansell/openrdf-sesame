@@ -19,9 +19,7 @@ package org.openrdf.query.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -49,7 +47,7 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 
 	private Set<String> bindingNames = new LinkedHashSet<String>();
 
-	private List<BindingSet> bindingSets = new LinkedList<BindingSet>();
+	private List<BindingSet> bindingSets = new ArrayList<BindingSet>();
 
 	/**
 	 * The index of the next element that will be returned by a call to
@@ -266,7 +264,7 @@ public class MutableTupleQueryResult implements TupleQueryResult, Cloneable {
 	{
 		MutableTupleQueryResult clone = (MutableTupleQueryResult)super.clone();
 		clone.bindingNames = new LinkedHashSet<String>(bindingNames);
-		clone.bindingSets = new LinkedList<BindingSet>(bindingSets);
+		clone.bindingSets = new ArrayList<BindingSet>(bindingSets);
 		return clone;
 	}
 
