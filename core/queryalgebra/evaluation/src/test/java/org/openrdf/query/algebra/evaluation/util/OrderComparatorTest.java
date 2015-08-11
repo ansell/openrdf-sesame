@@ -194,6 +194,19 @@ public class OrderComparatorTest {
 		assertTrue(sud.compare(a, b) != 0);
 		assertTrue(sud.compare(a, b) != sud.compare(b, a));
 	}
+	
+	@Test 
+	public void testEqualBindingNamesUnequalValues() {
+		OrderComparator sud = new OrderComparator(strategy, order, new ValueComparator());
+		QueryBindingSet a = new QueryBindingSet();
+		QueryBindingSet b = new QueryBindingSet();
+		a.addBinding("a", ValueFactoryImpl.getInstance().createLiteral("ab"));
+		a.addBinding("b", ValueFactoryImpl.getInstance().createLiteral("b"));
+		b.addBinding("b", ValueFactoryImpl.getInstance().createLiteral("b"));
+		b.addBinding("a", ValueFactoryImpl.getInstance().createLiteral("ac"));
+		assertTrue(sud.compare(a, b) < 0);
+		assertTrue(sud.compare(a, b) != sud.compare(b, a));
+	}
 
 	@Before
 	public void setUp()

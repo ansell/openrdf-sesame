@@ -105,10 +105,13 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 				return o1.size() < o2.size() ? 1 : -1;
 			}
 
-			// sizes are equal. compare on binding names
+			// we create an ordered list of binding names (using natural string order) to use for 
+			// consistent iteration over binding names and binding values.
+			final ArrayList<String> o1bindingNamesOrdered = new ArrayList<String>(o1.getBindingNames());
+			Collections.sort(o1bindingNamesOrdered);
+		
+			// binding set sizes are equal. compare on binding names.
 			if (!o1.getBindingNames().equals(o2.getBindingNames())) {
-				final ArrayList<String> o1bindingNamesOrdered = new ArrayList<String>(o1.getBindingNames());
-				Collections.sort(o1bindingNamesOrdered);
 
 				final ArrayList<String> o2bindingNamesOrdered = new ArrayList<String>(o2.getBindingNames());
 				Collections.sort(o2bindingNamesOrdered);
@@ -123,10 +126,10 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 				}
 			}
 
-			// binding names equal. compare on all values
-			for (Binding o1binding : o1) {
-				final Value v1 = o1binding.getValue();
-				final Value v2 = o2.getValue(o1binding.getName());
+			// binding names equal. compare on all values.
+			for (String bindingName: o1bindingNamesOrdered) {
+				final Value v1 = o1.getValue(bindingName);
+				final Value v2 = o2.getValue(bindingName);
 
 				final int compare = cmp.compare(v1, v2);
 				if (compare != 0) {
