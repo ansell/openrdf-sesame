@@ -10,6 +10,11 @@
 *.txt text
 *.html text
 *.xml text
+*.css text
+*.tld text
+*.ts text
+*.js text
+*.tag text
 *.sh text
 
 # dos batch files should retain windows line endings
