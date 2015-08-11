@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -72,7 +71,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 	}
 
 	public int compare(BindingSet o1, BindingSet o2) {
-		
+
 		try {
 
 			for (OrderElem element : order.getElements()) {
@@ -92,7 +91,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			// contract of java.util.Comparator). We order by
 			// size first, then by binding names, then finally by values.
 
-			// null check 
+			// null check
 			if (o1 == null || o2 == null) {
 				if (o1 == null) {
 					return o2 == null ? 0 : 1;
@@ -101,7 +100,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 					return o1 == null ? 0 : -1;
 				}
 			}
-			
+
 			if (o2.size() != o1.size()) {
 				return o1.size() < o2.size() ? 1 : -1;
 			}
@@ -110,7 +109,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			if (!o1.getBindingNames().equals(o2.getBindingNames())) {
 				final ArrayList<String> o1bindingNamesOrdered = new ArrayList<String>(o1.getBindingNames());
 				Collections.sort(o1bindingNamesOrdered);
-				
+
 				final ArrayList<String> o2bindingNamesOrdered = new ArrayList<String>(o2.getBindingNames());
 				Collections.sort(o2bindingNamesOrdered);
 
@@ -157,12 +156,14 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			return null;
 		}
 	}
-	
-	private void writeObject(ObjectOutputStream out) throws IOException {
+
+	private void writeObject(ObjectOutputStream out)
+		throws IOException
+	{
 		this.strategyKey = EvaluationStrategies.register(strategy);
 		out.defaultWriteObject();
 	}
-	
+
 	private void readObject(ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
