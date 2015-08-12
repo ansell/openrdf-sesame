@@ -54,7 +54,7 @@ public class ParseErrorCollector implements ParseErrorListener {
 	/**
 	 * @return An unmodifiable list of strings representing warnings that were
 	 *         received using the
-	 *         {@link ParseErrorListener#warning(String, int, int)} interface.
+	 *         {@link ParseErrorListener#warning(String, long, long)} interface.
 	 */
 	public List<String> getWarnings() {
 		return Collections.unmodifiableList(warnings);
@@ -63,7 +63,7 @@ public class ParseErrorCollector implements ParseErrorListener {
 	/**
 	 * @return An unmodifiable list of strings representing potential errors
 	 *         that were received using the
-	 *         {@link ParseErrorListener#error(String, int, int)} interface.
+	 *         {@link ParseErrorListener#error(String, long, long)} interface.
 	 */
 	public List<String> getErrors() {
 		return Collections.unmodifiableList(errors);
@@ -72,7 +72,7 @@ public class ParseErrorCollector implements ParseErrorListener {
 	/**
 	 * @return An unmodifiable list of strings representing fatal errors that
 	 *         were received using the
-	 *         {@link ParseErrorListener#fatalError(String, int, int)}
+	 *         {@link ParseErrorListener#fatalError(String, long, long)}
 	 *         interface.
 	 */
 	public List<String> getFatalErrors() {

@@ -68,8 +68,8 @@ public class RDFParserHelper {
 	 *        respectively.
 	 * @param errListener
 	 *        The {@link ParseErrorListener} to use for signalling errors. This
-	 *        will be called if a setting is enabled by setting it to true in
-	 *        the {@link ParserConfig}, after which the error may trigger an
+	 *        will be called if a setting is enabled by setting it to true in the
+	 *        {@link ParserConfig}, after which the error may trigger an
 	 *        {@link RDFParseException} if the setting is not present in
 	 *        {@link ParserConfig#getNonFatalErrors()}.
 	 * @param valueFactory
@@ -112,8 +112,8 @@ public class RDFParserHelper {
 	 *        respectively.
 	 * @param errListener
 	 *        The {@link ParseErrorListener} to use for signalling errors. This
-	 *        will be called if a setting is enabled by setting it to true in
-	 *        the {@link ParserConfig}, after which the error may trigger an
+	 *        will be called if a setting is enabled by setting it to true in the
+	 *        {@link ParserConfig}, after which the error may trigger an
 	 *        {@link RDFParseException} if the setting is not present in
 	 *        {@link ParserConfig#getNonFatalErrors()}.
 	 * @param valueFactory
@@ -121,14 +121,14 @@ public class RDFParserHelper {
 	 *        using this method.
 	 * @param lineNo
 	 *        Optional line number, should default to setting this as -1 if not
-	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
-	 *        and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        known. Used for
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param columnNo
-	 *        Optional column number, should default to setting this as -1 if
-	 *        not known. Used for
-	 *        {@link ParseErrorListener#error(String, int, int)} and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @return A {@link Literal} created based on the given parameters.
 	 * @throws RDFParseException
 	 *         If there was an error during the process that could not be
@@ -155,117 +155,114 @@ public class RDFParserHelper {
 		if (workingLang.isPresent() && (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype))) {
 			boolean recognisedLanguage = false;
 			for (LanguageHandler nextHandler : parserConfig.get(BasicParserSettings.LANGUAGE_HANDLERS)) {
-			if (nextHandler.isRecognizedLanguage(workingLang.get())) {
-				recognisedLanguage = true;
-				if (parserConfig.get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
-					try {
-						if (!nextHandler.verifyLanguage(workingLabel, workingLang.get())) {
-						reportError("'" + lang + "' is not a valid language tag ", lineNo, columnNo,
-								BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig, errListener);
+				if (nextHandler.isRecognizedLanguage(workingLang.get())) {
+					recognisedLanguage = true;
+					if (parserConfig.get(BasicParserSettings.VERIFY_LANGUAGE_TAGS)) {
+						try {
+							if (!nextHandler.verifyLanguage(workingLabel, workingLang.get())) {
+								reportError("'" + lang + "' is not a valid language tag ", lineNo, columnNo,
+										BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig, errListener);
+							}
+						}
+						catch (LiteralUtilException e) {
+							reportError(
+									"'" + label
+											+ " could not be verified by a language handler that recognised it. language was "
+											+ lang,
+									lineNo, columnNo, BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig,
+									errListener);
 						}
 					}
-					catch (LiteralUtilException e) {
-						reportError(
-							"'" + label
-									+ " could not be verified by a language handler that recognised it. language was "
-									+ lang,
-							lineNo, columnNo, BasicParserSettings.VERIFY_LANGUAGE_TAGS, parserConfig,
-							errListener);
+					if (parserConfig.get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
+						try {
+							result = nextHandler.normalizeLanguage(workingLabel, workingLang.get(), valueFactory);
+							workingLabel = result.getLabel();
+							workingLang = result.getLanguage();
+							workingDatatype = result.getDatatype();
+						}
+						catch (LiteralUtilException e) {
+							reportError(
+									"'" + label + "' did not have a valid value for language " + lang + ": "
+											+ e.getMessage() + " and could not be normalised",
+									lineNo, columnNo, BasicParserSettings.NORMALIZE_LANGUAGE_TAGS, parserConfig,
+									errListener);
+						}
 					}
 				}
-				if (parserConfig.get(BasicParserSettings.NORMALIZE_LANGUAGE_TAGS)) {
-					try {
-						result = nextHandler.normalizeLanguage(workingLabel, workingLang.get(), valueFactory);
-						workingLabel = result.getLabel();
-						workingLang = result.getLanguage();
-						workingDatatype = result.getDatatype();
-					}
-					catch (LiteralUtilException e) {
-						reportError(
-							"'" + label + "' did not have a valid value for language " + lang + ": "
-									+ e.getMessage() + " and could not be normalised",
-							lineNo, columnNo, BasicParserSettings.NORMALIZE_LANGUAGE_TAGS, parserConfig,
-							errListener);
-					}
-				}
-			}
 			}
 			if (!recognisedLanguage) {
-			reportError(
-					"'" + label
-							+ "' was not recognised as a language literal, and could not be verified, with language "
-							+ lang,
-					lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, parserConfig,
-					errListener);
+				reportError(
+						"'" + label
+								+ "' was not recognised as a language literal, and could not be verified, with language "
+								+ lang,
+						lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_LANGUAGES, parserConfig, errListener);
 			}
 		}
 		else if (workingDatatype != null) {
 			boolean recognisedDatatype = false;
 			for (DatatypeHandler nextHandler : parserConfig.get(BasicParserSettings.DATATYPE_HANDLERS)) {
-			if (nextHandler.isRecognizedDatatype(workingDatatype)) {
-				recognisedDatatype = true;
-				if (parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
-					try {
-						if (!nextHandler.verifyDatatype(workingLabel, workingDatatype)) {
-						reportError("'" + label + "' is not a valid value for datatype " + datatype, lineNo,
-								columnNo, BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig,
-								errListener);
+				if (nextHandler.isRecognizedDatatype(workingDatatype)) {
+					recognisedDatatype = true;
+					if (parserConfig.get(BasicParserSettings.VERIFY_DATATYPE_VALUES)) {
+						try {
+							if (!nextHandler.verifyDatatype(workingLabel, workingDatatype)) {
+								reportError("'" + label + "' is not a valid value for datatype " + datatype, lineNo,
+										columnNo, BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig,
+										errListener);
+							}
+						}
+						catch (LiteralUtilException e) {
+							reportError(
+									"'" + label
+											+ " could not be verified by a datatype handler that recognised it. datatype was "
+											+ datatype,
+									lineNo, columnNo, BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig,
+									errListener);
 						}
 					}
-					catch (LiteralUtilException e) {
-						reportError(
-							"'" + label
-									+ " could not be verified by a datatype handler that recognised it. datatype was "
-									+ datatype,
-							lineNo, columnNo, BasicParserSettings.VERIFY_DATATYPE_VALUES, parserConfig,
-							errListener);
+					if (parserConfig.get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
+						try {
+							result = nextHandler.normalizeDatatype(workingLabel, workingDatatype, valueFactory);
+							workingLabel = result.getLabel();
+							workingLang = result.getLanguage();
+							workingDatatype = result.getDatatype();
+						}
+						catch (LiteralUtilException e) {
+							reportError(
+									"'" + label + "' is not a valid value for datatype " + datatype + ": "
+											+ e.getMessage() + " and could not be normalised",
+									lineNo, columnNo, BasicParserSettings.NORMALIZE_DATATYPE_VALUES, parserConfig,
+									errListener);
+						}
 					}
 				}
-				if (parserConfig.get(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
-					try {
-						result = nextHandler.normalizeDatatype(workingLabel, workingDatatype, valueFactory);
-						workingLabel = result.getLabel();
-						workingLang = result.getLanguage();
-						workingDatatype = result.getDatatype();
-					}
-					catch (LiteralUtilException e) {
-						reportError(
-							"'" + label + "' is not a valid value for datatype " + datatype + ": "
-									+ e.getMessage() + " and could not be normalised",
-							lineNo, columnNo, BasicParserSettings.NORMALIZE_DATATYPE_VALUES, parserConfig,
-							errListener);
-					}
-				}
-			}
 			}
 			if (!recognisedDatatype) {
-			reportError(
-					"'" + label + "' was not recognised, and could not be verified, with datatype "
-							+ datatype,
-					lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, parserConfig,
-					errListener);
+				reportError(
+						"'" + label + "' was not recognised, and could not be verified, with datatype " + datatype,
+						lineNo, columnNo, BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, parserConfig, errListener);
 			}
 
 		}
 
 		if (result == null) {
 			try {
-			// Backup for unnormalised language literal creation
-			if (workingLang.isPresent()
-					&& (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype)))
-			{
-				result = valueFactory.createLiteral(workingLabel, workingLang.get());
-			}
-			// Backup for unnormalised datatype literal creation
-			else if (workingDatatype != null) {
-				result = valueFactory.createLiteral(workingLabel, workingDatatype);
-			}
-			else {
-				result = valueFactory.createLiteral(workingLabel, XMLSchema.STRING);
-			}
+				// Backup for unnormalised language literal creation
+				if (workingLang.isPresent()
+						&& (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype)))
+				{
+					result = valueFactory.createLiteral(workingLabel, workingLang.get());
+				}
+				// Backup for unnormalised datatype literal creation
+				else if (workingDatatype != null) {
+					result = valueFactory.createLiteral(workingLabel, workingDatatype);
+				}
+				else {
+					result = valueFactory.createLiteral(workingLabel, XMLSchema.STRING);
+				}
 			}
 			catch (Exception e) {
-			reportFatalError(e, lineNo, columnNo, errListener);
+				reportFatalError(e, lineNo, columnNo, errListener);
 			}
 		}
 
@@ -273,20 +270,20 @@ public class RDFParserHelper {
 	}
 
 	/**
-	 * Reports an error with associated line- and column number to the
-	 * registered ParseErrorListener, if the given setting has been set to true.
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
 	 * <p>
 	 * This method also throws an {@link RDFParseException} when the given
 	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
 	 * @param msg
 	 *        The message to use for
-	 *        {@link ParseErrorListener#error(String, int, int)} and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param relevantSetting
-	 *        The boolean setting that will be checked to determine if this is
-	 *        an issue that we need to look at at all. If this setting is true,
-	 *        then the error listener will receive the error, and if
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
 	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
 	 *        exception will be thrown.
 	 * @param parserConfig
@@ -310,30 +307,30 @@ public class RDFParserHelper {
 	}
 
 	/**
-	 * Reports an error with associated line- and column number to the
-	 * registered ParseErrorListener, if the given setting has been set to true.
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
 	 * <p>
 	 * This method also throws an {@link RDFParseException} when the given
 	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
 	 * @param msg
 	 *        The message to use for
-	 *        {@link ParseErrorListener#error(String, int, int)} and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param lineNo
 	 *        Optional line number, should default to setting this as -1 if not
-	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
-	 *        and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        known. Used for
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param columnNo
-	 *        Optional column number, should default to setting this as -1 if
-	 *        not known. Used for
-	 *        {@link ParseErrorListener#error(String, int, int)} and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param relevantSetting
-	 *        The boolean setting that will be checked to determine if this is
-	 *        an issue that we need to look at at all. If this setting is true,
-	 *        then the error listener will receive the error, and if
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
 	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
 	 *        exception will be thrown.
 	 * @param parserConfig
@@ -349,46 +346,46 @@ public class RDFParserHelper {
 	 *         the given setting.
 	 * @since 2.7.1
 	 */
-	public static void reportError(String msg, long lineNo, long columnNo,
-			RioSetting<Boolean> relevantSetting, ParserConfig parserConfig, ParseErrorListener errListener)
+	public static void reportError(String msg, long lineNo, long columnNo, RioSetting<Boolean> relevantSetting,
+			ParserConfig parserConfig, ParseErrorListener errListener)
 				throws RDFParseException
 	{
 		if (parserConfig.get(relevantSetting)) {
 			if (errListener != null) {
-			errListener.error(msg, lineNo, columnNo);
+				errListener.error(msg, lineNo, columnNo);
 			}
 
 			if (!parserConfig.isNonFatalError(relevantSetting)) {
-			throw new RDFParseException(msg, lineNo, columnNo);
+				throw new RDFParseException(msg, lineNo, columnNo);
 			}
 		}
 	}
 
 	/**
-	 * Reports an error with associated line- and column number to the
-	 * registered ParseErrorListener, if the given setting has been set to true.
+	 * Reports an error with associated line- and column number to the registered
+	 * ParseErrorListener, if the given setting has been set to true.
 	 * <p>
 	 * This method also throws an {@link RDFParseException} when the given
 	 * setting has been set to <tt>true</tt> and it is not a nonFatalError.
 	 * 
 	 * @param e
 	 *        The exception whose message to use for
-	 *        {@link ParseErrorListener#error(String, int, int)} and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param lineNo
 	 *        Optional line number, should default to setting this as -1 if not
-	 *        known. Used for {@link ParseErrorListener#error(String, int, int)}
-	 *        and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        known. Used for
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param columnNo
-	 *        Optional column number, should default to setting this as -1 if
-	 *        not known. Used for
-	 *        {@link ParseErrorListener#error(String, int, int)} and for
-	 *        {@link RDFParseException#RDFParseException(String, int, int)}.
+	 *        Optional column number, should default to setting this as -1 if not
+	 *        known. Used for
+	 *        {@link ParseErrorListener#error(String, long, long)} and for
+	 *        {@link RDFParseException#RDFParseException(String, long, long)}.
 	 * @param relevantSetting
-	 *        The boolean setting that will be checked to determine if this is
-	 *        an issue that we need to look at at all. If this setting is true,
-	 *        then the error listener will receive the error, and if
+	 *        The boolean setting that will be checked to determine if this is an
+	 *        issue that we need to look at at all. If this setting is true, then
+	 *        the error listener will receive the error, and if
 	 *        {@link ParserConfig#isNonFatalError(RioSetting)} returns true an
 	 *        exception will be thrown.
 	 * @param parserConfig
@@ -410,16 +407,16 @@ public class RDFParserHelper {
 	{
 		if (parserConfig.get(relevantSetting)) {
 			if (errListener != null) {
-			errListener.error(e.getMessage(), lineNo, columnNo);
+				errListener.error(e.getMessage(), lineNo, columnNo);
 			}
 
 			if (!parserConfig.isNonFatalError(relevantSetting)) {
-			if (e instanceof RDFParseException) {
-				throw (RDFParseException)e;
-			}
-			else {
-				throw new RDFParseException(e, lineNo, columnNo);
-			}
+				if (e instanceof RDFParseException) {
+					throw (RDFParseException)e;
+				}
+				else {
+					throw new RDFParseException(e, lineNo, columnNo);
+				}
 			}
 		}
 	}
@@ -427,8 +424,8 @@ public class RDFParserHelper {
 	/**
 	 * Reports a fatal error to the registered ParseErrorListener, if any, and
 	 * throws a <tt>ParseException</tt> afterwards. This method simply calls
-	 * {@link #reportFatalError(String, int, int, ParseErrorListener)} supplying
-	 * <tt>-1</tt> for the line- and column number.
+	 * {@link #reportFatalError(String, long, long, ParseErrorListener)}
+	 * supplying <tt>-1</tt> for the line- and column number.
 	 * 
 	 * @since 2.7.1
 	 */
@@ -445,9 +442,8 @@ public class RDFParserHelper {
 	 * 
 	 * @since 2.7.1
 	 */
-	public static void reportFatalError(String msg, long lineNo, long columnNo,
-			ParseErrorListener errListener)
-				throws RDFParseException
+	public static void reportFatalError(String msg, long lineNo, long columnNo, ParseErrorListener errListener)
+		throws RDFParseException
 	{
 		if (errListener != null) {
 			errListener.fatalError(msg, lineNo, columnNo);
@@ -461,12 +457,11 @@ public class RDFParserHelper {
 	 * throws a <tt>ParseException</tt> afterwards. An exception is made for the
 	 * case where the supplied exception is a {@link RDFParseException}; in that
 	 * case the supplied exception is not wrapped in another ParseException and
-	 * the error message is not reported to the ParseErrorListener, assuming
-	 * that it has already been reported when the original ParseException was
-	 * thrown.
+	 * the error message is not reported to the ParseErrorListener, assuming that
+	 * it has already been reported when the original ParseException was thrown.
 	 * <p>
 	 * This method simply calls
-	 * {@link #reportFatalError(Exception, int, int, ParseErrorListener)}
+	 * {@link #reportFatalError(Exception, long, long, ParseErrorListener)}
 	 * supplying <tt>-1</tt> for the line- and column number.
 	 * 
 	 * @since 2.7.1
@@ -483,9 +478,9 @@ public class RDFParserHelper {
 	 * <tt>ParseException</tt> wrapped the supplied exception afterwards. An
 	 * exception is made for the case where the supplied exception is a
 	 * {@link RDFParseException}; in that case the supplied exception is not
-	 * wrapped in another ParseException and the error message is not reported
-	 * to the ParseErrorListener, assuming that it has already been reported
-	 * when the original ParseException was thrown.
+	 * wrapped in another ParseException and the error message is not reported to
+	 * the ParseErrorListener, assuming that it has already been reported when
+	 * the original ParseException was thrown.
 	 * 
 	 * @since 2.7.1
 	 */
@@ -498,7 +493,7 @@ public class RDFParserHelper {
 		}
 		else {
 			if (errListener != null) {
-			errListener.fatalError(e.getMessage(), lineNo, columnNo);
+				errListener.fatalError(e.getMessage(), lineNo, columnNo);
 			}
 
 			throw new RDFParseException(e, lineNo, columnNo);
