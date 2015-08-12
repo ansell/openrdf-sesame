@@ -21,6 +21,6 @@ package org.openrdf.rio.helpers;
  * @author Jeen Broekstra
  */
 @Deprecated
-public abstract class RDFHandlerBase extends AbstractRDFHandler {
+public class RDFHandlerBase extends AbstractRDFHandler {
 
 }
