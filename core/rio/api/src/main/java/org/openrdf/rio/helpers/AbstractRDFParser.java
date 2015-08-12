@@ -490,7 +490,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 * @see org.openrdf.rio.helpers.RDFParserHelper#createLiteral(String, String,
 	 *      IRI, ParserConfig, ParseErrorListener, ValueFactory, int, int)
 	 */
-	protected Literal createLiteral(String label, String lang, IRI datatype, int lineNo, int columnNo)
+	protected Literal createLiteral(String label, String lang, IRI datatype, long lineNo, long columnNo)
 		throws RDFParseException
 	{
 		return RDFParserHelper.createLiteral(label, lang, datatype, getParserConfig(), getParseErrorListener(),
@@ -531,7 +531,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 * Reports the specified line- and column number to the registered
 	 * {@link ParseLocationListener}, if any.
 	 */
-	protected void reportLocation(int lineNo, int columnNo) {
+	protected void reportLocation(long lineNo, long columnNo) {
 		if (locationListener != null) {
 			locationListener.parseLocationUpdate(lineNo, columnNo);
 		}
@@ -550,7 +550,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 * Reports a warning with associated line- and column number to the
 	 * registered ParseErrorListener, if any.
 	 */
-	protected void reportWarning(String msg, int lineNo, int columnNo) {
+	protected void reportWarning(String msg, long lineNo, long columnNo) {
 		if (errListener != null) {
 			errListener.warning(msg, lineNo, columnNo);
 		}
@@ -616,7 +616,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
 	 *         the given setting.
 	 */
-	protected void reportError(String msg, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
+	protected void reportError(String msg, long lineNo, long columnNo, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
 		RDFParserHelper.reportError(msg, lineNo, columnNo, relevantSetting, getParserConfig(),
@@ -655,7 +655,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 *         {@link ParserConfig#isNonFatalError(RioSetting)} returns true for
 	 *         the given setting.
 	 */
-	protected void reportError(Exception e, int lineNo, int columnNo, RioSetting<Boolean> relevantSetting)
+	protected void reportError(Exception e, long lineNo, long columnNo, RioSetting<Boolean> relevantSetting)
 		throws RDFParseException
 	{
 		RDFParserHelper.reportError(e, lineNo, columnNo, relevantSetting, getParserConfig(),
@@ -679,7 +679,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 * registered ParseErrorListener, if any, and throws a
 	 * <tt>ParseException</tt> afterwards.
 	 */
-	protected void reportFatalError(String msg, int lineNo, int columnNo)
+	protected void reportFatalError(String msg, long lineNo, long columnNo)
 		throws RDFParseException
 	{
 		RDFParserHelper.reportFatalError(msg, lineNo, columnNo, getParseErrorListener());
@@ -712,7 +712,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 * the ParseErrorListener, assuming that it has already been reported when
 	 * the original ParseException was thrown.
 	 */
-	protected void reportFatalError(Exception e, int lineNo, int columnNo)
+	protected void reportFatalError(Exception e, long lineNo, long columnNo)
 		throws RDFParseException
 	{
 		RDFParserHelper.reportFatalError(e, lineNo, columnNo, getParseErrorListener());

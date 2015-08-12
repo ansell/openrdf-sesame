@@ -32,17 +32,17 @@ public class ParseErrorLogger implements ParseErrorListener {
 	private final Logger logger = LoggerFactory.getLogger(ParseErrorLogger.class);
 
 	@Override
-	public void warning(String msg, int lineNo, int colNo) {
+	public void warning(String msg, long lineNo, long colNo) {
 		logger.warn(msg + " (" + lineNo + ", " + colNo + ")");
 	}
 
 	@Override
-	public void error(String msg, int lineNo, int colNo) {
+	public void error(String msg, long lineNo, long colNo) {
 		logger.warn("[Rio error] " + msg + " (" + lineNo + ", " + colNo + ")");
 	}
 
 	@Override
-	public void fatalError(String msg, int lineNo, int colNo) {
+	public void fatalError(String msg, long lineNo, long colNo) {
 		logger.error("[Rio fatal] " + msg + " (" + lineNo + ", " + colNo + ")");
 	}
 

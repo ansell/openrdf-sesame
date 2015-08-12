@@ -30,9 +30,9 @@ public class RDFParseException extends OpenRDFException {
 
 	private static final long serialVersionUID = -4686126837948873012L;
 
-	private final int lineNo;
+	private final long lineNo;
 
-	private final int columnNo;
+	private final long columnNo;
 
 	/*--------------*
 	 * Constructors *
@@ -58,7 +58,7 @@ public class RDFParseException extends OpenRDFException {
 	 * @param columnNo
 	 *        A column number associated with the message.
 	 */
-	public RDFParseException(String msg, int lineNo, int columnNo) {
+	public RDFParseException(String msg, long lineNo, long columnNo) {
 		super(msg + getLocationString(lineNo, columnNo));
 		this.lineNo = lineNo;
 		this.columnNo = columnNo;
@@ -103,7 +103,7 @@ public class RDFParseException extends OpenRDFException {
 	 * @param columnNo
 	 *        A column number associated with the message.
 	 */
-	public RDFParseException(Throwable t, int lineNo, int columnNo) {
+	public RDFParseException(Throwable t, long lineNo, long columnNo) {
 		super(t.getMessage() + getLocationString(lineNo, columnNo), t);
 		this.lineNo = lineNo;
 		this.columnNo = columnNo;
@@ -122,7 +122,7 @@ public class RDFParseException extends OpenRDFException {
 	 *        A column number associated with the message.
 	 * @since 2.7.0
 	 */
-	public RDFParseException(String msg, Throwable t, int lineNo, int columnNo) {
+	public RDFParseException(String msg, Throwable t, long lineNo, long columnNo) {
 		super(msg + getLocationString(lineNo, columnNo), t);
 		this.lineNo = lineNo;
 		this.columnNo = columnNo;
@@ -135,9 +135,10 @@ public class RDFParseException extends OpenRDFException {
 	/**
 	 * Gets the line number associated with this parse exception.
 	 * 
-	 * @return A line number, or -1 if no line number is available or applicable.
+	 * @return A line number, or -1 if no line number is available or
+	 *         applicable.
 	 */
-	public int getLineNumber() {
+	public long getLineNumber() {
 		return lineNo;
 	}
 
@@ -147,7 +148,7 @@ public class RDFParseException extends OpenRDFException {
 	 * @return A column number, or -1 if no column number is available or
 	 *         applicable.
 	 */
-	public int getColumnNumber() {
+	public long getColumnNumber() {
 		return columnNo;
 	}
 
@@ -157,7 +158,7 @@ public class RDFParseException extends OpenRDFException {
 	 * 12, column 34]". If the specified line number is negative, this method
 	 * returns an empty string.
 	 */
-	public static String getLocationString(int lineNo, int columnNo) {
+	public static String getLocationString(long lineNo, long columnNo) {
 		if (lineNo < 0) {
 			return "";
 		}

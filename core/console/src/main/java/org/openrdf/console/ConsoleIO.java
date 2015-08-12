@@ -143,7 +143,7 @@ class ConsoleIO {
 		writeError(PLEASE_OPEN_FIRST);
 	}
 
-	protected void writeParseError(final String prefix, final int lineNo, final int colNo, final String msg) {
+	protected void writeParseError(final String prefix, final long lineNo, final long colNo, final String msg) {
 		String locationString = RDFParseException.getLocationString(lineNo, colNo);
 		int locSize = locationString.length();
 		final StringBuilder builder = new StringBuilder(locSize + prefix.length() + msg.length() + 3);
