@@ -16,8 +16,8 @@
  */
 package org.openrdf.rio.nquads;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -33,20 +33,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.ParseLocationListener;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.helpers.AbstractRDFHandler;
 import org.openrdf.rio.helpers.BasicParserSettings;
 import org.openrdf.rio.helpers.NTriplesParserSettings;
-import org.openrdf.rio.helpers.RDFHandlerBase;
-import org.openrdf.rio.helpers.AbstractRDFHandler;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
