@@ -20,7 +20,9 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryException;
 
 /**
- * @author jeen
+ * Abstract base class for Repository implementations.
+ * 
+ * @author Jeen Broekstra
  */
 public abstract class RepositoryBase implements Repository {
 

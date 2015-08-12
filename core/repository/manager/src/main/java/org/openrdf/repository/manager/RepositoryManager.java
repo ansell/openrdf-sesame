@@ -50,6 +50,7 @@ import org.openrdf.repository.sail.config.RepositoryResolver;
  * configuration data.
  * 
  * @author Arjohn Kampman
+ * @see RepositoryProvider
  */
 public abstract class RepositoryManager implements RepositoryResolver, HttpClientDependent {
 
