@@ -49,8 +49,8 @@ import org.openrdf.rio.helpers.NTriplesParserSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 /**
- * JUnit test for the N-Quads parser that uses the tests that are available <a
- * href="http://www.w3.org/2013/N-QuadsTests/">online</a>.
+ * JUnit test for the N-Quads parser that uses the tests that are available
+ * <a href="http://www.w3.org/2013/N-QuadsTests/">online</a>.
  */
 public abstract class AbstractNQuadsParserUnitTest {
 
@@ -349,9 +349,9 @@ public abstract class AbstractNQuadsParserUnitTest {
 		throws RDFHandlerException, IOException
 	{
 
-		final ByteArrayInputStream bais = new ByteArrayInputStream(("<http://www.v/dat/4b2-21> "
-				+ "<http://www.w3.org/20/ica#dtend> " + "\"2010\"^^xsd:integer "
-				+ "<http://sin.siteserv.org/def/>.").getBytes());
+		final ByteArrayInputStream bais = new ByteArrayInputStream(
+				("<http://www.v/dat/4b2-21> " + "<http://www.w3.org/20/ica#dtend> " + "\"2010\"^^xsd:integer "
+						+ "<http://sin.siteserv.org/def/>.").getBytes());
 		final TestRDFHandler rdfHandler = new TestRDFHandler();
 		parser.setRDFHandler(rdfHandler);
 		try {
@@ -550,14 +550,12 @@ public abstract class AbstractNQuadsParserUnitTest {
 	public void testStatementWithInvalidLiteralContentAndIgnoreValidation()
 		throws RDFHandlerException, IOException, RDFParseException
 	{
+		// Note: Float declare as int.
 		final ByteArrayInputStream bais = new ByteArrayInputStream(
 				("<http://dbpedia.org/resource/Camillo_Benso,_conte_di_Cavour> "
 						+ "<http://dbpedia.org/property/mandatofine> "
-						+ "\"1380.0\"^^<http://www.w3.org/2001/XMLSchema#int> " + // Float
-																										// declared
-																										// as
-																										// int.
-						"<http://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour#absolute-line=20> .").getBytes());
+						+ "\"1380.0\"^^<http://www.w3.org/2001/XMLSchema#int> "
+						+ "<http://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour#absolute-line=20> .").getBytes());
 		parser.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, false);
 		parser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
 		parser.parse(bais, "http://base-uri");
@@ -567,14 +565,12 @@ public abstract class AbstractNQuadsParserUnitTest {
 	public void testStatementWithInvalidLiteralContentAndStrictValidation()
 		throws RDFHandlerException, IOException, RDFParseException
 	{
+		// Note: Float declare as int.
 		final ByteArrayInputStream bais = new ByteArrayInputStream(
 				("<http://dbpedia.org/resource/Camillo_Benso,_conte_di_Cavour> "
 						+ "<http://dbpedia.org/property/mandatofine> "
-						+ "\"1380.0\"^^<http://www.w3.org/2001/XMLSchema#int> " + // Float
-																										// declared
-																										// as
-																										// int.
-						"<http://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour#absolute-line=20> .").getBytes());
+						+ "\"1380.0\"^^<http://www.w3.org/2001/XMLSchema#int> "
+						+ "<http://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour#absolute-line=20> .").getBytes());
 		parser.getParserConfig().set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
 		parser.getParserConfig().set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
 		try {
@@ -617,9 +613,9 @@ public abstract class AbstractNQuadsParserUnitTest {
 		final ByteArrayInputStream bais = new ByteArrayInputStream(
 				("<http://s0> <http://p0> <http://o0> <http://g0> .\n"
 						+ "<http://sX>                                     .\n" + // Line
-																										// with
-																										// error.
-						"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
+		// with
+		// error.
+		"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
 
 		parser.getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, false);
 
@@ -640,9 +636,9 @@ public abstract class AbstractNQuadsParserUnitTest {
 		final ByteArrayInputStream bais = new ByteArrayInputStream(
 				("<http://s0> <http://p0> <http://o0> <http://g0> .\n"
 						+ "<http://sX>                                     .\n" + // Line
-																										// with
-																										// error.
-						"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
+		// with
+		// error.
+		"<http://s1> <http://p1> <http://o1> <http://g1> .\n").getBytes());
 		final TestRDFHandler rdfHandler = new TestRDFHandler();
 		parser.setRDFHandler(rdfHandler);
 
@@ -685,9 +681,9 @@ public abstract class AbstractNQuadsParserUnitTest {
 
 	private class TestParseLocationListener implements ParseLocationListener {
 
-		private int lastRow, lastCol;
+		private long lastRow, lastCol;
 
-		public void parseLocationUpdate(int r, int c) {
+		public void parseLocationUpdate(long r, long c) {
 			lastRow = r;
 			lastCol = c;
 		}

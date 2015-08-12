@@ -57,17 +57,17 @@ class VerificationListener extends AbstractRDFHandler implements ParseErrorListe
 		statements++;
 	}
 
-	public void warning(final String msg, final int lineNo, final int colNo) {
+	public void warning(final String msg, final long lineNo, final long colNo) {
 		warnings++;
 		consoleIO.writeParseError("WARNING", lineNo, colNo, msg);
 	}
 
-	public void error(final String msg, final int lineNo, final int colNo) {
+	public void error(final String msg, final long lineNo, final long colNo) {
 		errors++;
 		consoleIO.writeParseError("ERROR", lineNo, colNo, msg);
 	}
 
-	public void fatalError(final String msg, final int lineNo, final int colNo) {
+	public void fatalError(final String msg, final long lineNo, final long colNo) {
 		errors++;
 		consoleIO.writeParseError("FATAL ERROR", lineNo, colNo, msg);
 	}

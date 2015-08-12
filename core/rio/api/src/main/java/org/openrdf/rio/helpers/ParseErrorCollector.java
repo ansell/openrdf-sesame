@@ -37,33 +37,33 @@ public class ParseErrorCollector implements ParseErrorListener {
 	private List<String> fatalErrors = new ArrayList<String>();
 
 	@Override
-	public void warning(String msg, int lineNo, int colNo) {
+	public void warning(String msg, long lineNo, long colNo) {
 		warnings.add(msg + " (" + lineNo + ", " + colNo + ")");
 	}
 
 	@Override
-	public void error(String msg, int lineNo, int colNo) {
+	public void error(String msg, long lineNo, long colNo) {
 		errors.add("[Rio error] " + msg + " (" + lineNo + ", " + colNo + ")");
 	}
 
 	@Override
-	public void fatalError(String msg, int lineNo, int colNo) {
+	public void fatalError(String msg, long lineNo, long colNo) {
 		fatalErrors.add("[Rio fatal] " + msg + " (" + lineNo + ", " + colNo + ")");
 	}
 
 	/**
 	 * @return An unmodifiable list of strings representing warnings that were
 	 *         received using the
-	 *         {@link ParseErrorListener#warning(String, int, int)} interface.
+	 *         {@link ParseErrorListener#warning(String, long, long)} interface.
 	 */
 	public List<String> getWarnings() {
 		return Collections.unmodifiableList(warnings);
 	}
 
 	/**
-	 * @return An unmodifiable list of strings representing potential errors that
-	 *         were received using the
-	 *         {@link ParseErrorListener#error(String, int, int)} interface.
+	 * @return An unmodifiable list of strings representing potential errors
+	 *         that were received using the
+	 *         {@link ParseErrorListener#error(String, long, long)} interface.
 	 */
 	public List<String> getErrors() {
 		return Collections.unmodifiableList(errors);
@@ -72,7 +72,8 @@ public class ParseErrorCollector implements ParseErrorListener {
 	/**
 	 * @return An unmodifiable list of strings representing fatal errors that
 	 *         were received using the
-	 *         {@link ParseErrorListener#fatalError(String, int, int)} interface.
+	 *         {@link ParseErrorListener#fatalError(String, long, long)}
+	 *         interface.
 	 */
 	public List<String> getFatalErrors() {
 		return Collections.unmodifiableList(fatalErrors);

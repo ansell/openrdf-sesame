@@ -57,7 +57,7 @@ public class NTriplesParser extends AbstractRDFParser {
 
 	protected Reader reader;
 
-	protected int lineNo;
+	protected long lineNo;
 
 	protected Resource subject;
 
