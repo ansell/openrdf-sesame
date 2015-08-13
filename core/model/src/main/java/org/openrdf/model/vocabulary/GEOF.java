@@ -25,7 +25,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
  */
 public class GEOF {
 
-	private static final String NAMESPACE = "http://www.opengis.net/def/function/geosparql/";
+	public static final String NAMESPACE = "http://www.opengis.net/def/function/geosparql/";
 
 	public static final URI DISTANCE;
 	public static final URI BUFFER;
@@ -37,6 +37,35 @@ public class GEOF {
 	public static final URI ENVELOPE;
 	public static final URI BOUNDARY;
 	public static final URI GET_SRID;
+
+	public static final URI RELATE;
+
+	public static final URI SF_EQUALS;
+	public static final URI SF_DISJOINT;
+	public static final URI SF_INTERSECTS;
+	public static final URI SF_TOUCHES;
+	public static final URI SF_CROSSES;
+	public static final URI SF_WITHIN;
+	public static final URI SF_CONTAINS;
+	public static final URI SF_OVERLAPS;
+
+	public static final URI EH_EQUALS;
+	public static final URI EH_DISJOINT;
+	public static final URI EH_MEET;
+	public static final URI EH_OVERLAP;
+	public static final URI EH_COVERS;
+	public static final URI EH_COVERED_BY;
+	public static final URI EH_INSIDE;
+	public static final URI EH_CONTAINS;
+
+	public static final URI RCC8_EQ;
+	public static final URI RCC8_DC;
+	public static final URI RCC8_EC;
+	public static final URI RCC8_PO;
+	public static final URI RCC8_TPPI;
+	public static final URI RCC8_TPP;
+	public static final URI RCC8_NTPP;
+	public static final URI RCC8_NTPPI;
 
 	public static final String UOM_NAMESPACE = "http://www.opengis.net/def/uom/OGC/1.0/";
 	public static final URI UOM_DEGREE;
@@ -56,6 +85,35 @@ public class GEOF {
 		ENVELOPE = factory.createURI(NAMESPACE, "envelope");
 		BOUNDARY = factory.createURI(NAMESPACE, "boundary");
 		GET_SRID = factory.createURI(NAMESPACE, "getSRID");
+
+		RELATE = factory.createURI(NAMESPACE, "relate");
+
+		SF_EQUALS = factory.createURI(NAMESPACE, "sfEquals");
+		SF_DISJOINT = factory.createURI(NAMESPACE, "sfDisjoint");
+		SF_INTERSECTS = factory.createURI(NAMESPACE, "sfIntersects");
+		SF_TOUCHES = factory.createURI(NAMESPACE, "sfTouches");
+		SF_CROSSES = factory.createURI(NAMESPACE, "sfCrosses");
+		SF_WITHIN = factory.createURI(NAMESPACE, "sfWithin");
+		SF_CONTAINS = factory.createURI(NAMESPACE, "sfContains");
+		SF_OVERLAPS = factory.createURI(NAMESPACE, "sfOverlaps");
+
+		EH_EQUALS = factory.createURI(NAMESPACE, "ehEquals");
+		EH_DISJOINT = factory.createURI(NAMESPACE, "ehDisjoint");
+		EH_MEET = factory.createURI(NAMESPACE, "ehMeet");
+		EH_OVERLAP = factory.createURI(NAMESPACE, "ehOverlap");
+		EH_COVERS = factory.createURI(NAMESPACE, "ehCovers");
+		EH_COVERED_BY = factory.createURI(NAMESPACE, "ehCoveredBy");
+		EH_INSIDE = factory.createURI(NAMESPACE, "ehInside");
+		EH_CONTAINS = factory.createURI(NAMESPACE, "ehContains");
+
+		RCC8_EQ = factory.createURI(NAMESPACE, "rcc8eq");
+		RCC8_DC = factory.createURI(NAMESPACE, "rcc8dc");
+		RCC8_EC = factory.createURI(NAMESPACE, "rcc8ec");
+		RCC8_PO = factory.createURI(NAMESPACE, "rcc8po");
+		RCC8_TPPI = factory.createURI(NAMESPACE, "rcc8tppi");
+		RCC8_TPP = factory.createURI(NAMESPACE, "rcc8tpp");
+		RCC8_NTPP = factory.createURI(NAMESPACE, "rcc8ntpp");
+		RCC8_NTPPI = factory.createURI(NAMESPACE, "rcc8ntppi");
 
 		UOM_DEGREE = factory.createURI(UOM_NAMESPACE, "degree");
 		UOM_RADIAN = factory.createURI(UOM_NAMESPACE, "radian");

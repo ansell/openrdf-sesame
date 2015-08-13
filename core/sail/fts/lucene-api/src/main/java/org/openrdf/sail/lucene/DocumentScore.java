@@ -16,12 +16,8 @@
  */
 package org.openrdf.sail.lucene;
 
-public interface DocumentScore
+public interface DocumentScore extends DocumentResult
 {
-	/**
-	 * Returns null if the document no longer exists.
-	 */
-	SearchDocument getDocument();
 	float getScore();
 	boolean isHighlighted();
 	Iterable<String> getSnippets(String field);

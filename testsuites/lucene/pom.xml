@@ -4,11 +4,11 @@
 
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-sail-fts</artifactId>
+		<artifactId>sesame-testsuites</artifactId>
 		<version>2.8.6-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-sail-lucene-test</artifactId>
+	<artifactId>sesame-lucene-testsuite</artifactId>
 
 	<name>OpenRDF Lucene Sail Tests</name>
 	<description>Generic tests for Lucene Sail implementations.</description>

@@ -232,16 +232,19 @@ public class LuceneIndexTest {
 	}
 
 	/**
-	 * NB: this is a convenient but very slow way of getting termDocs.
-	 * It is sufficient for testing purposes.
-	 * @throws IOException 
+	 * NB: this is a convenient but very slow way of getting termDocs. It is
+	 * sufficient for testing purposes.
+	 * 
+	 * @throws IOException
 	 */
-	private static DocsEnum termDocs(IndexReader reader, Term term) throws IOException
+	private static DocsEnum termDocs(IndexReader reader, Term term)
+		throws IOException
 	{
 		return MultiFields.getTermDocsEnum(reader, MultiFields.getLiveDocs(reader), term.field(), term.bytes());
 	}
 
-	private static boolean next(DocsEnum docs) throws IOException
+	private static boolean next(DocsEnum docs)
+		throws IOException
 	{
 		return (docs.nextDoc() != DocsEnum.NO_MORE_DOCS);
 	}
@@ -463,7 +466,7 @@ public class LuceneIndexTest {
 	 * @param document
 	 */
 	private void assertStatement(Statement statement, Document document) {
-		IndexableField[] fields = document.getFields(statement.getPredicate().toString());
+		IndexableField[] fields = document.getFields(SearchFields.getPropertyField(statement.getPredicate()));
 		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
 		for (IndexableField f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f.stringValue()))
@@ -477,7 +480,7 @@ public class LuceneIndexTest {
 	 * @param document
 	 */
 	private void assertNoStatement(Statement statement, Document document) {
-		IndexableField[] fields = document.getFields(statement.getPredicate().toString());
+		IndexableField[] fields = document.getFields(SearchFields.getPropertyField(statement.getPredicate()));
 		if (fields == null)
 			return;
 		for (IndexableField f : fields) {

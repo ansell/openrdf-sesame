@@ -18,15 +18,20 @@ package org.openrdf.sail.lucene;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.QueryModelNode;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.Var;
+
+import com.google.common.base.Supplier;
 
 /**
  * A QuerySpec holds information extracted from a TupleExpr corresponding with a
  * single Lucene query. Access the patterns or use the get-methods to get the
  * names of the variables to bind.
  */
-public class QuerySpec {
+public class QuerySpec implements SearchQueryEvaluator {
 
 	private final StatementPattern matchesPattern;
 
@@ -59,6 +64,49 @@ public class QuerySpec {
 		this.subject = subject;
 		this.queryString = queryString;
 		this.propertyURI = propertyURI;
+	}
+
+	@Override
+	public QueryModelNode getParentQueryModelNode() {
+		return getMatchesPattern();
+	}
+
+	@Override
+	public void updateQueryModelNodes(boolean hasResult) {
+		Supplier<QueryModelNode> nodeFactory = hasResult ? new Supplier<QueryModelNode>() {
+
+			@Override
+			public QueryModelNode get() {
+				return new SingletonSet();
+			}
+		} : new Supplier<QueryModelNode>() {
+
+			@Override
+			public QueryModelNode get() {
+				return new EmptySet();
+			}
+		};
+
+		replace(getMatchesPattern(), nodeFactory);
+		replace(getQueryPattern(), nodeFactory);
+		replace(getScorePattern(), nodeFactory);
+		replace(getPropertyPattern(), nodeFactory);
+		replace(getSnippetPattern(), nodeFactory);
+		replace(getTypePattern(), nodeFactory);
+	}
+
+	/**
+	 * Replace the given node with a new instance of the given replacement type.
+	 * 
+	 * @param pattern
+	 *        the pattern to remove
+	 * @param replacement
+	 *        the replacement type
+	 */
+	private void replace(QueryModelNode node, Supplier<? extends QueryModelNode> replacement) {
+		if (node != null) {
+			node.replaceWith(replacement.get());
+		}
 	}
 
 	public StatementPattern getMatchesPattern() {
@@ -124,8 +172,8 @@ public class QuerySpec {
 	}
 
 	/**
-	 * the type of query, must equal {@link LuceneSailSchema#LUCENE_QUERY}. A null type is
-	 * possible, but not valid.
+	 * the type of query, must equal {@link LuceneSailSchema#LUCENE_QUERY}. A
+	 * null type is possible, but not valid.
 	 * 
 	 * @return the type of the Query or null, if no type assigned.
 	 */

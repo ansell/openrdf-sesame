@@ -78,7 +78,9 @@ public class ElasticsearchSailExample {
 		SailRepositoryConnection connection = repository.getConnection();
 		try {
 			connection.begin();
-			connection.add(ElasticsearchSailExample.class.getResourceAsStream("/org/openrdf/sail/lucene/examples/foaf.rdfs"), "", RDFFormat.RDFXML);
+			connection.add(
+					ElasticsearchSailExample.class.getResourceAsStream("/org/openrdf/sail/lucene/examples/foaf.rdfs"),
+					"", RDFFormat.RDFXML);
 			connection.commit();
 
 			// search for resources that mention "person"
