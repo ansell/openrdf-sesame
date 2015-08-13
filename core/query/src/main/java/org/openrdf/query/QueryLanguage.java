@@ -23,8 +23,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * A type-safe enumeration for RDF query languages. QueryLanguage objects are
- * identified by their name, which is treated in as case-insensitive way.
+ * A type-safe enumeration for RDF query languages such as {@link #SPARQL} and
+ * {@link #SERQL SeRQL}. QueryLanguage objects are identified by their name,
+ * which is treated in as case-insensitive way.
  */
 public class QueryLanguage {
 
@@ -32,8 +33,21 @@ public class QueryLanguage {
 	 * Constants *
 	 *-----------*/
 
+	/**
+	 * SeRQL (Sesame RDF Query Language) is a Sesame-specific query language for
+	 * RDF, which predates SPARQL.
+	 * 
+	 * @see <a href="http://rdf4j.org/doc/serql">The SeRQL user manual</a>
+	 */
 	public static final QueryLanguage SERQL = new QueryLanguage("SeRQL");
 
+	/**
+	 * SPARQL (Simple Protocol and RDF Query Language) is a W3C Recommendation
+	 * for querying and updating RDF data.
+	 * 
+	 * @see <a href="http://www.w3.org/TR/sparql11-overview/">SPARQL 1.1
+	 *      Overview</a>
+	 */
 	public static final QueryLanguage SPARQL = new QueryLanguage("SPARQL");
 
 	public static final QueryLanguage SERQO = new QueryLanguage("SeRQO");
