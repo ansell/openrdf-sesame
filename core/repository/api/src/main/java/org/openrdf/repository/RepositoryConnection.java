@@ -38,12 +38,15 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Query;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.UnsupportedQueryLanguageException;
 import org.openrdf.query.Update;
+import org.openrdf.repository.util.Repositories;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.UnsupportedRDFormatException;
 
 /**
  * Main interface for updating data in and performing queries on a Sesame
@@ -99,6 +102,7 @@ import org.openrdf.rio.RDFParseException;
  * 
  * @author Arjohn Kampman
  * @author Jeen Broekstra
+ * @see Repositories
  */
 public interface RepositoryConnection extends AutoCloseable {
 
@@ -162,13 +166,37 @@ public interface RepositoryConnection extends AutoCloseable {
 	}
 
 	/**
+	 * Prepares a SPARQL query for evaluation on this repository (optional
+	 * operation). In case the query contains relative URIs that need to be
+	 * resolved against an external base URI, one should use
+	 * {@link #prepareQuery(QueryLanguage, String, String)} instead.
+	 * 
+	 * @param query
+	 *        The query string, in SPARQL syntax.
+	 * @return A query ready to be evaluated on this repository.
+	 * @throws MalformedQueryException
+	 *         If the supplied query is malformed.
+	 * @throws UnsupportedOperationException
+	 *         If the <tt>prepareQuery</tt> method is not supported by this
+	 *         repository.
+	 * @since 4.0
+	 * @see #prepareQuery(QueryLanguage, String)
+	 */
+	public default Query prepareQuery(String query)
+		throws RepositoryException, MalformedQueryException
+	{
+		return prepareQuery(QueryLanguage.SPARQL, query);
+	}
+
+	/**
 	 * Prepares a query for evaluation on this repository (optional operation).
 	 * In case the query contains relative URIs that need to be resolved against
 	 * an external base URI, one should use
 	 * {@link #prepareQuery(QueryLanguage, String, String)} instead.
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
 	 * @return A query ready to be evaluated on this repository.
@@ -187,7 +215,8 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * Prepares a query for evaluation on this repository (optional operation).
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
 	 * @param baseURI
@@ -207,15 +236,41 @@ public interface RepositoryConnection extends AutoCloseable {
 		throws RepositoryException, MalformedQueryException;
 
 	/**
+	 * Prepares a SPARQL query that produces sets of value tuples, that is a
+	 * SPARQL SELECT query. In case the query contains relative URIs that need to
+	 * be resolved against an external base URI, one should use
+	 * {@link #prepareTupleQuery(QueryLanguage, String, String)} instead.
+	 * 
+	 * @param query
+	 *        The query string, in SPARQL syntax.
+	 * @return a {@link TupleQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
+	 * @throws IllegalArgumentException
+	 *         If the supplied query is not a tuple query.
+	 * @throws MalformedQueryException
+	 *         If the supplied query is malformed.
+	 * @since 4.0
+	 * @see #prepareTupleQuery(QueryLanguage, String)
+	 */
+	public default TupleQuery prepareTupleQuery(String query)
+		throws RepositoryException, MalformedQueryException
+	{
+		return prepareTupleQuery(QueryLanguage.SPARQL, query);
+	}
+
+	/**
 	 * Prepares a query that produces sets of value tuples. In case the query
 	 * contains relative URIs that need to be resolved against an external base
 	 * URI, one should use
 	 * {@link #prepareTupleQuery(QueryLanguage, String, String)} instead.
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
+	 * @return a {@link TupleQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
 	 * @throws IllegalArgumentException
 	 *         If the supplied query is not a tuple query.
 	 * @throws MalformedQueryException
@@ -230,13 +285,16 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * Prepares a query that produces sets of value tuples.
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the query
 	 *        against, can be <tt>null</tt> if the query does not contain any
 	 *        relative URIs.
+	 * @return a {@link TupleQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
 	 * @throws IllegalArgumentException
 	 *         If the supplied query is not a tuple query.
 	 * @throws MalformedQueryException
@@ -248,15 +306,41 @@ public interface RepositoryConnection extends AutoCloseable {
 		throws RepositoryException, MalformedQueryException;
 
 	/**
+	 * Prepares SPARQL queries that produce RDF graphs, that is, SPARQL CONSTRUCT
+	 * or DESCRIBE queries. In case the query contains relative URIs that need to
+	 * be resolved against an external base URI, one should use
+	 * {@link #prepareGraphQuery(QueryLanguage, String, String)} instead.
+	 * 
+	 * @param query
+	 *        The query string, in SPARQL syntax.
+	 * @return a {@link GraphQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
+	 * @throws IllegalArgumentException
+	 *         If the supplied query is not a graph query.
+	 * @throws MalformedQueryException
+	 *         If the supplied query is malformed.
+	 * @since 4.0
+	 * @see #prepareGraphQuery(QueryLanguage, String)
+	 */
+	public default GraphQuery prepareGraphQuery(String query)
+		throws RepositoryException, MalformedQueryException
+	{
+		return prepareGraphQuery(QueryLanguage.SPARQL, query);
+	}
+
+	/**
 	 * Prepares queries that produce RDF graphs. In case the query contains
 	 * relative URIs that need to be resolved against an external base URI, one
 	 * should use {@link #prepareGraphQuery(QueryLanguage, String, String)}
 	 * instead.
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
+	 * @return a {@link GraphQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
 	 * @throws IllegalArgumentException
 	 *         If the supplied query is not a graph query.
 	 * @throws MalformedQueryException
@@ -271,13 +355,16 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * Prepares queries that produce RDF graphs.
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the query
 	 *        against, can be <tt>null</tt> if the query does not contain any
 	 *        relative URIs.
+	 * @return a {@link GraphQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
 	 * @throws IllegalArgumentException
 	 *         If the supplied query is not a graph query.
 	 * @throws MalformedQueryException
@@ -289,15 +376,41 @@ public interface RepositoryConnection extends AutoCloseable {
 		throws RepositoryException, MalformedQueryException;
 
 	/**
-	 * Prepares <tt>true</tt>/<tt>false</tt> queries. In case the query contains
-	 * relative URIs that need to be resolved against an external base URI, one
-	 * should use {@link #prepareBooleanQuery(QueryLanguage, String, String)}
-	 * instead.
+	 * Prepares SPARQL queries that return <tt>true</tt> or <tt>false</tt>, that
+	 * is, SPARQL ASK queries. In case the query contains relative URIs that need
+	 * to be resolved against an external base URI, one should use
+	 * {@link #prepareBooleanQuery(QueryLanguage, String, String)} instead.
+	 * 
+	 * @param query
+	 *        The query string, in SPARQL syntax.
+	 * @return a {@link BooleanQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
+	 * @throws IllegalArgumentException
+	 *         If the supplied query is not a boolean query.
+	 * @throws MalformedQueryException
+	 *         If the supplied SPARQL query is malformed.
+	 * @since 4.0
+	 * @see #prepareBooleanQuery(QueryLanguage, String)
+	 */
+	public default BooleanQuery prepareBooleanQuery(String query)
+		throws RepositoryException, MalformedQueryException
+	{
+		return prepareBooleanQuery(QueryLanguage.SPARQL, query);
+	}
+
+	/**
+	 * Prepares queries that return <tt>true</tt> or <tt>false</tt>. In case the
+	 * query contains relative URIs that need to be resolved against an external
+	 * base URI, one should use
+	 * {@link #prepareBooleanQuery(QueryLanguage, String, String)} instead.
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
+	 * @return a {@link BooleanQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
 	 * @throws IllegalArgumentException
 	 *         If the supplied query is not a boolean query.
 	 * @throws MalformedQueryException
@@ -309,16 +422,19 @@ public interface RepositoryConnection extends AutoCloseable {
 		throws RepositoryException, MalformedQueryException;
 
 	/**
-	 * Prepares <tt>true</tt>/<tt>false</tt> queries.
+	 * Prepares queries that return <tt>true</tt> or <tt>false</tt>.
 	 * 
 	 * @param ql
-	 *        The query language in which the query is formulated.
+	 *        The {@link QueryLanguage query language} in which the query is
+	 *        formulated.
 	 * @param query
 	 *        The query string.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the query
 	 *        against, can be <tt>null</tt> if the query does not contain any
 	 *        relative URIs.
+	 * @return a {@link BooleanQuery} ready to be evaluated on this
+	 *         {@link RepositoryConnection}.
 	 * @throws IllegalArgumentException
 	 *         If the supplied query is not a boolean query.
 	 * @throws MalformedQueryException
@@ -330,12 +446,37 @@ public interface RepositoryConnection extends AutoCloseable {
 		throws RepositoryException, MalformedQueryException;
 
 	/**
-	 * Prepares an Update operation.
+	 * Prepares a SPARQL Update operation. In case the update string contains
+	 * relative URIs that need to be resolved against an external base URI, one
+	 * should use {@link #prepareUpdate(QueryLanguage, String, String)} instead.
+	 * 
+	 * @param update
+	 *        The update operation string, in SPARQL syntax.
+	 * @return a {@link Update} ready to be executed on this
+	 *         {@link RepositoryConnection}.
+	 * @throws MalformedQueryException
+	 *         If the supplied update operation string is malformed.
+	 * @since 4.0
+	 * @see #prepareUpdate(QueryLanguage, String)
+	 */
+	public default Update prepareUpdate(String update)
+		throws RepositoryException, MalformedQueryException
+	{
+		return prepareUpdate(QueryLanguage.SPARQL, update);
+	}
+
+	/**
+	 * Prepares an Update operation. In case the update string contains relative
+	 * URIs that need to be resolved against an external base URI, one should use
+	 * {@link #prepareUpdate(QueryLanguage, String, String)} instead.
 	 * 
 	 * @param ql
-	 *        The query language in which the update operation is formulated.
+	 *        The {@link QueryLanguage query language} in which the update
+	 *        operation is formulated.
 	 * @param update
 	 *        The update operation string.
+	 * @return a {@link Update} ready to be executed on this
+	 *         {@link RepositoryConnection}.
 	 * @throws MalformedQueryException
 	 *         If the supplied update operation string is malformed.
 	 */
@@ -346,13 +487,16 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * Prepares an Update operation.
 	 * 
 	 * @param ql
-	 *        The query language in which the update operation is formulated.
+	 *        The {@link QueryLanguage query language} in which the update
+	 *        operation is formulated.
 	 * @param update
 	 *        The update operation string.
 	 * @param baseURI
 	 *        The base URI to resolve any relative URIs that are in the update
 	 *        against, can be <tt>null</tt> if the update does not contain any
 	 *        relative URIs.
+	 * @return a {@link Update} ready to be executed on this
+	 *         {@link RepositoryConnection}.
 	 * @throws MalformedQueryException
 	 *         If the supplied update operation string is malformed.
 	 */
@@ -395,7 +539,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 */
 	public default RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			Resource... contexts)
-		throws RepositoryException
+				throws RepositoryException
 	{
 		return getStatements(subj, pred, obj, true, contexts);
 	}
@@ -426,7 +570,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 */
 	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
-		throws RepositoryException;
+				throws RepositoryException;
 
 	/**
 	 * Checks whether the repository contains statements with a specific subject,
@@ -450,7 +594,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 */
 	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
-		throws RepositoryException;
+				throws RepositoryException;
 
 	/**
 	 * Checks whether the repository contains the specified statement, optionally
@@ -496,7 +640,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 */
 	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
-		throws RepositoryException, RDFHandlerException;
+				throws RepositoryException, RDFHandlerException;
 
 	/**
 	 * Exports all explicit statements in the specified contexts to the supplied
@@ -564,8 +708,8 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * Indicates if the connection is in auto-commit mode. The connection is in
 	 * auto-commit mode when no transaction is currently active, that is, when:
 	 * <ol>
-	 * <li> {@link #begin()} has not been called or;
-	 * <li> {@link #commit()} or {@link #rollback()} have been called to finish
+	 * <li>{@link #begin()} has not been called or;
+	 * <li>{@link #commit()} or {@link #rollback()} have been called to finish
 	 * the transaction.
 	 * </ol>
 	 * 
@@ -934,8 +1078,8 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * 
 	 * @param statements
 	 *        The statements to add. In case the iteration is a
-	 *        {@link CloseableIteration}, it will be closed before this method
-	 *        returns.
+	 *        {@link info.aduna.iteration.CloseableIteration}, it will be closed
+	 *        before this method returns.
 	 * @param contexts
 	 *        The contexts to add the statements to. Note that this parameter is
 	 *        a vararg and as such is optional. If no contexts are specified,
@@ -1044,8 +1188,8 @@ public interface RepositoryConnection extends AutoCloseable {
 	 * 
 	 * @param statements
 	 *        The statements to remove. In case the iteration is a
-	 *        {@link CloseableIteration}, it will be closed before this method
-	 *        returns.
+	 *        {@link info.aduna.iteration.CloseableIteration}, it will be closed
+	 *        before this method returns.
 	 * @param contexts
 	 *        The context(s) to remove the data from. Note that this parameter is
 	 *        a vararg and as such is optional. If no contexts are supplied the
@@ -1058,7 +1202,7 @@ public interface RepositoryConnection extends AutoCloseable {
 	 */
 	public <E extends Exception> void remove(Iteration<? extends Statement, E> statements,
 			Resource... contexts)
-		throws RepositoryException, E;
+				throws RepositoryException, E;
 
 	/**
 	 * Removes all statements from a specific contexts in the repository.
