@@ -25,7 +25,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.openrdf.query.BooleanQueryResultHandlerException;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.BooleanQueryResultWriter;
@@ -53,7 +52,7 @@ public class BooleanQueryResultView extends QueryResultView {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void render(Map model, HttpServletRequest request, HttpServletResponse response)
+	protected void renderInternal(Map model, HttpServletRequest request, HttpServletResponse response)
 		throws IOException
 	{
 		BooleanQueryResultWriterFactory brWriterFactory = (BooleanQueryResultWriterFactory)model.get(FACTORY_KEY);

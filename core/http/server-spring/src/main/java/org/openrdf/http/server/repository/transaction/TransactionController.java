@@ -125,7 +125,8 @@ public class TransactionController extends AbstractController {
 		String reqMethod = request.getMethod();
 		UUID transactionId = getTransactionID(request);
 		logger.debug("transaction id: {}", transactionId);
-		RepositoryConnection connection = ActiveTransactionRegistry.INSTANCE.getTransactionConnection(transactionId);
+		RepositoryConnection connection = ActiveTransactionRegistry.INSTANCE.getTransactionConnection(
+				transactionId);
 
 		if (connection == null) {
 			logger.warn("could not find connection for transaction id {}", transactionId);
@@ -133,39 +134,83 @@ public class TransactionController extends AbstractController {
 					"unable to find registerd connection for transaction id '" + transactionId + "'");
 		}
 
-		try {
-			if ("PUT".equals(reqMethod)) {
-				// TODO filter for appropriate PUT operations
-				logger.info("PUT txn operation");
-				result = processTransactionOperation(connection, request, response);
-				logger.info("PUT txn operation request finished.");
-			}
-			else if (METHOD_POST.equals(reqMethod)) {
-				// TODO filter for appropriate POST operations
-				logger.info("POST txn operation");
-				result = processTransactionOperation(connection, request, response);
-				logger.info("POST txn operation request finished.");
-			}
-			else if ("DELETE".equals(reqMethod)) {
-				logger.info("DELETE transaction");
+		// if no action is specified in the request, it's a rollback (since it's
+		// the only txn operation that does not require the action parameter).
+		final String actionParam = request.getParameter(Protocol.ACTION_PARAM_NAME);
+		final Action action = actionParam != null ? Action.valueOf(actionParam) : Action.ROLLBACK;
+		switch (action) {
+			case QUERY:
+				// TODO SES-2238 note that we allow POST requests for backward
+				// compatibility reasons with earlier
+				// 2.8.x releases, even though according to the protocol spec only
+				// PUT is allowed.
+				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
+					logger.info("{} txn query request", reqMethod);
+					result = processQuery(connection, transactionId, request, response);
+					logger.info("{} txn query request finished");
+				}
+				else {
+					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+							"Method not allowed: " + reqMethod);
+				}
+				break;
+			case GET:
+				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
+					logger.info("{} txn get/export statements request", reqMethod);
+					result = getExportStatementsResult(connection, transactionId, request, response);
+					logger.info("{} txn get/export statements request finished");
+				}
+				else {
+					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+							"Method not allowed: " + reqMethod);
+				}
+				break;
+			case SIZE:
+				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
+					logger.info("{} txn size request", reqMethod);
+					result = getSize(connection, transactionId, request, response);
+					logger.info("{} txn size request finished");
+				}
+				else {
+					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+							"Method not allowed: " + reqMethod);
+				}
+				break;
+			default:
+				// modification operations - we can process these and then
+				// immediately release the connection back to the registry.
 				try {
-					connection.rollback();
+					// TODO Action.ROLLBACK check is for backward compatibility with
+					// older 2.8.x releases only. It's not in the protocol spec.
+					if ("DELETE".equals(reqMethod) || (action.equals(Action.ROLLBACK)
+							&& ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod))))
+					{
+						logger.info("transaction rollback");
+						try {
+							connection.rollback();
+						}
+						finally {
+							ActiveTransactionRegistry.INSTANCE.deregister(transactionId);
+							connection.close();
+						}
+						result = new ModelAndView(EmptySuccessView.getInstance());
+						logger.info("transaction rollback request finished.");
+					}
+					else if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
+						// TODO filter for appropriate PUT operations
+						logger.info("{} txn operation", reqMethod);
+						result = processModificationOperation(connection, action, request, response);
+						logger.info("PUT txn operation request finished.");
+					}
+					else {
+						throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+								"Method not allowed: " + reqMethod);
+					}
 				}
 				finally {
-					ActiveTransactionRegistry.INSTANCE.deregister(transactionId);
-					connection.close();
+					ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(transactionId);
 				}
-
-				result = new ModelAndView(EmptySuccessView.getInstance());
-				logger.info("DELETE transaction request finished.");
-			}
-			else {
-				throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
-						+ reqMethod);
-			}
-		}
-		finally {
-			ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(transactionId);
+				break;
 		}
 		return result;
 	}
@@ -197,12 +242,11 @@ public class TransactionController extends AbstractController {
 		return txnID;
 	}
 
-	private ModelAndView processTransactionOperation(RepositoryConnection conn, HttpServletRequest request,
-			HttpServletResponse response)
-		throws IOException, HTTPException
+	private ModelAndView processModificationOperation(RepositoryConnection conn, Action action,
+			HttpServletRequest request, HttpServletResponse response)
+				throws IOException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
-		Action action = Action.valueOf(request.getParameter(Protocol.ACTION_PARAM_NAME));
 
 		Map<String, Object> model = new HashMap<String, Object>();
 
@@ -210,7 +254,7 @@ public class TransactionController extends AbstractController {
 		if (baseURI == null) {
 			baseURI = "";
 		}
-		
+
 		try {
 			switch (action) {
 				case ADD:
@@ -224,12 +268,6 @@ public class TransactionController extends AbstractController {
 					parser.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 					parser.parse(request.getInputStream(), baseURI);
 					break;
-				case QUERY:
-					return processQuery(conn, request, response);
-				case GET:
-					return getExportStatementsResult(conn, request, response);
-				case SIZE:
-					return getSize(conn, request, response);
 				case UPDATE:
 					return getSparqlUpdateResult(conn, request, response);
 				case COMMIT:
@@ -237,24 +275,9 @@ public class TransactionController extends AbstractController {
 					conn.close();
 					ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
 					break;
-				case ROLLBACK:
-					try {
-						conn.rollback();
-					}
-					finally {
-						try {
-							if (conn.isOpen()) {
-								conn.close();
-							}
-						}
-						finally {
-							ActiveTransactionRegistry.INSTANCE.deregister(getTransactionID(request));
-						}
-					}
-					break;
 				default:
-					logger.warn("transaction action '{}' not recognized", action);
-					throw new ClientHTTPException("action not recognized: " + action);
+					logger.warn("transaction modification action '{}' not recognized", action);
+					throw new ClientHTTPException("modification action not recognized: " + action);
 			}
 
 			model.put(SimpleResponseView.SC_KEY, HttpServletResponse.SC_OK);
@@ -271,34 +294,38 @@ public class TransactionController extends AbstractController {
 		}
 	}
 
-	private ModelAndView getSize(RepositoryConnection conn, HttpServletRequest request,
+	private ModelAndView getSize(RepositoryConnection conn, UUID txnId, HttpServletRequest request,
 			HttpServletResponse response)
-		throws HTTPException
+				throws HTTPException
 	{
-		ProtocolUtil.logRequestParameters(request);
+		try {
+			ProtocolUtil.logRequestParameters(request);
 
-		Map<String, Object> model = new HashMap<String, Object>();
-		final boolean headersOnly = METHOD_HEAD.equals(request.getMethod());
+			Map<String, Object> model = new HashMap<String, Object>();
+			final boolean headersOnly = METHOD_HEAD.equals(request.getMethod());
 
-		if (!headersOnly) {
-			Repository repository = RepositoryInterceptor.getRepository(request);
+			if (!headersOnly) {
+				Repository repository = RepositoryInterceptor.getRepository(request);
 
-			ValueFactory vf = repository.getValueFactory();
-			Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
+				ValueFactory vf = repository.getValueFactory();
+				Resource[] contexts = ProtocolUtil.parseContextParam(request, Protocol.CONTEXT_PARAM_NAME, vf);
 
-			long size = -1;
+				long size = -1;
 
-			try {
-				size = conn.size(contexts);
+				try {
+					size = conn.size(contexts);
+				}
+				catch (RepositoryException e) {
+					throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
+				}
+				model.put(SimpleResponseView.CONTENT_KEY, String.valueOf(size));
 			}
-			catch (RepositoryException e) {
-				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
-			}
-			model.put(SimpleResponseView.CONTENT_KEY, String.valueOf(size));
+
+			return new ModelAndView(SimpleResponseView.getInstance(), model);
 		}
-
-		return new ModelAndView(SimpleResponseView.getInstance(), model);
-
+		finally {
+			ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(txnId);
+		}
 	}
 
 	/**
@@ -306,9 +333,9 @@ public class TransactionController extends AbstractController {
 	 * 
 	 * @return a model and view for exporting the statements.
 	 */
-	private ModelAndView getExportStatementsResult(RepositoryConnection conn, HttpServletRequest request,
-			HttpServletResponse response)
-		throws ClientHTTPException
+	private ModelAndView getExportStatementsResult(RepositoryConnection conn, UUID txnId,
+			HttpServletRequest request, HttpServletResponse response)
+				throws ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -332,12 +359,20 @@ public class TransactionController extends AbstractController {
 		model.put(ExportStatementsView.FACTORY_KEY, rdfWriterFactory);
 		model.put(ExportStatementsView.HEADERS_ONLY, METHOD_HEAD.equals(request.getMethod()));
 		model.put(ExportStatementsView.CONNECTION_KEY, conn);
+		model.put(ExportStatementsView.TRANSACTION_ID_KEY, txnId);
 		return new ModelAndView(ExportStatementsView.getInstance(), model);
 	}
 
-	private ModelAndView processQuery(RepositoryConnection conn, HttpServletRequest request,
+	/**
+	 * Evaluates a query on the given connection and returns the resulting
+	 * {@link QueryResultView}. The {@link QueryResultView} will take care of
+	 * correctly releasing the connection back to the
+	 * {@link ActiveTransactionRegistry}, after fully rendering the query result
+	 * for sending over the wire.
+	 */
+	private ModelAndView processQuery(RepositoryConnection conn, UUID txnId, HttpServletRequest request,
 			HttpServletResponse response)
-		throws IOException, HTTPException
+				throws IOException, HTTPException
 	{
 		String queryStr = request.getParameter(QUERY_PARAM_NAME);
 
@@ -370,16 +405,18 @@ public class TransactionController extends AbstractController {
 				view = BooleanQueryResultView.getInstance();
 			}
 			else {
-				throw new ClientHTTPException(SC_BAD_REQUEST, "Unsupported query type: "
-						+ query.getClass().getName());
+				throw new ClientHTTPException(SC_BAD_REQUEST,
+						"Unsupported query type: " + query.getClass().getName());
 			}
 		}
 		catch (QueryInterruptedException e) {
 			logger.info("Query interrupted", e);
+			ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(txnId);
 			throw new ServerHTTPException(SC_SERVICE_UNAVAILABLE, "Query evaluation took too long");
 		}
 		catch (QueryEvaluationException e) {
 			logger.info("Query evaluation error", e);
+			ActiveTransactionRegistry.INSTANCE.returnTransactionConnection(txnId);
 			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
 				// custom signal from the backend, throw as HTTPException
 				// directly (see SES-1016).
@@ -397,13 +434,13 @@ public class TransactionController extends AbstractController {
 		model.put(QueryResultView.FACTORY_KEY, factory);
 		model.put(QueryResultView.HEADERS_ONLY, false); // TODO needed for HEAD
 																		// requests.
-
+		model.put(QueryResultView.TRANSACTION_ID_KEY, txnId);
 		return new ModelAndView(view, model);
 	}
 
 	private Query getQuery(RepositoryConnection repositoryCon, String queryStr, HttpServletRequest request,
 			HttpServletResponse response)
-		throws IOException, ClientHTTPException
+				throws IOException, ClientHTTPException
 	{
 		Query result = null;
 
@@ -455,8 +492,8 @@ public class TransactionController extends AbstractController {
 						dataset.addDefaultGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
-						throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default graph: "
-								+ defaultGraphURI);
+						throw new ClientHTTPException(SC_BAD_REQUEST,
+								"Illegal URI for default graph: " + defaultGraphURI);
 					}
 				}
 			}
@@ -471,8 +508,8 @@ public class TransactionController extends AbstractController {
 						dataset.addNamedGraph(uri);
 					}
 					catch (IllegalArgumentException e) {
-						throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for named graph: "
-								+ namedGraphURI);
+						throw new ClientHTTPException(SC_BAD_REQUEST,
+								"Illegal URI for named graph: " + namedGraphURI);
 					}
 				}
 			}
@@ -498,7 +535,8 @@ public class TransactionController extends AbstractController {
 			while (parameterNames.hasMoreElements()) {
 				String parameterName = parameterNames.nextElement();
 
-				if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length())
+				if (parameterName.startsWith(BINDING_PREFIX)
+						&& parameterName.length() > BINDING_PREFIX.length())
 				{
 					String bindingName = parameterName.substring(BINDING_PREFIX.length());
 					Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
@@ -525,7 +563,7 @@ public class TransactionController extends AbstractController {
 
 	private ModelAndView getSparqlUpdateResult(RepositoryConnection conn, HttpServletRequest request,
 			HttpServletResponse response)
-		throws ServerHTTPException, ClientHTTPException, HTTPException
+				throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -568,8 +606,8 @@ public class TransactionController extends AbstractController {
 					dataset.addDefaultRemoveGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
-					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default remove graph: "
-							+ graphURI);
+					throw new ClientHTTPException(SC_BAD_REQUEST,
+							"Illegal URI for default remove graph: " + graphURI);
 				}
 			}
 		}
@@ -584,7 +622,8 @@ public class TransactionController extends AbstractController {
 				dataset.setDefaultInsertGraph(uri);
 			}
 			catch (IllegalArgumentException e) {
-				throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default insert graph: " + graphURI);
+				throw new ClientHTTPException(SC_BAD_REQUEST,
+						"Illegal URI for default insert graph: " + graphURI);
 			}
 		}
 
@@ -598,8 +637,8 @@ public class TransactionController extends AbstractController {
 					dataset.addDefaultGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
-					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default graph: "
-							+ defaultGraphURI);
+					throw new ClientHTTPException(SC_BAD_REQUEST,
+							"Illegal URI for default graph: " + defaultGraphURI);
 				}
 			}
 		}
@@ -635,7 +674,8 @@ public class TransactionController extends AbstractController {
 			while (parameterNames.hasMoreElements()) {
 				String parameterName = parameterNames.nextElement();
 
-				if (parameterName.startsWith(BINDING_PREFIX) && parameterName.length() > BINDING_PREFIX.length())
+				if (parameterName.startsWith(BINDING_PREFIX)
+						&& parameterName.length() > BINDING_PREFIX.length())
 				{
 					String bindingName = parameterName.substring(BINDING_PREFIX.length());
 					Value bindingValue = ProtocolUtil.parseValueParam(request, parameterName,
