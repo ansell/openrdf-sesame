@@ -38,6 +38,17 @@ public class SolrSailGeoSPARQLTest extends AbstractLuceneSailGeoSPARQLTest {
 		sail.setParameter(SolrIndex.SERVER_KEY, "embedded:");
 	}
 
+	@Override
+	protected void loadPolygons()
+	{
+		// do nothing - JTS is required
+	}
+
+	@Override
+	protected void checkPolygons()
+	{
+		// do nothing - JTS is required
+	}
 	
 	@Test
 	@Ignore // JTS is required
