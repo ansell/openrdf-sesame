@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -394,6 +395,7 @@ public class LuceneSail extends NotifyingSailWrapper {
 				throw new SailException("Could read " + INDEXEDFIELDS + ": " + indexedfieldsString, e);
 			}
 			ValueFactory vf = getValueFactory();
+			indexedFields = new HashSet<IRI>();
 			indexedFieldsMapping = new HashMap<IRI, IRI>();
 			for (Object key : prop.keySet()) {
 				String keyStr = key.toString();
