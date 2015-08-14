@@ -16,43 +16,69 @@
  */
 package org.openrdf.sail.elasticsearch;
 
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.elasticsearch.common.geo.GeoHashUtils;
 import org.elasticsearch.search.SearchHit;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
-public class ElasticsearchDocument implements SearchDocument {
-	private final String id;
-	private final String type;
-	private final long version;
-	private final String index;
-	private final Map<String,Object> fields;
+import com.google.common.base.Function;
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
 
+public class ElasticsearchDocument implements SearchDocument {
+
+	private final String id;
+
+	private final String type;
+
+	private final long version;
+
+	private final String index;
+
+	private final Map<String, Object> fields;
+
+	private final Function<? super String,? extends SpatialContext> geoContextMapper;
+
+	/**
+	 * To be removed, no longer used.
+	 */
+	@Deprecated
 	public ElasticsearchDocument(SearchHit hit) {
-		this(hit.getId(), hit.getType(), hit.getIndex(), hit.getVersion(), hit.getSource());
+		this(hit, null);
 	}
 
-	public ElasticsearchDocument(String id, String type, String index, String resourceId, String context)
+	public ElasticsearchDocument(SearchHit hit, Function<? super String,? extends SpatialContext> geoContextMapper) {
+		this(hit.getId(), hit.getType(), hit.getIndex(), hit.getVersion(), hit.getSource(), geoContextMapper);
+	}
+
+	public ElasticsearchDocument(String id, String type, String index, String resourceId, String context,
+			Function<? super String,? extends SpatialContext> geoContextMapper)
 	{
-		this(id, type, index, 0L, new HashMap<String,Object>());
+		this(id, type, index, 0L, new HashMap<String, Object>(), geoContextMapper);
 		fields.put(SearchFields.URI_FIELD_NAME, resourceId);
 		if (context != null) {
 			fields.put(SearchFields.CONTEXT_FIELD_NAME, context);
 		}
 	}
 
-	public ElasticsearchDocument(String id, String type, String index, long version, Map<String,Object> fields) {
+	public ElasticsearchDocument(String id, String type, String index, long version,
+			Map<String, Object> fields, Function<? super String,? extends SpatialContext> geoContextMapper)
+	{
 		this.id = id;
 		this.type = type;
 		this.version = version;
 		this.index = index;
 		this.fields = fields;
+		this.geoContextMapper = geoContextMapper;
 	}
 
 	@Override
@@ -72,34 +98,33 @@ public class ElasticsearchDocument implements SearchDocument {
 		return index;
 	}
 
-	public Map<String,Object> getSource()
-	{
+	public Map<String, Object> getSource() {
 		return fields;
 	}
 
 	@Override
 	public String getResource() {
-		return (String) fields.get(SearchFields.URI_FIELD_NAME);
+		return (String)fields.get(SearchFields.URI_FIELD_NAME);
 	}
 
 	@Override
 	public String getContext() {
-		return (String) fields.get(SearchFields.CONTEXT_FIELD_NAME);
+		return (String)fields.get(SearchFields.CONTEXT_FIELD_NAME);
 	}
 
 	@Override
-	public Collection<String> getPropertyNames() {
+	public Set<String> getPropertyNames() {
 		return ElasticsearchIndex.getPropertyFields(fields.keySet());
 	}
 
 	@Override
 	public void addProperty(String name) {
 		// in elastic search, fields must have an explicit value
-		if(fields.containsKey(name)) {
-			throw new IllegalStateException("Property already added: "+name);
+		if (fields.containsKey(name)) {
+			throw new IllegalStateException("Property already added: " + name);
 		}
 		fields.put(name, null);
-		if(!fields.containsKey(SearchFields.TEXT_FIELD_NAME)) {
+		if (!fields.containsKey(SearchFields.TEXT_FIELD_NAME)) {
 			fields.put(SearchFields.TEXT_FIELD_NAME, null);
 		}
 	}
@@ -108,6 +133,25 @@ public class ElasticsearchDocument implements SearchDocument {
 	public void addProperty(String name, String text) {
 		addField(name, text, fields);
 		addField(SearchFields.TEXT_FIELD_NAME, text, fields);
+	}
+
+	@Override
+	public void addGeoProperty(String name, String text) {
+		addField(name, text, fields);
+		try {
+			Shape shape = geoContextMapper.apply(name).readShapeFromWkt(text);
+			if (shape instanceof Point) {
+				Point p = (Point)shape;
+				fields.put(ElasticsearchIndex.GEOPOINT_FIELD_PREFIX + name,
+						GeoHashUtils.encode(p.getY(), p.getX()));
+			}
+			else {
+				fields.put(ElasticsearchIndex.GEOSHAPE_FIELD_PREFIX + name, ElasticsearchSpatialSupport.getSpatialSupport().toGeoJSON(shape));
+			}
+		}
+		catch (ParseException e) {
+			// ignore
+		}
 	}
 
 	@Override
@@ -129,10 +173,10 @@ public class ElasticsearchDocument implements SearchDocument {
 		return asStringList(fields.get(name));
 	}
 
-	private static void addField(String name, String value, Map<String,Object> document) {
+	private static void addField(String name, String value, Map<String, Object> document) {
 		Object oldValue = document.get(name);
 		Object newValue;
-		if(oldValue != null) {
+		if (oldValue != null) {
 			List<String> newList = makeModifiable(asStringList(oldValue));
 			newList.add(value);
 			newValue = newList;
@@ -143,11 +187,10 @@ public class ElasticsearchDocument implements SearchDocument {
 		document.put(name, newValue);
 	}
 
-	private static List<String> makeModifiable(List<String> l)
-	{
+	private static List<String> makeModifiable(List<String> l) {
 		List<String> modList;
-		if(!(l instanceof ArrayList<?>)) {
-			modList = new ArrayList<String>(l.size()+1);
+		if (!(l instanceof ArrayList<?>)) {
+			modList = new ArrayList<String>(l.size() + 1);
 			modList.addAll(l);
 		}
 		else {
@@ -159,14 +202,14 @@ public class ElasticsearchDocument implements SearchDocument {
 	@SuppressWarnings("unchecked")
 	private static List<String> asStringList(Object value) {
 		List<String> l;
-		if(value == null) {
+		if (value == null) {
 			l = null;
 		}
-		else if(value instanceof List<?>) {
-			l = (List<String>) value;
+		else if (value instanceof List<?>) {
+			l = (List<String>)value;
 		}
 		else {
-			l = Collections.singletonList((String) value);
+			l = Collections.singletonList((String)value);
 		}
 		return l;
 	}

@@ -22,20 +22,20 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.CorruptIndexException;
@@ -51,26 +51,48 @@ import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.highlight.Formatter;
 import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.spatial.SpatialStrategy;
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTreeFactory;
+import org.apache.lucene.spatial.query.SpatialArgs;
+import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Bits;
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.GEOF;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
+import org.openrdf.sail.SailException;
+import org.openrdf.sail.lucene.util.GeoUnits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.sail.SailException;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.context.SpatialContextFactory;
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * A LuceneIndex is a one-stop-shop abstraction of a Lucene index. It takes care
@@ -85,6 +107,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		// do NOT set this to Integer.MAX_VALUE, because this breaks fuzzy queries
 		BooleanQuery.setMaxClauseCount(1024 * 1024);
 	}
+
+	private static final String GEO_FIELD_PREFIX = "_geo_";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -111,8 +135,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 */
 	protected ReaderMonitor currentMonitor;
 
-	public LuceneIndex()
-	{}
+	private Function<? super String,? extends SpatialStrategy> geoStrategyMapper;
+
+	public LuceneIndex() {
+	}
 
 	/**
 	 * Creates a new LuceneIndex.
@@ -131,6 +157,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	{
 		this.directory = directory;
 		this.analyzer = analyzer;
+		this.geoStrategyMapper = createSpatialStrategyMapper(Collections.<String, String>emptyMap());
 
 		postInit();
 	}
@@ -142,11 +169,16 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		super.initialize(parameters);
 		this.directory = createDirectory(parameters);
 		this.analyzer = createAnalyzer(parameters);
+		// slightly hacky cast to cope with the fact that Properties is
+		// Map<Object,Object>
+		// even though it is effectively Map<String,String>
+		this.geoStrategyMapper = createSpatialStrategyMapper((Map<String, String>)(Map<?, ?>)parameters);
 
 		postInit();
 	}
 
-	protected Directory createDirectory(Properties parameters) throws IOException
+	protected Directory createDirectory(Properties parameters)
+		throws IOException
 	{
 		Directory dir;
 		if (parameters.containsKey(LuceneSail.LUCENE_DIR_KEY)) {
@@ -164,7 +196,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return dir;
 	}
 
-	protected Analyzer createAnalyzer(Properties parameters) throws Exception
+	protected Analyzer createAnalyzer(Properties parameters)
+		throws Exception
 	{
 		Analyzer analyzer;
 		if (parameters.containsKey(LuceneSail.ANALYZER_CLASS_KEY)) {
@@ -176,7 +209,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return analyzer;
 	}
 
-	private void postInit() throws IOException
+	private void postInit()
+		throws IOException
 	{
 		this.queryAnalyzer = new StandardAnalyzer();
 
@@ -190,6 +224,26 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
+	protected Function<String, ? extends SpatialStrategy> createSpatialStrategyMapper(Map<String,String> parameters) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		SpatialContext geoContext = SpatialContextFactory.makeSpatialContext(parameters, classLoader);
+		final SpatialPrefixTree spt = SpatialPrefixTreeFactory.makeSPT(parameters,
+				classLoader, geoContext);
+		return new Function<String,SpatialStrategy>()
+		{
+			@Override
+			public SpatialStrategy apply(String field) {
+				return new RecursivePrefixTreeStrategy(spt, GEO_FIELD_PREFIX + field);
+			}
+			
+		};
+	}
+
+	@Override
+	protected SpatialContext getSpatialContext(String property) {
+		return geoStrategyMapper.apply(property).getSpatialContext();
+	}
+
 	// //////////////////////////////// Setters and getters
 
 	public Directory getDirectory() {
@@ -198,6 +252,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	public Analyzer getAnalyzer() {
 		return analyzer;
+	}
+
+	public Function<? super String, ? extends SpatialStrategy> getSpatialStrategyMapper() {
+		return geoStrategyMapper;
 	}
 
 	// //////////////////////////////// Methods for controlled index access
@@ -277,33 +335,34 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	// //////////////////////////////// Methods for updating the index
 
 	@Override
-	protected SearchDocument getDocument(String id) throws IOException
+	protected SearchDocument getDocument(String id)
+		throws IOException
 	{
 		Document document = getDocument(idTerm(id));
-		return (document != null) ? new LuceneDocument(document) : null;
+		return (document != null) ? new LuceneDocument(document, geoStrategyMapper) : null;
 	}
 
 	@Override
-	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
+	protected Iterable<? extends SearchDocument> getDocuments(String resourceId)
+		throws IOException
+	{
 		List<Document> docs = getDocuments(new Term(SearchFields.URI_FIELD_NAME, resourceId));
-		return Iterables.transform(docs, new Function<Document,SearchDocument>()
-		{
+		return Iterables.transform(docs, new Function<Document, SearchDocument>() {
+
 			@Override
 			public SearchDocument apply(Document doc) {
-				return new LuceneDocument(doc);
+				return new LuceneDocument(doc, geoStrategyMapper);
 			}
 		});
 	}
 
 	@Override
-	protected SearchDocument newDocument(String id, String resourceId, String context)
-	{
-		return new LuceneDocument(id, resourceId, context);
+	protected SearchDocument newDocument(String id, String resourceId, String context) {
+		return new LuceneDocument(id, resourceId, context, geoStrategyMapper);
 	}
 
 	@Override
-	protected SearchDocument copyDocument(SearchDocument doc)
-	{
+	protected SearchDocument copyDocument(SearchDocument doc) {
 		Document document = ((LuceneDocument)doc).getDocument();
 		Document newDocument = new Document();
 
@@ -311,30 +370,32 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		for (IndexableField oldField : document.getFields()) {
 			newDocument.add(oldField);
 		}
-		return new LuceneDocument(newDocument);
+		return new LuceneDocument(newDocument, geoStrategyMapper);
 	}
 
 	@Override
-	protected void addDocument(SearchDocument doc) throws IOException
+	protected void addDocument(SearchDocument doc)
+		throws IOException
 	{
 		getIndexWriter().addDocument(((LuceneDocument)doc).getDocument());
 	}
 
 	@Override
-	protected void updateDocument(SearchDocument doc) throws IOException
+	protected void updateDocument(SearchDocument doc)
+		throws IOException
 	{
 		getIndexWriter().updateDocument(idTerm(doc.getId()), ((LuceneDocument)doc).getDocument());
 	}
 
 	@Override
-	protected void deleteDocument(SearchDocument doc) throws IOException
+	protected void deleteDocument(SearchDocument doc)
+		throws IOException
 	{
 		getIndexWriter().deleteDocuments(idTerm(doc.getId()));
 	}
 
 	@Override
-	protected BulkUpdater newBulkUpdate()
-	{
+	protected BulkUpdater newBulkUpdate() {
 		return new SimpleBulkUpdater(this);
 	}
 
@@ -352,11 +413,10 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		IndexReader reader = getIndexReader();
 		List<LeafReaderContext> leaves = reader.leaves();
 		int size = leaves.size();
-		for(int i=0; i<size; i++) {
+		for (int i = 0; i < size; i++) {
 			LeafReader lreader = leaves.get(i).reader();
 			Document document = getDocument(lreader, idTerm);
-			if(document != null)
-			{
+			if (document != null) {
 				return document;
 			}
 		}
@@ -364,13 +424,14 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return null;
 	}
 
-	private static Document getDocument(LeafReader reader, Term term) throws IOException {
+	private static Document getDocument(LeafReader reader, Term term)
+		throws IOException
+	{
 		DocsEnum docs = reader.termDocsEnum(term);
-		if(docs != null)
-		{
+		if (docs != null) {
 			int docId = docs.nextDoc();
-			if(docId != DocsEnum.NO_MORE_DOCS) {
-				if(docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+			if (docId != DocsEnum.NO_MORE_DOCS) {
+				if (docs.nextDoc() != DocsEnum.NO_MORE_DOCS) {
 					throw new IllegalStateException("Multiple Documents for term " + term.text());
 				}
 				return readDocument(reader, docId, null);
@@ -398,7 +459,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		IndexReader reader = getIndexReader();
 		List<LeafReaderContext> leaves = reader.leaves();
 		int size = leaves.size();
-		for(int i=0; i<size; i++) {
+		for (int i = 0; i < size; i++) {
 			LeafReader lreader = leaves.get(i).reader();
 			addDocuments(lreader, uriTerm, result);
 		}
@@ -406,12 +467,13 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		return result;
 	}
 
-	private static void addDocuments(LeafReader reader, Term term, Collection<Document> documents) throws IOException {
+	private static void addDocuments(LeafReader reader, Term term, Collection<Document> documents)
+		throws IOException
+	{
 		DocsEnum docs = reader.termDocsEnum(term);
-		if(docs != null)
-		{
+		if (docs != null) {
 			int docId;
-			while((docId = docs.nextDoc()) != DocsEnum.NO_MORE_DOCS) {
+			while ((docId = docs.nextDoc()) != DocsEnum.NO_MORE_DOCS) {
 				Document document = readDocument(reader, docId, null);
 				documents.add(document);
 			}
@@ -479,6 +541,11 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public static void addPredicateField(String predicate, String text, Document document) {
 		// store this predicate
 		document.add(new TextField(predicate, text, Store.YES));
+	}
+
+	public static void addStoredOnlyPredicateField(String predicate, String text, Document document) {
+		// store this predicate
+		document.add(new StoredField(predicate, text));
 	}
 
 	public static void addTextField(String text, Document document) {
@@ -602,7 +669,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 
 	/**
 	 * Parse the passed query.
-	 * 
+	 * To be removed, no longer used.
 	 * @param query
 	 *        string
 	 * @return the parsed query
@@ -610,6 +677,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
+	@Deprecated
 	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
 	{
 		Query q;
@@ -620,6 +688,144 @@ public class LuceneIndex extends AbstractLuceneIndex {
 			throw new MalformedQueryException(e);
 		}
 		return new LuceneQuery(q, this);
+	}
+
+	/**
+	 * Parse the passed query.
+	 * 
+	 * @param query
+	 *        string
+	 * @return the parsed query
+	 * @throws ParseException
+	 *         when the parsing brakes
+	 */
+	@Override
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI,
+			boolean highlight)
+		throws MalformedQueryException, IOException
+	{
+		Query q;
+		try {
+			q = getQueryParser(propertyURI).parse(query);
+		}
+		catch (ParseException e) {
+			throw new MalformedQueryException(e);
+		}
+
+		final Highlighter highlighter;
+		if (highlight) {
+			Formatter formatter = new SimpleHTMLFormatter(SearchFields.HIGHLIGHTER_PRE_TAG,
+					SearchFields.HIGHLIGHTER_POST_TAG);
+			highlighter = new Highlighter(formatter, new QueryScorer(q));
+		}
+		else {
+			highlighter = null;
+		}
+
+		TopDocs docs;
+		if (subject != null) {
+			docs = search(subject, q);
+		}
+		else {
+			docs = search(q);
+		}
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentScore>() {
+
+			@Override
+			public DocumentScore apply(ScoreDoc doc) {
+				return new LuceneDocumentScore(doc, highlighter, LuceneIndex.this);
+			}
+		});
+	}
+
+	@Override
+	protected Iterable<? extends DocumentDistance> geoQuery(final URI geoProperty,
+			Point p, final URI units, double distance, String distanceVar, Var contextVar)
+		throws MalformedQueryException, IOException
+	{
+		double degs = GeoUnits.toDegrees(distance, units);
+		final String geoField = SearchFields.getPropertyField(geoProperty);
+		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoField);
+		final Shape boundingCircle = strategy.getSpatialContext().makeCircle(p, degs);
+		Query q = strategy.makeQuery(new SpatialArgs(SpatialOperation.Intersects, boundingCircle));
+		if(contextVar != null) {
+			q = addContextTerm(q, (Resource) contextVar.getValue());
+		}
+
+		TopDocs docs = search(new CustomScoreQuery(q, new FunctionQuery(
+				strategy.makeRecipDistanceValueSource(boundingCircle))));
+		final boolean requireContext = (contextVar != null && !contextVar.hasValue());
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentDistance>() {
+
+			@Override
+			public DocumentDistance apply(ScoreDoc doc) {
+				return new LuceneDocumentDistance(doc, geoField, units, boundingCircle.getCenter(),
+						requireContext, LuceneIndex.this);
+			}
+		});
+	}
+
+	private Query addContextTerm(Query q, Resource ctx) {
+		BooleanQuery combinedQuery = new BooleanQuery();
+		TermQuery idQuery = new TermQuery(new Term(SearchFields.CONTEXT_FIELD_NAME,
+				SearchFields.getContextID(ctx)));
+		// the specified named graph or not the unnamed graph
+		combinedQuery.add(idQuery, ctx != null ? Occur.MUST : Occur.MUST_NOT);
+		combinedQuery.add(q, Occur.MUST);
+		return combinedQuery;
+	}
+
+	@Override
+	protected Iterable<? extends DocumentResult> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape, Var contextVar)
+		throws MalformedQueryException, IOException
+	{
+		SpatialOperation op = toSpatialOp(relation);
+		if(op == null) {
+			return null;
+		}
+
+		final String geoField = SearchFields.getPropertyField(geoProperty);
+		SpatialStrategy strategy = getSpatialStrategyMapper().apply(geoField);
+		Query q = strategy.makeQuery(new SpatialArgs(op, shape));
+		if(contextVar != null) {
+			q = addContextTerm(q, (Resource) contextVar.getValue());
+		}
+
+		TopDocs docs = search(q);
+		final Set<String> fields = Sets.newHashSet(SearchFields.URI_FIELD_NAME, geoField);
+		if(contextVar != null && !contextVar.hasValue()) {
+			fields.add(SearchFields.CONTEXT_FIELD_NAME);
+		}
+		return Iterables.transform(Arrays.asList(docs.scoreDocs), new Function<ScoreDoc, DocumentResult>() {
+
+			@Override
+			public DocumentResult apply(ScoreDoc doc) {
+				return new LuceneDocumentResult(doc, LuceneIndex.this, fields);
+			}
+		});
+	}
+
+	private SpatialOperation toSpatialOp(String relation) {
+		if(GEOF.SF_INTERSECTS.stringValue().equals(relation)) {
+			return SpatialOperation.Intersects;
+		}
+		else if(GEOF.SF_DISJOINT.stringValue().equals(relation)) {
+			return SpatialOperation.IsDisjointTo;
+		}
+		else if(GEOF.SF_EQUALS.stringValue().equals(relation)) {
+			return SpatialOperation.IsEqualTo;
+		}
+		else if(GEOF.SF_OVERLAPS.stringValue().equals(relation)) {
+			return SpatialOperation.Overlaps;
+		}
+		else if(GEOF.EH_COVERED_BY.stringValue().equals(relation)) {
+			return SpatialOperation.IsWithin;
+		}
+		else if(GEOF.EH_COVERS.stringValue().equals(relation)) {
+			return SpatialOperation.Contains;
+		}
+		return null;
 	}
 
 	/**
@@ -646,8 +852,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	public String getSnippet(String fieldName, String text, Highlighter highlighter) {
 		String snippet;
 		try {
-			TokenStream tokenStream = getAnalyzer().tokenStream(fieldName,
-					new StringReader(text));
+			TokenStream tokenStream = getAnalyzer().tokenStream(fieldName, new StringReader(text));
 			snippet = highlighter.getBestFragments(tokenStream, text, 2, "...");
 		}
 		catch (Exception e) {
@@ -680,7 +885,8 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws IOException
 	{
 		// rewrite the query
-		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource)));
+		TermQuery idQuery = new TermQuery(new Term(SearchFields.URI_FIELD_NAME,
+				SearchFields.getResourceID(resource)));
 		BooleanQuery combinedQuery = new BooleanQuery();
 		combinedQuery.add(idQuery, Occur.MUST);
 		combinedQuery.add(query, Occur.MUST);
@@ -694,7 +900,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		throws IOException
 	{
 		int nDocs;
-		if(maxDocs > 0) {
+		if (maxDocs > 0) {
 			nDocs = maxDocs;
 		}
 		else {
@@ -712,7 +918,7 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			return new QueryParser(propertyURI.toString(), this.queryAnalyzer);
+			return new QueryParser(SearchFields.getPropertyField(propertyURI), this.queryAnalyzer);
 	}
 
 	/**
@@ -834,16 +1040,15 @@ public class LuceneIndex extends AbstractLuceneIndex {
 	// Lucene helper methods
 	//
 
-	private static boolean isDeleted(IndexReader reader, int docId)
-	{
-		if(reader.hasDeletions()) {
+	private static boolean isDeleted(IndexReader reader, int docId) {
+		if (reader.hasDeletions()) {
 			List<LeafReaderContext> leaves = reader.leaves();
 			int size = leaves.size();
-			for(int i=0; i<size; i++) {
+			for (int i = 0; i < size; i++) {
 				Bits liveDocs = leaves.get(i).reader().getLiveDocs();
-				if(docId < liveDocs.length()) {
+				if (docId < liveDocs.length()) {
 					boolean isDeleted = !liveDocs.get(docId);
-					if(isDeleted) {
+					if (isDeleted) {
 						return true;
 					}
 				}
@@ -855,17 +1060,18 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 	}
 
-	private static Document readDocument(IndexReader reader, int docId, Set<String> fieldsToLoad) throws IOException
+	private static Document readDocument(IndexReader reader, int docId, Set<String> fieldsToLoad)
+		throws IOException
 	{
 		DocumentStoredFieldVisitor visitor = new DocumentStoredFieldVisitor(fieldsToLoad);
 		reader.document(docId, visitor);
 		return visitor.getDocument();
 	}
 
+	static class DocumentStoredFieldVisitor extends StoredFieldVisitor {
 
-	static class DocumentStoredFieldVisitor extends StoredFieldVisitor
-	{
 		private final Set<String> fieldsToLoad;
+
 		private final Document document = new Document();
 
 		DocumentStoredFieldVisitor(Set<String> fieldsToLoad) {
@@ -880,24 +1086,26 @@ public class LuceneIndex extends AbstractLuceneIndex {
 		}
 
 		@Override
-		public void stringField(FieldInfo fieldInfo, String value)
-		{
+		public void stringField(FieldInfo fieldInfo, String value) {
 			String name = fieldInfo.name;
-			if(SearchFields.ID_FIELD_NAME.equals(name)) {
+			if (SearchFields.ID_FIELD_NAME.equals(name)) {
 				addIDField(value, document);
-			} else if(SearchFields.CONTEXT_FIELD_NAME.equals(name)) {
+			}
+			else if (SearchFields.CONTEXT_FIELD_NAME.equals(name)) {
 				addContextField(value, document);
-			} else if(SearchFields.URI_FIELD_NAME.equals(name)) {
+			}
+			else if (SearchFields.URI_FIELD_NAME.equals(name)) {
 				addResourceField(value, document);
-			} else if(SearchFields.TEXT_FIELD_NAME.equals(name)) {
+			}
+			else if (SearchFields.TEXT_FIELD_NAME.equals(name)) {
 				addTextField(value, document);
-			} else {
+			}
+			else {
 				addPredicateField(name, value, document);
 			}
 		}
 
-		Document getDocument()
-		{
+		Document getDocument() {
 			return document;
 		}
 	}

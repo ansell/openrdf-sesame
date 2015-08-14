@@ -19,17 +19,16 @@ package org.openrdf.sail.lucene;
 import static org.openrdf.model.vocabulary.RDF.TYPE;
 import static org.openrdf.sail.lucene.LuceneSailSchema.LUCENE_QUERY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.MATCHES;
-import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.PROPERTY;
+import static org.openrdf.sail.lucene.LuceneSailSchema.QUERY;
 import static org.openrdf.sail.lucene.LuceneSailSchema.SCORE;
 import static org.openrdf.sail.lucene.LuceneSailSchema.SNIPPET;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -41,6 +40,8 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.openrdf.sail.SailException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A QueryInterpreter creates a set of QuerySpecs based on Lucene-related
@@ -51,7 +52,7 @@ import org.openrdf.sail.SailException;
  * and correct (query pattern has a literal object, matches a resource subject,
  * etc.).
  */
-public class QuerySpecBuilder {
+public class QuerySpecBuilder implements SearchQueryInterpreter {
 
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -70,12 +71,25 @@ public class QuerySpecBuilder {
 	/**
 	 * Returns a set of QuerySpecs embodying all necessary information to perform
 	 * the Lucene query embedded in a TupleExpr.
+	 * To be removed, prefer {@link process(TupleExpr tupleExpr, BindingSet bindings, Collection<SearchQueryEvaluator> result)}.
 	 */
+	@Deprecated
 	public Set<QuerySpec> process(TupleExpr tupleExpr, BindingSet bindings)
 		throws SailException
 	{
 		HashSet<QuerySpec> result = new HashSet<QuerySpec>();
+		process(tupleExpr, bindings, (Collection<SearchQueryEvaluator>) (Collection<?>) result);
+		return result;
+	}
 
+	/**
+	 * Appends a set of QuerySpecs embodying all necessary information to perform
+	 * the Lucene query embedded in a TupleExpr.
+	 */
+	@Override
+	public void process(TupleExpr tupleExpr, BindingSet bindings, Collection<SearchQueryEvaluator> result)
+		throws SailException
+	{
 		// find Lucene-related StatementPatterns
 		PatternFilter filter = new PatternFilter();
 		tupleExpr.visit(filter);
@@ -179,8 +193,6 @@ public class QuerySpecBuilder {
 		}
 
 		// fail on superflous typePattern, query, score, or snippet patterns.
-
-		return result;
 	}
 
 	private void failOrWarn(Exception exception)

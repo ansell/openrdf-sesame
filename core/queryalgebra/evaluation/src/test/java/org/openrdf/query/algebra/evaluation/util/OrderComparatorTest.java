@@ -27,6 +27,7 @@ import org.junit.Test;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Order;
@@ -35,37 +36,40 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 
 /**
- *
  * @author james
- *
  */
 public class OrderComparatorTest {
+
 	class EvaluationStrategyStub implements EvaluationStrategy {
 
 		public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service expr,
 				String serviceUri, CloseableIteration<BindingSet, QueryEvaluationException> bindings)
-			throws QueryEvaluationException
+					throws QueryEvaluationException
 		{
 			throw new UnsupportedOperationException();
 		}
 
-		public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(
-				TupleExpr expr, BindingSet bindings)
-				throws QueryEvaluationException {
+		public CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleExpr expr,
+				BindingSet bindings)
+					throws QueryEvaluationException
+		{
 			throw new UnsupportedOperationException();
 		}
 
 		public Value evaluate(ValueExpr expr, BindingSet bindings)
-				throws ValueExprEvaluationException, QueryEvaluationException {
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
 			return null;
 		}
 
 		public boolean isTrue(ValueExpr expr, BindingSet bindings)
-				throws ValueExprEvaluationException, QueryEvaluationException {
+			throws ValueExprEvaluationException, QueryEvaluationException
+		{
 			throw new UnsupportedOperationException();
 		}
 
@@ -77,6 +81,7 @@ public class OrderComparatorTest {
 	}
 
 	class ComparatorStub extends ValueComparator {
+
 		Iterator<Integer> iter;
 
 		public void setIterator(Iterator<Integer> iter) {
@@ -106,7 +111,9 @@ public class OrderComparatorTest {
 	private int NEG = -7349;
 
 	@Test
-	public void testEquals() throws Exception {
+	public void testEquals()
+		throws Exception
+	{
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(ZERO).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
@@ -114,7 +121,9 @@ public class OrderComparatorTest {
 	}
 
 	@Test
-	public void testZero() throws Exception {
+	public void testZero()
+		throws Exception
+	{
 		order.addElement(asc);
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(ZERO, POS).iterator());
@@ -123,7 +132,9 @@ public class OrderComparatorTest {
 	}
 
 	@Test
-	public void testTerm() throws Exception {
+	public void testTerm()
+		throws Exception
+	{
 		order.addElement(asc);
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(POS, NEG).iterator());
@@ -132,7 +143,9 @@ public class OrderComparatorTest {
 	}
 
 	@Test
-	public void testAscLessThan() throws Exception {
+	public void testAscLessThan()
+		throws Exception
+	{
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(NEG).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
@@ -140,7 +153,9 @@ public class OrderComparatorTest {
 	}
 
 	@Test
-	public void testAscGreaterThan() throws Exception {
+	public void testAscGreaterThan()
+		throws Exception
+	{
 		order.addElement(asc);
 		cmp.setIterator(Arrays.asList(POS).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
@@ -148,7 +163,9 @@ public class OrderComparatorTest {
 	}
 
 	@Test
-	public void testDescLessThan() throws Exception {
+	public void testDescLessThan()
+		throws Exception
+	{
 		order.addElement(desc);
 		cmp.setIterator(Arrays.asList(NEG).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
@@ -156,15 +173,45 @@ public class OrderComparatorTest {
 	}
 
 	@Test
-	public void testDescGreaterThan() throws Exception {
+	public void testDescGreaterThan()
+		throws Exception
+	{
 		order.addElement(desc);
 		cmp.setIterator(Arrays.asList(POS).iterator());
 		OrderComparator sud = new OrderComparator(strategy, order, cmp);
 		assertTrue(sud.compare(null, null) < 0);
+	}
+
+	@Test
+	public void testDisjunctBindingNames()
+		throws Exception
+	{
+		OrderComparator sud = new OrderComparator(strategy, order, cmp);
+		QueryBindingSet a = new QueryBindingSet();
+		QueryBindingSet b = new QueryBindingSet();
+		a.addBinding("a", ValueFactoryImpl.getInstance().createLiteral("a"));
+		b.addBinding("b", ValueFactoryImpl.getInstance().createLiteral("b"));
+		assertTrue(sud.compare(a, b) != 0);
+		assertTrue(sud.compare(a, b) != sud.compare(b, a));
+	}
+	
+	@Test 
+	public void testEqualBindingNamesUnequalValues() {
+		OrderComparator sud = new OrderComparator(strategy, order, new ValueComparator());
+		QueryBindingSet a = new QueryBindingSet();
+		QueryBindingSet b = new QueryBindingSet();
+		a.addBinding("a", ValueFactoryImpl.getInstance().createLiteral("ab"));
+		a.addBinding("b", ValueFactoryImpl.getInstance().createLiteral("b"));
+		b.addBinding("b", ValueFactoryImpl.getInstance().createLiteral("b"));
+		b.addBinding("a", ValueFactoryImpl.getInstance().createLiteral("ac"));
+		assertTrue(sud.compare(a, b) < 0);
+		assertTrue(sud.compare(a, b) != sud.compare(b, a));
 	}
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp()
+		throws Exception
+	{
 		asc.setAscending(true);
 		desc.setAscending(false);
 	}

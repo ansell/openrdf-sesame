@@ -32,9 +32,15 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParserRegistry;
 import org.openrdf.rio.Rio;
 
+/**
+ * A repository that automatically attempts to load the dataset supplied in a
+ * (SPARQL) query (using FROM and FROM NAMED clauses).
+ *
+ * @author Arjohn Kampman
+ * @author Jeen Broekstra
+ */
 public class DatasetRepository extends RepositoryWrapper {
 
 	private Map<URL, Long> lastModified = new ConcurrentHashMap<URL, Long>();
@@ -69,6 +75,20 @@ public class DatasetRepository extends RepositoryWrapper {
 		return new DatasetRepositoryConnection(this, getDelegate().getConnection());
 	}
 
+	/**
+	 * Inspects if the dataset at the supplied URL location has been modified
+	 * since the last load into this repository and if so loads it into the
+	 * supplied context.
+	 * 
+	 * @param url
+	 *        the location of the dataset
+	 * @param context
+	 *        the context in which to load the dataset
+	 * @param config
+	 *        parser configuration to use for processing the dataset
+	 * @throws RepositoryException
+	 *         if an error occurred while loading the dataset.
+	 */
 	public void loadDataset(URL url, IRI context, ParserConfig config)
 		throws RepositoryException
 	{

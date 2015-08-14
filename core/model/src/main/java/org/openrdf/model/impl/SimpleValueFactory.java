@@ -77,6 +77,11 @@ public class SimpleValueFactory extends AbstractValueFactory {
 	}
 
 	@Override
+	public Literal createLiteral(boolean b) {
+		return b ? BooleanLiteral.TRUE : BooleanLiteral.FALSE;
+	}
+
+	@Override
 	public Literal createLiteral(String value, IRI datatype) {
 		return new SimpleLiteral(value, datatype);
 	}

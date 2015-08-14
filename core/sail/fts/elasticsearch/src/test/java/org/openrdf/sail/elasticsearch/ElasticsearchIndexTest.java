@@ -58,6 +58,7 @@ import org.openrdf.sail.lucene.SearchFields;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class ElasticsearchIndexTest {
+
 	private static final String DATA_DIR = "target/test-data";
 
 	public static final IRI CONTEXT_1 = new SimpleIRI("urn:context1");
@@ -111,7 +112,9 @@ public class ElasticsearchIndexTest {
 			CONTEXT_2);
 
 	Node node;
+
 	Client client;
+
 	ElasticsearchIndex index;
 
 	@Before
@@ -122,7 +125,8 @@ public class ElasticsearchIndexTest {
 		Properties sailProperties = new Properties();
 		sailProperties.put(LuceneSail.LUCENE_DIR_KEY, DATA_DIR);
 		index.initialize(sailProperties);
-		node = NodeBuilder.nodeBuilder().loadConfigSettings(false).client(true).local(true).clusterName(index.getClusterName()).node();
+		node = NodeBuilder.nodeBuilder().loadConfigSettings(false).client(true).local(true).clusterName(
+				index.getClusterName()).node();
 		client = node.client();
 	}
 
@@ -149,12 +153,13 @@ public class ElasticsearchIndexTest {
 		long count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(1, count);
 
-		SearchHits hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		SearchHits hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(
+				QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
 		Iterator<SearchHit> docs = hits.iterator();
 		assertTrue(docs.hasNext());
 
 		SearchHit doc = docs.next();
-		Map<String,Object> fields = client.prepareGet(doc.getIndex(), doc.getType(), doc.getId()).execute().actionGet().getSource();
+		Map<String, Object> fields = client.prepareGet(doc.getIndex(), doc.getType(), doc.getId()).execute().actionGet().getSource();
 		assertEquals(subject.toString(), fields.get(SearchFields.URI_FIELD_NAME));
 		assertEquals(object1.getLabel(), fields.get(predicate1.toString()));
 
@@ -170,7 +175,8 @@ public class ElasticsearchIndexTest {
 		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(1, count); // #docs should *not* have increased
 
-		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(
+				QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
 		docs = hits.iterator();
 		assertTrue(docs.hasNext());
 
@@ -183,10 +189,12 @@ public class ElasticsearchIndexTest {
 		assertFalse(docs.hasNext());
 
 		// see if we can query for these literals
-		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.queryStringQuery(object1.getLabel())).execute().actionGet().getCount();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).setQuery(
+				QueryBuilders.queryStringQuery(object1.getLabel())).execute().actionGet().getCount();
 		assertEquals(1, count);
 
-		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.queryStringQuery(object2.getLabel())).execute().actionGet().getCount();
+		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).setQuery(
+				QueryBuilders.queryStringQuery(object2.getLabel())).execute().actionGet().getCount();
 		assertEquals(1, count);
 
 		// remove the first statement
@@ -199,7 +207,8 @@ public class ElasticsearchIndexTest {
 		count = client.prepareCount(index.getIndexName()).setTypes(index.getTypes()).execute().actionGet().getCount();
 		assertEquals(1, count);
 
-		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
+		hits = client.prepareSearch(index.getIndexName()).setTypes(index.getTypes()).setQuery(
+				QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, subject.toString())).execute().actionGet().getHits();
 		docs = hits.iterator();
 		assertTrue(docs.hasNext());
 
@@ -438,7 +447,7 @@ public class ElasticsearchIndexTest {
 	 * @param document
 	 */
 	private void assertStatement(Statement statement, SearchDocument document) {
-		List<String> fields = document.getProperty(statement.getPredicate().toString());
+		List<String> fields = document.getProperty(SearchFields.getPropertyField(statement.getPredicate()));
 		assertNotNull("field " + statement.getPredicate() + " not found in document " + document, fields);
 		for (String f : fields) {
 			if (((Literal)statement.getObject()).getLabel().equals(f))
@@ -452,7 +461,7 @@ public class ElasticsearchIndexTest {
 	 * @param document
 	 */
 	private void assertNoStatement(Statement statement, SearchDocument document) {
-		List<String> fields = document.getProperty(statement.getPredicate().toString());
+		List<String> fields = document.getProperty(SearchFields.getPropertyField(statement.getPredicate()));
 		if (fields == null)
 			return;
 		for (String f : fields) {

@@ -17,8 +17,10 @@
 package org.openrdf.repository.base;
 
 /**
- * @deprecated since 4.0. Use {@link AbstractRepository} instead.
+ * Abstract base class for Repository implementations.
+ * 
  * @author Jeen Broekstra
+ * @deprecated since 4.0. Use {@link AbstractRepository} instead.
  */
 @Deprecated
 public abstract class RepositoryBase extends AbstractRepository {
