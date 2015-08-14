@@ -567,9 +567,68 @@ public interface RepositoryConnection extends AutoCloseable {
 	 *         containing {@link Statement}s and optionally throwing a
 	 *         {@link RepositoryException} when an error when a problem occurs
 	 *         during retrieval.
+	 * @deprecated since 4.0. Use
+	 *             {@link #getStatements(Resource, IRI, Value, boolean, Resource...)}
+	 *             instead.
+	 */
+	@Deprecated
+	public default RepositoryResult<Statement> getStatements(Resource subj, URI pred, Value obj,
+			boolean includeInferred, Resource... contexts)
+				throws RepositoryException
+	{
+		return getStatements(subj, (IRI)pred, obj, includeInferred, contexts);
+	}
+
+	/**
+	 * Gets all statements with a specific subject, predicate and/or object from
+	 * the repository. The result is optionally restricted to the specified set
+	 * of named contexts.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        An IRI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) to get the data from. Note that this parameter is a
+	 *        vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @param includeInferred
+	 *        if false, no inferred statements are returned; if true, inferred
+	 *        statements are returned if available. The default is true.
+	 * @return The statements matching the specified pattern. The result object
+	 *         is a {@link RepositoryResult} object, a lazy Iterator-like object
+	 *         containing {@link Statement}s and optionally throwing a
+	 *         {@link RepositoryException} when an error when a problem occurs
+	 *         during retrieval.
 	 */
 	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
+				throws RepositoryException;
+
+	/**
+	 * Checks whether the repository contains statements with a specific subject,
+	 * predicate and/or object, optionally in the specified contexts.
+	 * 
+	 * @param subj
+	 *        A Resource specifying the subject, or <tt>null</tt> for a wildcard.
+	 * @param pred
+	 *        An IRI specifying the predicate, or <tt>null</tt> for a wildcard.
+	 * @param obj
+	 *        A Value specifying the object, or <tt>null</tt> for a wildcard.
+	 * @param contexts
+	 *        The context(s) the need to be searched. Note that this parameter is
+	 *        a vararg and as such is optional. If no contexts are supplied the
+	 *        method operates on the entire repository.
+	 * @param includeInferred
+	 *        if false, no inferred statements are considered; if true, inferred
+	 *        statements are considered if available
+	 * @return true If a matching statement is in the repository in the specified
+	 *         context, false otherwise.
+	 */
+	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
+			Resource... contexts)
 				throws RepositoryException;
 
 	/**
@@ -591,10 +650,17 @@ public interface RepositoryConnection extends AutoCloseable {
 	 *        statements are considered if available
 	 * @return true If a matching statement is in the repository in the specified
 	 *         context, false otherwise.
+	 * @deprecated since 4.0. Use
+	 *             {@link #hasStatement(Resource, IRI, Value, boolean, Resource...)}
+	 *             instead.
 	 */
-	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
+	@Deprecated
+	public default boolean hasStatement(Resource subj, URI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
-				throws RepositoryException;
+				throws RepositoryException
+	{
+		return hasStatement(subj, (IRI)pred, obj, includeInferred, contexts);
+	}
 
 	/**
 	 * Checks whether the repository contains the specified statement, optionally
