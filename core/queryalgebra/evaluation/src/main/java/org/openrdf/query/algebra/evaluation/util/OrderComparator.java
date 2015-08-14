@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
 
@@ -69,7 +71,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 	}
 
 	public int compare(BindingSet o1, BindingSet o2) {
-		
+
 		try {
 
 			for (OrderElem element : order.getElements()) {
@@ -89,7 +91,7 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			// contract of java.util.Comparator). We order by
 			// size first, then by binding names, then finally by values.
 
-			// null check 
+			// null check
 			if (o1 == null || o2 == null) {
 				if (o1 == null) {
 					return o2 == null ? 0 : 1;
@@ -98,25 +100,36 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 					return o1 == null ? 0 : -1;
 				}
 			}
-			
+
 			if (o2.size() != o1.size()) {
 				return o1.size() < o2.size() ? 1 : -1;
 			}
 
-			// sizes are equal. compare on binding names
-			if (!o2.getBindingNames().equals(o1.getBindingNames())) {
-				if (!o2.getBindingNames().containsAll(o1.getBindingNames())) {
-					return -1;
-				}
-				if (!o1.getBindingNames().containsAll(o2.getBindingNames())) {
-					return 1;
+			// we create an ordered list of binding names (using natural string order) to use for 
+			// consistent iteration over binding names and binding values.
+			final ArrayList<String> o1bindingNamesOrdered = new ArrayList<String>(o1.getBindingNames());
+			Collections.sort(o1bindingNamesOrdered);
+		
+			// binding set sizes are equal. compare on binding names.
+			if (!o1.getBindingNames().equals(o2.getBindingNames())) {
+
+				final ArrayList<String> o2bindingNamesOrdered = new ArrayList<String>(o2.getBindingNames());
+				Collections.sort(o2bindingNamesOrdered);
+
+				for (int i = 0; i < o1bindingNamesOrdered.size(); i++) {
+					String o1bn = o1bindingNamesOrdered.get(i);
+					String o2bn = o2bindingNamesOrdered.get(i);
+					int compare = o1bn.compareTo(o2bn);
+					if (compare != 0) {
+						return compare;
+					}
 				}
 			}
 
-			// binding names equal. compare on all values
-			for (Binding o1binding : o1) {
-				final Value v1 = o1binding.getValue();
-				final Value v2 = o2.getValue(o1binding.getName());
+			// binding names equal. compare on all values.
+			for (String bindingName: o1bindingNamesOrdered) {
+				final Value v1 = o1.getValue(bindingName);
+				final Value v2 = o2.getValue(bindingName);
 
 				final int compare = cmp.compare(v1, v2);
 				if (compare != 0) {
@@ -146,12 +159,14 @@ public class OrderComparator implements Comparator<BindingSet>, Serializable {
 			return null;
 		}
 	}
-	
-	private void writeObject(ObjectOutputStream out) throws IOException {
+
+	private void writeObject(ObjectOutputStream out)
+		throws IOException
+	{
 		this.strategyKey = EvaluationStrategies.register(strategy);
 		out.defaultWriteObject();
 	}
-	
+
 	private void readObject(ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
