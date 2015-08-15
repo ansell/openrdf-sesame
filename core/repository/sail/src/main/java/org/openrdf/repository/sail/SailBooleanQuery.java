@@ -33,7 +33,11 @@ import org.openrdf.sail.SailException;
 public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 
 	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailRepositoryConnection sailConnection) {
-		super(tupleQuery, sailConnection.getSailConnection());
+		this(tupleQuery, sailConnection.getSailConnection());
+	}
+
+	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailConnection sailConnection) {
+		super(tupleQuery, sailConnection);
 	}
 
 	@Override

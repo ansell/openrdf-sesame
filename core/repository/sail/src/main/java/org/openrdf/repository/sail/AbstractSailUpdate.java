@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Dataset;
@@ -29,12 +30,9 @@ import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.impl.AbstractUpdate;
 import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.query.parser.ParsedUpdate;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.helpers.SailUpdateExecutor;
 import org.openrdf.rio.ParserConfig;
-import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +47,13 @@ public abstract class AbstractSailUpdate extends AbstractUpdate {
 
 	private final SailConnection con;
 	private final ValueFactory vf;
+	private final ParserConfig parserConfig;
 
-	protected AbstractSailUpdate(ParsedUpdate parsedUpdate, SailConnection con, ValueFactory vf) {
+	protected AbstractSailUpdate(ParsedUpdate parsedUpdate, SailConnection con, ValueFactory vf, ParserConfig parserConfig) {
 		this.parsedUpdate = parsedUpdate;
 		this.con = con;
 		this.vf = vf;
+		this.parserConfig = parserConfig;
 	}
 
 	public ParsedUpdate getParsedUpdate() {
@@ -77,7 +77,7 @@ public abstract class AbstractSailUpdate extends AbstractUpdate {
 		Map<UpdateExpr, Dataset> datasetMapping = parsedUpdate.getDatasetMapping();
 
 		SailConnection conn = getSailConnection();
-		SailUpdateExecutor executor = new SailUpdateExecutor(conn, vf, getParserConfig());
+		SailUpdateExecutor executor = new SailUpdateExecutor(conn, vf, parserConfig);
 
 		for (UpdateExpr updateExpr : updateExprs) {
 
@@ -89,25 +89,13 @@ public abstract class AbstractSailUpdate extends AbstractUpdate {
 					beginLocalTransaction();
 				}
 
-				executor.executeUpdate(updateExpr, activeDataset, getBindings(), true, getMaxExecutionTime());
+				executor.executeUpdate(updateExpr, activeDataset, getBindings(), getIncludeInferred(), getMaxExecutionTime());
 
 				if (localTransaction) {
 					commitLocalTransaction();
 				}
 			}
-			catch (SailException e) {
-				logger.warn("exception during update execution: ", e);
-				if (!updateExpr.isSilent()) {
-					throw new UpdateExecutionException(e);
-				}
-			}
-			catch (RepositoryException e) {
-				logger.warn("exception during update execution: ", e);
-				if (!updateExpr.isSilent()) {
-					throw new UpdateExecutionException(e);
-				}
-			}
-			catch (RDFParseException e) {
+			catch (OpenRDFException e) {
 				logger.warn("exception during update execution: ", e);
 				if (!updateExpr.isSilent()) {
 					throw new UpdateExecutionException(e);
@@ -122,10 +110,9 @@ public abstract class AbstractSailUpdate extends AbstractUpdate {
 		}
 	}
 
-	protected abstract ParserConfig getParserConfig();
-	protected abstract boolean isLocalTransaction() throws RepositoryException;
-	protected abstract void beginLocalTransaction() throws RepositoryException;
-	protected abstract void commitLocalTransaction() throws RepositoryException;
+	protected abstract boolean isLocalTransaction() throws OpenRDFException;
+	protected abstract void beginLocalTransaction() throws OpenRDFException;
+	protected abstract void commitLocalTransaction() throws OpenRDFException;
 
 	protected Dataset getMergedDataset(Dataset sparqlDefinedDataset) {
 		if (sparqlDefinedDataset == null) {

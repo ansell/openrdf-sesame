@@ -402,6 +402,9 @@ public class SPIN {
 	 */
 	public static URI RULE_PROPERTY;
 
+	public static URI VIOLATION_VALUE_PROPERTY;
+	public static URI VIOLATION_LEVEL_PROPERTY;
+
 	public static final URI ARG1_INSTANCE;
 	public static final URI ARG2_INSTANCE;
 	public static final URI ARG3_INSTANCE;
@@ -460,6 +463,9 @@ public class SPIN {
 		THIS_CONTEXT_INSTANCE = factory.createURI(NAMESPACE, "_this");
 		UPDATE_TEMPLATES_CLASS = factory.createURI(NAMESPACE, "UpdateTemplates");
 		RULE_PROPERTY = factory.createURI(NAMESPACE, "rule");
+
+		VIOLATION_VALUE_PROPERTY = factory.createURI(NAMESPACE, "violationValue");
+		VIOLATION_LEVEL_PROPERTY = factory.createURI(NAMESPACE, "violationLevel");
 
 		ARG1_INSTANCE = factory.createURI(NAMESPACE, "_arg1");
 		ARG2_INSTANCE = factory.createURI(NAMESPACE, "_arg2");

@@ -46,8 +46,12 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 	private final ValueFactory vf;
 
 	protected SailGraphQuery(ParsedGraphQuery tupleQuery, SailRepositoryConnection con) {
-		super(tupleQuery, con.getSailConnection());
-		this.vf = con.getValueFactory();
+		this(tupleQuery, con.getSailConnection(), con.getValueFactory());
+	}
+
+	protected SailGraphQuery(ParsedGraphQuery tupleQuery, SailConnection con, ValueFactory vf) {
+		super(tupleQuery, con);
+		this.vf = vf;
 	}
 
 	@Override

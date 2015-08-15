@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,10 +32,15 @@ import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.repository.sail.AbstractSailUpdate;
+import org.openrdf.repository.sail.SailGraphQuery;
+import org.openrdf.repository.sail.helpers.RDFSailInserter;
+import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.Sail;
+import org.openrdf.sail.SailConnection;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -48,7 +54,8 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		StatementSource<SailException>
 {
 
-	private static final URI AXIOM_CONTEXT = ValueFactoryImpl.getInstance().createURI("local:axioms");
+	private static final URI AXIOM_CONTEXT = ValueFactoryImpl.getInstance().createURI("sesame:axioms");
+	private static final String THIS_VAR = "this";
 
 	private final ValueFactory vf;
 
@@ -59,6 +66,8 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 	private List<URI> orderedRuleProperties;
 
 	private Map<URI, RuleProperty> rulePropertyMap;
+
+	private volatile ParserConfig parserConfig = new ParserConfig();
 
 	public SPINSailConnection(Sail sail, InferencerConnection con) {
 		super(sail, con);
@@ -92,6 +101,14 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 				}
 			}
 		});
+	}
+
+	public void setParserConfig(ParserConfig parserConfig) {
+		this.parserConfig = parserConfig;
+	}
+
+	public ParserConfig getParserConfig() {
+		return parserConfig;
 	}
 
 	@Override
@@ -238,16 +255,29 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		throws OpenRDFException
 	{
 		int nofInferred;
-		ParsedOperation query = parser.parse(rule, this);
-		if(query instanceof ParsedGraphQuery) {
-			ParsedGraphQuery graphQuery = (ParsedGraphQuery) query;
-			// TODO
-			nofInferred = 0;
+		ParsedOperation parsedQuery = parser.parse(rule, this);
+		if(parsedQuery instanceof ParsedGraphQuery) {
+			ParsedGraphQuery graphQuery = (ParsedGraphQuery) parsedQuery;
+			GraphQuery queryOp = new GraphQuery(graphQuery, getWrappedConnection(), vf);
+			if(!ruleProp.isThisUnbound()) {
+				queryOp.setBinding(THIS_VAR, subj);
+			}
+			CountingRDFSailInserter handler = new CountingRDFSailInserter(getWrappedConnection(), vf);
+			queryOp.evaluate(handler);
+			nofInferred = handler.getStatementCount();
 		}
-		else if(query instanceof ParsedUpdate) {
-			ParsedUpdate update = (ParsedUpdate) query;
-			// TODO
-			nofInferred = 0;
+		else if(parsedQuery instanceof ParsedUpdate) {
+			ParsedUpdate graphUpdate = (ParsedUpdate) parsedQuery;
+			Update updateOp = new Update(graphUpdate, getWrappedConnection(), vf, parserConfig);
+			if(!ruleProp.isThisUnbound()) {
+				updateOp.setBinding(THIS_VAR, subj);
+			}
+			UpdateCountListener listener = new UpdateCountListener();
+			getWrappedConnection().addConnectionListener(listener);
+			updateOp.execute();
+			getWrappedConnection().removeConnectionListener(listener);
+			// number of statement changes
+			nofInferred = listener.getAddedStatementCount() + listener.getRemovedStatementCount();
 		}
 		else {
 			throw new MalformedSPINException("Invalid rule: "+rule);
@@ -278,10 +308,14 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		return rulesByClass;
 	}
 
+	/**
+	 * @return Map with rules in execution order.
+	 */
 	private Map<URI, List<Resource>> getRulesForClass(Resource cls, List<URI> ruleProps)
 		throws OpenRDFException
 	{
-		Map<URI, List<Resource>> classRulesByProperty = new HashMap<URI, List<Resource>>();
+		// NB: preserve ruleProp order!
+		Map<URI, List<Resource>> classRulesByProperty = new LinkedHashMap<URI, List<Resource>>();
 		for (URI ruleProp : ruleProps) {
 			List<Resource> rules = new ArrayList<Resource>(2);
 			CloseableIteration<? extends Resource, ? extends OpenRDFException> ruleIter = Statements.getObjectResources(
@@ -357,5 +391,92 @@ public class SPINSailConnection extends AbstractForwardChainingInferencerConnect
 		throws SailException
 	{
 		return getStatements(subj, pred, obj, true, contexts);
+	}
+
+
+
+	static class GraphQuery extends SailGraphQuery {
+
+		protected GraphQuery(ParsedGraphQuery tupleQuery, SailConnection con, ValueFactory vf) {
+			super(tupleQuery, con, vf);
+		}
+	}
+
+
+
+	static class Update extends AbstractSailUpdate {
+
+		protected Update(ParsedUpdate parsedUpdate, SailConnection con, ValueFactory vf,
+				ParserConfig parserConfig)
+		{
+			super(parsedUpdate, con, vf, parserConfig);
+		}
+
+		@Override
+		protected boolean isLocalTransaction()
+			throws OpenRDFException
+		{
+			return !getSailConnection().isActive();
+		}
+
+		@Override
+		protected void beginLocalTransaction()
+			throws OpenRDFException
+		{
+			getSailConnection().begin();
+		}
+
+		@Override
+		protected void commitLocalTransaction()
+			throws OpenRDFException
+		{
+			getSailConnection().commit();
+		}
+	}
+
+	
+	static class UpdateCountListener implements SailConnectionListener {
+		private int addedCount;
+		private int removedCount;
+
+		@Override
+		public void statementAdded(Statement st) {
+			addedCount++;
+		}
+
+		@Override
+		public void statementRemoved(Statement st) {
+			removedCount++;
+		}
+
+		public int getAddedStatementCount() {
+			return addedCount;
+		}
+
+		public int getRemovedStatementCount() {
+			return removedCount;
+		}
+	}
+
+
+
+	static class CountingRDFSailInserter extends RDFSailInserter {
+		private int stmtCount;
+
+		public CountingRDFSailInserter(SailConnection con, ValueFactory vf) {
+			super(con, vf);
+		}
+
+		@Override
+		protected void addStatement(Resource subj, URI pred, Value obj, Resource ctxt)
+			throws OpenRDFException
+		{
+			super.addStatement(subj, pred, obj, ctxt);
+			stmtCount++;
+		}
+
+		public int getStatementCount() {
+			return stmtCount;
+		}
 	}
 }

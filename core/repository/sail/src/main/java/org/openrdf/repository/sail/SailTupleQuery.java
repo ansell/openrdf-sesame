@@ -39,7 +39,11 @@ import org.openrdf.sail.SailException;
 public class SailTupleQuery extends SailQuery implements TupleQuery {
 
 	protected SailTupleQuery(ParsedTupleQuery tupleQuery, SailRepositoryConnection sailConnection) {
-		super(tupleQuery, sailConnection.getSailConnection());
+		this(tupleQuery, sailConnection.getSailConnection());
+	}
+
+	protected SailTupleQuery(ParsedTupleQuery tupleQuery, SailConnection sailConnection) {
+		super(tupleQuery, sailConnection);
 	}
 
 	@Override

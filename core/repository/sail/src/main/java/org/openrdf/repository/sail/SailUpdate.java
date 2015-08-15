@@ -16,9 +16,8 @@
  */
 package org.openrdf.repository.sail;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.query.parser.ParsedUpdate;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.rio.ParserConfig;
 
 /**
  * @author Jeen Broekstra
@@ -28,7 +27,7 @@ public class SailUpdate extends AbstractSailUpdate {
 	private final SailRepositoryConnection con;
 
 	protected SailUpdate(ParsedUpdate parsedUpdate, SailRepositoryConnection con) {
-		super(parsedUpdate, con.getSailConnection(), con.getValueFactory());
+		super(parsedUpdate, con.getSailConnection(), con.getValueFactory(), con.getParserConfig());
 		this.con = con;
 	}
 
@@ -37,27 +36,22 @@ public class SailUpdate extends AbstractSailUpdate {
 	}
 
 	@Override
-	protected ParserConfig getParserConfig() {
-		return getConnection().getParserConfig();
-	}
-
-	@Override
 	protected boolean isLocalTransaction()
-		throws RepositoryException
+		throws OpenRDFException
 	{
 		return !getConnection().isActive();
 	}
 
 	@Override
 	protected void beginLocalTransaction()
-		throws RepositoryException
+		throws OpenRDFException
 	{
 		getConnection().begin();
 	}
 
 	@Override
 	protected void commitLocalTransaction()
-		throws RepositoryException
+		throws OpenRDFException
 	{
 		getConnection().commit();
 	}
