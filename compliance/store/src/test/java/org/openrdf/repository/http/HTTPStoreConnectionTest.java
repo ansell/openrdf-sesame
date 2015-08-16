@@ -109,9 +109,10 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 		String update = "DELETE WHERE {?s ?p ?o}";
 		testCon.begin();
 		Update delete = testCon.prepareUpdate(QueryLanguage.SPARQL, update);
-		delete.setBinding("p", new URIImpl("foo:bar"));
+		delete.setBinding("p", testCon.getValueFactory().createURI("foo:bar"));
 		delete.execute();
 		testCon.commit();
+		// test succeeds if no error occurs
 	}
 	
 	@Test
