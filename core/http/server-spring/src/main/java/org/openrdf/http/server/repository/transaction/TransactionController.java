@@ -579,7 +579,8 @@ public class TransactionController extends AbstractController {
 		final String contentType = request.getContentType();
 		if (contentType != null && contentType.contains(Protocol.SPARQL_UPDATE_MIME_TYPE)) {
 			try {
-				sparqlUpdateString = IOUtils.toString(request.getInputStream(), "UTF-8");
+				final String encoding = request.getCharacterEncoding() != null ? request.getCharacterEncoding() : "UTF-8";
+				sparqlUpdateString = IOUtils.toString(request.getInputStream(), encoding);
 			}
 			catch (IOException e) {
 				logger.warn("error reading sparql update string from request body", e);

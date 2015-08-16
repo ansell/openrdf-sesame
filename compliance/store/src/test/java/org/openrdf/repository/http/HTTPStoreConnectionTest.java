@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
