@@ -247,6 +247,7 @@ public class SPINParser {
 		throws OpenRDFException
 	{
 		List<URI> queryTypes = new ArrayList<URI>(4);
+		boolean isTemplate = false;
 		CloseableIteration<? extends URI, ? extends OpenRDFException> typeIter = Statements.getObjectURIs(
 				queryResource, RDF.TYPE, store);
 		try {
@@ -254,6 +255,9 @@ public class SPINParser {
 				URI type = typeIter.next();
 				if(queryType == null || queryType.equals(type)) {
 					queryTypes.add(type);
+				}
+				if(SPIN.TEMPLATES_CLASS.equals(type)) {
+					isTemplate = true;
 				}
 			}
 		}
@@ -270,16 +274,22 @@ public class SPINParser {
 		}
 
 		ParsedOperation pq;
-		if (input.textFirst) {
-			pq = parseText(queryResource, queryTypes, store);
-			if (pq == null && input.canFallback) {
-				pq = parseRDF(queryResource, queryTypes, store);
-			}
+		if (isTemplate) {
+			// TODO
+			pq = null;
 		}
 		else {
-			pq = parseRDF(queryResource, queryTypes, store);
-			if (pq == null && input.canFallback) {
+			if (input.textFirst) {
 				pq = parseText(queryResource, queryTypes, store);
+				if (pq == null && input.canFallback) {
+					pq = parseRDF(queryResource, queryTypes, store);
+				}
+			}
+			else {
+				pq = parseRDF(queryResource, queryTypes, store);
+				if (pq == null && input.canFallback) {
+					pq = parseText(queryResource, queryTypes, store);
+				}
 			}
 		}
 		if (pq == null) {

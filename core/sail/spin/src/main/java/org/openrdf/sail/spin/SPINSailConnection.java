@@ -59,7 +59,6 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection imp
 		StatementSource<SailException>
 {
 
-	private static final Resource[] NO_CONTEXT = {};
 	private static final String THIS_VAR = "this";
 	private static final Marker constraintViolationMarker = MarkerFactory.getMarker("ConstraintViolation");
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "{}: {} {} {}";
@@ -312,7 +311,6 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection imp
 			}
 			UpdateCountListener listener = new UpdateCountListener();
 			getWrappedConnection().addConnectionListener(listener);
-			// TODO replace with InferencerUpdateExecutor
 			updateOp.execute();
 			getWrappedConnection().removeConnectionListener(listener);
 			// number of statement changes
