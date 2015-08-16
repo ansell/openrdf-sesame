@@ -126,6 +126,7 @@ public class TransactionController extends AbstractController {
 		String reqMethod = request.getMethod();
 		UUID transactionId = getTransactionID(request);
 		logger.debug("transaction id: {}", transactionId);
+		logger.debug("request content type: {}", request.getContentType());
 		RepositoryConnection connection = ActiveTransactionRegistry.INSTANCE.getTransactionConnection(
 				transactionId);
 
@@ -376,7 +377,8 @@ public class TransactionController extends AbstractController {
 				throws IOException, HTTPException
 	{
 		String queryStr = null;
-		if ("PUT".equals(request.getMethod())) {
+		final String contentType = request.getContentType();
+		if (contentType != null && contentType.contains(Protocol.SPARQL_QUERY_MIME_TYPE)) {
 			queryStr = IOUtils.toString(request.getInputStream(), "UTF-8");
 		}
 		else {
@@ -573,7 +575,8 @@ public class TransactionController extends AbstractController {
 				throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		String sparqlUpdateString = null;
-		if ("PUT".equals(request.getMethod())) {
+		final String contentType = request.getContentType();
+		if (contentType != null && contentType.contains(Protocol.SPARQL_UPDATE_MIME_TYPE)) {
 			try {
 				sparqlUpdateString = IOUtils.toString(request.getInputStream(), "UTF-8");
 			}
