@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.openrdf.IsolationLevel;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.URIImpl;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.Update;
 import org.openrdf.repository.Repository;
@@ -102,6 +103,17 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 
 	}
 
+	@Test
+	public void testSparqlUpdateInTransaction() throws Exception
+	{
+		String update = "DELETE WHERE {?s ?p ?o}";
+		testCon.begin();
+		Update delete = testCon.prepareUpdate(QueryLanguage.SPARQL, update);
+		delete.setBinding("p", new URIImpl("foo:bar"));
+		delete.execute();
+		testCon.commit();
+	}
+	
 	@Test
 	@Override
 	public void testAddMalformedLiteralsDefaultConfig()

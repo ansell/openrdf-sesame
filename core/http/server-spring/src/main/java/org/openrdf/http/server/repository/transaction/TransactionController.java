@@ -43,6 +43,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextException;
@@ -147,7 +148,7 @@ public class TransactionController extends AbstractController {
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn query request", reqMethod);
 					result = processQuery(connection, transactionId, request, response);
-					logger.info("{} txn query request finished");
+					logger.info("{} txn query request finished", reqMethod);
 				}
 				else {
 					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -158,7 +159,7 @@ public class TransactionController extends AbstractController {
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn get/export statements request", reqMethod);
 					result = getExportStatementsResult(connection, transactionId, request, response);
-					logger.info("{} txn get/export statements request finished");
+					logger.info("{} txn get/export statements request finished", reqMethod);
 				}
 				else {
 					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -169,7 +170,7 @@ public class TransactionController extends AbstractController {
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn size request", reqMethod);
 					result = getSize(connection, transactionId, request, response);
-					logger.info("{} txn size request finished");
+					logger.info("{} txn size request finished", reqMethod);
 				}
 				else {
 					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -374,7 +375,13 @@ public class TransactionController extends AbstractController {
 			HttpServletResponse response)
 				throws IOException, HTTPException
 	{
-		String queryStr = request.getParameter(QUERY_PARAM_NAME);
+		String queryStr = null;
+		if ("PUT".equals(request.getMethod())) {
+			queryStr = IOUtils.toString(request.getInputStream(), "UTF-8");
+		}
+		else {
+			queryStr = request.getParameter(QUERY_PARAM_NAME);
+		}
 
 		Query query = getQuery(conn, queryStr, request, response);
 
@@ -565,10 +572,23 @@ public class TransactionController extends AbstractController {
 			HttpServletResponse response)
 				throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
-		ProtocolUtil.logRequestParameters(request);
+		String sparqlUpdateString = null;
+		if ("PUT".equals(request.getMethod())) {
+			try {
+				sparqlUpdateString = IOUtils.toString(request.getInputStream(), "UTF-8");
+			}
+			catch (IOException e) {
+				logger.warn("error reading sparql update string from request body", e);
+				throw new ClientHTTPException(SC_BAD_REQUEST,
+						"could not read SPARQL update string from body: " + e.getMessage());
+			}
+		}
+		else {
+			sparqlUpdateString = request.getParameter(Protocol.UPDATE_PARAM_NAME);
+		}
 
-		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
-		logger.debug(sparqlUpdateString);
+		logger.debug("SPARQL update string: {}", sparqlUpdateString);
+
 		// default query language is SPARQL
 		QueryLanguage queryLn = QueryLanguage.SPARQL;
 
