@@ -42,7 +42,7 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 		this(tupleQuery, sailConnection.getSailConnection());
 	}
 
-	protected SailTupleQuery(ParsedTupleQuery tupleQuery, SailConnection sailConnection) {
+	public SailTupleQuery(ParsedTupleQuery tupleQuery, SailConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 

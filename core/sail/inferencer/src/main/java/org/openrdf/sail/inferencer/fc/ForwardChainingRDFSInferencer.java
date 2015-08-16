@@ -16,6 +16,7 @@
  */
 package org.openrdf.sail.inferencer.fc;
 
+import org.openrdf.model.Resource;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.SailException;
@@ -29,6 +30,11 @@ import org.openrdf.sail.inferencer.InferencerConnection;
  * from their {@link Sail#getConnection()} method.
  */
 public class ForwardChainingRDFSInferencer extends AbstractForwardChainingInferencer {
+
+	private Resource axiomContext;
+
+	private boolean preserveContext;
+
 	/*--------------*
 	 * Constructors *
 	 *--------------*/
@@ -44,6 +50,22 @@ public class ForwardChainingRDFSInferencer extends AbstractForwardChainingInfere
 	/*---------*
 	 * Methods *
 	 *---------*/
+
+	public void setContextPreserved(boolean f) {
+		this.preserveContext = f;
+	}
+
+	public boolean isContextPreserved() {
+		return this.preserveContext;
+	}
+
+	public void setAxiomContext(Resource context) {
+		this.axiomContext = context;
+	}
+
+	public Resource getAxionContext() {
+		return this.axiomContext;
+	}
 
 	@Override
 	public ForwardChainingRDFSInferencerConnection getConnection()

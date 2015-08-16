@@ -36,6 +36,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -99,9 +100,6 @@ public class SPINParser {
 				int maxIterCount = getMaxIterationCount(ruleProp, store);
 				ruleProperty.setMaxIterationCount(maxIterCount);
 
-				boolean thisUnbound = isThisUnbound(ruleProp, store);
-				ruleProperty.setThisUnbound(thisUnbound);
-
 				rules.put(ruleProp, ruleProperty);
 			}
 		}
@@ -129,49 +127,79 @@ public class SPINParser {
 	}
 
 	private <X extends Exception> int getMaxIterationCount(Resource ruleProp, StatementSource<X> store)
-		throws X
+		throws X, MalformedSPINException
 	{
-		int maxIterCount = -1;
-		CloseableIteration<? extends Literal, X> iter = Statements.getObjectLiterals(ruleProp,
+		Value v = singleValue(ruleProp,
 				SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY, store);
-		try {
-			while (iter.hasNext()) {
-				Literal value = iter.next();
-				try {
-					maxIterCount = value.intValue();
-					break;
-				}
-				catch (NumberFormatException e) {
-				}
+		if(v == null) {
+			return -1;
+		}
+		else if(v instanceof Literal) {
+			try {
+				return ((Literal)v).intValue();
+			}
+			catch (NumberFormatException e) {
+				throw new MalformedSPINException("Value for "+SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY+" must be of datatype "+XMLSchema.INTEGER+": "+ruleProp);
 			}
 		}
-		finally {
-			iter.close();
+		else {
+			throw new MalformedSPINException("Non-literal value for "+SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY+": "+ruleProp);
 		}
-		return maxIterCount;
 	}
 
-	private <X extends Exception> boolean isThisUnbound(Resource ruleProp, StatementSource<X> store)
-		throws X
+	public boolean isThisUnbound(Resource subj, StatementSource<? extends OpenRDFException> store)
+		throws OpenRDFException
 	{
-		boolean thisUnbound = false;
-		CloseableIteration<? extends Literal, X> iter = Statements.getObjectLiterals(ruleProp,
+		Value v = singleValue(subj,
 				SPIN.THIS_UNBOUND_PROPERTY, store);
-		try {
-			while (iter.hasNext()) {
-				Literal value = iter.next();
-				try {
-					thisUnbound = value.booleanValue();
-					break;
-				}
-				catch (IllegalArgumentException e) {
-				}
+		if(v == null) {
+			return false;
+		}
+		else if(v instanceof Literal) {
+			try {
+				return ((Literal)v).booleanValue();
+			}
+			catch (IllegalArgumentException e) {
+				throw new MalformedSPINException("Value for "+SPIN.THIS_UNBOUND_PROPERTY+" must be of datatype "+XMLSchema.BOOLEAN+": "+subj);
 			}
 		}
-		finally {
-			iter.close();
+		else {
+			throw new MalformedSPINException("Non-literal value for "+SPIN.THIS_UNBOUND_PROPERTY+": "+subj);
 		}
-		return thisUnbound;
+	}
+
+	public ConstraintViolation parseConstraintViolation(Resource subj, StatementSource<? extends OpenRDFException> store)
+		throws OpenRDFException
+	{
+		Value labelValue = singleValue(subj, RDFS.LABEL, store);
+		Value rootValue = singleValue(subj, SPIN.VIOLATION_ROOT_PROPERTY, store);
+		Value pathValue = singleValue(subj, SPIN.VIOLATION_PATH_PROPERTY, store);
+		Value valueValue = singleValue(subj, SPIN.VIOLATION_VALUE_PROPERTY, store);
+		Value levelValue = singleValue(subj, SPIN.VIOLATION_LEVEL_PROPERTY, store);
+		String label = (labelValue instanceof Literal) ? labelValue.stringValue() : null;
+		String root = (rootValue instanceof Resource) ? rootValue.stringValue() : null;
+		String path = (pathValue != null) ? pathValue.stringValue() : null;
+		String value = (valueValue != null) ? valueValue.stringValue() : null;
+		ConstraintViolationLevel level;
+		if(levelValue == null) {
+			level = ConstraintViolationLevel.ERROR;
+		}
+		else if(SPIN.INFO_VIOLATION_LEVEL.equals(levelValue)) {
+			level = ConstraintViolationLevel.INFO;
+		}
+		else if(SPIN.WARNING_VIOLATION_LEVEL.equals(levelValue)) {
+			level = ConstraintViolationLevel.WARNING;
+		}
+		else if(SPIN.ERROR_VIOLATION_LEVEL.equals(levelValue)) {
+			level = ConstraintViolationLevel.ERROR;
+		}
+		else if(SPIN.FATAL_VIOLATION_LEVEL.equals(levelValue)) {
+			level = ConstraintViolationLevel.FATAL;
+		}
+		else {
+			throw new MalformedSPINException("Invalid value "+levelValue+" for "+SPIN.VIOLATION_LEVEL_PROPERTY+": "+subj);
+		}
+		return new ConstraintViolation(label, root, path, value, level);
 	}
 
 	public ParsedOperation parse(Resource queryResource, StatementSource<? extends OpenRDFException> store)
@@ -223,7 +251,10 @@ public class SPINParser {
 				queryResource, RDF.TYPE, store);
 		try {
 			while (typeIter.hasNext()) {
-				queryTypes.add(typeIter.next());
+				URI type = typeIter.next();
+				if(queryType == null || queryType.equals(type)) {
+					queryTypes.add(type);
+				}
 			}
 		}
 		finally {
@@ -295,12 +326,20 @@ public class SPINParser {
 		return false;
 	}
 
-	private static Statement single(Resource subj, URI pred, Value obj,
-			StatementSource<? extends OpenRDFException> store)
-		throws OpenRDFException
+	private static <X extends Exception> Value singleValue(Resource subj, URI pred,
+			StatementSource<X> store)
+		throws X, MalformedSPINException
+	{
+		Statement stmt = single(subj, pred, null, store);
+		return (stmt != null) ? stmt.getObject() : null;
+	}
+
+	private static <X extends Exception> Statement single(Resource subj, URI pred, Value obj,
+			StatementSource<X> store)
+		throws X, MalformedSPINException
 	{
 		Statement stmt;
-		CloseableIteration<? extends Statement, ? extends OpenRDFException> stmts = store.getStatements(subj,
+		CloseableIteration<? extends Statement, X> stmts = store.getStatements(subj,
 				pred, obj);
 		try {
 			if (stmts.hasNext()) {

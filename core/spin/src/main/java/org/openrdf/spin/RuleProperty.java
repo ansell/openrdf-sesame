@@ -29,8 +29,6 @@ public class RuleProperty {
 
 	private int maxIterCount = -1;
 
-	private boolean thisUnbound = false;
-
 	public RuleProperty(URI ruleUri) {
 		this.uri = ruleUri;
 	}
@@ -53,13 +51,5 @@ public class RuleProperty {
 
 	public void setMaxIterationCount(int maxIterCount) {
 		this.maxIterCount = maxIterCount;
-	}
-
-	public boolean isThisUnbound() {
-		return thisUnbound;
-	}
-
-	public void setThisUnbound(boolean thisUnbound) {
-		this.thisUnbound = thisUnbound;
 	}
 }

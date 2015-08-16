@@ -12,6 +12,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -36,8 +38,12 @@ public class SPINSailTest {
 	@Before
 	public void setup() throws RepositoryException {
 		NotifyingSail baseSail = new MemoryStore();
+		URI axiomContext = ValueFactoryImpl.getInstance().createURI("sesame:axioms");
 		ForwardChainingRDFSInferencer rdfsInferencer = new ForwardChainingRDFSInferencer(baseSail);
+		rdfsInferencer.setAxiomContext(axiomContext);
+		rdfsInferencer.setContextPreserved(true);
 		SPINSail spinSail = new SPINSail(rdfsInferencer);
+		spinSail.setAxiomContext(axiomContext);
 		repo = new SailRepository(spinSail);
 		repo.initialize();
 		conn = repo.getConnection();
@@ -51,7 +57,7 @@ public class SPINSailTest {
 
 	@Test
 	public void testAskConstraint() throws Exception {
-		constraintException.expect(SPINConstraintViolationException.class);
+		constraintException.expect(ConstraintViolationException.class);
 		loadStatements("testAskConstraint.ttl");
 	}
 

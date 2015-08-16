@@ -404,6 +404,10 @@ public class SPIN {
 
 	public static URI VIOLATION_VALUE_PROPERTY;
 	public static URI VIOLATION_LEVEL_PROPERTY;
+	public static URI INFO_VIOLATION_LEVEL;
+	public static URI WARNING_VIOLATION_LEVEL;
+	public static URI ERROR_VIOLATION_LEVEL;
+	public static URI FATAL_VIOLATION_LEVEL;
 
 	public static final URI ARG1_INSTANCE;
 	public static final URI ARG2_INSTANCE;
@@ -466,6 +470,11 @@ public class SPIN {
 
 		VIOLATION_VALUE_PROPERTY = factory.createURI(NAMESPACE, "violationValue");
 		VIOLATION_LEVEL_PROPERTY = factory.createURI(NAMESPACE, "violationLevel");
+
+		INFO_VIOLATION_LEVEL = factory.createURI(NAMESPACE, "Info");
+		WARNING_VIOLATION_LEVEL = factory.createURI(NAMESPACE, "Warning");
+		ERROR_VIOLATION_LEVEL = factory.createURI(NAMESPACE, "Error");
+		FATAL_VIOLATION_LEVEL = factory.createURI(NAMESPACE, "Fatal");
 
 		ARG1_INSTANCE = factory.createURI(NAMESPACE, "_arg1");
 		ARG2_INSTANCE = factory.createURI(NAMESPACE, "_arg2");

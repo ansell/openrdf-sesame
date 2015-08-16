@@ -36,7 +36,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 		this(tupleQuery, sailConnection.getSailConnection());
 	}
 
-	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailConnection sailConnection) {
+	public SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
