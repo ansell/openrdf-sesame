@@ -379,7 +379,8 @@ public class TransactionController extends AbstractController {
 		String queryStr = null;
 		final String contentType = request.getContentType();
 		if (contentType != null && contentType.contains(Protocol.SPARQL_QUERY_MIME_TYPE)) {
-			queryStr = IOUtils.toString(request.getInputStream(), "UTF-8");
+			final String encoding = request.getCharacterEncoding() != null ? request.getCharacterEncoding() : "UTF-8";
+			queryStr = IOUtils.toString(request.getInputStream(), encoding);
 		}
 		else {
 			queryStr = request.getParameter(QUERY_PARAM_NAME);

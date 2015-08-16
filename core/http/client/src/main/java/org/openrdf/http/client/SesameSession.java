@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -698,22 +699,25 @@ public class SesameSession extends SparqlSession {
 		RequestBuilder builder = null;
 		if (transactionURL != null) {
 			builder = RequestBuilder.put(transactionURL);
-			builder.addHeader("Content-Type", Protocol.SPARQL_UPDATE_MIME_TYPE + "; charset=utf-8");
+			builder.setHeader("Content-Type", Protocol.SPARQL_QUERY_MIME_TYPE + "; charset=utf-8").setCharset(
+					UTF8);
 			builder.addParameter(Protocol.ACTION_PARAM_NAME, Action.QUERY.toString());
-			for (NameValuePair nvp: getQueryMethodParameters(ql, null, baseURI, dataset,
-					includeInferred, maxQueryTime, bindings)) {
+			for (NameValuePair nvp : getQueryMethodParameters(ql, null, baseURI, dataset, includeInferred,
+					maxQueryTime, bindings))
+			{
 				builder.addParameter(nvp);
 			}
-			// in a PUT request, we carry the actual query string as the entity body rather than a parameter.
+			// in a PUT request, we carry the actual query string as the entity
+			// body rather than a parameter.
 			builder.setEntity(new StringEntity(query, UTF8));
 		}
 		else {
 			builder = RequestBuilder.post(getQueryURL());
-			builder.addHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
-			for (NameValuePair nvp: getQueryMethodParameters(ql, query, baseURI, dataset,
-					includeInferred, maxQueryTime, bindings)) {
-				builder.addParameter(nvp);
-			}
+			builder.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8").setCharset(UTF8);
+
+			builder.setEntity(new UrlEncodedFormEntity(
+					getQueryMethodParameters(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings),
+					UTF8));
 		}
 
 		return builder.build();
@@ -726,22 +730,24 @@ public class SesameSession extends SparqlSession {
 		RequestBuilder builder = null;
 		if (transactionURL != null) {
 			builder = RequestBuilder.put(transactionURL);
-			builder.addHeader("Content-Type", Protocol.SPARQL_UPDATE_MIME_TYPE + "; charset=utf-8");
+			builder.addHeader("Content-Type", Protocol.SPARQL_UPDATE_MIME_TYPE + "; charset=utf-8").setCharset(
+					UTF8);
 			builder.addParameter(Protocol.ACTION_PARAM_NAME, Action.UPDATE.toString());
-			for (NameValuePair nvp: getUpdateMethodParameters(ql, null, baseURI, dataset,
-					includeInferred, bindings)) {
+			for (NameValuePair nvp : getUpdateMethodParameters(ql, null, baseURI, dataset, includeInferred,
+					bindings))
+			{
 				builder.addParameter(nvp);
 			}
-			// in a PUT request, we carry the actual update string as the entity body rather than a parameter.
+			// in a PUT request, we carry the only actual update string as the
+			// request body - the rest is sent as request parameters
 			builder.setEntity(new StringEntity(update, UTF8));
 		}
 		else {
 			builder = RequestBuilder.post(getUpdateURL());
-			builder.addHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
-			for (NameValuePair nvp: getUpdateMethodParameters(ql, update, baseURI, dataset,
-					includeInferred, bindings)) {
-				builder.addParameter(nvp);
-			}
+			builder.addHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8").setCharset(UTF8);
+
+			builder.setEntity(new UrlEncodedFormEntity(
+					getUpdateMethodParameters(ql, update, baseURI, dataset, includeInferred, bindings), UTF8));
 		}
 
 		return builder.build();

@@ -104,18 +104,6 @@ public class HTTPStoreConnectionTest extends RepositoryConnectionTest {
 	}
 
 	@Test
-	public void testSparqlUpdateInTransaction() throws Exception
-	{
-		String update = "DELETE WHERE {?s ?p ?o}";
-		testCon.begin();
-		Update delete = testCon.prepareUpdate(QueryLanguage.SPARQL, update);
-		delete.setBinding("p", testCon.getValueFactory().createURI("foo:bar"));
-		delete.execute();
-		testCon.commit();
-		// test succeeds if no error occurs
-	}
-	
-	@Test
 	@Override
 	public void testAddMalformedLiteralsDefaultConfig()
 		throws Exception
