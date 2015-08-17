@@ -5,7 +5,8 @@
 ex:testClass a rdfs:Class ;
 		spin:constraint [
 				a sp:Ask ;
-				sp:text """ASK WHERE {?this ex:prop ?x}""" 
+				sp:text """PREFIX ex: <ex:>
+							ASK WHERE {?this ex:prop ?x}""" 
 		] .
 
 ex:testSubj1 a ex:testClass ;

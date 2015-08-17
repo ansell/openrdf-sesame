@@ -391,7 +391,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 				Value zzz = t1.getObject();
 				if (zzz instanceof Resource) {
-					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz, inferredContext(t1));
+					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz, inferredContext(nt));
 					if (added) {
 						nofInferred++;
 					}
@@ -423,7 +423,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Statement t1 = t1Iter.next();
 
 					Resource xxx = t1.getSubject();
-					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz, inferredContext(t1));
+					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz, inferredContext(nt));
 					if (added) {
 						nofInferred++;
 					}
@@ -456,7 +456,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Value zzz = t1.getObject();
 					if (zzz instanceof Resource) {
-						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz, inferredContext(t1));
+						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz, inferredContext(nt));
 						if (added) {
 							nofInferred++;
 						}
@@ -489,7 +489,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Value uuu = t1.getObject();
 					if (uuu instanceof Resource) {
-						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz, inferredContext(t1));
+						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz, inferredContext(nt));
 						if (added) {
 							nofInferred++;
 						}
@@ -564,7 +564,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Value ccc = t1.getObject();
 					if (ccc instanceof Resource) {
-						boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc, inferredContext(t1));
+						boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc, inferredContext(nt));
 						if (added) {
 							nofInferred++;
 						}
@@ -599,7 +599,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Statement t1 = t1Iter.next();
 
 					Resource aaa = t1.getSubject();
-					boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc, inferredContext(t1));
+					boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc, inferredContext(nt));
 					if (added) {
 						nofInferred++;
 					}
@@ -651,7 +651,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 				Value bbb = t1.getObject();
 				if (bbb instanceof URI) {
-					boolean added = addInferredStatement(xxx, (URI)bbb, yyy, inferredContext(t1));
+					boolean added = addInferredStatement(xxx, (URI)bbb, yyy, inferredContext(nt));
 					if (added) {
 						nofInferred++;
 					}
@@ -685,7 +685,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Resource xxx = t1.getSubject();
 					Value yyy = t1.getObject();
 
-					boolean added = addInferredStatement(xxx, (URI)bbb, yyy, inferredContext(t1));
+					boolean added = addInferredStatement(xxx, (URI)bbb, yyy, inferredContext(nt));
 					if (added) {
 						nofInferred++;
 					}
@@ -738,7 +738,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Resource aaa = t1.getSubject();
 
-					boolean added = addInferredStatement(aaa, RDF.TYPE, yyy, inferredContext(t1));
+					boolean added = addInferredStatement(aaa, RDF.TYPE, yyy, inferredContext(nt));
 					if (added) {
 						nofInferred++;
 					}
@@ -772,7 +772,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Value yyy = t1.getObject();
 
 					if (yyy instanceof Resource) {
-						boolean added = addInferredStatement(aaa, RDF.TYPE, yyy, inferredContext(t1));
+						boolean added = addInferredStatement(aaa, RDF.TYPE, yyy, inferredContext(nt));
 						if (added) {
 							nofInferred++;
 						}
@@ -828,7 +828,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Value zzz = t1.getObject();
 
 					if (zzz instanceof Resource) {
-						boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz, inferredContext(t1));
+						boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz, inferredContext(nt));
 						if (added) {
 							nofInferred++;
 						}
@@ -863,7 +863,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Resource xxx = t1.getSubject();
 
-					boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz, inferredContext(t1));
+					boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz, inferredContext(nt));
 					if (added) {
 						nofInferred++;
 					}

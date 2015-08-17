@@ -37,6 +37,7 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -286,10 +287,10 @@ public class SPINParser {
 			if(template == null) {
 				throw new MalformedSPINException("Resource is not a template: " + queryResource);
 			}
-			// TODO
 			Template tmpl = parseTemplate(template, queryTypes, store);
-			// ??? pq = ParsedTemplateOperation(tmpl.getParsedOperation(), args);
-			pq = null;
+			// TODO
+			BindingSet args = null;
+			pq = new ParsedTemplateQuery(template, tmpl.getParsedOperation(), args);
 		}
 		else {
 			if (input.textFirst) {
@@ -311,12 +312,12 @@ public class SPINParser {
 		return pq;
 	}
 
-	private Template parseTemplate(Resource tmplResource, List<URI> queryTypes,
+	private Template parseTemplate(URI tmplUri, List<URI> queryTypes,
 			StatementSource<? extends OpenRDFException> store)
 		throws OpenRDFException
 	{
 		// TODO
-		return null;
+		return new Template(tmplUri);
 	}
 
 	private ParsedOperation parseText(Resource queryResource, List<URI> queryTypes,

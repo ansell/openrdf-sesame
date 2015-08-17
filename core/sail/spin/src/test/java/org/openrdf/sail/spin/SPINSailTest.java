@@ -1,5 +1,6 @@
 package org.openrdf.sail.spin;
 
+import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ public class SPINSailTest {
 
 	@Test
 	public void testAskConstraint() throws Exception {
-		constraintException.expect(ConstraintViolationException.class);
+		constraintException.expectCause(isA(ConstraintViolationException.class));
 		loadStatements("testAskConstraint.ttl");
 	}
 

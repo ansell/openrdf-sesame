@@ -3,6 +3,7 @@ package org.openrdf.sail.spin;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iterations;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -50,6 +51,7 @@ import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnectio
 import org.openrdf.sail.inferencer.util.RDFInferencerInserter;
 import org.openrdf.spin.ConstraintViolation;
 import org.openrdf.spin.MalformedSPINException;
+import org.openrdf.spin.ParsedTemplateQuery;
 import org.openrdf.spin.RuleProperty;
 import org.openrdf.spin.SPINParser;
 import org.slf4j.Marker;
@@ -169,7 +171,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection imp
 		parser.setRDFHandler(inserter);
 		URL url = getClass().getResource(file);
 		try {
-			InputStream in = url.openStream();
+			InputStream in = new BufferedInputStream(url.openStream());
 			try {
 				parser.parse(in, url.toString());
 			}
@@ -450,6 +452,9 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection imp
 			}
 		}
 		else if(parsedQuery instanceof ParsedGraphQuery) {
+			// TODO
+		}
+		else if(parsedQuery instanceof ParsedTemplateQuery) {
 			// TODO
 		}
 		else {
