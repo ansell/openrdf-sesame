@@ -47,4 +47,17 @@ public class TestIntegerCast {
 		}
 	}
 
+	@Test
+	public void testCastDoubleWithLargeFraction() {
+		Literal dbl = f.createLiteral(100.987456d);
+		try {
+			Literal result = ic.evaluate(f, dbl);
+			assertNotNull(result);
+			assertEquals(XMLSchema.INTEGER, result.getDatatype());
+			assertEquals(100, result.intValue());
+		}
+		catch (ValueExprEvaluationException e) {
+			fail(e.getMessage());
+		}
+	}
 }
