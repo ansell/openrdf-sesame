@@ -16,12 +16,6 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.ConvertingIteration;
@@ -37,6 +31,12 @@ import info.aduna.iteration.OffsetIteration;
 import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
 import info.aduna.iteration.UnionIteration;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -70,6 +70,8 @@ import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.EvaluableTupleExpr;
+import org.openrdf.query.algebra.EvaluableValueExpr;
 import org.openrdf.query.algebra.Exists;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Filter;
@@ -211,6 +213,7 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Methods *
 	 *---------*/
 
+	@Override
 	public FederatedService getService(String serviceUrl)
 		throws QueryEvaluationException
 	{
@@ -248,6 +251,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof BindingSetAssignment) {
 			return evaluate((BindingSetAssignment)expr, bindings);
+		}
+		else if (expr instanceof EvaluableTupleExpr) {
+			return ((EvaluableTupleExpr)expr).evaluate(bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
@@ -1098,6 +1104,9 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof ListMemberOperator) {
 			return evaluate((ListMemberOperator)expr, bindings);
+		}
+		else if (expr instanceof EvaluableValueExpr) {
+			return ((EvaluableValueExpr)expr).evaluate(bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");

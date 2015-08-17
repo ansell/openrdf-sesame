@@ -57,6 +57,10 @@ public class SPINParser {
 			SP.INSERT_DATA_CLASS, SP.DELETE_DATA_CLASS, SP.LOAD_CLASS, SP.CLEAR_CLASS, SP.CREATE_CLASS,
 			SP.DROP_CLASS);
 
+	private static final Set<URI> TEMPLATE_SUPER_TYPES = Sets.newHashSet(RDFS.RESOURCE, SP.SYSTEM_CLASS,
+			SP.COMMAND_CLASS, SP.QUERY_CLASS, SP.UPDATE_CLASS, SPIN.TEMPLATES_CLASS,
+			SPIN.ASK_TEMPLATES_CLASS, SPIN.SELECT_TEMPLATES_CLASS, SPIN.CONSTRUCT_TEMPLATES_CLASS, SPIN.UPDATE_TEMPLATES_CLASS);
+
 	public enum Input {
 		TEXT_FIRST(true, true),
 		TEXT_ONLY(true, false),
@@ -248,6 +252,7 @@ public class SPINParser {
 	{
 		List<URI> queryTypes = new ArrayList<URI>(4);
 		boolean isTemplate = false;
+		URI template = null;
 		CloseableIteration<? extends URI, ? extends OpenRDFException> typeIter = Statements.getObjectURIs(
 				queryResource, RDF.TYPE, store);
 		try {
@@ -258,6 +263,9 @@ public class SPINParser {
 				}
 				if(SPIN.TEMPLATES_CLASS.equals(type)) {
 					isTemplate = true;
+				}
+				else if(!TEMPLATE_SUPER_TYPES.contains(type)) {
+					template = type;
 				}
 			}
 		}
@@ -275,7 +283,12 @@ public class SPINParser {
 
 		ParsedOperation pq;
 		if (isTemplate) {
+			if(template == null) {
+				throw new MalformedSPINException("Resource is not a template: " + queryResource);
+			}
 			// TODO
+			Template tmpl = parseTemplate(template, queryTypes, store);
+			// ??? pq = ParsedTemplateOperation(tmpl.getParsedOperation(), args);
 			pq = null;
 		}
 		else {
@@ -296,6 +309,14 @@ public class SPINParser {
 			throw new MalformedSPINException("Resource is not a query: " + queryResource);
 		}
 		return pq;
+	}
+
+	private Template parseTemplate(Resource tmplResource, List<URI> queryTypes,
+			StatementSource<? extends OpenRDFException> store)
+		throws OpenRDFException
+	{
+		// TODO
+		return null;
 	}
 
 	private ParsedOperation parseText(Resource queryResource, List<URI> queryTypes,
