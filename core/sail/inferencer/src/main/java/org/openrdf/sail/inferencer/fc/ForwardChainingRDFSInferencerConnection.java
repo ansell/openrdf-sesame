@@ -91,7 +91,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 	protected void resetInferred()
 		throws SailException
 	{
-		Resource axiomContext = inferencer.getAxionContext();
+		Resource axiomContext = inferencer.getAxiomContext();
 		if(axiomContext != null) {
 			// optimised reset
 			List<Resource> contexts = new ArrayList<Resource>();
@@ -119,7 +119,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 	{
 		logger.debug("Inserting axiom statements");
 
-		Resource axiomContext = inferencer.getAxionContext();
+		Resource axiomContext = inferencer.getAxiomContext();
 		Resource[] contexts = (axiomContext != null) ? new Resource[] {axiomContext} : NO_CONTEXT;
 
 		// RDF axiomatic triples (from RDF Semantics, section 3.1):

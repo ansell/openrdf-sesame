@@ -52,8 +52,12 @@ public class SPINSailTest {
 
 	@After
 	public void tearDown() throws RepositoryException {
-		conn.close();
-		repo.shutDown();
+		if(conn != null) {
+			conn.close();
+		}
+		if(repo != null) {
+			repo.shutDown();
+		}
 	}
 
 	@Test

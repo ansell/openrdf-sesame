@@ -63,7 +63,7 @@ public class ForwardChainingRDFSInferencer extends AbstractForwardChainingInfere
 		this.axiomContext = context;
 	}
 
-	public Resource getAxionContext() {
+	public Resource getAxiomContext() {
 		return this.axiomContext;
 	}
 

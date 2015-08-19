@@ -19,7 +19,10 @@ package org.openrdf.spin;
 import info.aduna.iteration.CloseableIteration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,16 +54,22 @@ import com.google.common.collect.Sets;
 
 public class SPINParser {
 
-	private static final Set<URI> QUERY_TYPES = Sets.newHashSet(SP.QUERY_CLASS, SP.SELECT_CLASS,
+	private static final Set<URI> QUERY_TYPES = Sets.newHashSet(SP.SELECT_CLASS,
 			SP.CONSTRUCT_CLASS, SP.ASK_CLASS, SP.DESCRIBE_CLASS);
 
-	private static final Set<URI> UPDATE_TYPES = Sets.newHashSet(SP.UPDATE_CLASS, SP.MODIFY_CLASS,
+	private static final Set<URI> UPDATE_TYPES = Sets.newHashSet(SP.MODIFY_CLASS,
 			SP.INSERT_DATA_CLASS, SP.DELETE_DATA_CLASS, SP.LOAD_CLASS, SP.CLEAR_CLASS, SP.CREATE_CLASS,
 			SP.DROP_CLASS);
 
-	private static final Set<URI> TEMPLATE_SUPER_TYPES = Sets.newHashSet(RDFS.RESOURCE, SP.SYSTEM_CLASS,
-			SP.COMMAND_CLASS, SP.QUERY_CLASS, SP.UPDATE_CLASS, SPIN.TEMPLATES_CLASS,
-			SPIN.ASK_TEMPLATES_CLASS, SPIN.SELECT_TEMPLATES_CLASS, SPIN.CONSTRUCT_TEMPLATES_CLASS, SPIN.UPDATE_TEMPLATES_CLASS);
+	private static final Set<URI> COMMAND_TYPES = Sets.union(QUERY_TYPES, UPDATE_TYPES);
+
+	private static final Set<URI> NON_TEMPLATES = Sets.newHashSet(RDFS.RESOURCE, SP.SYSTEM_CLASS,
+			SP.COMMAND_CLASS, SP.QUERY_CLASS, SP.UPDATE_CLASS, SPIN.MODULES_CLASS, SPIN.TEMPLATES_CLASS,
+			SPIN.ASK_TEMPLATES_CLASS, SPIN.SELECT_TEMPLATES_CLASS, SPIN.CONSTRUCT_TEMPLATES_CLASS,
+			SPIN.UPDATE_TEMPLATES_CLASS, SPIN.RULE_CLASS);
+
+	private static final Set<URI> TEMPLATE_TYPES = Sets.newHashSet(SPIN.ASK_TEMPLATE_CLASS, SPIN.SELECT_TEMPLATE_CLASS,
+			SPIN.CONSTRUCT_TEMPLATE_CLASS, SPIN.UPDATE_TEMPLATE_CLASS);
 
 	public enum Input {
 		TEXT_FIRST(true, true),
@@ -210,7 +219,7 @@ public class SPINParser {
 	public ParsedOperation parse(Resource queryResource, StatementSource<? extends OpenRDFException> store)
 		throws OpenRDFException
 	{
-		return parse(queryResource, null, store);
+		return parse(queryResource, SP.COMMAND_CLASS, store);
 	}
 
 	public ParsedQuery parseQuery(Resource queryResource, StatementSource<? extends OpenRDFException> store)
@@ -247,90 +256,189 @@ public class SPINParser {
 		return (ParsedDescribeQuery)parse(queryResource, SP.DESCRIBE_CLASS, store);
 	}
 
-	protected ParsedOperation parse(Resource queryResource, URI queryType,
+	protected ParsedOperation parse(Resource queryResource, URI queryClass,
 			StatementSource<? extends OpenRDFException> store)
 		throws OpenRDFException
 	{
-		List<URI> queryTypes = new ArrayList<URI>(4);
-		boolean isTemplate = false;
-		URI template = null;
+		Boolean isQueryElseTemplate = null;
+		Set<URI> possibleQueryTypes = new HashSet<URI>();
+		Set<URI> possibleTemplates = new HashSet<URI>();
 		CloseableIteration<? extends URI, ? extends OpenRDFException> typeIter = Statements.getObjectURIs(
 				queryResource, RDF.TYPE, store);
 		try {
 			while (typeIter.hasNext()) {
 				URI type = typeIter.next();
-				if(queryType == null || queryType.equals(type)) {
-					queryTypes.add(type);
+				if(isQueryElseTemplate == null && SPIN.TEMPLATES_CLASS.equals(type)) {
+					isQueryElseTemplate = Boolean.FALSE;
 				}
-				if(SPIN.TEMPLATES_CLASS.equals(type)) {
-					isTemplate = true;
+				else if((isQueryElseTemplate == null || isQueryElseTemplate == Boolean.TRUE)
+						&& COMMAND_TYPES.contains(type)) {
+					isQueryElseTemplate = Boolean.TRUE;
+					possibleQueryTypes.add(type);
 				}
-				else if(!TEMPLATE_SUPER_TYPES.contains(type)) {
-					template = type;
+				else if((isQueryElseTemplate == null || isQueryElseTemplate == Boolean.FALSE)
+						&& !NON_TEMPLATES.contains(type)) {
+					possibleTemplates.add(type);
 				}
 			}
 		}
 		finally {
 			typeIter.close();
 		}
-		if (queryTypes.isEmpty()) {
-			if (queryType != null) {
-				throw new MalformedSPINException("No query of RDF type: " + queryType);
+
+		ParsedOperation parsedOp;
+		if(isQueryElseTemplate == null) {
+			throw new MalformedSPINException("Missing RDF type: " + queryResource);
+		}
+		else if(isQueryElseTemplate == Boolean.TRUE) {
+			// command (query or update)
+			if(possibleQueryTypes.size() > 1) {
+				throw new MalformedSPINException("Incompatible RDF types for command: "+queryResource+" has types "+possibleQueryTypes);
+			}
+
+			URI queryType = possibleQueryTypes.iterator().next();
+
+			if (input.textFirst) {
+				parsedOp = parseText(queryResource, queryType, store);
+				if (parsedOp == null && input.canFallback) {
+					parsedOp = parseRDF(queryResource, queryType, store);
+				}
 			}
 			else {
-				throw new MalformedSPINException("Query missing RDF type: " + queryResource);
+				parsedOp = parseRDF(queryResource, queryType, store);
+				if (parsedOp == null && input.canFallback) {
+					parsedOp = parseText(queryResource, queryType, store);
+				}
 			}
-		}
 
-		ParsedOperation pq;
-		if (isTemplate) {
-			if(template == null) {
-				throw new MalformedSPINException("Resource is not a template: " + queryResource);
+			if (parsedOp == null) {
+				throw new MalformedSPINException("Command is not parsable: " + queryResource);
 			}
-			Template tmpl = parseTemplate(template, queryTypes, store);
-			// TODO
-			BindingSet args = null;
-			pq = new ParsedTemplateQuery(template, tmpl.getParsedOperation(), args);
 		}
 		else {
-			if (input.textFirst) {
-				pq = parseText(queryResource, queryTypes, store);
-				if (pq == null && input.canFallback) {
-					pq = parseRDF(queryResource, queryTypes, store);
+			// template
+			if(possibleTemplates.size() > 1) {
+				for(Iterator<URI> templateIter = possibleTemplates.iterator(); templateIter.hasNext(); ) {
+					URI template = templateIter.next();
+					boolean isTemplateType = false;
+					CloseableIteration<? extends URI, ? extends OpenRDFException> tmplTypeIter = Statements.getObjectURIs(
+							template, RDF.TYPE, store);
+					try {
+						while (tmplTypeIter.hasNext()) {
+							URI tmplType = tmplTypeIter.next();
+							if(TEMPLATE_TYPES.contains(tmplType)) {
+								isTemplateType = true;
+								break;
+							}
+						}
+					}
+					finally {
+						tmplTypeIter.close();
+					}
+					if(!isTemplateType) {
+						templateIter.remove();
+					}
 				}
 			}
-			else {
-				pq = parseRDF(queryResource, queryTypes, store);
-				if (pq == null && input.canFallback) {
-					pq = parseText(queryResource, queryTypes, store);
-				}
+
+			if(possibleTemplates.isEmpty()) {
+				throw new MalformedSPINException("Template missing RDF type: " + queryResource);
 			}
+			else if(possibleTemplates.size() > 1) {
+				throw new MalformedSPINException("Incompatible RDF types for template: "+queryResource+" has types "+possibleTemplates);
+			}
+
+			URI templateResource = possibleTemplates.iterator().next();
+
+			Template tmpl = parseTemplate(templateResource, queryClass, store);
+			// TODO
+			BindingSet args = null;
+			parsedOp = new ParsedTemplateQuery(templateResource, tmpl.getParsedOperation(), args);
 		}
-		if (pq == null) {
-			throw new MalformedSPINException("Resource is not a query: " + queryResource);
-		}
-		return pq;
+
+		return parsedOp;
 	}
 
-	private Template parseTemplate(URI tmplUri, List<URI> queryTypes,
+	private Template parseTemplate(URI tmplUri, URI queryType,
 			StatementSource<? extends OpenRDFException> store)
 		throws OpenRDFException
 	{
-		// TODO
-		return new Template(tmplUri);
+		Set<URI> possibleTmplTypes = new HashSet<URI>();
+		CloseableIteration<? extends URI, ? extends OpenRDFException> typeIter = Statements.getObjectURIs(
+				tmplUri, RDF.TYPE, store);
+		try {
+			while (typeIter.hasNext()) {
+				URI type = typeIter.next();
+				if(TEMPLATE_TYPES.contains(type)) {
+					possibleTmplTypes.add(type);
+				}
+			}
+		}
+		finally {
+			typeIter.close();
+		}
+
+		if(possibleTmplTypes.isEmpty()) {
+			throw new MalformedSPINException("Template missing RDF type: " + tmplUri);
+		}
+		else if(possibleTmplTypes.size() > 1) {
+			throw new MalformedSPINException("Incompatible RDF types for template: "+tmplUri+" has types "+possibleTmplTypes);
+		}
+
+		URI tmplType = possibleTmplTypes.iterator().next();
+
+		Set<URI> compatibleTmplTypes;
+		if(SP.QUERY_CLASS.equals(queryType)) {
+			compatibleTmplTypes = Sets.newHashSet(SPIN.ASK_TEMPLATE_CLASS, SPIN.SELECT_TEMPLATE_CLASS,
+					SPIN.CONSTRUCT_TEMPLATE_CLASS);
+		}
+		else if(SP.UPDATE_CLASS.equals(queryType) || UPDATE_TYPES.contains(queryType)) {
+			compatibleTmplTypes = Collections.singleton(SPIN.UPDATE_TEMPLATE_CLASS);
+		}
+		else if(SP.ASK_CLASS.equals(queryType)) {
+			compatibleTmplTypes = Collections.singleton(SPIN.ASK_TEMPLATE_CLASS);
+		}
+		else if(SP.SELECT_CLASS.equals(queryType)) {
+			compatibleTmplTypes = Collections.singleton(SPIN.SELECT_TEMPLATE_CLASS);
+		}
+		else if(SP.CONSTRUCT_CLASS.equals(queryType)) {
+			compatibleTmplTypes = Collections.singleton(SPIN.CONSTRUCT_TEMPLATE_CLASS);
+		}
+		else {
+			compatibleTmplTypes = TEMPLATE_TYPES;
+		}
+		if(!compatibleTmplTypes.contains(tmplType)) {
+			throw new MalformedSPINException("Template type "+tmplType+" is incompatible with command type "+queryType);
+		}
+
+		Template tmpl = new Template(tmplUri);
+
+		Value body = singleValue(tmplUri, SPIN.BODY_PROPERTY, store);
+		if(!(body instanceof Resource)) {
+			throw new MalformedSPINException("Template body is not a resource: "+body);
+		}
+		ParsedOperation op = parse((Resource) body, queryType, store);
+		tmpl.setParsedOperation(op);
+
+		// TODO args
+
+		return tmpl;
 	}
 
-	private ParsedOperation parseText(Resource queryResource, List<URI> queryTypes,
+	private ParsedOperation parseText(Resource queryResource, URI queryType,
 			StatementSource<? extends OpenRDFException> store)
 		throws OpenRDFException
 	{
-		Statement textStmt = single(queryResource, SP.TEXT_PROPERTY, null, store);
-		if (textStmt != null) {
-			if (isQuery(queryTypes)) {
-				return QueryParserUtil.parseQuery(QueryLanguage.SPARQL, textStmt.getObject().stringValue(), null);
+		Value text = singleValue(queryResource, SP.TEXT_PROPERTY, store);
+		if (text != null) {
+			if (QUERY_TYPES.contains(queryType)) {
+				return QueryParserUtil.parseQuery(QueryLanguage.SPARQL, text.stringValue(), null);
+			}
+			else if (UPDATE_TYPES.contains(queryType)) {
+				return QueryParserUtil.parseUpdate(QueryLanguage.SPARQL, text.stringValue(), null);
 			}
 			else {
-				return QueryParserUtil.parseUpdate(QueryLanguage.SPARQL, textStmt.getObject().stringValue(), null);
+				throw new MalformedSPINException("Unrecognised command type: "+queryType);
 			}
 		}
 		else {
@@ -338,24 +446,11 @@ public class SPINParser {
 		}
 	}
 
-	private ParsedOperation parseRDF(Resource queryResource, List<URI> queryTypes,
+	private ParsedOperation parseRDF(Resource queryResource, URI queryType,
 			StatementSource<? extends OpenRDFException> store)
 		throws OpenRDFException
 	{
 		throw new UnsupportedOperationException("TO DO");
-	}
-
-	private static boolean isQuery(List<URI> queryTypes) {
-		for (URI queryType : queryTypes) {
-			if (QUERY_TYPES.contains(queryType)) {
-				return true;
-			}
-			else if (UPDATE_TYPES.contains(queryType)) {
-				return false;
-			}
-			// else try the next queryType
-		}
-		return false;
 	}
 
 	private static <X extends Exception> Value singleValue(Resource subj, URI pred,
