@@ -1869,7 +1869,22 @@ public abstract class RepositoryConnectionTest {
 		assertTrue(result.hasNext());
 		testCon.commit();
 	}
+	@Test
+	public void testUpdateInTransaction()
+		throws Exception
+	{
+		testCon.add(bob, RDF.TYPE, FOAF.PERSON);
 
+		testCon.begin();
+		String query = "INSERT { ?x rdfs:label \"Bob\" } where {?x a ?y }";
+		testCon.prepareUpdate(QueryLanguage.SPARQL, query).execute();
+
+		// test verifies that update as part of transaction executes and returns a
+		// result
+		assertTrue(testCon.hasStatement(bob, RDFS.LABEL, vf.createLiteral("Bob"), true));
+		testCon.commit();
+	}
+	
 	@Test
 	public void testInferredStatementCount()
 		throws Exception
