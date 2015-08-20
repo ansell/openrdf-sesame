@@ -16,9 +16,9 @@
  */
 package org.openrdf.repository.sail;
 
-import info.aduna.iteration.CloseableIteration;
-
 import java.util.ArrayList;
+
+import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -39,10 +39,6 @@ import org.openrdf.sail.SailException;
 public class SailTupleQuery extends SailQuery implements TupleQuery {
 
 	protected SailTupleQuery(ParsedTupleQuery tupleQuery, SailRepositoryConnection sailConnection) {
-		this(tupleQuery, sailConnection.getSailConnection());
-	}
-
-	public SailTupleQuery(ParsedTupleQuery tupleQuery, SailConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
@@ -60,7 +56,7 @@ public class SailTupleQuery extends SailQuery implements TupleQuery {
 		try {
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
 
-			SailConnection sailCon = getSailConnection();
+			SailConnection sailCon = getConnection().getSailConnection();
 			bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
 			bindingsIter = enforceMaxQueryTime(bindingsIter);

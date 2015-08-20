@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.sail;
+package org.openrdf.sail;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -24,15 +24,13 @@ import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
-import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
 
 /**
  * @author Arjohn Kampman
  */
-public class SailBooleanQuery extends SailQuery implements BooleanQuery {
+public class SailConnectionBooleanQuery extends SailConnectionQuery implements BooleanQuery {
 
-	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailRepositoryConnection sailConnection) {
+	public SailConnectionBooleanQuery(ParsedBooleanQuery tupleQuery, SailConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
@@ -41,6 +39,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 		return (ParsedBooleanQuery)super.getParsedQuery();
 	}
 
+	@Override
 	public boolean evaluate()
 		throws QueryEvaluationException
 	{
@@ -53,7 +52,7 @@ public class SailBooleanQuery extends SailQuery implements BooleanQuery {
 		}
 
 		try {
-			SailConnection sailCon = getConnection().getSailConnection();
+			SailConnection sailCon = getSailConnection();
 
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
 			bindingsIter = sailCon.evaluate(tupleExpr, dataset, getBindings(), getIncludeInferred());

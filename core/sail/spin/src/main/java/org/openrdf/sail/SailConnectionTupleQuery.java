@@ -14,61 +14,63 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.sail;
+package org.openrdf.sail;
 
 import info.aduna.iteration.CloseableIteration;
 
+import java.util.ArrayList;
+
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.Dataset;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryResults;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
+import org.openrdf.query.TupleQueryResultHandler;
+import org.openrdf.query.TupleQueryResultHandlerException;
 import org.openrdf.query.algebra.TupleExpr;
-import org.openrdf.query.parser.ParsedBooleanQuery;
-import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
+import org.openrdf.query.impl.TupleQueryResultImpl;
+import org.openrdf.query.parser.ParsedTupleQuery;
 
 /**
  * @author Arjohn Kampman
  */
-public class SailBooleanQuery extends SailQuery implements BooleanQuery {
+public class SailConnectionTupleQuery extends SailConnectionQuery implements TupleQuery {
 
-	protected SailBooleanQuery(ParsedBooleanQuery tupleQuery, SailRepositoryConnection sailConnection) {
+	public SailConnectionTupleQuery(ParsedTupleQuery tupleQuery, SailConnection sailConnection) {
 		super(tupleQuery, sailConnection);
 	}
 
 	@Override
-	public ParsedBooleanQuery getParsedQuery() {
-		return (ParsedBooleanQuery)super.getParsedQuery();
+	public ParsedTupleQuery getParsedQuery() {
+		return (ParsedTupleQuery)super.getParsedQuery();
 	}
 
-	public boolean evaluate()
+	@Override
+	public TupleQueryResult evaluate()
 		throws QueryEvaluationException
 	{
-		ParsedBooleanQuery parsedBooleanQuery = getParsedQuery();
-		TupleExpr tupleExpr = parsedBooleanQuery.getTupleExpr();
-		Dataset dataset = getDataset();
-		if (dataset == null) {
-			// No external dataset specified, use query's own dataset (if any)
-			dataset = parsedBooleanQuery.getDataset();
-		}
+		TupleExpr tupleExpr = getParsedQuery().getTupleExpr();
 
 		try {
-			SailConnection sailCon = getConnection().getSailConnection();
-
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
-			bindingsIter = sailCon.evaluate(tupleExpr, dataset, getBindings(), getIncludeInferred());
+
+			SailConnection sailCon = getSailConnection();
+			bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
 			bindingsIter = enforceMaxQueryTime(bindingsIter);
 
-			try {
-				return bindingsIter.hasNext();
-			}
-			finally {
-				bindingsIter.close();
-			}
+			return new TupleQueryResultImpl(new ArrayList<String>(tupleExpr.getBindingNames()), bindingsIter);
 		}
 		catch (SailException e) {
 			throw new QueryEvaluationException(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public void evaluate(TupleQueryResultHandler handler)
+		throws QueryEvaluationException, TupleQueryResultHandlerException
+	{
+		TupleQueryResult queryResult = evaluate();
+		QueryResults.report(queryResult, handler);
 	}
 }

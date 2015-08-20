@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.sail;
+package org.openrdf.sail;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
@@ -35,16 +35,17 @@ import org.openrdf.query.impl.GraphQueryResultImpl;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.sail.SailConnection;
-import org.openrdf.sail.SailException;
 
 /**
  * @author Arjohn Kampman
  */
-public class SailGraphQuery extends SailQuery implements GraphQuery {
+public class SailConnectionGraphQuery extends SailConnectionQuery implements GraphQuery {
 
-	protected SailGraphQuery(ParsedGraphQuery tupleQuery, SailRepositoryConnection con) {
+	private final ValueFactory vf;
+
+	public SailConnectionGraphQuery(ParsedGraphQuery tupleQuery, SailConnection con, ValueFactory vf) {
 		super(tupleQuery, con);
+		this.vf = vf;
 	}
 
 	@Override
@@ -52,6 +53,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		return (ParsedGraphQuery)super.getParsedQuery();
 	}
 
+	@Override
 	public GraphQueryResult evaluate()
 		throws QueryEvaluationException
 	{
@@ -60,7 +62,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		try {
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> bindingsIter;
 			
-			SailConnection sailCon = getConnection().getSailConnection();
+			SailConnection sailCon = getSailConnection();
 			bindingsIter = sailCon.evaluate(tupleExpr, getActiveDataset(), getBindings(), getIncludeInferred());
 
 			// Filters out all partial and invalid matches
@@ -80,7 +82,6 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 			bindingsIter = enforceMaxQueryTime(bindingsIter);
 
 			// Convert the BindingSet objects to actual RDF statements
-			final ValueFactory vf = getConnection().getRepository().getValueFactory();
 			CloseableIteration<Statement, QueryEvaluationException> stIter;
 			stIter = new ConvertingIteration<BindingSet, Statement, QueryEvaluationException>(bindingsIter) {
 
@@ -107,6 +108,7 @@ public class SailGraphQuery extends SailQuery implements GraphQuery {
 		}
 	}
 
+	@Override
 	public void evaluate(RDFHandler handler)
 		throws QueryEvaluationException, RDFHandlerException
 	{

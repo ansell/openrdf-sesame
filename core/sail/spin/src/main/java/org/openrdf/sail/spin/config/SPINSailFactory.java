@@ -14,25 +14,34 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.sail.spin.config;
 
-import org.openrdf.model.URI;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.parser.ParsedOperation;
-import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.sail.Sail;
+import org.openrdf.sail.config.SailConfigException;
+import org.openrdf.sail.config.SailFactory;
+import org.openrdf.sail.config.SailImplConfig;
 
 
-public class ParsedTemplateQuery extends ParsedQuery {
-	private final ParsedOperation template;
-	private final BindingSet args;
+public class SPINSailFactory implements SailFactory {
 
-	public ParsedTemplateQuery(URI uri, ParsedOperation template, BindingSet args) {
-		super(uri.stringValue());
-		this.template = template;
-		this.args = args;
+	@Override
+	public String getSailType() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	public BindingSet getArguments() {
-		return args;
+	@Override
+	public SailImplConfig getConfig() {
+		// TODO Auto-generated method stub
+		return null;
 	}
+
+	@Override
+	public Sail getSail(SailImplConfig config)
+		throws SailConfigException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

@@ -76,8 +76,7 @@ public abstract class AbstractSailUpdate extends AbstractUpdate {
 		List<UpdateExpr> updateExprs = parsedUpdate.getUpdateExprs();
 		Map<UpdateExpr, Dataset> datasetMapping = parsedUpdate.getDatasetMapping();
 
-		SailConnection conn = getSailConnection();
-		SailUpdateExecutor executor = new SailUpdateExecutor(conn, vf, parserConfig);
+		SailUpdateExecutor executor = new SailUpdateExecutor(con, vf, parserConfig);
 
 		for (UpdateExpr updateExpr : updateExprs) {
 

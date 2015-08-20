@@ -14,25 +14,24 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.sail;
 
-import org.openrdf.model.URI;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.repository.sail.AbstractSailQuery;
 
+/**
+ * @author Arjohn Kampman
+ */
+public abstract class SailConnectionQuery extends AbstractSailQuery {
 
-public class ParsedTemplateQuery extends ParsedQuery {
-	private final ParsedOperation template;
-	private final BindingSet args;
+	private final SailConnection con;
 
-	public ParsedTemplateQuery(URI uri, ParsedOperation template, BindingSet args) {
-		super(uri.stringValue());
-		this.template = template;
-		this.args = args;
+	protected SailConnectionQuery(ParsedQuery parsedQuery, SailConnection con) {
+		super(parsedQuery);
+		this.con = con;
 	}
 
-	public BindingSet getArguments() {
-		return args;
+	protected SailConnection getSailConnection() {
+		return con;
 	}
 }

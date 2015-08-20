@@ -30,11 +30,8 @@ import java.util.Set;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.StatementSource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.util.Statements;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SP;
@@ -42,6 +39,7 @@ import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
@@ -49,17 +47,17 @@ import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.spin.util.Statements;
 
 import com.google.common.collect.Sets;
 
 public class SPINParser {
 
-	private static final Set<URI> QUERY_TYPES = Sets.newHashSet(SP.SELECT_CLASS,
-			SP.CONSTRUCT_CLASS, SP.ASK_CLASS, SP.DESCRIBE_CLASS);
+	private static final Set<URI> QUERY_TYPES = Sets.newHashSet(SP.SELECT_CLASS, SP.CONSTRUCT_CLASS,
+			SP.ASK_CLASS, SP.DESCRIBE_CLASS);
 
-	private static final Set<URI> UPDATE_TYPES = Sets.newHashSet(SP.MODIFY_CLASS,
-			SP.INSERT_DATA_CLASS, SP.DELETE_DATA_CLASS, SP.LOAD_CLASS, SP.CLEAR_CLASS, SP.CREATE_CLASS,
-			SP.DROP_CLASS);
+	private static final Set<URI> UPDATE_TYPES = Sets.newHashSet(SP.MODIFY_CLASS, SP.INSERT_DATA_CLASS,
+			SP.DELETE_DATA_CLASS, SP.LOAD_CLASS, SP.CLEAR_CLASS, SP.CREATE_CLASS, SP.DROP_CLASS);
 
 	private static final Set<URI> COMMAND_TYPES = Sets.union(QUERY_TYPES, UPDATE_TYPES);
 
@@ -68,8 +66,8 @@ public class SPINParser {
 			SPIN.ASK_TEMPLATES_CLASS, SPIN.SELECT_TEMPLATES_CLASS, SPIN.CONSTRUCT_TEMPLATES_CLASS,
 			SPIN.UPDATE_TEMPLATES_CLASS, SPIN.RULE_CLASS);
 
-	private static final Set<URI> TEMPLATE_TYPES = Sets.newHashSet(SPIN.ASK_TEMPLATE_CLASS, SPIN.SELECT_TEMPLATE_CLASS,
-			SPIN.CONSTRUCT_TEMPLATE_CLASS, SPIN.UPDATE_TEMPLATE_CLASS);
+	private static final Set<URI> TEMPLATE_TYPES = Sets.newHashSet(SPIN.ASK_TEMPLATE_CLASS,
+			SPIN.SELECT_TEMPLATE_CLASS, SPIN.CONSTRUCT_TEMPLATE_CLASS, SPIN.UPDATE_TEMPLATE_CLASS);
 
 	public enum Input {
 		TEXT_FIRST(true, true),
@@ -97,7 +95,7 @@ public class SPINParser {
 		this.input = input;
 	}
 
-	public Map<URI, RuleProperty> parseRuleProperties(StatementSource<? extends OpenRDFException> store)
+	public Map<URI, RuleProperty> parseRuleProperties(TripleSource store)
 		throws OpenRDFException
 	{
 		Map<URI, RuleProperty> rules = new HashMap<URI, RuleProperty>();
@@ -123,11 +121,11 @@ public class SPINParser {
 		return rules;
 	}
 
-	private <X extends Exception> List<URI> getNextRules(Resource ruleProp, StatementSource<X> store)
-		throws X
+	private List<URI> getNextRules(Resource ruleProp, TripleSource store)
+		throws OpenRDFException
 	{
 		List<URI> nextRules = new ArrayList<URI>();
-		CloseableIteration<? extends URI, X> iter = Statements.getObjectURIs(ruleProp,
+		CloseableIteration<? extends URI, ? extends OpenRDFException> iter = Statements.getObjectURIs(ruleProp,
 				SPIN.NEXT_RULE_PROPERTY_PROPERTY, store);
 		try {
 			while (iter.hasNext()) {
@@ -140,124 +138,121 @@ public class SPINParser {
 		return nextRules;
 	}
 
-	private <X extends Exception> int getMaxIterationCount(Resource ruleProp, StatementSource<X> store)
-		throws X, MalformedSPINException
+	private int getMaxIterationCount(Resource ruleProp, TripleSource store)
+		throws OpenRDFException
 	{
-		Value v = singleValue(ruleProp,
-				SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY, store);
-		if(v == null) {
+		Value v = Statements.singleValue(ruleProp, SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY, store);
+		if (v == null) {
 			return -1;
 		}
-		else if(v instanceof Literal) {
+		else if (v instanceof Literal) {
 			try {
 				return ((Literal)v).intValue();
 			}
 			catch (NumberFormatException e) {
-				throw new MalformedSPINException("Value for "+SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY+" must be of datatype "+XMLSchema.INTEGER+": "+ruleProp);
+				throw new MalformedSPINException("Value for " + SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY
+						+ " must be of datatype " + XMLSchema.INTEGER + ": " + ruleProp);
 			}
 		}
 		else {
-			throw new MalformedSPINException("Non-literal value for "+SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY+": "+ruleProp);
+			throw new MalformedSPINException("Non-literal value for "
+					+ SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY + ": " + ruleProp);
 		}
 	}
 
-	public boolean isThisUnbound(Resource subj, StatementSource<? extends OpenRDFException> store)
+	public boolean isThisUnbound(Resource subj, TripleSource store)
 		throws OpenRDFException
 	{
-		Value v = singleValue(subj,
-				SPIN.THIS_UNBOUND_PROPERTY, store);
-		if(v == null) {
+		Value v = Statements.singleValue(subj, SPIN.THIS_UNBOUND_PROPERTY, store);
+		if (v == null) {
 			return false;
 		}
-		else if(v instanceof Literal) {
+		else if (v instanceof Literal) {
 			try {
 				return ((Literal)v).booleanValue();
 			}
 			catch (IllegalArgumentException e) {
-				throw new MalformedSPINException("Value for "+SPIN.THIS_UNBOUND_PROPERTY+" must be of datatype "+XMLSchema.BOOLEAN+": "+subj);
+				throw new MalformedSPINException("Value for " + SPIN.THIS_UNBOUND_PROPERTY
+						+ " must be of datatype " + XMLSchema.BOOLEAN + ": " + subj);
 			}
 		}
 		else {
-			throw new MalformedSPINException("Non-literal value for "+SPIN.THIS_UNBOUND_PROPERTY+": "+subj);
+			throw new MalformedSPINException("Non-literal value for " + SPIN.THIS_UNBOUND_PROPERTY + ": " + subj);
 		}
 	}
 
-	public ConstraintViolation parseConstraintViolation(Resource subj, StatementSource<? extends OpenRDFException> store)
+	public ConstraintViolation parseConstraintViolation(Resource subj, TripleSource store)
 		throws OpenRDFException
 	{
-		Value labelValue = singleValue(subj, RDFS.LABEL, store);
-		Value rootValue = singleValue(subj, SPIN.VIOLATION_ROOT_PROPERTY, store);
-		Value pathValue = singleValue(subj, SPIN.VIOLATION_PATH_PROPERTY, store);
-		Value valueValue = singleValue(subj, SPIN.VIOLATION_VALUE_PROPERTY, store);
-		Value levelValue = singleValue(subj, SPIN.VIOLATION_LEVEL_PROPERTY, store);
+		Value labelValue = Statements.singleValue(subj, RDFS.LABEL, store);
+		Value rootValue = Statements.singleValue(subj, SPIN.VIOLATION_ROOT_PROPERTY, store);
+		Value pathValue = Statements.singleValue(subj, SPIN.VIOLATION_PATH_PROPERTY, store);
+		Value valueValue = Statements.singleValue(subj, SPIN.VIOLATION_VALUE_PROPERTY, store);
+		Value levelValue = Statements.singleValue(subj, SPIN.VIOLATION_LEVEL_PROPERTY, store);
 		String label = (labelValue instanceof Literal) ? labelValue.stringValue() : null;
 		String root = (rootValue instanceof Resource) ? rootValue.stringValue() : null;
 		String path = (pathValue != null) ? pathValue.stringValue() : null;
 		String value = (valueValue != null) ? valueValue.stringValue() : null;
 		ConstraintViolationLevel level;
-		if(levelValue == null) {
+		if (levelValue == null) {
 			level = ConstraintViolationLevel.ERROR;
 		}
-		else if(SPIN.INFO_VIOLATION_LEVEL.equals(levelValue)) {
+		else if (SPIN.INFO_VIOLATION_LEVEL.equals(levelValue)) {
 			level = ConstraintViolationLevel.INFO;
 		}
-		else if(SPIN.WARNING_VIOLATION_LEVEL.equals(levelValue)) {
+		else if (SPIN.WARNING_VIOLATION_LEVEL.equals(levelValue)) {
 			level = ConstraintViolationLevel.WARNING;
 		}
-		else if(SPIN.ERROR_VIOLATION_LEVEL.equals(levelValue)) {
+		else if (SPIN.ERROR_VIOLATION_LEVEL.equals(levelValue)) {
 			level = ConstraintViolationLevel.ERROR;
 		}
-		else if(SPIN.FATAL_VIOLATION_LEVEL.equals(levelValue)) {
+		else if (SPIN.FATAL_VIOLATION_LEVEL.equals(levelValue)) {
 			level = ConstraintViolationLevel.FATAL;
 		}
 		else {
-			throw new MalformedSPINException("Invalid value "+levelValue+" for "+SPIN.VIOLATION_LEVEL_PROPERTY+": "+subj);
+			throw new MalformedSPINException("Invalid value " + levelValue + " for "
+					+ SPIN.VIOLATION_LEVEL_PROPERTY + ": " + subj);
 		}
 		return new ConstraintViolation(label, root, path, value, level);
 	}
 
-	public ParsedOperation parse(Resource queryResource, StatementSource<? extends OpenRDFException> store)
+	public ParsedOperation parse(Resource queryResource, TripleSource store)
 		throws OpenRDFException
 	{
 		return parse(queryResource, SP.COMMAND_CLASS, store);
 	}
 
-	public ParsedQuery parseQuery(Resource queryResource, StatementSource<? extends OpenRDFException> store)
+	public ParsedQuery parseQuery(Resource queryResource, TripleSource store)
 		throws OpenRDFException
 	{
 		return (ParsedQuery)parse(queryResource, SP.QUERY_CLASS, store);
 	}
 
-	public ParsedGraphQuery parseConstructQuery(Resource queryResource,
-			StatementSource<? extends OpenRDFException> store)
+	public ParsedGraphQuery parseConstructQuery(Resource queryResource, TripleSource store)
 		throws OpenRDFException
 	{
 		return (ParsedGraphQuery)parse(queryResource, SP.CONSTRUCT_CLASS, store);
 	}
 
-	public ParsedTupleQuery parseSelectQuery(Resource queryResource,
-			StatementSource<? extends OpenRDFException> store)
+	public ParsedTupleQuery parseSelectQuery(Resource queryResource, TripleSource store)
 		throws OpenRDFException
 	{
 		return (ParsedTupleQuery)parse(queryResource, SP.SELECT_CLASS, store);
 	}
 
-	public ParsedBooleanQuery parseAskQuery(Resource queryResource,
-			StatementSource<? extends OpenRDFException> store)
+	public ParsedBooleanQuery parseAskQuery(Resource queryResource, TripleSource store)
 		throws OpenRDFException
 	{
 		return (ParsedBooleanQuery)parse(queryResource, SP.ASK_CLASS, store);
 	}
 
-	public ParsedDescribeQuery parseDescribeQuery(Resource queryResource,
-			StatementSource<? extends OpenRDFException> store)
+	public ParsedDescribeQuery parseDescribeQuery(Resource queryResource, TripleSource store)
 		throws OpenRDFException
 	{
 		return (ParsedDescribeQuery)parse(queryResource, SP.DESCRIBE_CLASS, store);
 	}
 
-	protected ParsedOperation parse(Resource queryResource, URI queryClass,
-			StatementSource<? extends OpenRDFException> store)
+	protected ParsedOperation parse(Resource queryResource, URI queryClass, TripleSource store)
 		throws OpenRDFException
 	{
 		Boolean isQueryElseTemplate = null;
@@ -268,16 +263,18 @@ public class SPINParser {
 		try {
 			while (typeIter.hasNext()) {
 				URI type = typeIter.next();
-				if(isQueryElseTemplate == null && SPIN.TEMPLATES_CLASS.equals(type)) {
+				if (isQueryElseTemplate == null && SPIN.TEMPLATES_CLASS.equals(type)) {
 					isQueryElseTemplate = Boolean.FALSE;
 				}
-				else if((isQueryElseTemplate == null || isQueryElseTemplate == Boolean.TRUE)
-						&& COMMAND_TYPES.contains(type)) {
+				else if ((isQueryElseTemplate == null || isQueryElseTemplate == Boolean.TRUE)
+						&& COMMAND_TYPES.contains(type))
+				{
 					isQueryElseTemplate = Boolean.TRUE;
 					possibleQueryTypes.add(type);
 				}
-				else if((isQueryElseTemplate == null || isQueryElseTemplate == Boolean.FALSE)
-						&& !NON_TEMPLATES.contains(type)) {
+				else if ((isQueryElseTemplate == null || isQueryElseTemplate == Boolean.FALSE)
+						&& !NON_TEMPLATES.contains(type))
+				{
 					possibleTemplates.add(type);
 				}
 			}
@@ -287,13 +284,14 @@ public class SPINParser {
 		}
 
 		ParsedOperation parsedOp;
-		if(isQueryElseTemplate == null) {
+		if (isQueryElseTemplate == null) {
 			throw new MalformedSPINException("Missing RDF type: " + queryResource);
 		}
-		else if(isQueryElseTemplate == Boolean.TRUE) {
+		else if (isQueryElseTemplate == Boolean.TRUE) {
 			// command (query or update)
-			if(possibleQueryTypes.size() > 1) {
-				throw new MalformedSPINException("Incompatible RDF types for command: "+queryResource+" has types "+possibleQueryTypes);
+			if (possibleQueryTypes.size() > 1) {
+				throw new MalformedSPINException("Incompatible RDF types for command: " + queryResource
+						+ " has types " + possibleQueryTypes);
 			}
 
 			URI queryType = possibleQueryTypes.iterator().next();
@@ -317,8 +315,8 @@ public class SPINParser {
 		}
 		else {
 			// template
-			if(possibleTemplates.size() > 1) {
-				for(Iterator<URI> templateIter = possibleTemplates.iterator(); templateIter.hasNext(); ) {
+			if (possibleTemplates.size() > 1) {
+				for (Iterator<URI> templateIter = possibleTemplates.iterator(); templateIter.hasNext();) {
 					URI template = templateIter.next();
 					boolean isTemplateType = false;
 					CloseableIteration<? extends URI, ? extends OpenRDFException> tmplTypeIter = Statements.getObjectURIs(
@@ -326,7 +324,7 @@ public class SPINParser {
 					try {
 						while (tmplTypeIter.hasNext()) {
 							URI tmplType = tmplTypeIter.next();
-							if(TEMPLATE_TYPES.contains(tmplType)) {
+							if (TEMPLATE_TYPES.contains(tmplType)) {
 								isTemplateType = true;
 								break;
 							}
@@ -335,17 +333,18 @@ public class SPINParser {
 					finally {
 						tmplTypeIter.close();
 					}
-					if(!isTemplateType) {
+					if (!isTemplateType) {
 						templateIter.remove();
 					}
 				}
 			}
 
-			if(possibleTemplates.isEmpty()) {
+			if (possibleTemplates.isEmpty()) {
 				throw new MalformedSPINException("Template missing RDF type: " + queryResource);
 			}
-			else if(possibleTemplates.size() > 1) {
-				throw new MalformedSPINException("Incompatible RDF types for template: "+queryResource+" has types "+possibleTemplates);
+			else if (possibleTemplates.size() > 1) {
+				throw new MalformedSPINException("Incompatible RDF types for template: " + queryResource
+						+ " has types " + possibleTemplates);
 			}
 
 			URI templateResource = possibleTemplates.iterator().next();
@@ -359,8 +358,7 @@ public class SPINParser {
 		return parsedOp;
 	}
 
-	private Template parseTemplate(URI tmplUri, URI queryType,
-			StatementSource<? extends OpenRDFException> store)
+	private Template parseTemplate(URI tmplUri, URI queryType, TripleSource store)
 		throws OpenRDFException
 	{
 		Set<URI> possibleTmplTypes = new HashSet<URI>();
@@ -369,7 +367,7 @@ public class SPINParser {
 		try {
 			while (typeIter.hasNext()) {
 				URI type = typeIter.next();
-				if(TEMPLATE_TYPES.contains(type)) {
+				if (TEMPLATE_TYPES.contains(type)) {
 					possibleTmplTypes.add(type);
 				}
 			}
@@ -378,46 +376,48 @@ public class SPINParser {
 			typeIter.close();
 		}
 
-		if(possibleTmplTypes.isEmpty()) {
+		if (possibleTmplTypes.isEmpty()) {
 			throw new MalformedSPINException("Template missing RDF type: " + tmplUri);
 		}
-		else if(possibleTmplTypes.size() > 1) {
-			throw new MalformedSPINException("Incompatible RDF types for template: "+tmplUri+" has types "+possibleTmplTypes);
+		else if (possibleTmplTypes.size() > 1) {
+			throw new MalformedSPINException("Incompatible RDF types for template: " + tmplUri + " has types "
+					+ possibleTmplTypes);
 		}
 
 		URI tmplType = possibleTmplTypes.iterator().next();
 
 		Set<URI> compatibleTmplTypes;
-		if(SP.QUERY_CLASS.equals(queryType)) {
+		if (SP.QUERY_CLASS.equals(queryType)) {
 			compatibleTmplTypes = Sets.newHashSet(SPIN.ASK_TEMPLATE_CLASS, SPIN.SELECT_TEMPLATE_CLASS,
 					SPIN.CONSTRUCT_TEMPLATE_CLASS);
 		}
-		else if(SP.UPDATE_CLASS.equals(queryType) || UPDATE_TYPES.contains(queryType)) {
+		else if (SP.UPDATE_CLASS.equals(queryType) || UPDATE_TYPES.contains(queryType)) {
 			compatibleTmplTypes = Collections.singleton(SPIN.UPDATE_TEMPLATE_CLASS);
 		}
-		else if(SP.ASK_CLASS.equals(queryType)) {
+		else if (SP.ASK_CLASS.equals(queryType)) {
 			compatibleTmplTypes = Collections.singleton(SPIN.ASK_TEMPLATE_CLASS);
 		}
-		else if(SP.SELECT_CLASS.equals(queryType)) {
+		else if (SP.SELECT_CLASS.equals(queryType)) {
 			compatibleTmplTypes = Collections.singleton(SPIN.SELECT_TEMPLATE_CLASS);
 		}
-		else if(SP.CONSTRUCT_CLASS.equals(queryType)) {
+		else if (SP.CONSTRUCT_CLASS.equals(queryType)) {
 			compatibleTmplTypes = Collections.singleton(SPIN.CONSTRUCT_TEMPLATE_CLASS);
 		}
 		else {
 			compatibleTmplTypes = TEMPLATE_TYPES;
 		}
-		if(!compatibleTmplTypes.contains(tmplType)) {
-			throw new MalformedSPINException("Template type "+tmplType+" is incompatible with command type "+queryType);
+		if (!compatibleTmplTypes.contains(tmplType)) {
+			throw new MalformedSPINException("Template type " + tmplType + " is incompatible with command type "
+					+ queryType);
 		}
 
 		Template tmpl = new Template(tmplUri);
 
-		Value body = singleValue(tmplUri, SPIN.BODY_PROPERTY, store);
-		if(!(body instanceof Resource)) {
-			throw new MalformedSPINException("Template body is not a resource: "+body);
+		Value body = Statements.singleValue(tmplUri, SPIN.BODY_PROPERTY, store);
+		if (!(body instanceof Resource)) {
+			throw new MalformedSPINException("Template body is not a resource: " + body);
 		}
-		ParsedOperation op = parse((Resource) body, queryType, store);
+		ParsedOperation op = parse((Resource)body, queryType, store);
 		tmpl.setParsedOperation(op);
 
 		// TODO args
@@ -425,11 +425,10 @@ public class SPINParser {
 		return tmpl;
 	}
 
-	private ParsedOperation parseText(Resource queryResource, URI queryType,
-			StatementSource<? extends OpenRDFException> store)
+	private ParsedOperation parseText(Resource queryResource, URI queryType, TripleSource store)
 		throws OpenRDFException
 	{
-		Value text = singleValue(queryResource, SP.TEXT_PROPERTY, store);
+		Value text = Statements.singleValue(queryResource, SP.TEXT_PROPERTY, store);
 		if (text != null) {
 			if (QUERY_TYPES.contains(queryType)) {
 				return QueryParserUtil.parseQuery(QueryLanguage.SPARQL, text.stringValue(), null);
@@ -438,7 +437,7 @@ public class SPINParser {
 				return QueryParserUtil.parseUpdate(QueryLanguage.SPARQL, text.stringValue(), null);
 			}
 			else {
-				throw new MalformedSPINException("Unrecognised command type: "+queryType);
+				throw new MalformedSPINException("Unrecognised command type: " + queryType);
 			}
 		}
 		else {
@@ -446,43 +445,9 @@ public class SPINParser {
 		}
 	}
 
-	private ParsedOperation parseRDF(Resource queryResource, URI queryType,
-			StatementSource<? extends OpenRDFException> store)
+	private ParsedOperation parseRDF(Resource queryResource, URI queryType, TripleSource store)
 		throws OpenRDFException
 	{
 		throw new UnsupportedOperationException("TO DO");
-	}
-
-	private static <X extends Exception> Value singleValue(Resource subj, URI pred,
-			StatementSource<X> store)
-		throws X, MalformedSPINException
-	{
-		Statement stmt = single(subj, pred, null, store);
-		return (stmt != null) ? stmt.getObject() : null;
-	}
-
-	private static <X extends Exception> Statement single(Resource subj, URI pred, Value obj,
-			StatementSource<X> store)
-		throws X, MalformedSPINException
-	{
-		Statement stmt;
-		CloseableIteration<? extends Statement, X> stmts = store.getStatements(subj,
-				pred, obj);
-		try {
-			if (stmts.hasNext()) {
-				stmt = stmts.next();
-				if (stmts.hasNext()) {
-					throw new MalformedSPINException("Multiple statements for pattern " + subj + " " + pred + " "
-							+ obj);
-				}
-			}
-			else {
-				stmt = null;
-			}
-		}
-		finally {
-			stmts.close();
-		}
-		return stmt;
 	}
 }
