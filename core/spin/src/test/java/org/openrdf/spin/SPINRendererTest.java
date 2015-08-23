@@ -1,4 +1,4 @@
-package org.openrdf.sesame.spin;
+package org.openrdf.spin;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -29,18 +29,17 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.WriterConfig;
 import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
-import org.openrdf.spin.SPINRenderer;
 
 @RunWith(Parameterized.class)
 public class SPINRendererTest {
 
 	@Parameters(name="{0}")
 	public static Collection<Object[]> testData() {
-		int n=16;
+		int n=17;
 		List<Object[]> params = new ArrayList<Object[]>(n);
 		for(int i=0; i<n; i++) {
 			String suffix = String.valueOf(i+1);
-			String testFile = "/renderer/test"+suffix+".ttl";
+			String testFile = "/testcases/test"+suffix+".ttl";
 			params.add(new Object[] {testFile});
 		}
 		return params;
@@ -54,7 +53,7 @@ public class SPINRendererTest {
 	}
 
 	@Test
-	public void testSPIN() throws IOException, OpenRDFException {
+	public void testSPINRenderer() throws IOException, OpenRDFException {
 		URL rdfURL = getClass().getResource(testFile);
 		StatementCollector expected = new StatementCollector();
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);

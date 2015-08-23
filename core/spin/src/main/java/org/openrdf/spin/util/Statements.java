@@ -19,12 +19,14 @@ package org.openrdf.spin.util;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.FilterIteration;
+import info.aduna.iteration.Iteration;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 
@@ -34,6 +36,37 @@ import org.openrdf.query.algebra.evaluation.TripleSource;
 public final class Statements {
 
 	private Statements() {
+	}
+
+	public static Iteration<? extends Value, QueryEvaluationException> list(final Resource subj, final TripleSource store)
+		throws QueryEvaluationException
+	{
+		return new Iteration<Value,QueryEvaluationException>() {
+			Resource list = subj;
+
+			@Override
+			public boolean hasNext()
+				throws QueryEvaluationException
+			{
+				return !RDF.NIL.equals(list);
+			}
+
+			@Override
+			public Value next()
+				throws QueryEvaluationException
+			{
+				Value v = singleValue(list, RDF.FIRST, store);
+				list = (Resource) singleValue(list, RDF.REST, store);
+				return v;
+			}
+
+			@Override
+			public void remove()
+				throws QueryEvaluationException
+			{
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	public static Value singleValue(Resource subj, URI pred, TripleSource store)

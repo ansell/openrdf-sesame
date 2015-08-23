@@ -70,8 +70,6 @@ import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.EmptySet;
-import org.openrdf.query.algebra.EvaluableTupleExpr;
-import org.openrdf.query.algebra.EvaluableValueExpr;
 import org.openrdf.query.algebra.Exists;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Filter;
@@ -251,9 +249,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof BindingSetAssignment) {
 			return evaluate((BindingSetAssignment)expr, bindings);
-		}
-		else if (expr instanceof EvaluableTupleExpr) {
-			return ((EvaluableTupleExpr)expr).evaluate(bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");
@@ -1104,9 +1099,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 		}
 		else if (expr instanceof ListMemberOperator) {
 			return evaluate((ListMemberOperator)expr, bindings);
-		}
-		else if (expr instanceof EvaluableValueExpr) {
-			return ((EvaluableValueExpr)expr).evaluate(bindings);
 		}
 		else if (expr == null) {
 			throw new IllegalArgumentException("expr must not be null");

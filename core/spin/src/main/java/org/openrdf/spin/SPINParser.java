@@ -17,6 +17,8 @@
 package org.openrdf.spin;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.Iteration;
+import info.aduna.iteration.Iterations;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.OpenRDFException;
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -38,7 +41,21 @@ import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.algebra.Extension;
+import org.openrdf.query.algebra.ExtensionElem;
+import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.MultiProjection;
+import org.openrdf.query.algebra.Projection;
+import org.openrdf.query.algebra.ProjectionElem;
+import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.Reduced;
+import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UnaryTupleOperator;
+import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -46,9 +63,11 @@ import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.spin.util.Statements;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 
 public class SPINParser {
@@ -86,13 +105,19 @@ public class SPINParser {
 	}
 
 	private final Input input;
+	private final Function<URI,String> wellKnownVars;
 
 	public SPINParser() {
 		this(Input.TEXT_FIRST);
 	}
 
 	public SPINParser(Input input) {
+		this(input, SPINWellKnownVars.INSTANCE);
+	}
+
+	public SPINParser(Input input, Function<URI,String> wellKnownVarsMapper) {
 		this.input = input;
+		this.wellKnownVars = wellKnownVarsMapper;
 	}
 
 	public Map<URI, RuleProperty> parseRuleProperties(TripleSource store)
@@ -448,6 +473,278 @@ public class SPINParser {
 	private ParsedOperation parseRDF(Resource queryResource, URI queryType, TripleSource store)
 		throws OpenRDFException
 	{
-		throw new UnsupportedOperationException("TO DO");
+		if(SP.CONSTRUCT_CLASS.equals(queryType)) {
+			SPINVisitor visitor = new SPINVisitor(store);
+			visitor.visitConstruct(queryResource);
+			return new ParsedGraphQuery(visitor.getTupleExpr());
+		}
+		else if(SP.SELECT_CLASS.equals(queryType)) {
+			return new ParsedTupleQuery();
+		}
+		else if(SP.ASK_CLASS.equals(queryType)) {
+			return new ParsedBooleanQuery();
+		}
+		else if(SP.DESCRIBE_CLASS.equals(queryType)) {
+			return new ParsedDescribeQuery();
+		}
+		else if (UPDATE_TYPES.contains(queryType)) {
+			return new ParsedUpdate();
+		}
+		else {
+			throw new MalformedSPINException("Unrecognised command type: " + queryType);
+		}
+	}
+
+
+	class SPINVisitor {
+		final TripleSource store;
+		TupleExpr root;
+		TupleExpr node;
+		List<ProjectionElemList> projElemLists;
+		List<ExtensionElem> extElems;
+		Map<Resource,String> vars = new HashMap<Resource,String>();
+
+		SPINVisitor(TripleSource store) {
+			this.store = store;
+		}
+
+		public TupleExpr getTupleExpr() {
+			return root;
+		}
+
+		public void visitConstruct(Resource construct)
+				throws OpenRDFException
+		{
+			Value templates = Statements.singleValue(construct, SP.TEMPLATES_PROPERTY, store);
+			if(!(templates instanceof Resource)) {
+				throw new MalformedSPINException("Value of "+SP.TEMPLATES_PROPERTY+" is not a resource");
+			}
+			visitTemplates((Resource) templates);
+
+			Value where = Statements.singleValue(construct, SP.WHERE_PROPERTY, store);
+			if(!(where instanceof Resource)) {
+				throw new MalformedSPINException("Value of "+SP.WHERE_PROPERTY+" is not a resource");
+			}
+			visitWhere((Resource) where);
+		}
+
+		public void visitTemplates(Resource templates)
+				throws OpenRDFException
+		{
+			Reduced reduced = new Reduced();
+
+			projElemLists = new ArrayList<ProjectionElemList>();
+			extElems = new ArrayList<ExtensionElem>();
+			Iteration<? extends Value,QueryEvaluationException> iter = Statements.list(templates, store);
+			while(iter.hasNext()) {
+				Value v = iter.next();
+				visitTemplate((Resource) v);
+			}
+
+			UnaryTupleOperator expr;
+			if(projElemLists.size() > 1) {
+				MultiProjection proj = new MultiProjection();
+				proj.setProjections(projElemLists);
+				expr = proj;
+			}
+			else {
+				Projection proj = new Projection();
+				proj.setProjectionElemList(projElemLists.get(0));
+				expr = proj;
+			}
+
+			reduced.setArg(expr);
+			if(!extElems.isEmpty()) {
+				Extension ext = new Extension();
+				ext.setElements(extElems);
+				expr.setArg(ext);
+				expr = ext;
+			}
+			root = reduced;
+			node = expr;
+		}
+
+		private void visitTemplate(Resource r)
+				throws OpenRDFException
+		{
+			ProjectionElemList projElems = new ProjectionElemList();
+			Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
+			addProjectionElem(subj, "subject", projElems);
+			Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
+			addProjectionElem(pred, "predicate", projElems);
+			Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
+			addProjectionElem(obj, "object", projElems);
+			projElemLists.add(projElems);
+		}
+
+		private void addProjectionElem(Value v, String projName, ProjectionElemList projElems)
+			throws OpenRDFException
+		{
+			String varName = null;
+			if(v instanceof Resource) {
+				varName = getVarName((Resource) v);
+			}
+			if(varName == null) {
+				varName = getConstVarName(v);
+				extElems.add(new ExtensionElem(new ValueConstant(v), varName));
+			}
+			projElems.addElement(new ProjectionElem(varName, projName));
+		}
+
+		public void visitWhere(Resource where)
+			throws OpenRDFException
+		{
+			Iteration<? extends Value,QueryEvaluationException> iter = Statements.list(where, store);
+			while(iter.hasNext()) {
+				Value v = iter.next();
+				visitTupleExpr((Resource) v);
+			}
+		}
+
+		private void visitTupleExpr(Resource r)
+			throws OpenRDFException
+		{
+			TupleExpr expr;
+			Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
+			if(subj != null) {
+				Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
+				Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
+				expr = new StatementPattern(getVar(subj), getVar(pred), getVar(obj));
+			}
+			else {
+				Set<URI> elementTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
+				throw new UnsupportedOperationException(elementTypes.toString());
+			}
+
+			if(node instanceof UnaryTupleOperator) {
+				((UnaryTupleOperator)node).setArg(expr);
+			}
+			else {
+				Join join = new Join();
+				node.replaceWith(join);
+				join.setLeftArg(node);
+				join.setRightArg(expr);
+				expr = join;
+			}
+			node = expr;
+		}
+
+		private String getVarName(Resource r)
+				throws OpenRDFException
+		{
+			// have we already seen it
+			String varName = vars.get(r);
+			// is it well-known
+			if(varName == null && r instanceof URI) {
+				varName = wellKnownVars.apply((URI) r);
+				if(varName != null) {
+					vars.put(r, varName);
+				}
+			}
+			if(varName == null) {
+				// check for a varName statement
+				Value nameValue = Statements.singleValue(r, SP.VAR_NAME_PROPERTY, store);
+				if(nameValue instanceof Literal) {
+					varName = ((Literal)nameValue).getLabel();
+					if(varName != null) {
+						vars.put(r, varName);
+					}
+				}
+				else if(nameValue != null) {
+					throw new MalformedSPINException("Value of "+SP.VAR_NAME_PROPERTY+" is not a literal");
+				}
+			}
+			return varName;
+		}
+
+		private Var getVar(Value v)
+			throws OpenRDFException
+		{
+			Var var = null;
+			if(v instanceof Resource) {
+				String varName = getVarName((Resource) v);
+				if(varName != null) {
+					var = new Var(varName);
+				}
+			}
+
+			if(var == null) {
+				// it must be a constant then
+				var = createConstVar(v);
+			}
+
+			return var;
+		}
+
+		private Var createConstVar(Value value) {
+			if (value == null) {
+				throw new IllegalArgumentException("value can not be null");
+			}
+
+			String varName = getConstVarName(value);
+			Var var = new Var(varName);
+			var.setConstant(true);
+			var.setAnonymous(true);
+			var.setValue(value);
+			return var;
+		}
+
+		private String getConstVarName(Value value) {
+			// We use toHexString to get a more compact stringrep.
+			String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
+
+			if (value instanceof Literal) {
+				uniqueStringForValue += "-lit";
+
+				// we need to append datatype and/or language tag to ensure a unique
+				// var name (see SES-1927)
+				Literal lit = (Literal)value;
+				if (lit.getDatatype() != null) {
+					uniqueStringForValue += "-" + lit.getDatatype().stringValue();
+				}
+				if (lit.getLanguage() != null) {
+					uniqueStringForValue += "-" + lit.getLanguage();
+				}
+			}
+			else if (value instanceof BNode) {
+				uniqueStringForValue += "-node";
+			}
+			else {
+				uniqueStringForValue += "-uri";
+			}
+			return "_const-" + uniqueStringForValue;
+		}
+	}
+
+	static final class SPINWellKnownVars implements Function<URI,String>
+	{
+		static final SPINWellKnownVars INSTANCE = new SPINWellKnownVars();
+
+		final Map<URI,String> wkvs = new HashMap<URI,String>();
+
+		public SPINWellKnownVars() {
+			wkvs.put(SPIN.THIS_CONTEXT_INSTANCE, "this");
+			wkvs.put(SPIN.ARG1_INSTANCE, "arg1");
+			wkvs.put(SPIN.ARG2_INSTANCE, "arg2");
+			wkvs.put(SPIN.ARG3_INSTANCE, "arg3");
+			wkvs.put(SPIN.ARG4_INSTANCE, "arg4");
+			wkvs.put(SPIN.ARG5_INSTANCE, "arg5");
+		}
+
+		@Override
+		public String apply(URI wkv) {
+			String name = wkvs.get(wkv);
+			if(name == null && SPIN.NAMESPACE.equals(wkv.getNamespace()) && wkv.getLocalName().startsWith("_arg")) {
+				String lname = wkv.getLocalName();
+				try {
+					Integer.parseInt(lname.substring("_arg".length()));
+					name = lname.substring(1);
+				}
+				catch(NumberFormatException nfe) {
+					// ignore - not a well-known argN variable
+				}
+			}
+			return name;
+		}
 	}
 }

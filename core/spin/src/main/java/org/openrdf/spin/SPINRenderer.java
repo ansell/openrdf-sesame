@@ -222,23 +222,6 @@ public class SPINRenderer {
 			super(handler, null, subject);
 		}
 
-		private ListContext startTemplateList() throws RDFHandlerException {
-			Resource elemListBNode = valueFactory.createBNode();
-			handler.handleStatement(valueFactory.createStatement(subject, SP.TEMPLATES_PROPERTY, elemListBNode));
-			return newList(elemListBNode);
-		}
-
-		private void endTemplateList(ListContext ctx) throws RDFHandlerException {
-			endList(ctx);
-		}
-
-		@Override
-		public void meet(MultiProjection node) throws RDFHandlerException {
-			ListContext ctx = startTemplateList();
-			super.meet(node);
-			endTemplateList(ctx);
-		}
-
 		@Override
 		public void meet(ProjectionElemList node) throws RDFHandlerException {
 			if(isSubQuery) {
@@ -429,11 +412,25 @@ public class SPINRenderer {
 		@Override
 		public void meet(MultiProjection node) throws RDFHandlerException {
 			ExtensionContext oldInlineBindings = meetExtension(node.getArg());
+			ListContext ctx = startTemplateList();
 			isMultiProjection = true;
-			super.meet(node);
+			for(ProjectionElemList proj : node.getProjections()) {
+				proj.visit(this);
+			}
+			endTemplateList(ctx);
 			isMultiProjection = false;
-			isSubQuery = true;
+			visitWhere(node.getArg());
 			inlineBindings = oldInlineBindings;
+		}
+
+		ListContext startTemplateList() throws RDFHandlerException {
+			Resource elemListBNode = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.TEMPLATES_PROPERTY, elemListBNode));
+			return newList(elemListBNode);
+		}
+
+		void endTemplateList(ListContext ctx) throws RDFHandlerException {
+			endList(ctx);
 		}
 
 		@Override
@@ -448,18 +445,19 @@ public class SPINRenderer {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.SELECT_CLASS));
 			}
 			node.getProjectionElemList().visit(this);
+			visitWhere(node.getArg());
+			inlineBindings = oldInlineBindings;
+		}
 
+		private void visitWhere(TupleExpr where) throws RDFHandlerException {
 			Resource whereBNode = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(subject, SP.WHERE_PROPERTY, whereBNode));
 
-			if(!isMultiProjection) {
-				isSubQuery = true;
-			}
+			isSubQuery = true; // further projection elements are for sub-queries
 
 			ListContext ctx = newList(whereBNode);
-			node.getArg().visit(this);
+			where.visit(this);
 			endList(ctx);
-			inlineBindings = oldInlineBindings;
 		}
 
 		@Override
@@ -654,9 +652,9 @@ public class SPINRenderer {
 			switch(i) {
 			case 1: return SP.ARG1_PROPERTY;
 			case 2: return SP.ARG2_PROPERTY;
-			case 3: return SP.ARG2_PROPERTY;
-			case 4: return SP.ARG2_PROPERTY;
-			case 5: return SP.ARG2_PROPERTY;
+			case 3: return SP.ARG3_PROPERTY;
+			case 4: return SP.ARG4_PROPERTY;
+			case 5: return SP.ARG5_PROPERTY;
 			default:
 				return valueFactory.createURI(SP.NAMESPACE, "arg"+i);
 			}
@@ -876,7 +874,7 @@ public class SPINRenderer {
 			if(wkv == null && name.startsWith("arg")) {
 				try {
 					Integer.parseInt(name.substring("arg".length()));
-					wkv = valueFactory.createURI(SPIN.NAMESPACE, name);
+					wkv = valueFactory.createURI(SPIN.NAMESPACE, "_"+name);
 				}
 				catch(NumberFormatException nfe) {
 					// ignore - not a well-known argN variable
