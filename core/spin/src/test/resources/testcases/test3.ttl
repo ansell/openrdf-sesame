@@ -13,6 +13,7 @@ CONSTRUCT {
 WHERE {
     ?parent ex:child ?this .
     ?grandParent ex:child ?parent .
+    ?grandParent a ex:Person
 }
 """;
 #  rdfs:comment "infer grandParent relationship"^^xsd:string ;
@@ -26,6 +27,10 @@ WHERE {
             ] 
             [ sp:object _:parent ;
               sp:predicate ex:child ;
+              sp:subject _:grandParent
+            ] 
+            [ sp:object ex:Person ;
+              sp:predicate rdf:type ;
               sp:subject _:grandParent
             ])
 ].

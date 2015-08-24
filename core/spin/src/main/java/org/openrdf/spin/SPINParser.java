@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,11 +51,14 @@ import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
+import org.openrdf.query.algebra.QueryModelNodeBase;
+import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -525,7 +529,7 @@ public class SPINParser {
 			if(!(where instanceof Resource)) {
 				throw new MalformedSPINException("Value of "+SP.WHERE_PROPERTY+" is not a resource");
 			}
-			visitWhere((Resource) where);
+			visitGroupGraphPattern((Resource) where);
 		}
 
 		public void visitTemplates(Resource templates)
@@ -535,10 +539,10 @@ public class SPINParser {
 
 			projElemLists = new ArrayList<ProjectionElemList>();
 			extElems = new ArrayList<ExtensionElem>();
-			Iteration<? extends Value,QueryEvaluationException> iter = Statements.list(templates, store);
+			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(templates, store);
 			while(iter.hasNext()) {
-				Value v = iter.next();
-				visitTemplate((Resource) v);
+				Resource r = iter.next();
+				visitTemplate(r);
 			}
 
 			UnaryTupleOperator expr;
@@ -561,7 +565,9 @@ public class SPINParser {
 				expr = ext;
 			}
 			root = reduced;
-			node = expr;
+			StubTupleExpr stub = new StubTupleExpr();
+			expr.setArg(stub);
+			node = stub;
 		}
 
 		private void visitTemplate(Resource r)
@@ -591,42 +597,105 @@ public class SPINParser {
 			projElems.addElement(new ProjectionElem(varName, projName));
 		}
 
-		public void visitWhere(Resource where)
+		public void visitGroupGraphPattern(Resource group)
 			throws OpenRDFException
 		{
-			Iteration<? extends Value,QueryEvaluationException> iter = Statements.list(where, store);
-			while(iter.hasNext()) {
-				Value v = iter.next();
-				visitTupleExpr((Resource) v);
+			Map<Resource,Set<URI>> patternTypes = new LinkedHashMap<Resource,Set<URI>>();
+			Iteration<? extends Resource, QueryEvaluationException> groupIter = Statements.listResources(group, store);
+			while(groupIter.hasNext()) {
+				Resource r = groupIter.next();
+				patternTypes.put(r, Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store)));
+			}
+
+			// first process filters
+			for(Iterator<Map.Entry<Resource,Set<URI>>> iter = patternTypes.entrySet().iterator(); iter.hasNext(); ) {
+				Map.Entry<Resource,Set<URI>> entry = iter.next();
+				if(entry.getValue().contains(SP.FILTER_CLASS)) {
+					visitFilter(entry.getKey());
+					iter.remove();
+				}
+			}
+
+			// then binds
+			for(Iterator<Map.Entry<Resource,Set<URI>>> iter = patternTypes.entrySet().iterator(); iter.hasNext(); ) {
+				Map.Entry<Resource,Set<URI>> entry = iter.next();
+				if(entry.getValue().contains(SP.BIND_CLASS)) {
+					visitBind(entry.getKey());
+					iter.remove();
+				}
+			}
+
+			// then anything else
+			for(Iterator<Map.Entry<Resource,Set<URI>>> iter = patternTypes.entrySet().iterator(); iter.hasNext(); ) {
+				Map.Entry<Resource,Set<URI>> entry = iter.next();
+				visitPattern(entry.getKey(), entry.getValue());
 			}
 		}
 
-		private void visitTupleExpr(Resource r)
+		private void visitPattern(Resource r, Set<URI> types)
 			throws OpenRDFException
 		{
-			TupleExpr expr;
+			TupleExpr currentNode = node;
 			Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
 			if(subj != null) {
 				Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
 				Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
-				expr = new StatementPattern(getVar(subj), getVar(pred), getVar(obj));
+				node = new StatementPattern(getVar(subj), getVar(pred), getVar(obj));
 			}
 			else {
-				Set<URI> elementTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
-				throw new UnsupportedOperationException(elementTypes.toString());
+				if(types.contains(RDF.LIST)) {
+					visitGroupGraphPattern(r);
+				}
+				else {
+					throw new UnsupportedOperationException(types.toString());
+				}
 			}
 
-			if(node instanceof UnaryTupleOperator) {
-				((UnaryTupleOperator)node).setArg(expr);
+			if(currentNode instanceof StubTupleExpr) {
+				currentNode.replaceWith(node);
 			}
 			else {
 				Join join = new Join();
-				node.replaceWith(join);
-				join.setLeftArg(node);
-				join.setRightArg(expr);
-				expr = join;
+				currentNode.replaceWith(join);
+				join.setLeftArg(currentNode);
+				join.setRightArg(node);
+				node = join;
 			}
-			node = expr;
+		}
+
+		private void visitFilter(Resource r)
+				throws OpenRDFException
+		{
+			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+			ValueExpr valueExpr = visitExpression(expr);
+		}
+
+		private void visitBind(Resource r)
+				throws OpenRDFException
+		{
+			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+			ValueExpr valueExpr = visitExpression(expr);
+		}
+
+		private ValueExpr visitExpression(Value v)
+				throws OpenRDFException
+		{
+			if(v instanceof Literal) {
+				return new ValueConstant(v);
+			}
+			else {
+				Resource r = (Resource) v;
+				Set<URI> exprTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
+				if(exprTypes.isEmpty()) {
+					getVar(r);
+				}
+					
+				boolean isFunction;
+				if(exprTypes.size() > 1) {
+					isFunction = exprTypes.contains(SPIN.FUNCTIONS_CLASS);
+				}
+				throw new UnsupportedOperationException(exprTypes.toString());
+			}
 		}
 
 		private String getVarName(Resource r)
@@ -715,6 +784,35 @@ public class SPINParser {
 			return "_const-" + uniqueStringForValue;
 		}
 	}
+
+
+	static final class StubTupleExpr extends QueryModelNodeBase implements TupleExpr
+	{
+		private static final long serialVersionUID = -7155925246175418337L;
+
+		@Override
+		public Set<String> getBindingNames() {
+			return Collections.emptySet();
+		}
+
+		@Override
+		public Set<String> getAssuredBindingNames() {
+			return Collections.emptySet();
+		}
+
+		@Override
+		public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
+			throws X
+		{
+			visitor.meetOther(this);
+		}
+
+		@Override
+		public StubTupleExpr clone() {
+			return (StubTupleExpr) super.clone();
+		}
+	}
+
 
 	static final class SPINWellKnownVars implements Function<URI,String>
 	{

@@ -35,31 +35,33 @@ public class SPINRendererTest {
 
 	@Parameters(name="{0}")
 	public static Collection<Object[]> testData() {
-		int n=17;
-		List<Object[]> params = new ArrayList<Object[]>(n);
-		for(int i=0; i<n; i++) {
+		List<Object[]> params = new ArrayList<Object[]>();
+		for(int i=0; ; i++) {
 			String suffix = String.valueOf(i+1);
 			String testFile = "/testcases/test"+suffix+".ttl";
-			params.add(new Object[] {testFile});
+			URL rdfURL = SPINParserTest.class.getResource(testFile);
+			if(rdfURL == null) {
+				break;
+			}
+			params.add(new Object[] {testFile, rdfURL});
 		}
 		return params;
 	}
 
-	private final String testFile;
+	private final URL testURL;
 	private final SPINRenderer renderer = new SPINRenderer();
 
-	public SPINRendererTest(String testFile) {
-		this.testFile = testFile;
+	public SPINRendererTest(String testName, URL testURL) {
+		this.testURL = testURL;
 	}
 
 	@Test
 	public void testSPINRenderer() throws IOException, OpenRDFException {
-		URL rdfURL = getClass().getResource(testFile);
 		StatementCollector expected = new StatementCollector();
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
 		parser.setRDFHandler(expected);
-		InputStream rdfStream = rdfURL.openStream();
-		parser.parse(rdfStream, rdfURL.toString());
+		InputStream rdfStream = testURL.openStream();
+		parser.parse(rdfStream, testURL.toString());
 		rdfStream.close();
 
 		// get query from sp:text
@@ -72,7 +74,7 @@ public class SPINRendererTest {
 		}
 		assertNotNull(query);
 
-		ParsedQuery pq = QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, rdfURL.toString());
+		ParsedQuery pq = QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, testURL.toString());
 
 		StatementCollector actual = new StatementCollector();
 		renderer.render(pq, actual);

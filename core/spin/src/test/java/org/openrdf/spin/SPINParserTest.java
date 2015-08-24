@@ -31,32 +31,34 @@ public class SPINParserTest {
 
 	@Parameters(name="{0}")
 	public static Collection<Object[]> testData() {
-		int n=16;
-		List<Object[]> params = new ArrayList<Object[]>(n);
-		for(int i=0; i<n; i++) {
+		List<Object[]> params = new ArrayList<Object[]>();
+		for(int i=0; ; i++) {
 			String suffix = String.valueOf(i+1);
 			String testFile = "/testcases/test"+suffix+".ttl";
-			params.add(new Object[] {testFile});
+			URL rdfURL = SPINParserTest.class.getResource(testFile);
+			if(rdfURL == null) {
+				break;
+			}
+			params.add(new Object[] {testFile, rdfURL});
 		}
 		return params;
 	}
 
-	private final String testFile;
+	private final URL testURL;
 	private final SPINParser textParser = new SPINParser(SPINParser.Input.TEXT_ONLY);
 	private final SPINParser rdfParser = new SPINParser(SPINParser.Input.RDF_ONLY);
 
-	public SPINParserTest(String testFile) {
-		this.testFile = testFile;
+	public SPINParserTest(String testName, URL testURL) {
+		this.testURL = testURL;
 	}
 
 	@Test
 	public void testSPINParser() throws IOException, OpenRDFException {
-		URL rdfURL = getClass().getResource(testFile);
 		StatementCollector expected = new StatementCollector();
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
 		parser.setRDFHandler(expected);
-		InputStream rdfStream = rdfURL.openStream();
-		parser.parse(rdfStream, rdfURL.toString());
+		InputStream rdfStream = testURL.openStream();
+		parser.parse(rdfStream, testURL.toString());
 		rdfStream.close();
 
 		// get query resource from sp:text

@@ -38,6 +38,31 @@ public final class Statements {
 	private Statements() {
 	}
 
+	public static Iteration<? extends Resource, QueryEvaluationException> listResources(final Resource subj, final TripleSource store)
+			throws QueryEvaluationException
+	{
+		return new ConvertingIteration<Value, Resource, QueryEvaluationException>(
+				new FilterIteration<Value, QueryEvaluationException>(list(subj, store))
+				{
+
+					@Override
+					protected boolean accept(Value v)
+						throws QueryEvaluationException
+					{
+						return (v instanceof Resource);
+					}
+				})
+		{
+
+			@Override
+			protected Resource convert(Value v)
+				throws QueryEvaluationException
+			{
+				return (Resource)v;
+			}
+		};
+	}
+
 	public static Iteration<? extends Value, QueryEvaluationException> list(final Resource subj, final TripleSource store)
 		throws QueryEvaluationException
 	{
