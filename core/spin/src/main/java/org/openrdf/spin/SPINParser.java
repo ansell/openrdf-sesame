@@ -34,8 +34,10 @@ import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SP;
@@ -46,6 +48,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
+import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Projection;
@@ -110,18 +113,20 @@ public class SPINParser {
 
 	private final Input input;
 	private final Function<URI,String> wellKnownVars;
+	private final Function<URI,String> wellKnownFunctions;
 
 	public SPINParser() {
 		this(Input.TEXT_FIRST);
 	}
 
 	public SPINParser(Input input) {
-		this(input, SPINWellKnownVars.INSTANCE);
+		this(input, SPINWellKnownVars.INSTANCE, SPINWellKnownFunctions.INSTANCE);
 	}
 
-	public SPINParser(Input input, Function<URI,String> wellKnownVarsMapper) {
+	public SPINParser(Input input, Function<URI,String> wellKnownVarsMapper, Function<URI,String> wellKnownFuncMapper) {
 		this.input = input;
 		this.wellKnownVars = wellKnownVarsMapper;
+		this.wellKnownFunctions = wellKnownFuncMapper;
 	}
 
 	public Map<URI, RuleProperty> parseRuleProperties(TripleSource store)
@@ -344,39 +349,27 @@ public class SPINParser {
 		}
 		else {
 			// template
+			URI templateResource;
 			if (possibleTemplates.size() > 1) {
-				for (Iterator<URI> templateIter = possibleTemplates.iterator(); templateIter.hasNext();) {
-					URI template = templateIter.next();
-					boolean isTemplateType = false;
-					CloseableIteration<? extends URI, ? extends OpenRDFException> tmplTypeIter = Statements.getObjectURIs(
-							template, RDF.TYPE, store);
-					try {
-						while (tmplTypeIter.hasNext()) {
-							URI tmplType = tmplTypeIter.next();
-							if (TEMPLATE_TYPES.contains(tmplType)) {
-								isTemplateType = true;
-								break;
-							}
-						}
-					}
-					finally {
-						tmplTypeIter.close();
-					}
-					if (!isTemplateType) {
-						templateIter.remove();
+				templateResource = null;
+				for (URI t : possibleTemplates) {
+					Value abstractValue = Statements.singleValue(t, SPIN.ABSTRACT_PROPERTY, store);
+					if(abstractValue == null || BooleanLiteralImpl.FALSE.equals(abstractValue)) {
+						templateResource = t;
+						break;
 					}
 				}
 			}
+			else if (possibleTemplates.size() == 1) {
+				templateResource = possibleTemplates.iterator().next();
+			}
+			else {
+				templateResource = null;
+			}
 
-			if (possibleTemplates.isEmpty()) {
+			if (templateResource == null) {
 				throw new MalformedSPINException("Template missing RDF type: " + queryResource);
 			}
-			else if (possibleTemplates.size() > 1) {
-				throw new MalformedSPINException("Incompatible RDF types for template: " + queryResource
-						+ " has types " + possibleTemplates);
-			}
-
-			URI templateResource = possibleTemplates.iterator().next();
 
 			Template tmpl = parseTemplate(templateResource, queryClass, store);
 			// TODO
@@ -680,22 +673,82 @@ public class SPINParser {
 		private ValueExpr visitExpression(Value v)
 				throws OpenRDFException
 		{
+			ValueExpr expr;
 			if(v instanceof Literal) {
-				return new ValueConstant(v);
+				expr = new ValueConstant(v);
 			}
 			else {
 				Resource r = (Resource) v;
 				Set<URI> exprTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
-				if(exprTypes.isEmpty()) {
-					getVar(r);
-				}
-					
-				boolean isFunction;
+
+				URI func;
 				if(exprTypes.size() > 1) {
-					isFunction = exprTypes.contains(SPIN.FUNCTIONS_CLASS);
+					func = null;
+					if(exprTypes.remove(SPIN.FUNCTIONS_CLASS)) {
+						exprTypes.remove(SPIN.MODULES_CLASS);
+						exprTypes.remove(RDFS.RESOURCE);
+						for(URI f : exprTypes) {
+							Value abstractValue = Statements.singleValue(f, SPIN.ABSTRACT_PROPERTY, store);
+							if(abstractValue == null || BooleanLiteralImpl.FALSE.equals(abstractValue)) {
+								func = f;
+								break;
+							}
+						}
+						if(func == null) {
+							throw new MalformedSPINException("Function missing RDF type: "+r);
+						}
+					}
+					else if(exprTypes.contains(SP.VARIABLE_CLASS)) {
+						func = null;
+					}
+					else {
+						throw new MalformedSPINException("Expression missing RDF type: "+r);
+					}
 				}
-				throw new UnsupportedOperationException(exprTypes.toString());
+				else if(exprTypes.size() == 1) {
+					func = exprTypes.iterator().next();
+				}
+				else {
+					func = null;
+				}
+
+				if(func != null) {
+					String funcName = wellKnownFunctions.apply(func);
+					if(funcName == null) {
+						funcName = func.stringValue();
+					}
+
+					Map<URI, ValueExpr> args = new HashMap<URI, ValueExpr>();
+					CloseableIteration<? extends Statement, QueryEvaluationException> iter = store.getStatements(r, null, null);
+					try {
+						while(iter.hasNext()) {
+							Statement stmt = iter.next();
+							URI argName = stmt.getPredicate();
+							if(!RDF.TYPE.equals(argName) && !SP.ARG_PROPERTY.equals(argName)) {
+								ValueExpr argValue = visitExpression(stmt.getObject());
+								args.put(argName, argValue);
+							}
+						}
+					}
+					finally {
+						iter.close();
+					}
+
+					FunctionCall fCall = new FunctionCall(funcName);
+					// TODO args
+					expr = fCall;
+				}
+				else {
+					String varName = getVarName(r);
+					if(varName != null) {
+						expr = new Var(varName);
+					}
+					else {
+						expr = new ValueConstant(v);
+					}
+				}
 			}
+			return expr;
 		}
 
 		private String getVarName(Resource r)
@@ -843,6 +896,23 @@ public class SPINParser {
 				}
 			}
 			return name;
+		}
+	}
+
+
+	static final class SPINWellKnownFunctions implements Function<URI,String>
+	{
+		static final SPINWellKnownFunctions INSTANCE = new SPINWellKnownFunctions();
+
+		final Map<URI,String> wkfs = new HashMap<URI,String>();
+
+		public SPINWellKnownFunctions() {
+			// TODO
+		}
+
+		@Override
+		public String apply(URI wkf) {
+			return wkfs.get(wkf);
 		}
 	}
 }
