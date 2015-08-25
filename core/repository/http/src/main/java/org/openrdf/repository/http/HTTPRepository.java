@@ -290,6 +290,9 @@ public class HTTPRepository extends AbstractRepository implements HttpClientDepe
 			dependentClient.shutDown();
 			dependentClient = null;
 		}
+		// remove reference but do not shut down, client may be shared by other
+		// repos.
+		client = null;
 	}
 
 	/**

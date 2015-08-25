@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -347,16 +348,16 @@ public class SparqlSession implements HttpClientDependent {
 
 	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		return sendTupleQuery(ql, query, null, dataset, includeInferred, 0, bindings);
 	}
 
 	public TupleQueryResult sendTupleQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
 				bindings);
@@ -365,8 +366,8 @@ public class SparqlSession implements HttpClientDependent {
 
 	public void sendTupleQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, TupleQueryResultHandler handler, Binding... bindings)
-		throws IOException, TupleQueryResultHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException, QueryInterruptedException
+				throws IOException, TupleQueryResultHandlerException, RepositoryException,
+				MalformedQueryException, UnauthorizedException, QueryInterruptedException
 	{
 		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
 				bindings);
@@ -375,8 +376,8 @@ public class SparqlSession implements HttpClientDependent {
 
 	public void sendUpdate(QueryLanguage ql, String update, String baseURI, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		HttpUriRequest method = getUpdateMethod(ql, update, baseURI, dataset, includeInferred, bindings);
 
@@ -399,16 +400,16 @@ public class SparqlSession implements HttpClientDependent {
 
 	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		return sendGraphQuery(ql, query, null, dataset, includeInferred, 0, bindings);
 	}
 
 	public GraphQueryResult sendGraphQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		try {
 			HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
@@ -423,16 +424,16 @@ public class SparqlSession implements HttpClientDependent {
 
 	public void sendGraphQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			RDFHandler handler, Binding... bindings)
-		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException, QueryInterruptedException
+				throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+				UnauthorizedException, QueryInterruptedException
 	{
 		sendGraphQuery(ql, query, null, dataset, includeInferred, 0, handler, bindings);
 	}
 
 	public void sendGraphQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, RDFHandler handler, Binding... bindings)
-		throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
-		UnauthorizedException, QueryInterruptedException
+				throws IOException, RDFHandlerException, RepositoryException, MalformedQueryException,
+				UnauthorizedException, QueryInterruptedException
 	{
 		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
 				bindings);
@@ -441,16 +442,16 @@ public class SparqlSession implements HttpClientDependent {
 
 	public boolean sendBooleanQuery(QueryLanguage ql, String query, Dataset dataset, boolean includeInferred,
 			Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		return sendBooleanQuery(ql, query, null, dataset, includeInferred, 0, bindings);
 	}
 
 	public boolean sendBooleanQuery(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
-		throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
-		QueryInterruptedException
+				throws IOException, RepositoryException, MalformedQueryException, UnauthorizedException,
+				QueryInterruptedException
 	{
 		HttpUriRequest method = getQueryMethod(ql, query, baseURI, dataset, includeInferred, maxQueryTime,
 				bindings);
@@ -500,8 +501,8 @@ public class SparqlSession implements HttpClientDependent {
 	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
-		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset,
-				includeInferred, maxQueryTime, bindings);
+		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset, includeInferred,
+				maxQueryTime, bindings);
 		HttpUriRequest method;
 		String queryUrlWithParams;
 		try {
@@ -566,28 +567,33 @@ public class SparqlSession implements HttpClientDependent {
 	protected List<NameValuePair> getQueryMethodParameters(QueryLanguage ql, String query, String baseURI,
 			Dataset dataset, boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
+		Objects.requireNonNull(ql);
+
 		// TODO there is a bunch of HttpRepository specific parameters here
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
 		queryParams.add(new BasicNameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
-		queryParams.add(new BasicNameValuePair(Protocol.QUERY_PARAM_NAME, query));
+		if (query != null) {
+			queryParams.add(new BasicNameValuePair(Protocol.QUERY_PARAM_NAME, query));
+		}
+
 		if (baseURI != null) {
 			queryParams.add(new BasicNameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
 		}
-		queryParams.add(new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
-				Boolean.toString(includeInferred)));
+		queryParams.add(
+				new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
 		if (maxQueryTime > 0) {
 			queryParams.add(new BasicNameValuePair(Protocol.TIMEOUT_PARAM_NAME, Integer.toString(maxQueryTime)));
 		}
 
 		if (dataset != null) {
 			for (IRI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new BasicNameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME,
-						String.valueOf(defaultGraphURI)));
+				queryParams.add(
+						new BasicNameValuePair(Protocol.DEFAULT_GRAPH_PARAM_NAME, String.valueOf(defaultGraphURI)));
 			}
 			for (IRI namedGraphURI : dataset.getNamedGraphs()) {
-				queryParams.add(new BasicNameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME,
-						String.valueOf(namedGraphURI)));
+				queryParams.add(
+						new BasicNameValuePair(Protocol.NAMED_GRAPH_PARAM_NAME, String.valueOf(namedGraphURI)));
 			}
 		}
 
@@ -603,27 +609,34 @@ public class SparqlSession implements HttpClientDependent {
 	protected List<NameValuePair> getUpdateMethodParameters(QueryLanguage ql, String update, String baseURI,
 			Dataset dataset, boolean includeInferred, Binding... bindings)
 	{
+		Objects.requireNonNull(ql);
+
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 
 		queryParams.add(new BasicNameValuePair(Protocol.QUERY_LANGUAGE_PARAM_NAME, ql.getName()));
-		queryParams.add(new BasicNameValuePair(Protocol.UPDATE_PARAM_NAME, update));
+		if (update != null) {
+			queryParams.add(new BasicNameValuePair(Protocol.UPDATE_PARAM_NAME, update));
+			logger.debug("added update string {}", update);
+		}
+
 		if (baseURI != null) {
 			queryParams.add(new BasicNameValuePair(Protocol.BASEURI_PARAM_NAME, baseURI));
 		}
-		queryParams.add(new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME,
-				Boolean.toString(includeInferred)));
+		queryParams.add(
+				new BasicNameValuePair(Protocol.INCLUDE_INFERRED_PARAM_NAME, Boolean.toString(includeInferred)));
 
 		if (dataset != null) {
 			for (IRI graphURI : dataset.getDefaultRemoveGraphs()) {
-				queryParams.add(new BasicNameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
+				queryParams.add(
+						new BasicNameValuePair(Protocol.REMOVE_GRAPH_PARAM_NAME, String.valueOf(graphURI)));
 			}
 			if (dataset.getDefaultInsertGraph() != null) {
 				queryParams.add(new BasicNameValuePair(Protocol.INSERT_GRAPH_PARAM_NAME,
 						String.valueOf(dataset.getDefaultInsertGraph())));
 			}
 			for (IRI defaultGraphURI : dataset.getDefaultGraphs()) {
-				queryParams.add(new BasicNameValuePair(Protocol.USING_GRAPH_PARAM_NAME,
-						String.valueOf(defaultGraphURI)));
+				queryParams.add(
+						new BasicNameValuePair(Protocol.USING_GRAPH_PARAM_NAME, String.valueOf(defaultGraphURI)));
 			}
 			for (IRI namedGraphURI : dataset.getNamedGraphs()) {
 				queryParams.add(new BasicNameValuePair(Protocol.USING_NAMED_GRAPH_PARAM_NAME,
@@ -886,7 +899,7 @@ public class SparqlSession implements HttpClientDependent {
 
 	private HttpResponse sendGraphQueryViaHttp(HttpUriRequest method, boolean requireContext,
 			Set<RDFFormat> rdfFormats)
-		throws RepositoryException, IOException, QueryInterruptedException, MalformedQueryException
+				throws RepositoryException, IOException, QueryInterruptedException, MalformedQueryException
 	{
 
 		List<String> acceptParams = RDFFormat.getAcceptParams(rdfFormats, requireContext,
@@ -949,7 +962,7 @@ public class SparqlSession implements HttpClientDependent {
 	}
 
 	private HttpResponse sendBooleanQueryViaHttp(HttpUriRequest method, Set<QueryResultFormat> booleanFormats)
-		throws IOException, OpenRDFException
+				throws IOException, OpenRDFException
 	{
 
 		for (QueryResultFormat format : booleanFormats) {

@@ -193,6 +193,9 @@ public class SPARQLRepository extends AbstractRepository implements HttpClientDe
 			dependentClient.shutDown();
 			dependentClient = null;
 		}
+		// remove reference but do not shut down, client may be shared by other
+		// repos.
+		client = null;
 	}
 
 	@Override

@@ -43,6 +43,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextException;
@@ -125,6 +126,7 @@ public class TransactionController extends AbstractController {
 		String reqMethod = request.getMethod();
 		UUID transactionId = getTransactionID(request);
 		logger.debug("transaction id: {}", transactionId);
+		logger.debug("request content type: {}", request.getContentType());
 		RepositoryConnection connection = ActiveTransactionRegistry.INSTANCE.getTransactionConnection(
 				transactionId);
 
@@ -147,7 +149,7 @@ public class TransactionController extends AbstractController {
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn query request", reqMethod);
 					result = processQuery(connection, transactionId, request, response);
-					logger.info("{} txn query request finished");
+					logger.info("{} txn query request finished", reqMethod);
 				}
 				else {
 					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -158,7 +160,7 @@ public class TransactionController extends AbstractController {
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn get/export statements request", reqMethod);
 					result = getExportStatementsResult(connection, transactionId, request, response);
-					logger.info("{} txn get/export statements request finished");
+					logger.info("{} txn get/export statements request finished", reqMethod);
 				}
 				else {
 					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -169,7 +171,7 @@ public class TransactionController extends AbstractController {
 				if ("PUT".equals(reqMethod) || METHOD_POST.equals(reqMethod)) {
 					logger.info("{} txn size request", reqMethod);
 					result = getSize(connection, transactionId, request, response);
-					logger.info("{} txn size request finished");
+					logger.info("{} txn size request finished", reqMethod);
 				}
 				else {
 					throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -378,7 +380,15 @@ public class TransactionController extends AbstractController {
 			HttpServletResponse response)
 				throws IOException, HTTPException
 	{
-		String queryStr = request.getParameter(QUERY_PARAM_NAME);
+		String queryStr = null;
+		final String contentType = request.getContentType();
+		if (contentType != null && contentType.contains(Protocol.SPARQL_QUERY_MIME_TYPE)) {
+			final String encoding = request.getCharacterEncoding() != null ? request.getCharacterEncoding() : "UTF-8";
+			queryStr = IOUtils.toString(request.getInputStream(), encoding);
+		}
+		else {
+			queryStr = request.getParameter(QUERY_PARAM_NAME);
+		}
 
 		Query query = getQuery(conn, queryStr, request, response);
 
@@ -569,10 +579,25 @@ public class TransactionController extends AbstractController {
 			HttpServletResponse response)
 				throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
-		ProtocolUtil.logRequestParameters(request);
+		String sparqlUpdateString = null;
+		final String contentType = request.getContentType();
+		if (contentType != null && contentType.contains(Protocol.SPARQL_UPDATE_MIME_TYPE)) {
+			try {
+				final String encoding = request.getCharacterEncoding() != null ? request.getCharacterEncoding() : "UTF-8";
+				sparqlUpdateString = IOUtils.toString(request.getInputStream(), encoding);
+			}
+			catch (IOException e) {
+				logger.warn("error reading sparql update string from request body", e);
+				throw new ClientHTTPException(SC_BAD_REQUEST,
+						"could not read SPARQL update string from body: " + e.getMessage());
+			}
+		}
+		else {
+			sparqlUpdateString = request.getParameter(Protocol.UPDATE_PARAM_NAME);
+		}
 
-		String sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
-		logger.debug(sparqlUpdateString);
+		logger.debug("SPARQL update string: {}", sparqlUpdateString);
+
 		// default query language is SPARQL
 		QueryLanguage queryLn = QueryLanguage.SPARQL;
 

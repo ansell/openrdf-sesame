@@ -126,10 +126,20 @@ public abstract class RepositoryTest {
 	public void testShutdownFollowedByInit()
 		throws Exception
 	{
+
+		RepositoryConnection conn = testRepository.getConnection();
+		try {
+			conn.add(bob, mbox, mboxBob);
+			assertTrue(conn.hasStatement(bob, mbox, mboxBob, true));
+		}
+		finally {
+			conn.close();
+		}
+		
 		testRepository.shutDown();
 		testRepository.initialize();
 
-		RepositoryConnection conn = testRepository.getConnection();
+		conn = testRepository.getConnection();
 		try {
 			conn.add(bob, mbox, mboxBob);
 			assertTrue(conn.hasStatement(bob, mbox, mboxBob, true));
