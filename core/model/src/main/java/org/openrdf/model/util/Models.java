@@ -151,8 +151,9 @@ public class Models {
 	 *        the model from which to retrieve an object IRI value.
 	 * @return an {@link Optional} object URI value from the given model, which
 	 *         will be {@link Optional#empty() empty} if no such value exists.
-	 * @since 4.0
+	 * @deprecated since 4.0. Use {@link #objectIRI(Model)} instead.
 	 */
+	@Deprecated
 	public static Optional<URI> objectURI(Model m) {
 		final Set<Value> objects = m.objects();
 		if (objects != null && !objects.isEmpty()) {
@@ -167,7 +168,31 @@ public class Models {
 	}
 
 	/**
-	 * @deprecated since 4.0. Use {@link #objectURI(Model)} instead.
+	 * Retrieves an object {@link IRI} value from the statements in the given
+	 * model. If more than one possible IRI value exists, any one value is picked
+	 * and returned.
+	 * 
+	 * @param m
+	 *        the model from which to retrieve an object IRI value.
+	 * @return an {@link Optional} object IRI value from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @since 4.0
+	 */
+	public static Optional<IRI> objectIRI(Model m) {
+		final Set<Value> objects = m.objects();
+		if (objects != null && !objects.isEmpty()) {
+			for (Value v : objects) {
+				if (v instanceof IRI) {
+					return Optional.of((IRI)v);
+				}
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * @deprecated since 4.0. Use {@link #objectIRI(Model)} instead.
 	 */
 	@Deprecated
 	public static URI anyObjectURI(Model m) {
@@ -211,7 +236,9 @@ public class Models {
 	 *        the model from which to retrieve a subject IRI value.
 	 * @return an {@link Optional} subject URI value from the given model, which
 	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @deprecated since 4.0 use {@link #subjectIRI(Model)} instead.s
 	 */
+	@Deprecated
 	public static Optional<URI> subjectURI(Model m) {
 		final Set<Resource> objects = m.subjects();
 		if (objects != null && !objects.isEmpty()) {
@@ -226,7 +253,30 @@ public class Models {
 	}
 
 	/**
-	 * @deprecated since 4.0. Use {@link #subjectURI(Model)} instead.
+	 * Retrieves a subject {@link IRI} from the statements in the given model. If
+	 * more than one possible IRI value exists, any one IRI value is picked and
+	 * returned.
+	 * 
+	 * @param m
+	 *        the model from which to retrieve a subject IRI value.
+	 * @return an {@link Optional} subject IRI value from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 */
+	public static Optional<IRI> subjectIRI(Model m) {
+		final Set<Resource> objects = m.subjects();
+		if (objects != null && !objects.isEmpty()) {
+			for (Value v : objects) {
+				if (v instanceof IRI) {
+					return Optional.of((IRI)v);
+				}
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * @deprecated since 4.0. Use {@link #subjectIRI(Model)} instead.
 	 */
 	@Deprecated
 	public static URI anySubjectURI(Model m) {
@@ -314,7 +364,8 @@ public class Models {
 	 * @return the Model object, containing the updated property value.
 	 * @since 2.8.0
 	 */
-	public static Model setProperty(Model m, Resource subject, IRI property, Value value, Resource... contexts)
+	public static Model setProperty(Model m, Resource subject, IRI property, Value value,
+			Resource... contexts)
 	{
 		Objects.requireNonNull(m, "model may not be null");
 		Objects.requireNonNull(subject, "subject may not be null");
@@ -347,7 +398,8 @@ public class Models {
 	 *      Concepts &amp; Abstract Syntax, section 3.6 (Graph Comparison)</a>
 	 * @since 2.8.0
 	 */
-	public static boolean isomorphic(Iterable<? extends Statement> model1, Iterable<? extends Statement> model2)
+	public static boolean isomorphic(Iterable<? extends Statement> model1,
+			Iterable<? extends Statement> model2)
 	{
 		Set<? extends Statement> set1 = toSet(model1);
 		Set<? extends Statement> set2 = toSet(model2);
@@ -379,7 +431,8 @@ public class Models {
 	 * subset of the second model, using graph isomorphism to map statements
 	 * between models.
 	 */
-	public static boolean isSubset(Iterable<? extends Statement> model1, Iterable<? extends Statement> model2)
+	public static boolean isSubset(Iterable<? extends Statement> model1,
+			Iterable<? extends Statement> model2)
 	{
 		// Filter duplicates
 		Set<? extends Statement> set1 = toSet(model1);

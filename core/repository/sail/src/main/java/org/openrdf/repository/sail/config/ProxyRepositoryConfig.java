@@ -18,12 +18,15 @@ package org.openrdf.repository.sail.config;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
-import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.repository.config.AbstractRepositoryImplConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 
 public class ProxyRepositoryConfig extends AbstractRepositoryImplConfig {
 
@@ -47,39 +50,36 @@ public class ProxyRepositoryConfig extends AbstractRepositoryImplConfig {
 	}
 
 	@Override
-	public void validate() throws RepositoryConfigException {
+	public void validate()
+		throws RepositoryConfigException
+	{
 		super.validate();
 		if (null == this.proxiedID) {
-			throw new RepositoryConfigException(
-					"No id specified for proxied repository");
+			throw new RepositoryConfigException("No id specified for proxied repository");
 		}
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource implNode = super.export(graph);
+	public Resource export(Model model) {
+		Resource implNode = super.export(model);
 		if (null != this.proxiedID) {
-			graph.add(
-					implNode,
-					ProxyRepositorySchema.PROXIED_ID,
-					SimpleValueFactory.getInstance().createLiteral(
-							this.proxiedID));
+			model.add(implNode, ProxyRepositorySchema.PROXIED_ID,
+					SimpleValueFactory.getInstance().createLiteral(this.proxiedID));
 		}
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
-			throws RepositoryConfigException {
-		super.parse(graph, implNode);
+	public void parse(Model model, Resource implNode)
+		throws RepositoryConfigException
+	{
+		super.parse(model, implNode);
 
 		try {
-			Literal proxiedID = GraphUtil.getOptionalObjectLiteral(graph,
-					implNode, ProxyRepositorySchema.PROXIED_ID);
-			if (proxiedID != null) {
-				this.setProxiedRepositoryID(proxiedID.getLabel());
-			}
-		} catch (GraphUtilException e) {
+			Models.objectLiteral(model.filter(implNode, ProxyRepositorySchema.PROXIED_ID, null)).ifPresent(
+					lit -> setProxiedRepositoryID(lit.getLabel()));
+		}
+		catch (ModelException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

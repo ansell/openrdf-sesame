@@ -21,9 +21,14 @@ import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 
 /**
  * Base implementation of {@link SailImplConfig}
@@ -66,37 +71,32 @@ public abstract class AbstractSailImplConfig implements SailImplConfig {
 		}
 	}
 
-	public Resource export(Graph graph) {
-		BNode implNode = graph.getValueFactory().createBNode();
+	public Resource export(Model m) {
+		ValueFactory vf = SimpleValueFactory.getInstance();
+		BNode implNode = vf.createBNode();
 
 		if (type != null) {
-			graph.add(implNode, SAILTYPE, graph.getValueFactory().createLiteral(type));
+			m.add(implNode, SAILTYPE, vf.createLiteral(type));
 		}
 
 		if (iterationCacheSyncThreshold > 0) {
-			graph.add(implNode, SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD,
-					graph.getValueFactory().createLiteral(iterationCacheSyncThreshold));
+			m.add(implNode, SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD,
+					vf.createLiteral(iterationCacheSyncThreshold));
 		}
 
 		return implNode;
 	}
 
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model m, Resource implNode)
 		throws SailConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SAILTYPE);
-			if (typeLit != null) {
-				setType(typeLit.getLabel());
-			}
-
-			Literal sizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode,
-					SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD);
-			if (sizeLit != null) {
-				setIterationCacheSyncThreshold(sizeLit.longValue());
-			}
+			Models.objectLiteral(m.filter(implNode, SAILTYPE, null)).ifPresent(lit -> setType(lit.getLabel()));
+			Models.objectLiteral(
+					m.filter(implNode, SailConfigSchema.ITERATION_CACHE_SYNC_THRESHOLD, null)).ifPresent(
+							lit -> setIterationCacheSyncThreshold(lit.longValue()));
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

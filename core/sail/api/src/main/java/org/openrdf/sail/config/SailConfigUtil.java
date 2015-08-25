@@ -18,36 +18,37 @@ package org.openrdf.sail.config;
 
 import java.util.Optional;
 
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 
 public class SailConfigUtil {
 
-	public static SailImplConfig parseRepositoryImpl(Graph graph, Resource implNode)
+	public static SailImplConfig parseRepositoryImpl(Model m, Resource implNode)
 		throws SailConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, SailConfigSchema.SAILTYPE);
+			Optional<Literal> typeLit = Models.objectLiteral(
+					m.filter(implNode, SailConfigSchema.SAILTYPE, null));
 
-			if (typeLit != null) {
-				Optional<SailFactory> factory = SailRegistry.getInstance().get(typeLit.getLabel());
+			if (typeLit.isPresent()) {
+				Optional<SailFactory> factory = SailRegistry.getInstance().get(typeLit.get().getLabel());
 
 				if (factory.isPresent()) {
 					SailImplConfig implConfig = factory.get().getConfig();
-					implConfig.parse(graph, implNode);
+					implConfig.parse(m, implNode);
 					return implConfig;
 				}
 				else {
-					throw new SailConfigException("Unsupported Sail type: " + typeLit.getLabel());
+					throw new SailConfigException("Unsupported Sail type: " + typeLit.get().getLabel());
 				}
 			}
 
 			return null;
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

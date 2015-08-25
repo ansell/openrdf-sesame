@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
@@ -34,6 +35,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfig;
 import org.openrdf.sail.config.SailConfigException;
@@ -114,7 +116,7 @@ public class FederationConfig extends AbstractSailImplConfig {
 	}
 
 	@Override
-	public Resource export(Graph model) {
+	public Resource export(Model model) {
 		ValueFactory valueFactory = SimpleValueFactory.getInstance();
 		Resource self = super.export(model);
 		for (RepositoryImplConfig member : getMembers()) {
@@ -129,7 +131,7 @@ public class FederationConfig extends AbstractSailImplConfig {
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model graph, Resource implNode)
 		throws SailConfigException
 	{
 		super.parse(graph, implNode);
@@ -146,11 +148,11 @@ public class FederationConfig extends AbstractSailImplConfig {
 			addLocalPropertySpace(space.stringValue());
 		}
 		try {
-			Optional<Literal> bool = model.filter(implNode, DISTINCT, null).objectLiteral();
+			Optional<Literal> bool = Models.objectLiteral(model.filter(implNode, DISTINCT, null));
 			if (bool.isPresent() && bool.get().booleanValue()) {
 				distinct = true;
 			}
-			bool = model.filter(implNode, READ_ONLY, null).objectLiteral();
+			bool = Models.objectLiteral(model.filter(implNode, READ_ONLY, null));
 			if (bool.isPresent() && bool.get().booleanValue()) {
 				readOnly = true;
 			}

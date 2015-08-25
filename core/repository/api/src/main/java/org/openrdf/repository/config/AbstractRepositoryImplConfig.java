@@ -19,11 +19,12 @@ package org.openrdf.repository.config;
 import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYTYPE;
 
 import org.openrdf.model.BNode;
-import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 
 /**
  * @author Herko ter Horst
@@ -62,48 +63,61 @@ public class AbstractRepositoryImplConfig implements RepositoryImplConfig {
 		}
 	}
 
-	public Resource export(Graph graph) {
-		BNode implNode = graph.getValueFactory().createBNode();
+	public Resource export(Model model) {
+		BNode implNode = SimpleValueFactory.getInstance().createBNode();
 
 		if (type != null) {
-			graph.add(implNode, REPOSITORYTYPE, graph.getValueFactory().createLiteral(type));
+			model.add(implNode, REPOSITORYTYPE, SimpleValueFactory.getInstance().createLiteral(type));
 		}
 
 		return implNode;
 	}
 
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource resource)
 		throws RepositoryConfigException
 	{
-		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
-			if (typeLit != null) {
-				setType(typeLit.getLabel());
-			}
-		}
-		catch (GraphUtilException e) {
-			throw new RepositoryConfigException(e.getMessage(), e);
-		}
+		Models.objectLiteral(model.filter(resource, REPOSITORYTYPE, null)).ifPresent(
+				typeLit -> setType(typeLit.getLabel()));
 	}
 
-	public static RepositoryImplConfig create(Graph graph, Resource implNode)
+	/**
+	 * Utility method to create a new {@link RepositoryImplConfig} by reading
+	 * data from the supplied {@link Model}.
+	 * 
+	 * @param model
+	 *        the {@link Model} to read configuration data from.
+	 * @param implNode
+	 *        the subject {@link Resource} identifying the configuration data in
+	 *        the Model.
+	 * @return a new {@link RepositoryImplConfig} initialized with the
+	 *         configuration from the input Model, or {@code null} if no
+	 *         {@link RepositoryConfigSchema#REPOSITORYTYPE} property was found
+	 *         in the configuration data..
+	 * @throws RepositoryConfigException
+	 *         if an error occurred reading the configuration data from the
+	 *         model.
+	 */
+	public static RepositoryImplConfig create(Model model, Resource resource)
 		throws RepositoryConfigException
 	{
 		try {
-			Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, REPOSITORYTYPE);
+			// Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph,
+			// implNode, REPOSITORYTYPE);
 
+			final Literal typeLit = Models.objectLiteral(model.filter(resource, REPOSITORYTYPE, null)).orElse(
+					null);
 			if (typeLit != null) {
 				RepositoryFactory factory = RepositoryRegistry.getInstance().get(typeLit.getLabel()).orElseThrow(
 						() -> new RepositoryConfigException("Unsupported repository type: " + typeLit.getLabel()));
 
 				RepositoryImplConfig implConfig = factory.getConfig();
-				implConfig.parse(graph, implNode);
+				implConfig.parse(model, resource);
 				return implConfig;
 			}
 
 			return null;
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
