@@ -33,7 +33,7 @@ WHERE {
                 ]
 	);
     sp:where (
-			    [ a       sp:Bind ;
+			    ([ a       sp:Bind ;
 			      sp:variable _:name ;
 			      sp:expression
 			              [ a       sp:concat ;
@@ -50,7 +50,8 @@ WHERE {
 				sp:subject _:subj ;
                 sp:predicate ex:surname ;
                 sp:object _:sname
-                ] [
+                ])
+                ([
 				sp:subject _:subj ;
                 sp:predicate ex:related ;
                 sp:object _:_anon
@@ -58,7 +59,7 @@ WHERE {
 				sp:subject _:_anon ;
                 sp:predicate ex:prop2 ;
                 sp:object _:value
-                ]
+                ])
 			    );
   ].
   _:subj sp:varName "subj" .

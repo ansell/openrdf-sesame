@@ -40,10 +40,8 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SP;
@@ -53,27 +51,29 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.Compare;
+import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.MathExpr;
+import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.MultiProjection;
+import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
-import org.openrdf.query.algebra.QueryModelNodeBase;
-import org.openrdf.query.algebra.QueryModelVisitor;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
 import org.openrdf.query.algebra.SingletonSet;
+import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -131,7 +131,19 @@ public class SPINParser {
 	}
 
 	public SPINParser(Input input) {
-		this(input, SPINWellKnownVars.INSTANCE, SPINWellKnownFunctions.INSTANCE);
+		this(input,
+			new Function<URI,String>() {
+				@Override
+				public String apply(URI uri) {
+					return SPINWellKnownVars.INSTANCE.getName(uri);
+				}
+			},
+			new Function<URI,String>() {
+				@Override
+				public String apply(URI uri) {
+					return SPINWellKnownFunctions.INSTANCE.getName(uri);
+				}
+			});
 	}
 
 	public SPINParser(Input input, Function<URI,String> wellKnownVarsMapper, Function<URI,String> wellKnownFuncMapper) {
@@ -519,7 +531,7 @@ public class SPINParser {
 		}
 
 		public TupleExpr getTupleExpr() {
-			return (root instanceof QueryRoot) ? ((QueryRoot)root).getArg() : root;
+			return root;
 		}
 
 		public void visitConstruct(Resource construct)
@@ -538,18 +550,8 @@ public class SPINParser {
 				throws OpenRDFException
 		{
 			node = new SingletonSet();
-			root = new QueryRoot(node);
+			root = new Slice(node, 0, 1);
 			visitWhere(ask);
-		}
-
-		public void visitWhere(Resource query)
-				throws OpenRDFException
-		{
-			Value where = Statements.singleValue(query, SP.WHERE_PROPERTY, store);
-			if(!(where instanceof Resource)) {
-				throw new MalformedSPINException("Value of "+SP.WHERE_PROPERTY+" is not a resource");
-			}
-			visitGroupGraphPattern((Resource) where);
 		}
 
 		public void visitTemplates(Resource templates)
@@ -585,7 +587,7 @@ public class SPINParser {
 				expr = ext;
 			}
 			root = reduced;
-			StubTupleExpr stub = new StubTupleExpr();
+			SingletonSet stub = new SingletonSet();
 			expr.setArg(stub);
 			node = stub;
 		}
@@ -610,11 +612,26 @@ public class SPINParser {
 			if(v instanceof Resource) {
 				varName = getVarName((Resource) v);
 			}
-			if(varName == null) {
+
+			if(varName != null) {
+				// TODO var collector test
+				extElems.add(new ExtensionElem(new Var(varName), varName));
+			}
+			else {
 				varName = getConstVarName(v);
 				extElems.add(new ExtensionElem(new ValueConstant(v), varName));
 			}
 			projElems.addElement(new ProjectionElem(varName, projName));
+		}
+
+		public void visitWhere(Resource query)
+				throws OpenRDFException
+		{
+			Value where = Statements.singleValue(query, SP.WHERE_PROPERTY, store);
+			if(!(where instanceof Resource)) {
+				throw new MalformedSPINException("Value of "+SP.WHERE_PROPERTY+" is not a resource");
+			}
+			visitGroupGraphPattern((Resource) where);
 		}
 
 		public void visitGroupGraphPattern(Resource group)
@@ -663,15 +680,22 @@ public class SPINParser {
 				node = new StatementPattern(getVar(subj), getVar(pred), getVar(obj));
 			}
 			else {
-				if(types.contains(RDF.LIST)) {
+				if(types.contains(SP.UNION_CLASS)) {
+					
+				}
+				else if(types.contains(RDF.LIST) || (Statements.singleValue(r, RDF.FIRST, store) != null)) {
+					QueryRoot group = new QueryRoot();
+					node = new SingletonSet();
+					group.setArg(node);
 					visitGroupGraphPattern(r);
+					node = group.getArg();
 				}
 				else {
 					throw new UnsupportedOperationException(types.toString());
 				}
 			}
 
-			if(currentNode instanceof StubTupleExpr) {
+			if(currentNode instanceof SingletonSet) {
 				currentNode.replaceWith(node);
 			}
 			else {
@@ -686,10 +710,10 @@ public class SPINParser {
 		private void visitFilter(Resource r)
 				throws OpenRDFException
 		{
-			TupleExpr currentNode = node;
 			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 			ValueExpr valueExpr = visitExpression(expr);
-			node = new StubTupleExpr();
+			TupleExpr currentNode = node;
+			node = new SingletonSet();
 			Filter filter = new Filter(node, valueExpr);
 			currentNode.replaceWith(filter);
 		}
@@ -699,6 +723,15 @@ public class SPINParser {
 		{
 			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 			ValueExpr valueExpr = visitExpression(expr);
+			Value varValue = Statements.singleValue(r, SP.VARIABLE_PROPERTY, store);
+			if(!(varValue instanceof Resource)) {
+				throw new MalformedSPINException("Value of "+SP.VARIABLE_PROPERTY+" is not a resource");
+			}
+			String varName = getVarName((Resource)varValue);
+			TupleExpr currentNode = node;
+			node = new SingletonSet();
+			Extension extension = new Extension(node, new ExtensionElem(valueExpr, varName));
+			currentNode.replaceWith(extension);
 		}
 
 		private ValueExpr visitExpression(Value v)
@@ -744,11 +777,6 @@ public class SPINParser {
 				}
 
 				if(func != null) {
-					String funcName = wellKnownFunctions.apply(func);
-					if(funcName == null) {
-						funcName = func.stringValue();
-					}
-
 					SortedMap<URI, ValueExpr> argValues = new TreeMap<URI, ValueExpr>(new Comparator<URI>()
 					{
 						@Override
@@ -781,7 +809,7 @@ public class SPINParser {
 						args.add(argExpr);
 					}
 
-					expr = toValueExpr(funcName, args);
+					expr = toValueExpr(func, args);
 				}
 				else {
 					String varName = getVarName(r);
@@ -808,30 +836,80 @@ public class SPINParser {
 			}
 		}
 
-		private ValueExpr toValueExpr(String funcName, List<ValueExpr> args)
+		private ValueExpr toValueExpr(URI func, List<ValueExpr> args)
 			throws MalformedSPINException
 		{
 			ValueExpr expr;
-			CompareOp compareOp = toCompareOp(funcName);
-			if(compareOp != null) {
+			CompareOp compareOp;
+			MathOp mathOp;
+			if((compareOp = toCompareOp(func)) != null) {
 				if(args.size() != 2) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+funcName);
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Compare(args.get(0), args.get(1), compareOp);
 			}
+			else if((mathOp = toMathOp(func)) != null) {
+				if(args.size() != 2) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+				}
+				expr = new MathExpr(args.get(0), args.get(1), mathOp);
+			}
+			else if(SP.NOT.equals(func)) {
+				if(args.size() != 1) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+				}
+				expr = new Not(args.get(0));
+			}
 			else {
+				String funcName = wellKnownFunctions.apply(func);
+				if(funcName == null) {
+					funcName = func.stringValue();
+				}
 				expr = new FunctionCall(funcName, args);
 			}
 			return expr;
 		}
 
-		private CompareOp toCompareOp(String funcName) {
-			for(CompareOp op : CompareOp.values()) {
-				if(op.getSymbol().equals(funcName)) {
-					return op;
-				}
+		private CompareOp toCompareOp(URI func) {
+			if(SP.EQ.equals(func)) {
+				return CompareOp.EQ;
 			}
-			return null;
+			else if(SP.NE.equals(func)) {
+				return CompareOp.NE;
+			}
+			else if(SP.LT.equals(func)) {
+				return CompareOp.LT;
+			}
+			else if(SP.LE.equals(func)) {
+				return CompareOp.LE;
+			}
+			else if(SP.GE.equals(func)) {
+				return CompareOp.GE;
+			}
+			else if(SP.GT.equals(func)) {
+				return CompareOp.GT;
+			}
+			else {
+				return null;
+			}
+		}
+
+		private MathOp toMathOp(URI func) {
+			if(SP.ADD.equals(func)) {
+				return MathOp.PLUS;
+			}
+			else if(SP.SUB.equals(func)) {
+				return MathOp.MINUS;
+			}
+			else if(SP.MUL.equals(func)) {
+				return MathOp.MULTIPLY;
+			}
+			else if(SP.DIVIDE.equals(func)) {
+				return MathOp.DIVIDE;
+			}
+			else {
+				return null;
+			}
 		}
 
 		private String getVarName(Resource r)
@@ -918,119 +996,6 @@ public class SPINParser {
 				uniqueStringForValue += "-uri";
 			}
 			return "_const-" + uniqueStringForValue;
-		}
-	}
-
-
-	static final class StubTupleExpr extends QueryModelNodeBase implements TupleExpr
-	{
-		private static final long serialVersionUID = -7155925246175418337L;
-
-		@Override
-		public Set<String> getBindingNames() {
-			return Collections.emptySet();
-		}
-
-		@Override
-		public Set<String> getAssuredBindingNames() {
-			return Collections.emptySet();
-		}
-
-		@Override
-		public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
-			throws X
-		{
-			visitor.meetOther(this);
-		}
-
-		@Override
-		public StubTupleExpr clone() {
-			return (StubTupleExpr) super.clone();
-		}
-	}
-
-
-	static final class SPINWellKnownVars implements Function<URI,String>
-	{
-		static final SPINWellKnownVars INSTANCE = new SPINWellKnownVars();
-
-		final Map<URI,String> wkvs = new HashMap<URI,String>();
-
-		public SPINWellKnownVars() {
-			wkvs.put(SPIN.THIS_CONTEXT_INSTANCE, "this");
-			wkvs.put(SPIN.ARG1_INSTANCE, "arg1");
-			wkvs.put(SPIN.ARG2_INSTANCE, "arg2");
-			wkvs.put(SPIN.ARG3_INSTANCE, "arg3");
-			wkvs.put(SPIN.ARG4_INSTANCE, "arg4");
-			wkvs.put(SPIN.ARG5_INSTANCE, "arg5");
-		}
-
-		@Override
-		public String apply(URI wkv) {
-			String name = wkvs.get(wkv);
-			if(name == null && SPIN.NAMESPACE.equals(wkv.getNamespace()) && wkv.getLocalName().startsWith("_arg")) {
-				String lname = wkv.getLocalName();
-				try {
-					Integer.parseInt(lname.substring("_arg".length()));
-					name = lname.substring(1);
-				}
-				catch(NumberFormatException nfe) {
-					// ignore - not a well-known argN variable
-				}
-			}
-			return name;
-		}
-	}
-
-
-	static final class SPINWellKnownFunctions implements Function<URI,String>
-	{
-		static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
-		static final SPINWellKnownFunctions INSTANCE = new SPINWellKnownFunctions();
-
-		final Map<URI,String> wkfs = new HashMap<URI,String>();
-
-		public SPINWellKnownFunctions() {
-			wkfs.put(valueFactory.createURI(SP.NAMESPACE, "substr"), FN.SUBSTRING.stringValue());
-			wkfs.put(FN.SUBSTRING_BEFORE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strbefore"));
-			wkfs.put(FN.SUBSTRING_AFTER.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strafter"));
-			wkfs.put(FN.STARTS_WITH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strstarts"));
-			wkfs.put(FN.ENDS_WITH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strends"));
-			wkfs.put(FN.STRING_LENGTH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strlen"));
-			wkfs.put(FN.CONCAT.stringValue(), valueFactory.createURI(SP.NAMESPACE, "concat"));
-			wkfs.put(FN.CONTAINS.stringValue(), valueFactory.createURI(SP.NAMESPACE, "contains"));
-			wkfs.put(FN.LOWER_CASE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "lcase"));
-			wkfs.put(FN.UPPER_CASE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "ucase"));
-			wkfs.put(FN.REPLACE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "replace"));
-			wkfs.put(FN.NUMERIC_ABS.stringValue(), valueFactory.createURI(SP.NAMESPACE, "abs"));
-			wkfs.put(FN.NUMERIC_CEIL.stringValue(), valueFactory.createURI(SP.NAMESPACE, "ceil"));
-			wkfs.put(FN.NUMERIC_FLOOR.stringValue(), valueFactory.createURI(SP.NAMESPACE, "floor"));
-			wkfs.put(FN.NUMERIC_ROUND.stringValue(), valueFactory.createURI(SP.NAMESPACE, "round"));
-			wkfs.put(FN.YEAR_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "year"));
-			wkfs.put(FN.MONTH_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "month"));
-			wkfs.put(FN.DAY_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "day"));
-			wkfs.put(FN.HOURS_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "hours"));
-			wkfs.put(FN.MINUTES_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "minutes"));
-			wkfs.put(FN.SECONDS_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "seconds"));
-			wkfs.put(FN.TIMEZONE_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "timezone"));
-			wkfs.put(FN.ENCODE_FOR_URI.stringValue(), valueFactory.createURI(SP.NAMESPACE, "encode_for_uri"));
-			wkfs.put("NOW", valueFactory.createURI(SP.NAMESPACE, "now"));
-			wkfs.put("RAND", valueFactory.createURI(SP.NAMESPACE, "rand"));
-			wkfs.put("STRDT", valueFactory.createURI(SP.NAMESPACE, "strdt"));
-			wkfs.put("STRLANG", valueFactory.createURI(SP.NAMESPACE, "strlang"));
-			wkfs.put("TZ", valueFactory.createURI(SP.NAMESPACE, "tz"));
-			wkfs.put("UUID", valueFactory.createURI(SP.NAMESPACE, "uuid"));
-			wkfs.put("STRUUID", valueFactory.createURI(SP.NAMESPACE, "struuid"));
-			wkfs.put("MD5", valueFactory.createURI(SP.NAMESPACE, "md5"));
-			wkfs.put("SHA1", valueFactory.createURI(SP.NAMESPACE, "sha1"));
-			wkfs.put("SHA256", valueFactory.createURI(SP.NAMESPACE, "sha256"));
-			wkfs.put("SHA384", valueFactory.createURI(SP.NAMESPACE, "sha384"));
-			wkfs.put("SHA512", valueFactory.createURI(SP.NAMESPACE, "sha512"));
-		}
-
-		@Override
-		public String apply(URI wkf) {
-			return wkfs.get(wkf);
 		}
 	}
 }
