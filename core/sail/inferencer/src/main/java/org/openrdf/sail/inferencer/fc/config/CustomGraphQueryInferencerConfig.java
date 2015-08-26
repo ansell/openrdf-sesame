@@ -208,13 +208,13 @@ public final class CustomGraphQueryInferencerConfig extends AbstractDelegatingSa
 		return result;
 	}
 
-	private void addQueryNode(Graph graph, Resource implNode, IRI predicate, String queryText) {
+	private void addQueryNode(Model m, Resource implNode, IRI predicate, String queryText) {
 		if (null != queryText) {
 			ValueFactory factory = SimpleValueFactory.getInstance();
 			BNode queryNode = factory.createBNode();
-			graph.add(implNode, predicate, queryNode);
-			graph.add(queryNode, RDF.TYPE, SP.CONSTRUCT_CLASS);
-			graph.add(queryNode, SP.TEXT_PROPERTY, factory.createLiteral(queryText));
+			m.add(implNode, predicate, queryNode);
+			m.add(queryNode, RDF.TYPE, SP.CONSTRUCT_CLASS);
+			m.add(queryNode, SP.TEXT_PROPERTY, factory.createLiteral(queryText));
 		}
 	}
 }

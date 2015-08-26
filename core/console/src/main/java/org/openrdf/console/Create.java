@@ -32,15 +32,16 @@ import org.slf4j.LoggerFactory;
 
 import info.aduna.io.IOUtil;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryReadOnlyException;
 import org.openrdf.repository.config.ConfigTemplate;
 import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.rio.RDFFormat;
@@ -105,17 +106,20 @@ public class Create implements Command {
 				if (!eof) {
 					final String configString = configTemplate.render(valueMap);
 					final Repository systemRepo = this.state.getManager().getSystemRepository();
-					final Graph graph = new LinkedHashModel();
+					final Model graph = new LinkedHashModel();
 					final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
 					rdfParser.setRDFHandler(new StatementCollector(graph));
 					rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
-					final Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE,
-							RepositoryConfigSchema.REPOSITORY);
+					final Resource repositoryNode = Models.subject(
+							graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY)).orElseThrow(
+									() -> new RepositoryConfigException("missing repository node"));
 					final RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
 					repConfig.validate();
-					boolean proceed = RepositoryConfigUtil.hasRepositoryConfig(systemRepo, repConfig.getID()) ? consoleIO.askProceed(
-							"WARNING: you are about to overwrite the configuration of an existing repository!",
-							false) : true;
+					boolean proceed = RepositoryConfigUtil.hasRepositoryConfig(systemRepo, repConfig.getID())
+							? consoleIO.askProceed(
+									"WARNING: you are about to overwrite the configuration of an existing repository!",
+									false)
+							: true;
 					if (proceed) {
 						try {
 							RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
@@ -146,7 +150,7 @@ public class Create implements Command {
 
 	private boolean inputParameters(final Map<String, String> valueMap,
 			final Map<String, List<String>> variableMap, Map<String, String> multilineInput)
-		throws IOException
+				throws IOException
 	{
 		if (!variableMap.isEmpty()) {
 			consoleIO.writeln("Please specify values for the following variables:");
@@ -184,10 +188,9 @@ public class Create implements Command {
 		return eof;
 	}
 
-	@SuppressWarnings("resource")
 	private InputStream createTemplateStream(final String templateName, final String templateFileName,
 			final File templatesDir, final File templateFile)
-		throws FileNotFoundException
+				throws FileNotFoundException
 	{
 		InputStream templateStream = null;
 		if (templateFile.exists()) {

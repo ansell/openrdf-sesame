@@ -29,13 +29,16 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryConfigSchema;
 import org.openrdf.repository.config.RepositoryConfigUtil;
 import org.openrdf.repository.manager.RepositoryManager;
@@ -68,18 +71,22 @@ public class AbstractCommandTest {
 	{
 		Repository systemRepo = manager.getSystemRepository();
 		RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
-		Graph graph = new LinkedHashModel();
+		Model graph = new LinkedHashModel();
 		rdfParser.setRDFHandler(new StatementCollector(graph));
 		rdfParser.parse(new StringReader(IOUtil.readString(new InputStreamReader(configStream, "UTF-8"))),
 				RepositoryConfigSchema.NAMESPACE);
 		configStream.close();
-		Resource repositoryNode = GraphUtil.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY);
+		Resource repositoryNode = Models.subject(
+				graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY)).orElseThrow(
+						() -> new RepositoryConfigException("could not find subject resource"));
 		RepositoryConfig repoConfig = RepositoryConfig.create(graph, repositoryNode);
 		repoConfig.validate();
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repoConfig);
 		if (null != data) { // null if we didn't provide a data file
-			RepositoryConnection connection = manager.getRepository(
-					GraphUtil.getUniqueObjectLiteral(graph, repositoryNode, RepositoryConfigSchema.REPOSITORYID).stringValue()).getConnection();
+			final String repId = Models.objectLiteral(
+					graph.filter(repositoryNode, RepositoryConfigSchema.REPOSITORYID, null)).orElseThrow(
+							() -> new RepositoryConfigException("missing repository id")).stringValue();
+			RepositoryConnection connection = manager.getRepository(repId).getConnection();
 			try {
 				connection.add(data, null, RDFFormat.TURTLE);
 			}
