@@ -22,6 +22,7 @@ import info.aduna.iteration.Iterations;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,6 +30,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
@@ -37,7 +40,10 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SP;
@@ -46,8 +52,10 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
+import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.MultiProjection;
@@ -56,13 +64,16 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.QueryModelNodeBase;
 import org.openrdf.query.algebra.QueryModelVisitor;
+import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
+import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -479,7 +490,9 @@ public class SPINParser {
 			return new ParsedTupleQuery();
 		}
 		else if(SP.ASK_CLASS.equals(queryType)) {
-			return new ParsedBooleanQuery();
+			SPINVisitor visitor = new SPINVisitor(store);
+			visitor.visitAsk(queryResource);
+			return new ParsedBooleanQuery(visitor.getTupleExpr());
 		}
 		else if(SP.DESCRIBE_CLASS.equals(queryType)) {
 			return new ParsedDescribeQuery();
@@ -506,7 +519,7 @@ public class SPINParser {
 		}
 
 		public TupleExpr getTupleExpr() {
-			return root;
+			return (root instanceof QueryRoot) ? ((QueryRoot)root).getArg() : root;
 		}
 
 		public void visitConstruct(Resource construct)
@@ -518,7 +531,21 @@ public class SPINParser {
 			}
 			visitTemplates((Resource) templates);
 
-			Value where = Statements.singleValue(construct, SP.WHERE_PROPERTY, store);
+			visitWhere(construct);
+		}
+
+		public void visitAsk(Resource ask)
+				throws OpenRDFException
+		{
+			node = new SingletonSet();
+			root = new QueryRoot(node);
+			visitWhere(ask);
+		}
+
+		public void visitWhere(Resource query)
+				throws OpenRDFException
+		{
+			Value where = Statements.singleValue(query, SP.WHERE_PROPERTY, store);
 			if(!(where instanceof Resource)) {
 				throw new MalformedSPINException("Value of "+SP.WHERE_PROPERTY+" is not a resource");
 			}
@@ -659,8 +686,12 @@ public class SPINParser {
 		private void visitFilter(Resource r)
 				throws OpenRDFException
 		{
+			TupleExpr currentNode = node;
 			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 			ValueExpr valueExpr = visitExpression(expr);
+			node = new StubTupleExpr();
+			Filter filter = new Filter(node, valueExpr);
+			currentNode.replaceWith(filter);
 		}
 
 		private void visitBind(Resource r)
@@ -718,7 +749,13 @@ public class SPINParser {
 						funcName = func.stringValue();
 					}
 
-					Map<URI, ValueExpr> args = new HashMap<URI, ValueExpr>();
+					SortedMap<URI, ValueExpr> argValues = new TreeMap<URI, ValueExpr>(new Comparator<URI>()
+					{
+						@Override
+						public int compare(URI uri1, URI uri2) {
+							return uri1.getLocalName().compareTo(uri2.getLocalName());
+						}
+					});
 					CloseableIteration<? extends Statement, QueryEvaluationException> iter = store.getStatements(r, null, null);
 					try {
 						while(iter.hasNext()) {
@@ -726,7 +763,7 @@ public class SPINParser {
 							URI argName = stmt.getPredicate();
 							if(!RDF.TYPE.equals(argName) && !SP.ARG_PROPERTY.equals(argName)) {
 								ValueExpr argValue = visitExpression(stmt.getObject());
-								args.put(argName, argValue);
+								argValues.put(argName, argValue);
 							}
 						}
 					}
@@ -734,9 +771,17 @@ public class SPINParser {
 						iter.close();
 					}
 
-					FunctionCall fCall = new FunctionCall(funcName);
-					// TODO args
-					expr = fCall;
+					int numArgs = argValues.size();
+					List<ValueExpr> args = new ArrayList<ValueExpr>(numArgs);
+					for(int i=0; i<numArgs; i++) {
+						ValueExpr argExpr = argValues.remove(toArgProperty(i));
+						if(argExpr == null) {
+							argExpr = argValues.remove(argValues.firstKey());
+						}
+						args.add(argExpr);
+					}
+
+					expr = toValueExpr(funcName, args);
 				}
 				else {
 					String varName = getVarName(r);
@@ -749,6 +794,44 @@ public class SPINParser {
 				}
 			}
 			return expr;
+		}
+
+		private URI toArgProperty(int i) {
+			switch(i) {
+			case 1: return SP.ARG1_PROPERTY;
+			case 2: return SP.ARG2_PROPERTY;
+			case 3: return SP.ARG3_PROPERTY;
+			case 4: return SP.ARG4_PROPERTY;
+			case 5: return SP.ARG5_PROPERTY;
+			default:
+				return ValueFactoryImpl.getInstance().createURI(SP.NAMESPACE, "arg"+i);
+			}
+		}
+
+		private ValueExpr toValueExpr(String funcName, List<ValueExpr> args)
+			throws MalformedSPINException
+		{
+			ValueExpr expr;
+			CompareOp compareOp = toCompareOp(funcName);
+			if(compareOp != null) {
+				if(args.size() != 2) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+funcName);
+				}
+				expr = new Compare(args.get(0), args.get(1), compareOp);
+			}
+			else {
+				expr = new FunctionCall(funcName, args);
+			}
+			return expr;
+		}
+
+		private CompareOp toCompareOp(String funcName) {
+			for(CompareOp op : CompareOp.values()) {
+				if(op.getSymbol().equals(funcName)) {
+					return op;
+				}
+			}
+			return null;
 		}
 
 		private String getVarName(Resource r)
@@ -902,12 +985,47 @@ public class SPINParser {
 
 	static final class SPINWellKnownFunctions implements Function<URI,String>
 	{
+		static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
 		static final SPINWellKnownFunctions INSTANCE = new SPINWellKnownFunctions();
 
 		final Map<URI,String> wkfs = new HashMap<URI,String>();
 
 		public SPINWellKnownFunctions() {
-			// TODO
+			wkfs.put(valueFactory.createURI(SP.NAMESPACE, "substr"), FN.SUBSTRING.stringValue());
+			wkfs.put(FN.SUBSTRING_BEFORE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strbefore"));
+			wkfs.put(FN.SUBSTRING_AFTER.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strafter"));
+			wkfs.put(FN.STARTS_WITH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strstarts"));
+			wkfs.put(FN.ENDS_WITH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strends"));
+			wkfs.put(FN.STRING_LENGTH.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strlen"));
+			wkfs.put(FN.CONCAT.stringValue(), valueFactory.createURI(SP.NAMESPACE, "concat"));
+			wkfs.put(FN.CONTAINS.stringValue(), valueFactory.createURI(SP.NAMESPACE, "contains"));
+			wkfs.put(FN.LOWER_CASE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "lcase"));
+			wkfs.put(FN.UPPER_CASE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "ucase"));
+			wkfs.put(FN.REPLACE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "replace"));
+			wkfs.put(FN.NUMERIC_ABS.stringValue(), valueFactory.createURI(SP.NAMESPACE, "abs"));
+			wkfs.put(FN.NUMERIC_CEIL.stringValue(), valueFactory.createURI(SP.NAMESPACE, "ceil"));
+			wkfs.put(FN.NUMERIC_FLOOR.stringValue(), valueFactory.createURI(SP.NAMESPACE, "floor"));
+			wkfs.put(FN.NUMERIC_ROUND.stringValue(), valueFactory.createURI(SP.NAMESPACE, "round"));
+			wkfs.put(FN.YEAR_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "year"));
+			wkfs.put(FN.MONTH_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "month"));
+			wkfs.put(FN.DAY_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "day"));
+			wkfs.put(FN.HOURS_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "hours"));
+			wkfs.put(FN.MINUTES_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "minutes"));
+			wkfs.put(FN.SECONDS_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "seconds"));
+			wkfs.put(FN.TIMEZONE_FROM_DATETIME.stringValue(), valueFactory.createURI(SP.NAMESPACE, "timezone"));
+			wkfs.put(FN.ENCODE_FOR_URI.stringValue(), valueFactory.createURI(SP.NAMESPACE, "encode_for_uri"));
+			wkfs.put("NOW", valueFactory.createURI(SP.NAMESPACE, "now"));
+			wkfs.put("RAND", valueFactory.createURI(SP.NAMESPACE, "rand"));
+			wkfs.put("STRDT", valueFactory.createURI(SP.NAMESPACE, "strdt"));
+			wkfs.put("STRLANG", valueFactory.createURI(SP.NAMESPACE, "strlang"));
+			wkfs.put("TZ", valueFactory.createURI(SP.NAMESPACE, "tz"));
+			wkfs.put("UUID", valueFactory.createURI(SP.NAMESPACE, "uuid"));
+			wkfs.put("STRUUID", valueFactory.createURI(SP.NAMESPACE, "struuid"));
+			wkfs.put("MD5", valueFactory.createURI(SP.NAMESPACE, "md5"));
+			wkfs.put("SHA1", valueFactory.createURI(SP.NAMESPACE, "sha1"));
+			wkfs.put("SHA256", valueFactory.createURI(SP.NAMESPACE, "sha256"));
+			wkfs.put("SHA384", valueFactory.createURI(SP.NAMESPACE, "sha384"));
+			wkfs.put("SHA512", valueFactory.createURI(SP.NAMESPACE, "sha512"));
 		}
 
 		@Override
