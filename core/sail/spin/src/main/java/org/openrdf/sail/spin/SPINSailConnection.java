@@ -82,8 +82,6 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "{}: {} {} {}";
 
-	private final SPINSail inferencer;
-
 	private final ValueFactory vf;
 
 	private final TripleSource tripleSource;
@@ -100,7 +98,6 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	public SPINSailConnection(SPINSail sail, InferencerConnection con) {
 		super(sail, con);
-		this.inferencer = sail;
 		this.vf = sail.getValueFactory();
 		this.tripleSource = new SailTripleSource(con, true, vf);
 		con.addConnectionListener(new SailConnectionListener() {
@@ -148,32 +145,9 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 	}
 
 	@Override
-	protected void resetInferred()
-		throws SailException
-	{
-		Resource axiomContext = inferencer.getAxionContext();
-		if (axiomContext != null) {
-			// optimised reset
-			List<Resource> contexts = new ArrayList<Resource>();
-			CloseableIteration<? extends Resource, SailException> iter = getContextIDs();
-			while (iter.hasNext()) {
-				Resource ctx = iter.next();
-				if (!axiomContext.equals(ctx)) {
-					contexts.add(ctx);
-				}
-			}
-			clearInferred(contexts.toArray(new Resource[contexts.size()]));
-		}
-		else {
-			super.resetInferred();
-		}
-	}
-
-	@Override
 	protected void addAxiomStatements()
 		throws SailException
 	{
-
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
 		loadAxiomStatements(parser, "/schema/sp.ttl", getWrappedConnection());
 		loadAxiomStatements(parser, "/schema/spin.ttl", getWrappedConnection());
@@ -184,10 +158,6 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		throws SailException
 	{
 		RDFInferencerInserter inserter = new RDFInferencerInserter(con, vf);
-		Resource axiomContext = inferencer.getAxionContext();
-		if (axiomContext != null) {
-			inserter.enforceContext(axiomContext);
-		}
 		parser.setRDFHandler(inserter);
 		URL url = getClass().getResource(file);
 		try {

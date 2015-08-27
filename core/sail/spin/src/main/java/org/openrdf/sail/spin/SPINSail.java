@@ -16,7 +16,6 @@
  */
 package org.openrdf.sail.spin;
 
-import org.openrdf.model.Resource;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -24,21 +23,11 @@ import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencer;
 
 public class SPINSail extends AbstractForwardChainingInferencer {
 
-	private Resource axiomContext;
-
 	public SPINSail() {
 	}
 
 	public SPINSail(NotifyingSail baseSail) {
 		super(baseSail);
-	}
-
-	public void setAxiomContext(Resource context) {
-		this.axiomContext = context;
-	}
-
-	public Resource getAxionContext() {
-		return this.axiomContext;
 	}
 
 	@Override

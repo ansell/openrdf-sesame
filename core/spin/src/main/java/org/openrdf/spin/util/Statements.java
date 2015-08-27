@@ -66,6 +66,9 @@ public final class Statements {
 	public static Iteration<? extends Value, QueryEvaluationException> list(final Resource subj, final TripleSource store)
 		throws QueryEvaluationException
 	{
+		if(subj == null) {
+			throw new NullPointerException("RDF list subject cannot be null");
+		}
 		return new Iteration<Value,QueryEvaluationException>() {
 			Resource list = subj;
 
@@ -81,7 +84,14 @@ public final class Statements {
 				throws QueryEvaluationException
 			{
 				Value v = singleValue(list, RDF.FIRST, store);
-				list = (Resource) singleValue(list, RDF.REST, store);
+				if(v == null) {
+					throw new QueryEvaluationException("List missing rdf:first: "+list);
+				}
+				Resource nextList = (Resource) singleValue(list, RDF.REST, store);
+				if(nextList == null) {
+					throw new QueryEvaluationException("List missing rdf:rest: "+list);
+				}
+				list = nextList;
 				return v;
 			}
 

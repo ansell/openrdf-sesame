@@ -39,9 +39,13 @@ public class SPINRendererTest {
 		for(int i=0; ; i++) {
 			String suffix = String.valueOf(i+1);
 			String testFile = "/testcases/test"+suffix+".ttl";
-			URL rdfURL = SPINParserTest.class.getResource(testFile);
+			URL rdfURL = SPINRendererTest.class.getResource(testFile);
 			if(rdfURL == null) {
-				break;
+				testFile = "/testcases/test"+suffix+"r.ttl";
+				rdfURL = SPINRendererTest.class.getResource(testFile);
+				if(rdfURL == null) {
+					break;
+				}
 			}
 			params.add(new Object[] {testFile, rdfURL});
 		}

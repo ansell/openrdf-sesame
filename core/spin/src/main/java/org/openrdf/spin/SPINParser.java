@@ -67,6 +67,7 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
+import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
@@ -786,11 +787,21 @@ public class SPINParser {
 					
 				}
 				else if(types.contains(RDF.LIST) || (Statements.singleValue(r, RDF.FIRST, store) != null)) {
-					QueryRoot group = new QueryRoot();
 					node = new SingletonSet();
-					group.setArg(node);
+					QueryRoot group = new QueryRoot(node);
 					visitGroupGraphPattern(r);
 					node = group.getArg();
+				}
+				else if(types.contains(SP.SERVICE_CLASS)) {
+					Value serviceUri = Statements.singleValue(r, SP.SERVICE_URI_PROPERTY, store);
+					boolean isSilent = false;
+					node = new SingletonSet();
+					String exprString = ""; // TODO
+					Map<String,String> prefixDecls = Collections.emptyMap(); // TODO
+					Service service = new Service(getVar(serviceUri), node, exprString, prefixDecls, null, isSilent);
+					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+					visitGroupGraphPattern((Resource) elements);
+					node = service;
 				}
 				else {
 					throw new UnsupportedOperationException(types.toString());

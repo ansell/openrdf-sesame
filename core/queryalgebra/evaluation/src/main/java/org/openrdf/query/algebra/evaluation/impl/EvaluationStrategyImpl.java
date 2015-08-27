@@ -16,6 +16,12 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;
 import info.aduna.iteration.ConvertingIteration;
@@ -31,12 +37,6 @@ import info.aduna.iteration.OffsetIteration;
 import info.aduna.iteration.ReducedIteration;
 import info.aduna.iteration.SingletonIteration;
 import info.aduna.iteration.UnionIteration;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -211,7 +211,6 @@ public class EvaluationStrategyImpl implements EvaluationStrategy {
 	 * Methods *
 	 *---------*/
 
-	@Override
 	public FederatedService getService(String serviceUrl)
 		throws QueryEvaluationException
 	{

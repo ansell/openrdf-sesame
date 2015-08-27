@@ -19,9 +19,6 @@ package org.openrdf.sail.inferencer.fc;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.text.ASCIIUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -43,10 +40,6 @@ import org.openrdf.sail.inferencer.InferencerConnection;
  */
 class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInferencerConnection
 {
-	private static final Resource[] NO_CONTEXT = {};
-
-	private final ForwardChainingRDFSInferencer inferencer;
-
 	/*-----------*
 	 * Variables *
 	 *-----------*/
@@ -72,9 +65,8 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 	 * Constructors *
 	 *--------------*/
 
-	public ForwardChainingRDFSInferencerConnection(ForwardChainingRDFSInferencer sail, InferencerConnection con) {
+	public ForwardChainingRDFSInferencerConnection(Sail sail, InferencerConnection con) {
 		super(sail, con);
-		this.inferencer = sail;
 	}
 
 	/*---------*
@@ -87,28 +79,6 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		return new TreeModel();
 	}
 
-	@Override
-	protected void resetInferred()
-		throws SailException
-	{
-		Resource axiomContext = inferencer.getAxiomContext();
-		if(axiomContext != null) {
-			// optimised reset
-			List<Resource> contexts = new ArrayList<Resource>();
-			CloseableIteration<? extends Resource, SailException> iter = getContextIDs();
-			while (iter.hasNext()) {
-				Resource ctx = iter.next();
-				if (!axiomContext.equals(ctx)) {
-					contexts.add(ctx);
-				}
-			}
-			clearInferred(contexts.toArray(new Resource[contexts.size()]));
-		}
-		else {
-			super.resetInferred();
-		}
-	}
-
 	/**
 	 * Adds all basic set of axiom statements from which the complete set can be
 	 * inferred to the underlying Sail.
@@ -119,68 +89,65 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 	{
 		logger.debug("Inserting axiom statements");
 
-		Resource axiomContext = inferencer.getAxiomContext();
-		Resource[] contexts = (axiomContext != null) ? new Resource[] {axiomContext} : NO_CONTEXT;
-
 		// RDF axiomatic triples (from RDF Semantics, section 3.1):
 
-		addInferredStatement(RDF.TYPE, RDF.TYPE, RDF.PROPERTY, contexts);
-		addInferredStatement(RDF.SUBJECT, RDF.TYPE, RDF.PROPERTY, contexts);
-		addInferredStatement(RDF.PREDICATE, RDF.TYPE, RDF.PROPERTY, contexts);
-		addInferredStatement(RDF.OBJECT, RDF.TYPE, RDF.PROPERTY, contexts);
+		addInferredStatement(RDF.TYPE, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.SUBJECT, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.PREDICATE, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.OBJECT, RDF.TYPE, RDF.PROPERTY);
 
-		addInferredStatement(RDF.FIRST, RDF.TYPE, RDF.PROPERTY, contexts);
-		addInferredStatement(RDF.REST, RDF.TYPE, RDF.PROPERTY, contexts);
-		addInferredStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY, contexts);
+		addInferredStatement(RDF.FIRST, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.REST, RDF.TYPE, RDF.PROPERTY);
+		addInferredStatement(RDF.VALUE, RDF.TYPE, RDF.PROPERTY);
 
-		addInferredStatement(RDF.NIL, RDF.TYPE, RDF.LIST, contexts);
+		addInferredStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 
 		// RDFS axiomatic triples (from RDF Semantics, section 4.1):
 
-		addInferredStatement(RDF.TYPE, RDFS.DOMAIN, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDFS.DOMAIN, RDFS.DOMAIN, RDF.PROPERTY, contexts);
-		addInferredStatement(RDFS.RANGE, RDFS.DOMAIN, RDF.PROPERTY, contexts);
-		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.DOMAIN, RDF.PROPERTY, contexts);
-		addInferredStatement(RDFS.SUBCLASSOF, RDFS.DOMAIN, RDFS.CLASS, contexts);
-		addInferredStatement(RDF.SUBJECT, RDFS.DOMAIN, RDF.STATEMENT, contexts);
-		addInferredStatement(RDF.PREDICATE, RDFS.DOMAIN, RDF.STATEMENT, contexts);
-		addInferredStatement(RDF.OBJECT, RDFS.DOMAIN, RDF.STATEMENT, contexts);
-		addInferredStatement(RDFS.MEMBER, RDFS.DOMAIN, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDF.FIRST, RDFS.DOMAIN, RDF.LIST, contexts);
-		addInferredStatement(RDF.REST, RDFS.DOMAIN, RDF.LIST, contexts);
-		addInferredStatement(RDFS.SEEALSO, RDFS.DOMAIN, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.DOMAIN, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDFS.COMMENT, RDFS.DOMAIN, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDFS.LABEL, RDFS.DOMAIN, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDF.VALUE, RDFS.DOMAIN, RDFS.RESOURCE, contexts);
+		addInferredStatement(RDF.TYPE, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.DOMAIN, RDFS.DOMAIN, RDF.PROPERTY);
+		addInferredStatement(RDFS.RANGE, RDFS.DOMAIN, RDF.PROPERTY);
+		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.DOMAIN, RDF.PROPERTY);
+		addInferredStatement(RDFS.SUBCLASSOF, RDFS.DOMAIN, RDFS.CLASS);
+		addInferredStatement(RDF.SUBJECT, RDFS.DOMAIN, RDF.STATEMENT);
+		addInferredStatement(RDF.PREDICATE, RDFS.DOMAIN, RDF.STATEMENT);
+		addInferredStatement(RDF.OBJECT, RDFS.DOMAIN, RDF.STATEMENT);
+		addInferredStatement(RDFS.MEMBER, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDF.FIRST, RDFS.DOMAIN, RDF.LIST);
+		addInferredStatement(RDF.REST, RDFS.DOMAIN, RDF.LIST);
+		addInferredStatement(RDFS.SEEALSO, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.COMMENT, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDFS.LABEL, RDFS.DOMAIN, RDFS.RESOURCE);
+		addInferredStatement(RDF.VALUE, RDFS.DOMAIN, RDFS.RESOURCE);
 
-		addInferredStatement(RDF.TYPE, RDFS.RANGE, RDFS.CLASS, contexts);
-		addInferredStatement(RDFS.DOMAIN, RDFS.RANGE, RDFS.CLASS, contexts);
-		addInferredStatement(RDFS.RANGE, RDFS.RANGE, RDFS.CLASS, contexts);
-		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.RANGE, RDF.PROPERTY, contexts);
-		addInferredStatement(RDFS.SUBCLASSOF, RDFS.RANGE, RDFS.CLASS, contexts);
-		addInferredStatement(RDF.SUBJECT, RDFS.RANGE, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDF.PREDICATE, RDFS.RANGE, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDF.OBJECT, RDFS.RANGE, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDFS.MEMBER, RDFS.RANGE, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDF.FIRST, RDFS.RANGE, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDF.REST, RDFS.RANGE, RDF.LIST, contexts);
-		addInferredStatement(RDFS.SEEALSO, RDFS.RANGE, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.RANGE, RDFS.RESOURCE, contexts);
-		addInferredStatement(RDFS.COMMENT, RDFS.RANGE, RDFS.LITERAL, contexts);
-		addInferredStatement(RDFS.LABEL, RDFS.RANGE, RDFS.LITERAL, contexts);
-		addInferredStatement(RDF.VALUE, RDFS.RANGE, RDFS.RESOURCE, contexts);
+		addInferredStatement(RDF.TYPE, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDFS.DOMAIN, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDFS.RANGE, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDFS.SUBPROPERTYOF, RDFS.RANGE, RDF.PROPERTY);
+		addInferredStatement(RDFS.SUBCLASSOF, RDFS.RANGE, RDFS.CLASS);
+		addInferredStatement(RDF.SUBJECT, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.PREDICATE, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.OBJECT, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDFS.MEMBER, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.FIRST, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDF.REST, RDFS.RANGE, RDF.LIST);
+		addInferredStatement(RDFS.SEEALSO, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.RANGE, RDFS.RESOURCE);
+		addInferredStatement(RDFS.COMMENT, RDFS.RANGE, RDFS.LITERAL);
+		addInferredStatement(RDFS.LABEL, RDFS.RANGE, RDFS.LITERAL);
+		addInferredStatement(RDF.VALUE, RDFS.RANGE, RDFS.RESOURCE);
 
-		addInferredStatement(RDF.ALT, RDFS.SUBCLASSOF, RDFS.CONTAINER, contexts);
-		addInferredStatement(RDF.BAG, RDFS.SUBCLASSOF, RDFS.CONTAINER, contexts);
-		addInferredStatement(RDF.SEQ, RDFS.SUBCLASSOF, RDFS.CONTAINER, contexts);
-		addInferredStatement(RDFS.CONTAINERMEMBERSHIPPROPERTY, RDFS.SUBCLASSOF, RDF.PROPERTY, contexts);
+		addInferredStatement(RDF.ALT, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		addInferredStatement(RDF.BAG, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		addInferredStatement(RDF.SEQ, RDFS.SUBCLASSOF, RDFS.CONTAINER);
+		addInferredStatement(RDFS.CONTAINERMEMBERSHIPPROPERTY, RDFS.SUBCLASSOF, RDF.PROPERTY);
 
-		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.SUBPROPERTYOF, RDFS.SEEALSO, contexts);
+		addInferredStatement(RDFS.ISDEFINEDBY, RDFS.SUBPROPERTYOF, RDFS.SEEALSO);
 
-		addInferredStatement(RDF.XMLLITERAL, RDF.TYPE, RDFS.DATATYPE, contexts);
-		addInferredStatement(RDF.XMLLITERAL, RDFS.SUBCLASSOF, RDFS.LITERAL, contexts);
-		addInferredStatement(RDFS.DATATYPE, RDFS.SUBCLASSOF, RDFS.CLASS, contexts);
+		addInferredStatement(RDF.XMLLITERAL, RDF.TYPE, RDFS.DATATYPE);
+		addInferredStatement(RDF.XMLLITERAL, RDFS.SUBCLASSOF, RDFS.LITERAL);
+		addInferredStatement(RDFS.DATATYPE, RDFS.SUBCLASSOF, RDFS.CLASS);
 	}
 
 	@Override
@@ -361,7 +328,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		Model iter = newThisIteration.filter(null, null, null);
 
 		for(Statement st : iter) {
-			boolean added = addInferredStatement(st.getPredicate(), RDF.TYPE, RDF.PROPERTY, inferredContext(st));
+			boolean added = addInferredStatement(st.getPredicate(), RDF.TYPE, RDF.PROPERTY);
 
 			if (added) {
 				nofInferred++;
@@ -391,7 +358,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 				Value zzz = t1.getObject();
 				if (zzz instanceof Resource) {
-					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz, inferredContext(nt));
+					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz);
 					if (added) {
 						nofInferred++;
 					}
@@ -423,7 +390,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Statement t1 = t1Iter.next();
 
 					Resource xxx = t1.getSubject();
-					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz, inferredContext(nt));
+					boolean added = addInferredStatement(xxx, RDF.TYPE, zzz);
 					if (added) {
 						nofInferred++;
 					}
@@ -456,7 +423,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Value zzz = t1.getObject();
 					if (zzz instanceof Resource) {
-						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz, inferredContext(nt));
+						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz);
 						if (added) {
 							nofInferred++;
 						}
@@ -489,7 +456,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Value uuu = t1.getObject();
 					if (uuu instanceof Resource) {
-						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz, inferredContext(nt));
+						boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, zzz);
 						if (added) {
 							nofInferred++;
 						}
@@ -512,7 +479,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		Model iter = newThisIteration.filter(null, null, null);
 
 		for(Statement st : iter) {
-			boolean added = addInferredStatement(st.getSubject(), RDF.TYPE, RDFS.RESOURCE, inferredContext(st));
+			boolean added = addInferredStatement(st.getSubject(), RDF.TYPE, RDFS.RESOURCE);
 			if (added) {
 				nofInferred++;
 			}
@@ -532,7 +499,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		for(Statement st : iter) {
 			Value uuu = st.getObject();
 			if (uuu instanceof Resource) {
-				boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, RDFS.RESOURCE, inferredContext(st));
+				boolean added = addInferredStatement((Resource)uuu, RDF.TYPE, RDFS.RESOURCE);
 				if (added) {
 					nofInferred++;
 				}
@@ -564,7 +531,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Value ccc = t1.getObject();
 					if (ccc instanceof Resource) {
-						boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc, inferredContext(nt));
+						boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc);
 						if (added) {
 							nofInferred++;
 						}
@@ -599,7 +566,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Statement t1 = t1Iter.next();
 
 					Resource aaa = t1.getSubject();
-					boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc, inferredContext(nt));
+					boolean added = addInferredStatement(aaa, RDFS.SUBPROPERTYOF, ccc);
 					if (added) {
 						nofInferred++;
 					}
@@ -621,7 +588,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 		for(Statement st : iter) {
 			Resource xxx = st.getSubject();
-			boolean added = addInferredStatement(xxx, RDFS.SUBPROPERTYOF, xxx, inferredContext(st));
+			boolean added = addInferredStatement(xxx, RDFS.SUBPROPERTYOF, xxx);
 			if (added) {
 				nofInferred++;
 			}
@@ -651,7 +618,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 				Value bbb = t1.getObject();
 				if (bbb instanceof URI) {
-					boolean added = addInferredStatement(xxx, (URI)bbb, yyy, inferredContext(nt));
+					boolean added = addInferredStatement(xxx, (URI)bbb, yyy);
 					if (added) {
 						nofInferred++;
 					}
@@ -685,7 +652,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Resource xxx = t1.getSubject();
 					Value yyy = t1.getObject();
 
-					boolean added = addInferredStatement(xxx, (URI)bbb, yyy, inferredContext(nt));
+					boolean added = addInferredStatement(xxx, (URI)bbb, yyy);
 					if (added) {
 						nofInferred++;
 					}
@@ -708,7 +675,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		for(Statement st : iter) {
 			Resource xxx = st.getSubject();
 
-			boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, RDFS.RESOURCE, inferredContext(st));
+			boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, RDFS.RESOURCE);
 			if (added) {
 				nofInferred++;
 			}
@@ -738,7 +705,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Resource aaa = t1.getSubject();
 
-					boolean added = addInferredStatement(aaa, RDF.TYPE, yyy, inferredContext(nt));
+					boolean added = addInferredStatement(aaa, RDF.TYPE, yyy);
 					if (added) {
 						nofInferred++;
 					}
@@ -772,7 +739,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Value yyy = t1.getObject();
 
 					if (yyy instanceof Resource) {
-						boolean added = addInferredStatement(aaa, RDF.TYPE, yyy, inferredContext(nt));
+						boolean added = addInferredStatement(aaa, RDF.TYPE, yyy);
 						if (added) {
 							nofInferred++;
 						}
@@ -796,7 +763,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		for(Statement st : iter) {
 			Resource xxx = st.getSubject();
 
-			boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, xxx, inferredContext(st));
+			boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, xxx);
 			if (added) {
 				nofInferred++;
 			}
@@ -828,7 +795,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 					Value zzz = t1.getObject();
 
 					if (zzz instanceof Resource) {
-						boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz, inferredContext(nt));
+						boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz);
 						if (added) {
 							nofInferred++;
 						}
@@ -863,7 +830,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 
 					Resource xxx = t1.getSubject();
 
-					boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz, inferredContext(nt));
+					boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, zzz);
 					if (added) {
 						nofInferred++;
 					}
@@ -887,7 +854,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		for(Statement st : iter) {
 			Resource xxx = st.getSubject();
 
-			boolean added = addInferredStatement(xxx, RDFS.SUBPROPERTYOF, RDFS.MEMBER, inferredContext(st));
+			boolean added = addInferredStatement(xxx, RDFS.SUBPROPERTYOF, RDFS.MEMBER);
 			if (added) {
 				nofInferred++;
 			}
@@ -907,7 +874,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		for(Statement st : iter) {
 			Resource xxx = st.getSubject();
 
-			boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, RDFS.LITERAL, inferredContext(st));
+			boolean added = addInferredStatement(xxx, RDFS.SUBCLASSOF, RDFS.LITERAL);
 			if (added) {
 				nofInferred++;
 			}
@@ -932,7 +899,7 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 			String predURI = predNode.toString();
 
 			if (predURI.startsWith(prefix) && isValidPredicateNumber(predURI.substring(prefix.length()))) {
-				boolean added = addInferredStatement(predNode, RDF.TYPE, RDFS.CONTAINERMEMBERSHIPPROPERTY, inferredContext(st));
+				boolean added = addInferredStatement(predNode, RDF.TYPE, RDFS.CONTAINERMEMBERSHIPPROPERTY);
 				if (added) {
 					nofInferred++;
 				}
@@ -940,10 +907,6 @@ class ForwardChainingRDFSInferencerConnection extends AbstractForwardChainingInf
 		}
 
 		return nofInferred;
-	}
-
-	private Resource[] inferredContext(Statement stmt) {
-		return inferencer.isContextPreserved() ? new Resource[] {stmt.getContext()} : NO_CONTEXT;
 	}
 
 	/**
