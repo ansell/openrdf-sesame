@@ -52,6 +52,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
+import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
@@ -499,7 +500,9 @@ public class SPINParser {
 			return new ParsedGraphQuery(visitor.getTupleExpr());
 		}
 		else if(SP.SELECT_CLASS.equals(queryType)) {
-			return new ParsedTupleQuery();
+			SPINVisitor visitor = new SPINVisitor(store);
+			visitor.visitSelect(queryResource);
+			return new ParsedTupleQuery(visitor.getTupleExpr());
 		}
 		else if(SP.ASK_CLASS.equals(queryType)) {
 			SPINVisitor visitor = new SPINVisitor(store);
@@ -507,7 +510,9 @@ public class SPINParser {
 			return new ParsedBooleanQuery(visitor.getTupleExpr());
 		}
 		else if(SP.DESCRIBE_CLASS.equals(queryType)) {
-			return new ParsedDescribeQuery();
+			SPINVisitor visitor = new SPINVisitor(store);
+			visitor.visitDescribe(queryResource);
+			return new ParsedDescribeQuery(visitor.getTupleExpr());
 		}
 		else if (UPDATE_TYPES.contains(queryType)) {
 			return new ParsedUpdate();
@@ -522,8 +527,7 @@ public class SPINParser {
 		final TripleSource store;
 		TupleExpr root;
 		TupleExpr node;
-		List<ProjectionElemList> projElemLists;
-		List<ExtensionElem> extElems;
+		Map<String,ExtensionElem> extElems;
 		Map<Resource,String> vars = new HashMap<Resource,String>();
 
 		SPINVisitor(TripleSource store) {
@@ -541,9 +545,60 @@ public class SPINParser {
 			if(!(templates instanceof Resource)) {
 				throw new MalformedSPINException("Value of "+SP.TEMPLATES_PROPERTY+" is not a resource");
 			}
-			visitTemplates((Resource) templates);
 
+			extElems = new LinkedHashMap<String,ExtensionElem>();
+
+			UnaryTupleOperator projection = visitTemplates((Resource) templates);
 			visitWhere(construct);
+
+			if(!extElems.isEmpty()) {
+				Extension ext = new Extension();
+				ext.setElements(extElems.values());
+				ext.setArg(projection.getArg());
+				projection.setArg(ext);
+			}
+		}
+
+		public void visitDescribe(Resource describe)
+				throws OpenRDFException
+		{
+			Value resultNodes = Statements.singleValue(describe, SP.RESULT_NODES_PROPERTY, store);
+			if(!(resultNodes instanceof Resource)) {
+				throw new MalformedSPINException("Value of "+SP.RESULT_NODES_PROPERTY+" is not a resource");
+			}
+
+			extElems = new LinkedHashMap<String,ExtensionElem>();
+
+			Projection projection = visitResultNodes((Resource) resultNodes);
+			visitWhere(describe);
+
+			if(!extElems.isEmpty()) {
+				Extension ext = new Extension();
+				ext.setElements(extElems.values());
+				ext.setArg(projection.getArg());
+				projection.setArg(ext);
+			}
+		}
+
+		public void visitSelect(Resource select)
+				throws OpenRDFException
+		{
+			Value resultVars = Statements.singleValue(select, SP.RESULT_VARIABLES_PROPERTY, store);
+			if(!(resultVars instanceof Resource)) {
+				throw new MalformedSPINException("Value of "+SP.RESULT_VARIABLES_PROPERTY+" is not a resource");
+			}
+
+			extElems = new LinkedHashMap<String,ExtensionElem>();
+
+			Projection projection = visitResultVariables((Resource) resultVars);
+			visitWhere(select);
+
+			if(!extElems.isEmpty()) {
+				Extension ext = new Extension();
+				ext.setElements(extElems.values());
+				ext.setArg(projection.getArg());
+				projection.setArg(ext);
+			}
 		}
 
 		public void visitAsk(Resource ask)
@@ -554,17 +609,15 @@ public class SPINParser {
 			visitWhere(ask);
 		}
 
-		public void visitTemplates(Resource templates)
+		private UnaryTupleOperator visitTemplates(Resource templates)
 				throws OpenRDFException
 		{
-			Reduced reduced = new Reduced();
-
-			projElemLists = new ArrayList<ProjectionElemList>();
-			extElems = new ArrayList<ExtensionElem>();
+			List<ProjectionElemList> projElemLists = new ArrayList<ProjectionElemList>();
 			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(templates, store);
 			while(iter.hasNext()) {
 				Resource r = iter.next();
-				visitTemplate(r);
+				ProjectionElemList projElems = visitTemplate(r);
+				projElemLists.add(projElems);
 			}
 
 			UnaryTupleOperator expr;
@@ -579,33 +632,83 @@ public class SPINParser {
 				expr = proj;
 			}
 
+			Reduced reduced = new Reduced();
 			reduced.setArg(expr);
-			if(!extElems.isEmpty()) {
-				Extension ext = new Extension();
-				ext.setElements(extElems);
-				expr.setArg(ext);
-				expr = ext;
-			}
 			root = reduced;
 			SingletonSet stub = new SingletonSet();
 			expr.setArg(stub);
 			node = stub;
+			return expr;
 		}
 
-		private void visitTemplate(Resource r)
+		private ProjectionElemList visitTemplate(Resource r)
 				throws OpenRDFException
 		{
 			ProjectionElemList projElems = new ProjectionElemList();
 			Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
-			addProjectionElem(subj, "subject", projElems);
+			projElems.addElement(createProjectionElem(subj, "subject"));
 			Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
-			addProjectionElem(pred, "predicate", projElems);
+			projElems.addElement(createProjectionElem(pred, "predicate"));
 			Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
-			addProjectionElem(obj, "object", projElems);
-			projElemLists.add(projElems);
+			projElems.addElement(createProjectionElem(obj, "object"));
+			return projElems;
 		}
 
-		private void addProjectionElem(Value v, String projName, ProjectionElemList projElems)
+		private Projection visitResultNodes(Resource resultNodes)
+				throws OpenRDFException
+		{
+			ProjectionElemList projElemList = new ProjectionElemList();
+			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(resultNodes, store);
+			while(iter.hasNext()) {
+				Resource r = iter.next();
+				ProjectionElem projElem = visitResultNode(r);
+				projElemList.addElement(projElem);
+			}
+
+			Projection proj = new Projection();
+			proj.setProjectionElemList(projElemList);
+
+			root = new DescribeOperator(proj);
+			SingletonSet stub = new SingletonSet();
+			proj.setArg(stub);
+			node = stub;
+			return proj;
+		}
+
+		private ProjectionElem visitResultNode(Resource r)
+				throws OpenRDFException
+		{
+			return createProjectionElem(r, getVarName(r));
+		}
+
+		private Projection visitResultVariables(Resource resultVars)
+				throws OpenRDFException
+		{
+			ProjectionElemList projElemList = new ProjectionElemList();
+			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(resultVars, store);
+			while(iter.hasNext()) {
+				Resource r = iter.next();
+				ProjectionElem projElem = visitResultVariable(r);
+				projElemList.addElement(projElem);
+			}
+
+			Projection proj = new Projection();
+			proj.setProjectionElemList(projElemList);
+
+			root = proj;
+			SingletonSet stub = new SingletonSet();
+			proj.setArg(stub);
+			node = stub;
+			return proj;
+		}
+
+		private ProjectionElem visitResultVariable(Resource r)
+				throws OpenRDFException
+		{
+			return createProjectionElem(r, getVarName(r));
+		}
+
+		private ProjectionElem createProjectionElem(Value v, String projName)
 			throws OpenRDFException
 		{
 			String varName = null;
@@ -614,14 +717,13 @@ public class SPINParser {
 			}
 
 			if(varName != null) {
-				// TODO var collector test
-				extElems.add(new ExtensionElem(new Var(varName), varName));
+				extElems.put(varName, new ExtensionElem(new Var(varName), varName));
 			}
 			else {
 				varName = getConstVarName(v);
-				extElems.add(new ExtensionElem(new ValueConstant(v), varName));
+				extElems.put(varName, new ExtensionElem(new ValueConstant(v), varName));
 			}
-			projElems.addElement(new ProjectionElem(varName, projName));
+			return new ProjectionElem(varName, projName);
 		}
 
 		public void visitWhere(Resource query)
@@ -814,7 +916,7 @@ public class SPINParser {
 				else {
 					String varName = getVarName(r);
 					if(varName != null) {
-						expr = new Var(varName);
+						expr = createVar(varName);
 					}
 					else {
 						expr = new ValueConstant(v);
@@ -947,7 +1049,7 @@ public class SPINParser {
 			if(v instanceof Resource) {
 				String varName = getVarName((Resource) v);
 				if(varName != null) {
-					var = new Var(varName);
+					var = createVar(varName);
 				}
 			}
 
@@ -957,6 +1059,13 @@ public class SPINParser {
 			}
 
 			return var;
+		}
+
+		private Var createVar(String varName) {
+			if(extElems != null) {
+				extElems.remove(varName);
+			}
+			return new Var(varName);
 		}
 
 		private Var createConstVar(Value value) {
