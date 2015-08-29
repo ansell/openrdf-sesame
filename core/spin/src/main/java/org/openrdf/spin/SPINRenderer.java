@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
@@ -32,6 +33,7 @@ import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
@@ -491,6 +493,8 @@ public class SPINRenderer {
 			}
 			node.getProjectionElemList().visit(this);
 			visitWhere(node.getArg());
+			node.getArg().visit(new GroupVisitor());
+			node.getArg().visit(new OrderVisitor());
 			inlineBindings = oldInlineBindings;
 		}
 
@@ -516,24 +520,32 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(ProjectionElem node) throws RDFHandlerException {
-			Resource res = getVar(node.getTargetName());
-			listEntry(res);
-			String varName = node.getSourceName();
+			ValueExpr valueExpr = null;
 			if(inlineBindings != null) {
-				ValueExpr valueExpr = inlineBindings.getValueExpr(varName);
-				if(valueExpr != null) {
-					valueExpr.visit(new ExtensionVisitor());
-				}
+				String varName = node.getSourceName();
+				valueExpr = inlineBindings.getValueExpr(varName);
+			}
+			Resource targetVar = getVar(node.getTargetName());
+			if(valueExpr == null || valueExpr instanceof Var) {
+				listEntry(targetVar);
+			}
+			else {
+				Resource res = valueFactory.createBNode();
+				listEntry(res);
+				handler.handleStatement(valueFactory.createStatement(res, SP.AS_PROPERTY, targetVar));
+				valueExpr.visit(new ExtensionVisitor());
 			}
 		}
 
 		@Override
 		public void meet(Extension node) throws RDFHandlerException {
 			if(inlineBindings != null && inlineBindings.extension == node) {
-				// skip over ExtensionElem - already handled by meetExtension()
+				// this is the first Extension node and has already been handled by meetExtension()
+				// to produce inline bindings in SELECT so we can skip it here
 				node.getArg().visit(this);
 			}
 			else {
+				// any further Extension nodes produce BIND() clauses
 				super.meet(node);
 			}
 		}
@@ -729,33 +741,25 @@ public class SPINRenderer {
 		}
 
 		@Override
-		public void meet(Order node) throws RDFHandlerException {
+		public void meet(Group node) throws RDFHandlerException {
+			// skip over GroupElem - leave this to the GroupVisitor later
 			node.getArg().visit(this);
-			Resource orderByList = valueFactory.createBNode();
-			handler.handleStatement(valueFactory.createStatement(subject, SP.ORDER_BY_PROPERTY, orderByList));
-			ListContext orderByCtx = newList(orderByList);
-			for(OrderElem elem : node.getElements()) {
-				elem.visit(this);
-			}
-			endList(orderByCtx);
 		}
 
 		@Override
-		public void meet(OrderElem node) throws RDFHandlerException {
-			URI asc = node.isAscending() ? SP.ASC_CLASS : SP.DESC_CLASS;
-			listEntry();
-			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, asc));
-			meet(node.getExpr());
+		public void meet(Order node) throws RDFHandlerException {
+			// skip over OrderElem - leave this to the OrderVisitor later
+			node.getArg().visit(this);
 		}
 
 		@Override
 		public void meet(Slice node) throws RDFHandlerException {
 			node.getArg().visit(this);
 			if(node.hasLimit()) {
-				handler.handleStatement(valueFactory.createStatement(subject, SP.LIMIT_PROPERTY, valueFactory.createLiteral((int)node.getLimit())));
+				handler.handleStatement(valueFactory.createStatement(subject, SP.LIMIT_PROPERTY, valueFactory.createLiteral(Long.toString(node.getLimit()), XMLSchema.INTEGER)));
 			}
 			if(node.hasOffset()) {
-				handler.handleStatement(valueFactory.createStatement(subject, SP.OFFSET_PROPERTY, valueFactory.createLiteral((int)node.getOffset())));
+				handler.handleStatement(valueFactory.createStatement(subject, SP.OFFSET_PROPERTY, valueFactory.createLiteral(Long.toString(node.getOffset()), XMLSchema.INTEGER)));
 			}
 		}
 
@@ -769,12 +773,6 @@ public class SPINRenderer {
 		public void meet(Reduced node) throws RDFHandlerException {
 			node.getArg().visit(this);
 			handler.handleStatement(valueFactory.createStatement(subject, SP.REDUCED_PROPERTY, BooleanLiteralImpl.TRUE));
-		}
-
-		@Override
-		public void meet(Group node) throws RDFHandlerException {
-			// skip over GroupElem
-			node.getArg().visit(this);
 		}
 
 		@Override
@@ -887,6 +885,66 @@ public class SPINRenderer {
 				subject = getVar(node.getName());
 			}
 		}
+
+		final class GroupVisitor extends QueryModelVisitorBase<RDFHandlerException>
+		{
+			@Override
+			public void meet(Order node) throws RDFHandlerException {
+				node.getArg().visit(this);
+			}
+
+			@Override
+			public void meet(Extension node) throws RDFHandlerException {
+				node.getArg().visit(this);
+			}
+
+			@Override
+			public void meet(Group node) throws RDFHandlerException {
+				Set<String> groupNames = node.getGroupBindingNames();
+				if(!groupNames.isEmpty()) {
+					Resource groupByList = valueFactory.createBNode();
+					handler.handleStatement(valueFactory.createStatement(subject, SP.GROUP_BY_PROPERTY, groupByList));
+					ListContext groupByCtx = newList(groupByList);
+					for(String groupName : groupNames) {
+						Resource var = getVar(groupName);
+						listEntry(var);
+					}
+					endList(groupByCtx);
+				}
+			}
+
+			@Override
+			protected void meetNode(QueryModelNode node) {
+				// stop
+			}
+		}
+
+		final class OrderVisitor extends QueryModelVisitorBase<RDFHandlerException>
+		{
+			@Override
+			public void meet(Order node) throws RDFHandlerException {
+				Resource orderByList = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.ORDER_BY_PROPERTY, orderByList));
+				ListContext orderByCtx = newList(orderByList);
+				for(OrderElem elem : node.getElements()) {
+					elem.visit(this);
+				}
+				endList(orderByCtx);
+			}
+
+			@Override
+			public void meet(OrderElem node) throws RDFHandlerException {
+				URI asc = node.isAscending() ? SP.ASC_CLASS : SP.DESC_CLASS;
+				listEntry();
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, asc));
+				SPINVisitor.this.meet(node.getExpr());
+			}
+
+			@Override
+			protected void meetNode(QueryModelNode node) {
+				// stop
+			}
+		}
 	}
 
 
@@ -901,6 +959,11 @@ public class SPINRenderer {
 
 		public Collection<ValueExpr> getValueExprs() {
 			return extensionExprs.values();
+		}
+
+		@Override
+		public void meet(Order node) {
+			node.getArg().visit(this);
 		}
 
 		@Override
