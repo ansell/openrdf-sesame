@@ -53,11 +53,14 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.DescribeOperator;
+import org.openrdf.query.algebra.Difference;
+import org.openrdf.query.algebra.Exists;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.MultiProjection;
@@ -71,8 +74,10 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.StatementPattern.Scope;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
+import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -107,6 +112,8 @@ public class SPINParser {
 
 	private static final Set<URI> TEMPLATE_TYPES = Sets.newHashSet(SPIN.ASK_TEMPLATE_CLASS,
 			SPIN.SELECT_TEMPLATE_CLASS, SPIN.CONSTRUCT_TEMPLATE_CLASS, SPIN.UPDATE_TEMPLATE_CLASS);
+
+	private static final Set<URI> NON_ARG_PROPERTIES = Sets.newHashSet(RDF.TYPE, SP.ARG_PROPERTY, SP.ELEMENTS_PROPERTY);
 
 	public enum Input {
 		TEXT_FIRST(true, true),
@@ -528,6 +535,7 @@ public class SPINParser {
 		final TripleSource store;
 		TupleExpr root;
 		TupleExpr node;
+		Var namedGraph;
 		Map<String,ExtensionElem> extElems;
 		Map<Resource,String> vars = new HashMap<Resource,String>();
 
@@ -780,11 +788,79 @@ public class SPINParser {
 			if(subj != null) {
 				Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
 				Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
-				node = new StatementPattern(getVar(subj), getVar(pred), getVar(obj));
+				Scope stmtScope = (namedGraph != null) ? Scope.NAMED_CONTEXTS : Scope.DEFAULT_CONTEXTS;
+				node = new StatementPattern(stmtScope, getVar(subj), getVar(pred), getVar(obj), namedGraph);
 			}
 			else {
-				if(types.contains(SP.UNION_CLASS)) {
-					
+				if(types.contains(SP.NAMED_GRAPH_CLASS)) {
+					Var oldGraph = namedGraph;
+					Value graphValue = Statements.singleValue(r, SP.GRAPH_NAME_NODE_PROPERTY, store);
+					namedGraph = getVar(graphValue);
+					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+					if(!(elements instanceof Resource)) {
+						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+					}
+					node = new SingletonSet();
+					QueryRoot group = new QueryRoot(node);
+					visitGroupGraphPattern((Resource) elements);
+					node = group.getArg();
+					namedGraph = oldGraph;
+				}
+				else if(types.contains(SP.UNION_CLASS)) {
+					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+					if(!(elements instanceof Resource)) {
+						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+					}
+
+					Iteration<? extends Resource, QueryEvaluationException> iter = Statements.listResources((Resource) elements, store);
+					TupleExpr prev = null;
+					while(iter.hasNext()) {
+						Resource entry = iter.next();
+						node = new SingletonSet();
+						QueryRoot groupRoot = new QueryRoot(node);
+						visitGroupGraphPattern(entry);
+						TupleExpr groupExpr = groupRoot.getArg();
+						if(prev != null) {
+							node = new Union(prev, groupExpr);
+						}
+						prev = groupExpr;
+					}
+				}
+				else if(types.contains(SP.OPTIONAL_CLASS)) {
+					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+					if(!(elements instanceof Resource)) {
+						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+					}
+					node = new SingletonSet();
+					QueryRoot groupRoot = new QueryRoot(node);
+					visitGroupGraphPattern((Resource) elements);
+					LeftJoin leftJoin = new LeftJoin();
+					currentNode.replaceWith(leftJoin);
+					leftJoin.setLeftArg(currentNode);
+					leftJoin.setRightArg(groupRoot.getArg());
+					node = leftJoin;
+					currentNode = null;
+				}
+				else if(types.contains(SP.MINUS_CLASS)) {
+					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+					if(!(elements instanceof Resource)) {
+						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+					}
+					node = new SingletonSet();
+					QueryRoot groupRoot = new QueryRoot(node);
+					visitGroupGraphPattern((Resource) elements);
+					Difference difference = new Difference();
+					currentNode.replaceWith(difference);
+					difference.setLeftArg(currentNode);
+					difference.setRightArg(groupRoot.getArg());
+					node = difference;
+					currentNode = null;
+				}
+				else if(types.contains(SP.SUB_QUERY_CLASS)) {
+					// TODO
+				}
+				else if(types.contains(SP.VALUES_CLASS)) {
+					// TODO
 				}
 				else if(types.contains(RDF.LIST) || (Statements.singleValue(r, RDF.FIRST, store) != null)) {
 					node = new SingletonSet();
@@ -800,6 +876,9 @@ public class SPINParser {
 					Map<String,String> prefixDecls = Collections.emptyMap(); // TODO
 					Service service = new Service(getVar(serviceUri), node, exprString, prefixDecls, null, isSilent);
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+					if(!(elements instanceof Resource)) {
+						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+					}
 					visitGroupGraphPattern((Resource) elements);
 					node = service;
 				}
@@ -811,7 +890,7 @@ public class SPINParser {
 			if(currentNode instanceof SingletonSet) {
 				currentNode.replaceWith(node);
 			}
-			else {
+			else if(currentNode != null) {
 				Join join = new Join();
 				currentNode.replaceWith(join);
 				join.setLeftArg(currentNode);
@@ -902,7 +981,7 @@ public class SPINParser {
 						while(iter.hasNext()) {
 							Statement stmt = iter.next();
 							URI argName = stmt.getPredicate();
-							if(!RDF.TYPE.equals(argName) && !SP.ARG_PROPERTY.equals(argName)) {
+							if(!NON_ARG_PROPERTIES.contains(argName)) {
 								ValueExpr argValue = visitExpression(stmt.getObject());
 								argValues.put(argName, argValue);
 							}
@@ -922,7 +1001,7 @@ public class SPINParser {
 						args.add(argExpr);
 					}
 
-					expr = toValueExpr(func, args);
+					expr = toValueExpr(r, func, args);
 				}
 				else {
 					String varName = getVarName(r);
@@ -949,8 +1028,8 @@ public class SPINParser {
 			}
 		}
 
-		private ValueExpr toValueExpr(URI func, List<ValueExpr> args)
-			throws MalformedSPINException
+		private ValueExpr toValueExpr(Resource r, URI func, List<ValueExpr> args)
+			throws OpenRDFException
 		{
 			ValueExpr expr;
 			CompareOp compareOp;
@@ -972,6 +1051,28 @@ public class SPINParser {
 					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Not(args.get(0));
+			}
+			else if(SP.EXISTS.equals(func)) {
+				Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+				if(!(elements instanceof Resource)) {
+					throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+				}
+				TupleExpr currentNode = node;
+				node = new SingletonSet();
+				expr = new Exists(node);
+				visitGroupGraphPattern((Resource) elements);
+				node = currentNode;
+			}
+			else if(SP.NOT_EXISTS.equals(func)) {
+				Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
+				if(!(elements instanceof Resource)) {
+					throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+				}
+				TupleExpr currentNode = node;
+				node = new SingletonSet();
+				expr = new Not(new Exists(node));
+				visitGroupGraphPattern((Resource) elements);
+				node = currentNode;
 			}
 			else {
 				String funcName = wellKnownFunctions.apply(func);

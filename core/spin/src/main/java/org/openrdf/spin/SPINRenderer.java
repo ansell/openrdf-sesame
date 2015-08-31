@@ -35,6 +35,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
@@ -47,9 +48,12 @@ import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
+import org.openrdf.query.algebra.Max;
+import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Order;
@@ -59,9 +63,11 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Reduced;
+import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
@@ -874,6 +880,60 @@ public class SPINRenderer {
 			@Override
 			public void meet(Count node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.COUNT_CLASS));
+				Resource oldSubject = subject;
+				super.meet(node);
+				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
+				subject = oldSubject;
+			}
+
+			@Override
+			public void meet(Max node) throws RDFHandlerException {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.MAX_CLASS));
+				Resource oldSubject = subject;
+				super.meet(node);
+				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
+				subject = oldSubject;
+			}
+
+			@Override
+			public void meet(Min node) throws RDFHandlerException {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.MIN_CLASS));
+				Resource oldSubject = subject;
+				super.meet(node);
+				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
+				subject = oldSubject;
+			}
+
+			@Override
+			public void meet(Sum node) throws RDFHandlerException {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.SUM_CLASS));
+				Resource oldSubject = subject;
+				super.meet(node);
+				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
+				subject = oldSubject;
+			}
+
+			@Override
+			public void meet(Avg node) throws RDFHandlerException {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.AVG_CLASS));
+				Resource oldSubject = subject;
+				super.meet(node);
+				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
+				subject = oldSubject;
+			}
+
+			@Override
+			public void meet(GroupConcat node) throws RDFHandlerException {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.GROUP_CONCAT_CLASS));
+				Resource oldSubject = subject;
+				super.meet(node);
+				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
+				subject = oldSubject;
+			}
+
+			@Override
+			public void meet(Sample node) throws RDFHandlerException {
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.SAMPLE_CLASS));
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));

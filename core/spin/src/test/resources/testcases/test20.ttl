@@ -3,17 +3,17 @@
 
 [ a       sp:Select ;
 	sp:text """
-SELECT ?this (COUNT(?object) AS ?count)
+SELECT ?this (MAX(?object) AS ?max)
 WHERE {
 	?this ?arg1 ?object
 }
 GROUP BY ?this
-ORDER BY ?count
+ORDER BY ?max
 """;
   sp:resultVariables (
   	spin:_this
-	[ a sp:Count ;
-	  sp:as _:count ;
+	[ a sp:Max ;
+	  sp:as _:max ;
 	  sp:expression _:object
 	]
   ) ;
@@ -22,8 +22,8 @@ ORDER BY ?count
               sp:subject spin:_this
             ]) ;
   sp:groupBy (spin:_this) ;
-  sp:orderBy ([a sp:Asc; sp:expression _:count])
+  sp:orderBy ([a sp:Asc; sp:expression _:max])
 ].
 
 _:object sp:varName "object" .
-_:count  sp:varName "count" .
+_:max  sp:varName "max" .

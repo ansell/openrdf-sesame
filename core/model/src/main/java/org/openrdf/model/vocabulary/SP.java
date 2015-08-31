@@ -661,6 +661,9 @@ public class SP {
 	public static final URI VAR_NAMES_PROPERTY;
 	public static final URI UNDEF;
 
+	public static final URI GROUP_CONCAT_CLASS;
+	public static final URI SAMPLE_CLASS;
+
 	// "The SPIN RDF Syntax provides standard URIs for the built-in functions and operators of the SPARQL language.
 	// For example, sp:gt represents the > operator."
 	public static final URI ADD;
@@ -787,6 +790,9 @@ public class SP {
 		BINDINGS_PROPERTY = factory.createURI(NAMESPACE, "bindings");
 		VAR_NAMES_PROPERTY = factory.createURI(NAMESPACE, "varNames");
 		UNDEF = factory.createURI(NAMESPACE, "undef");
+
+		GROUP_CONCAT_CLASS = factory.createURI(NAMESPACE, "GroupConcat");
+		SAMPLE_CLASS = factory.createURI(NAMESPACE, "Sample");
 
 		ADD = factory.createURI(NAMESPACE, "add");
 		SUB = factory.createURI(NAMESPACE, "sub");
