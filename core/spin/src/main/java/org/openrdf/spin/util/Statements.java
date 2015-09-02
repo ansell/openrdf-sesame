@@ -27,6 +27,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 
@@ -102,6 +103,27 @@ public final class Statements {
 				throw new UnsupportedOperationException();
 			}
 		};
+	}
+
+	public static boolean booleanValue(Resource subj, URI pred, TripleSource store)
+		throws QueryEvaluationException
+	{
+		Value v = Statements.singleValue(subj, pred, store);
+		if (v == null) {
+			return false;
+		}
+		else if (v instanceof Literal) {
+			try {
+				return ((Literal)v).booleanValue();
+			}
+			catch (IllegalArgumentException e) {
+				throw new QueryEvaluationException("Value for " + pred
+						+ " must be of datatype " + XMLSchema.BOOLEAN + ": " + subj);
+			}
+		}
+		else {
+			throw new QueryEvaluationException("Non-literal value for " + pred + ": " + subj);
+		}
 	}
 
 	public static Value singleValue(Resource subj, URI pred, TripleSource store)

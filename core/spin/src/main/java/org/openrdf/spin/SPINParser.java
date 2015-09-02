@@ -50,10 +50,12 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
+import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.Exists;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
@@ -65,6 +67,8 @@ import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
+import org.openrdf.query.algebra.Order;
+import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
@@ -229,22 +233,7 @@ public class SPINParser {
 	public boolean isThisUnbound(Resource subj, TripleSource store)
 		throws OpenRDFException
 	{
-		Value v = Statements.singleValue(subj, SPIN.THIS_UNBOUND_PROPERTY, store);
-		if (v == null) {
-			return false;
-		}
-		else if (v instanceof Literal) {
-			try {
-				return ((Literal)v).booleanValue();
-			}
-			catch (IllegalArgumentException e) {
-				throw new MalformedSPINException("Value for " + SPIN.THIS_UNBOUND_PROPERTY
-						+ " must be of datatype " + XMLSchema.BOOLEAN + ": " + subj);
-			}
-		}
-		else {
-			throw new MalformedSPINException("Non-literal value for " + SPIN.THIS_UNBOUND_PROPERTY + ": " + subj);
-		}
+		return Statements.booleanValue(subj, SPIN.THIS_UNBOUND_PROPERTY, store);
 	}
 
 	public ConstraintViolation parseConstraintViolation(Resource subj, TripleSource store)
@@ -608,6 +597,39 @@ public class SPINParser {
 				ext.setArg(projection.getArg());
 				projection.setArg(ext);
 			}
+
+			Value orderby = Statements.singleValue(select, SP.ORDER_BY_PROPERTY, store);
+			if(orderby instanceof Resource) {
+				Order order = visitOrderBy((Resource) orderby);
+				order.setArg(projection.getArg());
+				projection.setArg(order);
+			}
+
+			boolean distinct = Statements.booleanValue(select, SP.DISTINCT_PROPERTY, store);
+			if(distinct) {
+				root = new Distinct(root);
+			}
+
+			long offset = -1L;
+			Value offsetValue = Statements.singleValue(select, SP.OFFSET_PROPERTY, store);
+			if(offsetValue instanceof Literal) {
+				offset = ((Literal)offsetValue).longValue();
+			}
+			long limit = -1L;
+			Value limitValue = Statements.singleValue(select, SP.LIMIT_PROPERTY, store);
+			if(limitValue instanceof Literal) {
+				limit = ((Literal)limitValue).longValue();
+			}
+			if(offset > 0L || limit >= 0L) {
+				Slice slice = new Slice(root);
+				if(offset > 0L) {
+					slice.setOffset(offset);
+				}
+				if(limit >= 0L) {
+					slice.setLimit(limit);
+				}
+				root = slice;
+			}
 		}
 
 		public void visitAsk(Resource ask)
@@ -712,9 +734,32 @@ public class SPINParser {
 		}
 
 		private ProjectionElem visitResultVariable(Resource r)
-				throws OpenRDFException
+			throws OpenRDFException
 		{
 			return createProjectionElem(r, getVarName(r));
+		}
+
+		private Order visitOrderBy(Resource orderby)
+			throws OpenRDFException
+		{
+			Order order = new Order();
+			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(orderby, store);
+			while(iter.hasNext()) {
+				Resource r = iter.next();
+				OrderElem orderElem = visitOrderByCondition(r);
+				order.addElement(orderElem);
+			}
+			return order;
+		}
+
+		private OrderElem visitOrderByCondition(Resource r)
+				throws OpenRDFException
+		{
+			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+			ValueExpr valueExpr = visitExpression(expr);
+			Set<Resource> types = Iterations.asSet(Statements.getObjectResources(r, RDF.TYPE, store));
+			boolean asc = types.contains(SP.DESC_CLASS) ? false : true;
+			return new OrderElem(valueExpr, asc);
 		}
 
 		private ProjectionElem createProjectionElem(Value v, String projName)
@@ -861,6 +906,8 @@ public class SPINParser {
 				}
 				else if(types.contains(SP.VALUES_CLASS)) {
 					// TODO
+					BindingSetAssignment bsa = new BindingSetAssignment();
+					node = bsa;
 				}
 				else if(types.contains(RDF.LIST) || (Statements.singleValue(r, RDF.FIRST, store) != null)) {
 					node = new SingletonSet();
