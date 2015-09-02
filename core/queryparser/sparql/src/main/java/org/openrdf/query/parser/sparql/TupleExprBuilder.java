@@ -102,125 +102,7 @@ import org.openrdf.query.algebra.ZeroLengthPath;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.StatementPatternCollector;
 import org.openrdf.query.impl.ListBindingSet;
-import org.openrdf.query.parser.sparql.ast.ASTAbs;
-import org.openrdf.query.parser.sparql.ast.ASTAnd;
-import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
-import org.openrdf.query.parser.sparql.ast.ASTAvg;
-import org.openrdf.query.parser.sparql.ast.ASTBNodeFunc;
-import org.openrdf.query.parser.sparql.ast.ASTBind;
-import org.openrdf.query.parser.sparql.ast.ASTBindingSet;
-import org.openrdf.query.parser.sparql.ast.ASTBindingValue;
-import org.openrdf.query.parser.sparql.ast.ASTBindingsClause;
-import org.openrdf.query.parser.sparql.ast.ASTBlankNode;
-import org.openrdf.query.parser.sparql.ast.ASTBlankNodePropertyList;
-import org.openrdf.query.parser.sparql.ast.ASTBound;
-import org.openrdf.query.parser.sparql.ast.ASTCeil;
-import org.openrdf.query.parser.sparql.ast.ASTCoalesce;
-import org.openrdf.query.parser.sparql.ast.ASTCollection;
-import org.openrdf.query.parser.sparql.ast.ASTCompare;
-import org.openrdf.query.parser.sparql.ast.ASTConcat;
-import org.openrdf.query.parser.sparql.ast.ASTConstraint;
-import org.openrdf.query.parser.sparql.ast.ASTConstruct;
-import org.openrdf.query.parser.sparql.ast.ASTConstructQuery;
-import org.openrdf.query.parser.sparql.ast.ASTContains;
-import org.openrdf.query.parser.sparql.ast.ASTCount;
-import org.openrdf.query.parser.sparql.ast.ASTDatatype;
-import org.openrdf.query.parser.sparql.ast.ASTDay;
-import org.openrdf.query.parser.sparql.ast.ASTDescribe;
-import org.openrdf.query.parser.sparql.ast.ASTDescribeQuery;
-import org.openrdf.query.parser.sparql.ast.ASTEncodeForURI;
-import org.openrdf.query.parser.sparql.ast.ASTExistsFunc;
-import org.openrdf.query.parser.sparql.ast.ASTFalse;
-import org.openrdf.query.parser.sparql.ast.ASTFloor;
-import org.openrdf.query.parser.sparql.ast.ASTFunctionCall;
-import org.openrdf.query.parser.sparql.ast.ASTGraphGraphPattern;
-import org.openrdf.query.parser.sparql.ast.ASTGraphPatternGroup;
-import org.openrdf.query.parser.sparql.ast.ASTGroupClause;
-import org.openrdf.query.parser.sparql.ast.ASTGroupConcat;
-import org.openrdf.query.parser.sparql.ast.ASTGroupCondition;
-import org.openrdf.query.parser.sparql.ast.ASTHavingClause;
-import org.openrdf.query.parser.sparql.ast.ASTHours;
-import org.openrdf.query.parser.sparql.ast.ASTIRI;
-import org.openrdf.query.parser.sparql.ast.ASTIRIFunc;
-import org.openrdf.query.parser.sparql.ast.ASTIf;
-import org.openrdf.query.parser.sparql.ast.ASTIn;
-import org.openrdf.query.parser.sparql.ast.ASTInfix;
-import org.openrdf.query.parser.sparql.ast.ASTInlineData;
-import org.openrdf.query.parser.sparql.ast.ASTIsBlank;
-import org.openrdf.query.parser.sparql.ast.ASTIsIRI;
-import org.openrdf.query.parser.sparql.ast.ASTIsLiteral;
-import org.openrdf.query.parser.sparql.ast.ASTIsNumeric;
-import org.openrdf.query.parser.sparql.ast.ASTLang;
-import org.openrdf.query.parser.sparql.ast.ASTLangMatches;
-import org.openrdf.query.parser.sparql.ast.ASTLimit;
-import org.openrdf.query.parser.sparql.ast.ASTLowerCase;
-import org.openrdf.query.parser.sparql.ast.ASTMD5;
-import org.openrdf.query.parser.sparql.ast.ASTMath;
-import org.openrdf.query.parser.sparql.ast.ASTMax;
-import org.openrdf.query.parser.sparql.ast.ASTMin;
-import org.openrdf.query.parser.sparql.ast.ASTMinusGraphPattern;
-import org.openrdf.query.parser.sparql.ast.ASTMinutes;
-import org.openrdf.query.parser.sparql.ast.ASTMonth;
-import org.openrdf.query.parser.sparql.ast.ASTNot;
-import org.openrdf.query.parser.sparql.ast.ASTNotExistsFunc;
-import org.openrdf.query.parser.sparql.ast.ASTNotIn;
-import org.openrdf.query.parser.sparql.ast.ASTNow;
-import org.openrdf.query.parser.sparql.ast.ASTNumericLiteral;
-import org.openrdf.query.parser.sparql.ast.ASTObjectList;
-import org.openrdf.query.parser.sparql.ast.ASTOffset;
-import org.openrdf.query.parser.sparql.ast.ASTOptionalGraphPattern;
-import org.openrdf.query.parser.sparql.ast.ASTOr;
-import org.openrdf.query.parser.sparql.ast.ASTOrderClause;
-import org.openrdf.query.parser.sparql.ast.ASTOrderCondition;
-import org.openrdf.query.parser.sparql.ast.ASTPathAlternative;
-import org.openrdf.query.parser.sparql.ast.ASTPathElt;
-import org.openrdf.query.parser.sparql.ast.ASTPathMod;
-import org.openrdf.query.parser.sparql.ast.ASTPathOneInPropertySet;
-import org.openrdf.query.parser.sparql.ast.ASTPathSequence;
-import org.openrdf.query.parser.sparql.ast.ASTProjectionElem;
-import org.openrdf.query.parser.sparql.ast.ASTPropertyList;
-import org.openrdf.query.parser.sparql.ast.ASTPropertyListPath;
-import org.openrdf.query.parser.sparql.ast.ASTQName;
-import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
-import org.openrdf.query.parser.sparql.ast.ASTRDFLiteral;
-import org.openrdf.query.parser.sparql.ast.ASTRand;
-import org.openrdf.query.parser.sparql.ast.ASTRegexExpression;
-import org.openrdf.query.parser.sparql.ast.ASTReplace;
-import org.openrdf.query.parser.sparql.ast.ASTRound;
-import org.openrdf.query.parser.sparql.ast.ASTSHA1;
-import org.openrdf.query.parser.sparql.ast.ASTSHA224;
-import org.openrdf.query.parser.sparql.ast.ASTSHA256;
-import org.openrdf.query.parser.sparql.ast.ASTSHA384;
-import org.openrdf.query.parser.sparql.ast.ASTSHA512;
-import org.openrdf.query.parser.sparql.ast.ASTSTRUUID;
-import org.openrdf.query.parser.sparql.ast.ASTSameTerm;
-import org.openrdf.query.parser.sparql.ast.ASTSample;
-import org.openrdf.query.parser.sparql.ast.ASTSeconds;
-import org.openrdf.query.parser.sparql.ast.ASTSelect;
-import org.openrdf.query.parser.sparql.ast.ASTSelectQuery;
-import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
-import org.openrdf.query.parser.sparql.ast.ASTStr;
-import org.openrdf.query.parser.sparql.ast.ASTStrAfter;
-import org.openrdf.query.parser.sparql.ast.ASTStrBefore;
-import org.openrdf.query.parser.sparql.ast.ASTStrDt;
-import org.openrdf.query.parser.sparql.ast.ASTStrEnds;
-import org.openrdf.query.parser.sparql.ast.ASTStrLang;
-import org.openrdf.query.parser.sparql.ast.ASTStrLen;
-import org.openrdf.query.parser.sparql.ast.ASTStrStarts;
-import org.openrdf.query.parser.sparql.ast.ASTString;
-import org.openrdf.query.parser.sparql.ast.ASTSubstr;
-import org.openrdf.query.parser.sparql.ast.ASTSum;
-import org.openrdf.query.parser.sparql.ast.ASTTimezone;
-import org.openrdf.query.parser.sparql.ast.ASTTrue;
-import org.openrdf.query.parser.sparql.ast.ASTTz;
-import org.openrdf.query.parser.sparql.ast.ASTUUID;
-import org.openrdf.query.parser.sparql.ast.ASTUnionGraphPattern;
-import org.openrdf.query.parser.sparql.ast.ASTUpperCase;
-import org.openrdf.query.parser.sparql.ast.ASTVar;
-import org.openrdf.query.parser.sparql.ast.ASTYear;
-import org.openrdf.query.parser.sparql.ast.Node;
-import org.openrdf.query.parser.sparql.ast.SimpleNode;
-import org.openrdf.query.parser.sparql.ast.VisitorException;
+import org.openrdf.query.parser.sparql.ast.*;
 
 /**
  * @author Arjohn Kampman
@@ -1207,6 +1089,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return te;
 	}
 
+	@Override
 	public Object visit(ASTServiceGraphPattern node, Object data)
 		throws VisitorException
 	{
@@ -2420,13 +2303,17 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
 		List<Var> vars = new ArrayList<Var>(varNodes.size());
 
+		Set<String> bindingNames = new HashSet<String>(varNodes.size());
 		for (ASTVar varNode : varNodes) {
 			Var var = (Var)varNode.jjtAccept(this, data);
 			vars.add(var);
+			bindingNames.add(var.getName());
 		}
 
-		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+		bsa.setBindingNames(bindingNames);
+
 		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+		List<BindingSet> bindingSets = new ArrayList<BindingSet>(bindingNodes.size());
 
 		for (ASTBindingSet bindingNode : bindingNodes) {
 			BindingSet bindingSet = (BindingSet)bindingNode.jjtAccept(this, vars);
@@ -2448,14 +2335,17 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
 		List<Var> vars = new ArrayList<Var>(varNodes.size());
 
+		Set<String> bindingNames = new HashSet<String>(varNodes.size());
 		for (ASTVar varNode : varNodes) {
 			Var var = (Var)varNode.jjtAccept(this, data);
 			vars.add(var);
+			bindingNames.add(var.getName());
 		}
 
-		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+		bsa.setBindingNames(bindingNames);
 
-		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+		List<BindingSet> bindingSets = new ArrayList<BindingSet>(bindingNodes.size());
 
 		for (ASTBindingSet bindingNode : bindingNodes) {
 			BindingSet bindingSet = (BindingSet)bindingNode.jjtAccept(this, vars);
@@ -2554,6 +2444,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return new IsNumeric(arg);
 	}
 
+	@Override
 	public Object visit(ASTBNodeFunc node, Object data)
 		throws VisitorException
 	{
@@ -2627,6 +2518,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return new Not(e);
 	}
 
+	@Override
 	public If visit(ASTIf node, Object data)
 		throws VisitorException
 	{
@@ -2645,6 +2537,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
+	@Override
 	public ValueExpr visit(ASTInfix node, Object data)
 		throws VisitorException
 	{
@@ -2654,6 +2547,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return rightArg;
 	}
 
+	@Override
 	public ValueExpr visit(ASTIn node, Object data)
 		throws VisitorException
 	{
@@ -2682,6 +2576,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
+	@Override
 	public ValueExpr visit(ASTNotIn node, Object data)
 		throws VisitorException
 	{
