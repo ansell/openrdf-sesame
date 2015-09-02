@@ -19,6 +19,11 @@ package org.openrdf.repository.manager;
 import java.net.URL;
 import java.text.Collator;
 
+/**
+ * Repository meta-information such as its id, location, description.
+ *
+ * @author Jeen Broekstra
+ */
 public class RepositoryInfo implements Comparable<RepositoryInfo> {
 
 	private String id;

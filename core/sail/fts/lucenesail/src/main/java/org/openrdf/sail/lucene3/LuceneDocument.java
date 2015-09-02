@@ -16,40 +16,55 @@
  */
 package org.openrdf.sail.lucene3;
 
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
-
+import org.apache.lucene.spatial.geohash.GeoHashUtils;
+import org.apache.lucene.spatial.tier.projections.CartesianTierPlotter;
+import org.apache.lucene.util.NumericUtils;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
 
+import com.google.common.base.Function;
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
 
 /**
- *
  * @author MJAHale
  */
-public class LuceneDocument implements SearchDocument
-{
+public class LuceneDocument implements SearchDocument {
+
 	private final Document doc;
 
-	public LuceneDocument()
-	{
-		this(new Document());
+	private final Function<? super String, ? extends SpatialStrategy> geoStrategyMapper;
+
+	/**
+	 * To be removed, no longer used.
+	 */
+	@Deprecated
+	public LuceneDocument() {
+		this(null);
 	}
 
-	public LuceneDocument(Document doc)
-	{
+	public LuceneDocument(Function<? super String, ? extends SpatialStrategy> geoStrategyMapper) {
+		this(new Document(), geoStrategyMapper);
+	}
+
+	public LuceneDocument(Document doc, Function<? super String, ? extends SpatialStrategy> geoStrategyMapper) {
 		this.doc = doc;
+		this.geoStrategyMapper = geoStrategyMapper;
 	}
 
-	public LuceneDocument(String id, String resourceId, String context)
+	public LuceneDocument(String id, String resourceId, String context, Function<? super String, ? extends SpatialStrategy> geoStrategyMapper)
 	{
-		this();
+		this(geoStrategyMapper);
 		setId(id);
 		setResource(resourceId);
 		setContext(context);
@@ -92,17 +107,16 @@ public class LuceneDocument implements SearchDocument
 	}
 
 	@Override
-	public Collection<String> getPropertyNames() {
+	public Set<String> getPropertyNames() {
 		List<Fieldable> fields = doc.getFields();
-		List<String> names = new ArrayList<String>(fields.size());
-		for(Fieldable field : fields) {
+		Set<String> names = new HashSet<String>();
+		for (Fieldable field : fields) {
 			String name = field.name();
 			if (SearchFields.isPropertyField(name))
 				names.add(name);
 		}
 		return names;
 	}
-
 
 	/**
 	 * Stores and indexes a property in a Document. We don't have to recalculate
@@ -140,5 +154,27 @@ public class LuceneDocument implements SearchDocument
 	@Override
 	public List<String> getProperty(String name) {
 		return Arrays.asList(doc.getValues(name));
+	}
+
+	@Override
+	public void addGeoProperty(String field, String value) {
+		LuceneIndex.addStoredOnlyPredicateField(field, value, doc);
+		SpatialStrategy geoStrategy = geoStrategyMapper.apply(field);
+		try {
+			Shape shape = geoStrategy.getSpatialContext().readShapeFromWkt(value);
+			if (shape instanceof Point) {
+				Point p = (Point)shape;
+				doc.add(new Field(LuceneIndex.GEOHASH_FIELD_PREFIX + field, GeoHashUtils.encode(p.getY(),
+						p.getX()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+				for (CartesianTierPlotter ctp : geoStrategy.getPlotters()) {
+					double boxId = ctp.getTierBoxId(p.getY(), p.getX());
+					doc.add(new Field(ctp.getTierFieldName(), NumericUtils.doubleToPrefixCoded(boxId),
+							Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+				}
+			}
+		}
+		catch (ParseException e) {
+			// ignore
+		}
 	}
 }

@@ -17,14 +17,14 @@
 package org.openrdf.sail.elasticsearch;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequestBuilder;
@@ -39,22 +39,36 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.common.geo.GeoDistance;
+import org.elasticsearch.common.geo.GeoDistance.FixedSourceDistance;
+import org.elasticsearch.common.geo.GeoHashUtils;
+import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.GeoShapeFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.lucene.AbstractSearchIndex;
 import org.openrdf.sail.lucene.BulkUpdater;
+import org.openrdf.sail.lucene.DocumentDistance;
+import org.openrdf.sail.lucene.DocumentResult;
+import org.openrdf.sail.lucene.DocumentScore;
 import org.openrdf.sail.lucene.LuceneSail;
 import org.openrdf.sail.lucene.SearchDocument;
 import org.openrdf.sail.lucene.SearchFields;
@@ -63,7 +77,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.Iterables;
+import com.spatial4j.core.context.SpatialContext;
+import com.spatial4j.core.context.SpatialContextFactory;
+import com.spatial4j.core.distance.DistanceUtils;
+import com.spatial4j.core.shape.Point;
+import com.spatial4j.core.shape.Shape;
 
 /**
  * @see LuceneSail
@@ -74,42 +94,52 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 * Set the parameter "indexName=" to specify the index to use.
 	 */
 	public static final String INDEX_NAME_KEY = "indexName";
+
 	/**
-	 * Set the parameter "documentType=" to specify the document type to use.
-	 * By default, the document type is "resource".
+	 * Set the parameter "documentType=" to specify the document type to use. By
+	 * default, the document type is "resource".
 	 */
 	public static final String DOCUMENT_TYPE_KEY = "documentType";
+
 	/**
-	 * Set the parameter "waitForStatus=" to configure if {@link #initialize(java.util.Properties) initialization}
-	 * should wait for a particular health status.
-	 * The value can be one of "green" or "yellow".
+	 * Set the parameter "waitForStatus=" to configure if
+	 * {@link #initialize(java.util.Properties) initialization} should wait for a
+	 * particular health status. The value can be one of "green" or "yellow".
 	 * Does not wait by default.
 	 */
 	public static final String WAIT_FOR_STATUS_KEY = "waitForStatus";
+
 	/**
-	 * Set the parameter "waitForNodes=" to configure if {@link #initialize(java.util.Properties) initialization}
-	 * should wait until the specified number of nodes are available.
-	 * Does not wait by default.
+	 * Set the parameter "waitForNodes=" to configure if
+	 * {@link #initialize(java.util.Properties) initialization} should wait until
+	 * the specified number of nodes are available. Does not wait by default.
 	 */
 	public static final String WAIT_FOR_NODES_KEY = "waitForNodes";
+
 	/**
-	 * Set the parameter "waitForActiveShards=" to configure if {@link #initialize(java.util.Properties) initialization}
-	 * should wait until the specified number of shards to be active.
-	 * Does not wait by default.
+	 * Set the parameter "waitForActiveShards=" to configure if
+	 * {@link #initialize(java.util.Properties) initialization} should wait until
+	 * the specified number of shards to be active. Does not wait by default.
 	 */
 	public static final String WAIT_FOR_ACTIVE_SHARDS_KEY = "waitForActiveShards";
+
 	/**
-	 * Set the parameter "waitForRelocatingShards=" to configure if {@link #initialize(java.util.Properties) initialization}
-	 * should wait until the specified number of nodes are relocating.
-	 * Does not wait by default.
+	 * Set the parameter "waitForRelocatingShards=" to configure if
+	 * {@link #initialize(java.util.Properties) initialization} should wait until
+	 * the specified number of nodes are relocating. Does not wait by default.
 	 */
 	public static final String WAIT_FOR_RELOCATING_SHARDS_KEY = "waitForRelocatingShards";
 
 	public static final String DEFAULT_INDEX_NAME = "elastic-search-sail";
+
 	public static final String DEFAULT_DOCUMENT_TYPE = "resource";
+
 	public static final String DEFAULT_ANALYZER = "standard";
 
 	public static final String ELASTICSEARCH_KEY_PREFIX = "elasticsearch.";
+
+	public static final String GEOPOINT_FIELD_PREFIX = "_geopoint_";
+	public static final String GEOSHAPE_FIELD_PREFIX = "_geoshape_";
 
 	// we do everything synchronously so no point using another thread
 	private static final boolean OPERATION_THREADED = false;
@@ -121,49 +151,56 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	private Client client;
 
 	private String clusterName;
+
 	private String indexName;
+
 	private String documentType;
 
 	private String analyzer;
+
 	private String queryAnalyzer = "standard";
 
-	public ElasticsearchIndex()
-	{
+	private Function<? super String,? extends SpatialContext> geoContextMapper;
+
+	public ElasticsearchIndex() {
 	}
 
-	public String getClusterName()
-	{
+	public String getClusterName() {
 		return clusterName;
 	}
 
-	public String getIndexName()
-	{
+	public String getIndexName() {
 		return indexName;
 	}
 
-	public String[] getTypes()
-	{
-		return new String[] {documentType};
+	public String[] getTypes() {
+		return new String[] { documentType };
 	}
 
 	@Override
-	public void initialize(Properties parameters) throws Exception {
+	public void initialize(Properties parameters)
+		throws Exception
+	{
 		super.initialize(parameters);
 		indexName = parameters.getProperty(INDEX_NAME_KEY, DEFAULT_INDEX_NAME);
 		documentType = parameters.getProperty(DOCUMENT_TYPE_KEY, DEFAULT_DOCUMENT_TYPE);
 		analyzer = parameters.getProperty(LuceneSail.ANALYZER_CLASS_KEY, DEFAULT_ANALYZER);
+		// slightly hacky cast to cope with the fact that Properties is
+		// Map<Object,Object>
+		// even though it is effectively Map<String,String>
+		geoContextMapper = createSpatialContextMapper((Map<String, String>)(Map<?, ?>)parameters);
 		String dataDir = parameters.getProperty(LuceneSail.LUCENE_DIR_KEY);
 
 		NodeBuilder nodeBuilder = NodeBuilder.nodeBuilder();
 		ImmutableSettings.Builder settingsBuilder = nodeBuilder.settings();
-		for(Enumeration<?> iter = parameters.propertyNames(); iter.hasMoreElements(); ) {
-			String propName = (String) iter.nextElement();
-			if(propName.startsWith(ELASTICSEARCH_KEY_PREFIX)) {
+		for (Enumeration<?> iter = parameters.propertyNames(); iter.hasMoreElements();) {
+			String propName = (String)iter.nextElement();
+			if (propName.startsWith(ELASTICSEARCH_KEY_PREFIX)) {
 				String esName = propName.substring(ELASTICSEARCH_KEY_PREFIX.length());
 				settingsBuilder.put(esName, parameters.getProperty(propName));
 			}
 		}
-		if(dataDir != null) {
+		if (dataDir != null) {
 			settingsBuilder.put("path.data", dataDir);
 		}
 		nodeBuilder.settings(settingsBuilder);
@@ -172,7 +209,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		client = node.client();
 
 		boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
-		if(!exists) {
+		if (!exists) {
 			createIndex();
 		}
 
@@ -180,95 +217,108 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 
 		ClusterHealthRequestBuilder healthReqBuilder = client.admin().cluster().prepareHealth(indexName);
 		String waitForStatus = parameters.getProperty(WAIT_FOR_STATUS_KEY);
-		if("green".equals(waitForStatus)) {
+		if ("green".equals(waitForStatus)) {
 			healthReqBuilder.setWaitForGreenStatus();
 		}
-		else if("yellow".equals(waitForStatus)) {
+		else if ("yellow".equals(waitForStatus)) {
 			healthReqBuilder.setWaitForYellowStatus();
 		}
 		String waitForNodes = parameters.getProperty(WAIT_FOR_NODES_KEY);
-		if(waitForNodes != null) {
+		if (waitForNodes != null) {
 			healthReqBuilder.setWaitForNodes(waitForNodes);
 		}
 		String waitForActiveShards = parameters.getProperty(WAIT_FOR_ACTIVE_SHARDS_KEY);
-		if(waitForActiveShards != null) {
+		if (waitForActiveShards != null) {
 			healthReqBuilder.setWaitForActiveShards(Integer.parseInt(waitForActiveShards));
 		}
 		String waitForRelocatingShards = parameters.getProperty(WAIT_FOR_RELOCATING_SHARDS_KEY);
-		if(waitForRelocatingShards != null) {
+		if (waitForRelocatingShards != null) {
 			healthReqBuilder.setWaitForRelocatingShards(Integer.parseInt(waitForRelocatingShards));
 		}
 		ClusterHealthResponse healthResponse = healthReqBuilder.execute().actionGet();
 		logger.info("Cluster health: {}", healthResponse.getStatus());
-		logger.info("Cluster nodes: {} (data {})", healthResponse.getNumberOfNodes(), healthResponse.getNumberOfDataNodes());
+		logger.info("Cluster nodes: {} (data {})", healthResponse.getNumberOfNodes(),
+				healthResponse.getNumberOfDataNodes());
 		ClusterIndexHealth indexHealth = healthResponse.getIndices().get(indexName);
 		logger.info("Index health: {}", indexHealth.getStatus());
-		logger.info("Index shards: {} (active {} [primary {}], initializing {}, unassigned {}, relocating {})", indexHealth.getNumberOfShards(),
-				indexHealth.getActiveShards(), indexHealth.getActivePrimaryShards(),
-				indexHealth.getInitializingShards(), indexHealth.getUnassignedShards(), indexHealth.getRelocatingShards());
-		for(String err : healthResponse.getAllValidationFailures()) {
+		logger.info("Index shards: {} (active {} [primary {}], initializing {}, unassigned {}, relocating {})",
+				indexHealth.getNumberOfShards(), indexHealth.getActiveShards(),
+				indexHealth.getActivePrimaryShards(), indexHealth.getInitializingShards(),
+				indexHealth.getUnassignedShards(), indexHealth.getRelocatingShards());
+		for (String err : healthResponse.getAllValidationFailures()) {
 			logger.warn(err);
 		}
 	}
 
-	public Map<String,Object> getMappings() throws IOException
+	protected Function<? super String, ? extends SpatialContext> createSpatialContextMapper(Map<String,String> parameters) {
+		// this should really be based on the schema
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		SpatialContext geoContext = SpatialContextFactory.makeSpatialContext(parameters, classLoader);
+		return Functions.constant(geoContext);
+	}
+
+	public Map<String, Object> getMappings()
+		throws IOException
 	{
-		ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> indexMappings = client.admin().indices().prepareGetMappings(indexName).setTypes(documentType).execute().actionGet().getMappings();
+		ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> indexMappings = client.admin().indices().prepareGetMappings(
+				indexName).setTypes(documentType).execute().actionGet().getMappings();
 		ImmutableOpenMap<String, MappingMetaData> typeMappings = indexMappings.get(indexName);
 		MappingMetaData mappings = typeMappings.get(documentType);
 		return mappings.sourceAsMap();
 	}
 
-	private void createIndex() throws IOException
+	private void createIndex()
+		throws IOException
 	{
-		String settings = XContentFactory.jsonBuilder()
-			.startObject()
-				.field("index.query.default_field", SearchFields.TEXT_FIELD_NAME)
-				.startObject("analysis")
-					.startObject("analyzer")
-						.startObject("default")
-							.field("type", analyzer)
-						.endObject()
-					.endObject()
-				.endObject()
-			.endObject()
-		.string();
+		String settings = XContentFactory.jsonBuilder().startObject().field("index.query.default_field",
+				SearchFields.TEXT_FIELD_NAME).startObject("analysis").startObject("analyzer").startObject(
+				"default").field("type", analyzer).endObject().endObject().endObject().endObject().string();
 
-		doAcknowledgedRequest(client.admin().indices().prepareCreate(indexName).setSettings(ImmutableSettings.settingsBuilder().loadFromSource(settings)));
+		doAcknowledgedRequest(client.admin().indices().prepareCreate(indexName).setSettings(
+				ImmutableSettings.settingsBuilder().loadFromSource(settings)));
 
 		// use _source instead of explicit stored = true
 		XContentBuilder typeMapping = XContentFactory.jsonBuilder();
-		typeMapping.startObject()
-			.startObject(documentType)
-				.startObject("_all")
-					.field("enabled", false)
-				.endObject()
-				.startObject("properties");
-		typeMapping.startObject(SearchFields.CONTEXT_FIELD_NAME)
-			.field("type", "string")
-			.field("index", "not_analyzed")
-		.endObject();
-		typeMapping.startObject(SearchFields.URI_FIELD_NAME)
-			.field("type", "string")
-			.field("index", "not_analyzed")
-		.endObject();
-		typeMapping.startObject(SearchFields.TEXT_FIELD_NAME)
-			.field("type", "string")
-			.field("index", "analyzed")
-		.endObject();
-		typeMapping
-				.endObject()
-			.endObject()
-		.endObject();
+		typeMapping.startObject().startObject(documentType).startObject("_all").field("enabled", false).endObject().startObject(
+				"properties");
+		typeMapping.startObject(SearchFields.CONTEXT_FIELD_NAME).field("type", "string").field("index",
+				"not_analyzed").endObject();
+		typeMapping.startObject(SearchFields.URI_FIELD_NAME).field("type", "string").field("index",
+				"not_analyzed").endObject();
+		typeMapping.startObject(SearchFields.TEXT_FIELD_NAME).field("type", "string").field("index", "analyzed").endObject();
+		for (String wktField : wktFields) {
+			typeMapping.startObject(GEOPOINT_FIELD_PREFIX + wktField).field("type", "geo_point").endObject();
+			if(supportsShapes(wktField)) {
+				typeMapping.startObject(GEOSHAPE_FIELD_PREFIX + wktField).field("type", "geo_shape").endObject();
+			}
+		}
+		typeMapping.endObject().endObject().endObject();
 
-		doAcknowledgedRequest(client.admin().indices().preparePutMapping(indexName).setType(documentType).setSource(typeMapping));
+		doAcknowledgedRequest(client.admin().indices().preparePutMapping(indexName).setType(documentType).setSource(
+				typeMapping));
+	}
+
+	private boolean supportsShapes(String field) {
+		SpatialContext geoContext = geoContextMapper.apply(field);
+		try {
+			geoContext.readShapeFromWkt("POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))");
+			return true;
+		}
+		catch (ParseException e) {
+			return false;
+		}
+	}
+
+	@Override
+	protected SpatialContext getSpatialContext(String property) {
+		return geoContextMapper.apply(property);
 	}
 
 	@Override
 	public void shutDown()
 		throws IOException
 	{
-		if(client != null) {
+		if (client != null) {
 			client.close();
 			client = null;
 		}
@@ -286,67 +336,76 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 * resource and context), or null when no such Document exists yet.
 	 */
 	@Override
-	protected SearchDocument getDocument(String id) throws IOException
+	protected SearchDocument getDocument(String id)
+		throws IOException
 	{
-		GetResponse response = client.prepareGet(indexName, documentType, id).setOperationThreaded(OPERATION_THREADED).execute().actionGet();
-		if(response.isExists()) {
-			return new ElasticsearchDocument(response.getId(), response.getType(), response.getIndex(), response.getVersion(), response.getSource());
+		GetResponse response = client.prepareGet(indexName, documentType, id).setOperationThreaded(
+				OPERATION_THREADED).execute().actionGet();
+		if (response.isExists()) {
+			return new ElasticsearchDocument(response.getId(), response.getType(), response.getIndex(),
+					response.getVersion(), response.getSource(), geoContextMapper);
 		}
 		// no such Document
 		return null;
 	}
 
 	@Override
-	protected Iterable<? extends SearchDocument> getDocuments(String resourceId) throws IOException {
+	protected Iterable<? extends SearchDocument> getDocuments(String resourceId)
+		throws IOException
+	{
 		SearchHits hits = getDocuments(QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, resourceId));
-		return Iterables.transform(hits, new Function<SearchHit,SearchDocument>()
-		{
+		return Iterables.transform(hits, new Function<SearchHit, SearchDocument>() {
+
 			@Override
 			public SearchDocument apply(SearchHit hit) {
-				return new ElasticsearchDocument(hit);
+				return new ElasticsearchDocument(hit, geoContextMapper);
 			}
 		});
 	}
 
 	@Override
-	protected SearchDocument newDocument(String id, String resourceId, String context)
-	{
-		return new ElasticsearchDocument(id, documentType, indexName, resourceId, context);
+	protected SearchDocument newDocument(String id, String resourceId, String context) {
+		return new ElasticsearchDocument(id, documentType, indexName, resourceId, context, geoContextMapper);
 	}
 
 	@Override
-	protected SearchDocument copyDocument(SearchDocument doc)
-	{
-		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		Map<String,Object> source = esDoc.getSource();
-		Map<String,Object> newDocument = new HashMap<String,Object>(source);
-		return new ElasticsearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getIndex(), esDoc.getVersion(), newDocument);
+	protected SearchDocument copyDocument(SearchDocument doc) {
+		ElasticsearchDocument esDoc = (ElasticsearchDocument)doc;
+		Map<String, Object> source = esDoc.getSource();
+		Map<String, Object> newDocument = new HashMap<String, Object>(source);
+		return new ElasticsearchDocument(esDoc.getId(), esDoc.getType(), esDoc.getIndex(), esDoc.getVersion(),
+				newDocument, geoContextMapper);
 	}
 
 	@Override
-	protected void addDocument(SearchDocument doc) throws IOException
+	protected void addDocument(SearchDocument doc)
+		throws IOException
 	{
-		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		doIndexRequest(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(esDoc.getSource()).setOperationThreaded(OPERATION_THREADED));
+		ElasticsearchDocument esDoc = (ElasticsearchDocument)doc;
+		doIndexRequest(client.prepareIndex(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setSource(
+				esDoc.getSource()).setOperationThreaded(OPERATION_THREADED));
 	}
 
 	@Override
-	protected void updateDocument(SearchDocument doc) throws IOException
+	protected void updateDocument(SearchDocument doc)
+		throws IOException
 	{
-		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		doUpdateRequest(client.prepareUpdate(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setDoc(esDoc.getSource()));
+		ElasticsearchDocument esDoc = (ElasticsearchDocument)doc;
+		doUpdateRequest(client.prepareUpdate(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(
+				esDoc.getVersion()).setDoc(esDoc.getSource()));
 	}
 
 	@Override
-	protected void deleteDocument(SearchDocument doc) throws IOException
+	protected void deleteDocument(SearchDocument doc)
+		throws IOException
 	{
-		ElasticsearchDocument esDoc = (ElasticsearchDocument) doc;
-		client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setOperationThreaded(OPERATION_THREADED).execute().actionGet();
+		ElasticsearchDocument esDoc = (ElasticsearchDocument)doc;
+		client.prepareDelete(esDoc.getIndex(), esDoc.getType(), esDoc.getId()).setVersion(esDoc.getVersion()).setOperationThreaded(
+				OPERATION_THREADED).execute().actionGet();
 	}
 
 	@Override
-	protected BulkUpdater newBulkUpdate()
-	{
+	protected BulkUpdater newBulkUpdate() {
 		return new ElasticsearchBulkUpdater(client);
 	}
 
@@ -391,8 +450,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	/**
 	 * Filters the given list of fields, retaining all property fields.
 	 */
-	public static List<String> getPropertyFields(Collection<String> fields) {
-		List<String> result = new ArrayList<String>(fields.size());
+	public static Set<String> getPropertyFields(Set<String> fields) {
+		Set<String> result = new HashSet<String>(fields.size());
 		for (String field : fields) {
 			if (SearchFields.isPropertyField(field))
 				result.add(field);
@@ -401,32 +460,54 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	}
 
 	@Override
-	public void begin() throws IOException
+	public void begin()
+		throws IOException
 	{
 	}
 
 	@Override
-	public void commit() throws IOException
+	public void commit()
+		throws IOException
 	{
 		client.admin().indices().prepareRefresh(indexName).execute().actionGet();
 	}
 
 	@Override
-	public void rollback() throws IOException
+	public void rollback()
+		throws IOException
 	{
 	}
 
 	@Override
-	public void beginReading() throws IOException
+	public void beginReading()
+		throws IOException
 	{
 	}
 
 	@Override
-	public void endReading() throws IOException
+	public void endReading()
+		throws IOException
 	{
 	}
 
 	// //////////////////////////////// Methods for querying the index
+
+	/**
+	 * Parse the passed query.
+	 * To be removed, no longer used.
+	 * @param query
+	 *        string
+	 * @return the parsed query
+	 * @throws ParseException
+	 *         when the parsing brakes
+	 */
+	@Override
+	@Deprecated
+	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	{
+		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
+		return new ElasticsearchQuery(client.prepareSearch(), qb, this);
+	}
 
 	/**
 	 * Parse the passed query.
@@ -438,10 +519,39 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	 *         when the parsing brakes
 	 */
 	@Override
-	protected SearchQuery parseQuery(String query, URI propertyURI) throws MalformedQueryException
+	protected Iterable<? extends DocumentScore> query(Resource subject, String query, URI propertyURI,
+			boolean highlight)
+		throws MalformedQueryException, IOException
 	{
 		QueryBuilder qb = prepareQuery(propertyURI, QueryBuilders.queryStringQuery(query));
-		return new ElasticsearchQuery(client.prepareSearch(), qb, this);
+		SearchRequestBuilder request = client.prepareSearch();
+		if (highlight) {
+			String field = (propertyURI != null) ? SearchFields.getPropertyField(propertyURI) : "*";
+			request.addHighlightedField(field);
+			request.setHighlighterPreTags(SearchFields.HIGHLIGHTER_PRE_TAG);
+			request.setHighlighterPostTags(SearchFields.HIGHLIGHTER_POST_TAG);
+			// Elastic Search doesn't really have the same support for fragments as
+			// Lucene.
+			// So, we have to get back the whole highlighted value (comma-separated
+			// if it is a list)
+			// and then post-process it into fragments ourselves.
+			request.setHighlighterNumOfFragments(0);
+		}
+
+		SearchHits hits;
+		if (subject != null) {
+			hits = search(subject, request, qb);
+		}
+		else {
+			hits = search(request, qb);
+		}
+		return Iterables.transform(hits, new Function<SearchHit, DocumentScore>() {
+
+			@Override
+			public DocumentScore apply(SearchHit hit) {
+				return new ElasticsearchDocumentScore(hit, geoContextMapper);
+			}
+		});
 	}
 
 	// /**
@@ -463,29 +573,135 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 	/**
 	 * Evaluates the given query only for the given resource.
 	 */
-	public SearchHits search(Resource resource, SearchRequestBuilder request, QueryBuilder query)
-	{
+	public SearchHits search(Resource resource, SearchRequestBuilder request, QueryBuilder query) {
 		// rewrite the query
-		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME, SearchFields.getResourceID(resource));
+		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.URI_FIELD_NAME,
+				SearchFields.getResourceID(resource));
 		QueryBuilder combinedQuery = QueryBuilders.boolQuery().must(idQuery).must(query);
 		return search(request, combinedQuery);
+	}
+
+	@Override
+	protected Iterable<? extends DocumentDistance> geoQuery(final URI geoProperty,
+			Point p, final URI units, double distance, String distanceVar, Var contextVar)
+		throws MalformedQueryException, IOException
+	{
+		double unitDist;
+		final DistanceUnit unit;
+		if (GEOF.UOM_METRE.equals(units)) {
+			unit = DistanceUnit.METERS;
+			unitDist = distance;
+		}
+		else if (GEOF.UOM_DEGREE.equals(units)) {
+			unit = DistanceUnit.KILOMETERS;
+			unitDist = unit.getDistancePerDegree() * distance;
+		}
+		else if (GEOF.UOM_RADIAN.equals(units)) {
+			unit = DistanceUnit.KILOMETERS;
+			unitDist = DistanceUtils.radians2Dist(distance, DistanceUtils.EARTH_MEAN_RADIUS_KM);
+		}
+		else if (GEOF.UOM_UNITY.equals(units)) {
+			unit = DistanceUnit.KILOMETERS;
+			unitDist = distance * Math.PI * DistanceUtils.EARTH_MEAN_RADIUS_KM;
+		}
+		else {
+			throw new MalformedQueryException("Unsupported units: " + units);
+		}
+
+		double lat = p.getY();
+		double lon = p.getX();
+		final String fieldName = GEOPOINT_FIELD_PREFIX + SearchFields.getPropertyField(geoProperty);
+		QueryBuilder qb = QueryBuilders.functionScoreQuery(
+				FilterBuilders.geoDistanceFilter(fieldName).lat(lat).lon(lon).distance(unitDist, unit),
+				ScoreFunctionBuilders.linearDecayFunction(fieldName, GeoHashUtils.encode(lat, lon),
+						new DistanceUnit.Distance(unitDist, unit)));
+		if(contextVar != null) {
+			qb = addContextTerm(qb, (Resource) contextVar.getValue());
+		}
+
+		SearchRequestBuilder request = client.prepareSearch();
+		SearchHits hits = search(request, qb);
+		final FixedSourceDistance srcDistance = GeoDistance.DEFAULT.fixedSourceDistance(lat, lon, unit);
+		return Iterables.transform(hits, new Function<SearchHit, DocumentDistance>() {
+
+			@Override
+			public DocumentDistance apply(SearchHit hit) {
+				return new ElasticsearchDocumentDistance(hit, geoContextMapper, fieldName, units, srcDistance, unit);
+			}
+		});
+	}
+
+	private QueryBuilder addContextTerm(QueryBuilder qb, Resource ctx) {
+		BoolQueryBuilder combinedQuery = QueryBuilders.boolQuery();
+		QueryBuilder idQuery = QueryBuilders.termQuery(SearchFields.CONTEXT_FIELD_NAME,
+				SearchFields.getContextID(ctx));
+		if(ctx != null) {
+			// the specified named graph
+			combinedQuery.must(idQuery);
+		}
+		else {
+			// not the unnamed graph
+			combinedQuery.mustNot(idQuery);
+		}
+		combinedQuery.must(qb);
+		return combinedQuery;
+	}
+
+	@Override
+	protected Iterable<? extends DocumentResult> geoRelationQuery(String relation,
+			URI geoProperty, Shape shape, Var contextVar)
+		throws MalformedQueryException, IOException
+	{
+		ShapeRelation spatialOp = toSpatialOp(relation);
+		if(spatialOp == null) {
+			return null;
+		}
+		final String fieldName = GEOSHAPE_FIELD_PREFIX + SearchFields.getPropertyField(geoProperty);
+		GeoShapeFilterBuilder fb = FilterBuilders.geoShapeFilter(fieldName, ElasticsearchSpatialSupport.getSpatialSupport().toShapeBuilder(shape), spatialOp);
+		QueryBuilder qb = QueryBuilders.matchAllQuery();
+		if(contextVar != null) {
+			qb = addContextTerm(qb, (Resource) contextVar.getValue());
+		}
+
+		SearchRequestBuilder request = client.prepareSearch();
+		SearchHits hits = search(request, QueryBuilders.filteredQuery(qb, fb));
+		return Iterables.transform(hits, new Function<SearchHit, DocumentResult>() {
+
+			@Override
+			public DocumentResult apply(SearchHit hit) {
+				return new ElasticsearchDocumentResult(hit, geoContextMapper);
+			}
+		});
+	}
+
+	private ShapeRelation toSpatialOp(String relation) {
+		if(GEOF.SF_INTERSECTS.stringValue().equals(relation)) {
+			return ShapeRelation.INTERSECTS;
+		}
+		if(GEOF.SF_DISJOINT.stringValue().equals(relation)) {
+			return ShapeRelation.DISJOINT;
+		}
+		if(GEOF.EH_COVERED_BY.stringValue().equals(relation)) {
+			return ShapeRelation.WITHIN;
+		}
+		return null;
 	}
 
 	/**
 	 * Evaluates the given query and returns the results as a TopDocs instance.
 	 */
-	public SearchHits search(SearchRequestBuilder request, QueryBuilder query)
-	{
+	public SearchHits search(SearchRequestBuilder request, QueryBuilder query) {
 		String[] types = getTypes();
 		int nDocs;
-		if(maxDocs > 0) {
+		if (maxDocs > 0) {
 			nDocs = maxDocs;
 		}
 		else {
 			long docCount = client.prepareCount(indexName).setTypes(types).setQuery(query).execute().actionGet().getCount();
-			nDocs = Math.max((int) Math.min(docCount, Integer.MAX_VALUE), 1);
+			nDocs = Math.max((int)Math.min(docCount, Integer.MAX_VALUE), 1);
 		}
-		SearchResponse response = request.setIndices(indexName).setTypes(types).setVersion(true).setQuery(query).setSize(nDocs).execute().actionGet();
+		SearchResponse response = request.setIndices(indexName).setTypes(types).setVersion(true).setQuery(query).setSize(
+				nDocs).execute().actionGet();
 		return response.getHits();
 	}
 
@@ -498,7 +714,7 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		else
 			// otherwise we create a query parser that has the given property as
 			// the default field
-			query.defaultField(propertyURI.toString()).analyzer(queryAnalyzer);
+			query.defaultField(SearchFields.getPropertyField(propertyURI)).analyzer(queryAnalyzer);
 		return query;
 	}
 
@@ -570,7 +786,8 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 			// }
 
 			// now delete all documents from the deleted context
-			client.prepareDeleteByQuery(indexName).setQuery(QueryBuilders.termQuery(SearchFields.CONTEXT_FIELD_NAME, contextString)).execute().actionGet();
+			client.prepareDeleteByQuery(indexName).setQuery(
+					QueryBuilders.termQuery(SearchFields.CONTEXT_FIELD_NAME, contextString)).execute().actionGet();
 		}
 
 		// now add those again, that had other contexts also.
@@ -605,32 +822,34 @@ public class ElasticsearchIndex extends AbstractSearchIndex {
 		createIndex();
 	}
 
-
-
-	private static void doAcknowledgedRequest(ActionRequestBuilder<?, ? extends AcknowledgedResponse, ?, ?> request) throws IOException
+	private static void doAcknowledgedRequest(
+			ActionRequestBuilder<?, ? extends AcknowledgedResponse, ?, ?> request)
+		throws IOException
 	{
 		boolean ok = request.execute().actionGet().isAcknowledged();
-		if(!ok) {
-			throw new IOException("Request not acknowledged: "+request.get().getClass().getName());
+		if (!ok) {
+			throw new IOException("Request not acknowledged: " + request.get().getClass().getName());
 		}
 	}
 
-	private static long doIndexRequest(ActionRequestBuilder<?, ? extends IndexResponse, ?, ?> request) throws IOException
+	private static long doIndexRequest(ActionRequestBuilder<?, ? extends IndexResponse, ?, ?> request)
+		throws IOException
 	{
 		IndexResponse response = request.execute().actionGet();
 		boolean ok = response.isCreated();
-		if(!ok) {
-			throw new IOException("Document not created: "+request.get().getClass().getName());
+		if (!ok) {
+			throw new IOException("Document not created: " + request.get().getClass().getName());
 		}
 		return response.getVersion();
 	}
 
-	private static long doUpdateRequest(ActionRequestBuilder<?, ? extends UpdateResponse, ?, ?> request) throws IOException
+	private static long doUpdateRequest(ActionRequestBuilder<?, ? extends UpdateResponse, ?, ?> request)
+		throws IOException
 	{
 		UpdateResponse response = request.execute().actionGet();
 		boolean isUpsert = response.isCreated();
-		if(isUpsert) {
-			throw new IOException("Unexpected upsert: "+request.get().getClass().getName());
+		if (isUpsert) {
+			throw new IOException("Unexpected upsert: " + request.get().getClass().getName());
 		}
 		return response.getVersion();
 	}

@@ -28,8 +28,10 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.config.RepositoryConfigException;
 
 /**
- * A static access point to manage RepositoryManagers that are automatically
- * shutdown when the JVM is closed.
+ * A static access point to manage {@link RepositoryManager}s and
+ * {@link Repository Repositories}. RepositoryProvider ensures that all managers
+ * and repositories obtained through it are automatically shutdown when the JVM
+ * exits.
  * 
  * @author James Leigh
  */
@@ -86,9 +88,16 @@ public class RepositoryProvider {
 	}
 
 	/**
-	 * Creates a RepositoryManager, if not already created, that will be shutdown
-	 * when the JVM exits cleanly. The parameter should be a URL of the form
-	 * http://host:port/path/ or file:///path/.
+	 * Creates a {@link RepositoryManager}, if not already created, that will be
+	 * shutdown when the JVM exits cleanly.
+	 * 
+	 * @param url
+	 *        location of the data directory for the RepositoryManager. This
+	 *        should be a URL of the form http://host:port/path/ (for a
+	 *        RemoteRepositoryManager) or file:///path/ (for a
+	 *        LocalRepositoryManager).
+	 * @return a (new or existing) {@link RepositoryManager} using the supplied
+	 *         url as its data dir.
 	 */
 	public static RepositoryManager getRepositoryManager(String url)
 		throws RepositoryConfigException, RepositoryException
@@ -115,28 +124,44 @@ public class RepositoryProvider {
 	}
 
 	/**
-	 * Creates a LocalRepositoryManager, if not already created, that will be
-	 * shutdown when the JVM exits cleanly.
+	 * Creates a {@link LocalRepositoryManager}, if not already created, that
+	 * will be shutdown when the JVM exits cleanly.
+	 * 
+	 * @param dir
+	 *        the data directory for the repository manager.
+	 * @return a (new or existing) {@link LocalRepositoryManager}.
+	 * @throws RepositoryConfigException
+	 * @throws RepositoryException
 	 */
 	public static LocalRepositoryManager getRepositoryManager(File dir)
-			throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, RepositoryException
 	{
 		String url = dir.toURI().toASCIIString();
-		return (LocalRepositoryManager) getRepositoryManager(url);
+		return (LocalRepositoryManager)getRepositoryManager(url);
 	}
 
 	/**
-	 * Returns the RepositoryManager that will be used for the given repository
-	 * URL. Creates a RepositoryManager, if not already created, that will be
-	 * shutdown when the JVM exits cleanly. The parameter must be a URL of the
-	 * form http://host:port/path/repositories/id or file:///path/repositories/id.
+	 * Retrieves the {@link RepositoryManager} that will be used for the given
+	 * repository URL. Creates a {@link RepositoryManager}, if not already
+	 * created, that will be shutdown when the JVM exits cleanly.
+	 * 
+	 * @param url
+	 *        the location of the repository for which to retrieve the
+	 *        corresponding RepositoryManager. The parameter must be a URL of the
+	 *        form http://host:port/path/repositories/id or
+	 *        file:///path/repositories/id.
+	 * @return the {@link RepositoryManager} that manages the repository
+	 *         identified by the URL.
+	 * @throws IllegalArgumentException
+	 *         if the supplied URL is not a repository URL.
+	 * @throws RepositoryConfigException
+	 * @throws RepositoryException
 	 */
 	public static RepositoryManager getRepositoryManagerOfRepository(String url)
-			throws RepositoryConfigException, RepositoryException
+		throws RepositoryConfigException, RepositoryException
 	{
 		if (!url.contains(REPOSITORIES)) {
-			throw new IllegalArgumentException("URL is not repository URL: "
-					+ url);
+			throw new IllegalArgumentException("URL is not repository URL: " + url);
 		}
 		int idx = url.lastIndexOf(REPOSITORIES);
 		String server = url.substring(0, idx);
@@ -147,15 +172,20 @@ public class RepositoryProvider {
 	}
 
 	/**
-	 * Returns the Repository ID that will be passed to a RepositoryManager for the given repository
-	 * URL. The parameter must be a URL of the
-	 * form http://host:port/path/repositories/id or file:///path/repositories/id.
+	 * Retrieves the Repository ID that will be passed to a RepositoryManager for
+	 * the given repository URL.
+	 * 
+	 * @param url
+	 *        the location URL for the repository. The parameter must be a URL of
+	 *        the form http://host:port/path/repositories/id or
+	 *        file:///path/repositories/id.
+	 * @return the repository identifier string for the given repository URL.
+	 * @throws IllegalArgumentException
+	 *         if the supplied URL is not a repository URL.
 	 */
-	public static String getRepositoryIdOfRepository(String url)
-	{
+	public static String getRepositoryIdOfRepository(String url) {
 		if (!url.contains(REPOSITORIES)) {
-			throw new IllegalArgumentException("URL is not repository URL: "
-					+ url);
+			throw new IllegalArgumentException("URL is not repository URL: " + url);
 		}
 		int idx = url.lastIndexOf(REPOSITORIES);
 		String id = url.substring(idx + REPOSITORIES.length());
@@ -166,10 +196,16 @@ public class RepositoryProvider {
 	}
 
 	/**
-	 * Created a Repository, if not already created, that will be shutdown when
-	 * the JVM exits cleanly. The parameter must be a URL of the form
-	 * http://host:port/path/repositories/id or file:///path/repositories/id.
-	 * @return Repository from a RepositoryManager or null if repository is not defined
+	 * Retrieves a (new or existing) Repository object for the supplied
+	 * repository URL. The Repository will be shutdown when the JVM exits
+	 * cleanly.
+	 * 
+	 * @param url
+	 *        the repository URL. The parameter must be a URL of the form
+	 *        http://host:port/path/repositories/id or
+	 *        file:///path/repositories/id.
+	 * @return Repository from a RepositoryManager or null if repository is not
+	 *         defined
 	 */
 	public static Repository getRepository(String url)
 		throws RepositoryException, RepositoryConfigException
@@ -197,7 +233,9 @@ public class RepositoryProvider {
 		return new File(uri);
 	}
 
-	private static String normalizeDirectory(String url) throws IllegalArgumentException {
+	private static String normalizeDirectory(String url)
+		throws IllegalArgumentException
+	{
 		try {
 			if (!url.endsWith("/")) {
 				return normalizeDirectory(url + '/');
@@ -208,8 +246,7 @@ public class RepositoryProvider {
 			}
 			norm = norm.normalize();
 			if (norm.isOpaque())
-				throw new IllegalArgumentException(
-						"Repository Manager URL must not be opaque: " + url);
+				throw new IllegalArgumentException("Repository Manager URL must not be opaque: " + url);
 			String sch = norm.getScheme();
 			String host = norm.getAuthority();
 			String path = norm.getPath();
@@ -220,7 +257,8 @@ public class RepositoryProvider {
 				host = host.toLowerCase();
 			}
 			return new URI(sch, host, path, null, null).toASCIIString();
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
