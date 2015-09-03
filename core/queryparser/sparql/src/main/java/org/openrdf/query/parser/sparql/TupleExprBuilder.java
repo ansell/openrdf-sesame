@@ -2422,7 +2422,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		List<Var> vars = new ArrayList<Var>(varNodes.size());
 
 		// preserve order in query
-		Set<String> bindingNames = new LinkdedHashSet<String>(varNodes.size());
+		Set<String> bindingNames = new LinkedHashSet<String>(varNodes.size());
 		for (ASTVar varNode : varNodes) {
 			Var var = (Var)varNode.jjtAccept(this, data);
 			vars.add(var);
