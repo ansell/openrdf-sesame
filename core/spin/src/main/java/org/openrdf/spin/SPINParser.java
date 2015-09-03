@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +51,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
@@ -61,6 +63,8 @@ import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
+import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
@@ -85,6 +89,7 @@ import org.openrdf.query.algebra.Union;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -591,6 +596,13 @@ public class SPINParser {
 			Projection projection = visitResultVariables((Resource) resultVars);
 			visitWhere(select);
 
+			Value groupBy = Statements.singleValue(select, SP.GROUP_BY_PROPERTY, store);
+			if(groupBy instanceof Resource) {
+				Group group = visitGroupBy((Resource) groupBy);
+				group.setArg(projection.getArg());
+				projection.setArg(group);
+			}
+
 			if(!extElems.isEmpty()) {
 				Extension ext = new Extension();
 				ext.setElements(extElems.values());
@@ -737,6 +749,26 @@ public class SPINParser {
 			throws OpenRDFException
 		{
 			return createProjectionElem(r, getVarName(r));
+		}
+
+		private Group visitGroupBy(Resource groupby)
+			throws OpenRDFException
+		{
+			Group group = new Group();
+			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(groupby, store);
+			while(iter.hasNext()) {
+				Resource r = iter.next();
+				GroupElem orderElem = visitGroupByCondition(r);
+				group.addGroupElement(orderElem);
+			}
+			return group;
+		}
+
+		private GroupElem visitGroupByCondition(Resource r)
+				throws OpenRDFException
+		{
+			String varName = getVarName(r);
+			return new GroupElem(varName, new Avg(getVar(r)));
 		}
 
 		private Order visitOrderBy(Resource orderby)
@@ -902,11 +934,40 @@ public class SPINParser {
 					currentNode = null;
 				}
 				else if(types.contains(SP.SUB_QUERY_CLASS)) {
-					// TODO
+					Value q = Statements.singleValue(r, SP.QUERY_PROPERTY, store);
+					TupleExpr oldRoot = root;
+					visitSelect((Resource) q);
+					node = root;
+					root = oldRoot;
 				}
 				else if(types.contains(SP.VALUES_CLASS)) {
-					// TODO
 					BindingSetAssignment bsa = new BindingSetAssignment();
+					Set<String> varNames = new LinkedHashSet<String>();
+					Value varNameList = Statements.singleValue(r, SP.VAR_NAMES_PROPERTY, store);
+					Iteration<? extends Value,QueryEvaluationException> varNameIter = Statements.list((Resource) varNameList, store);
+					while(varNameIter.hasNext()) {
+						Value v = varNameIter.next();
+						if(v instanceof Literal) {
+							varNames.add(((Literal)v).getLabel());
+						}
+					}
+					bsa.setBindingNames(varNames);
+					List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+					Value bindingsList = Statements.singleValue(r, SP.BINDINGS_PROPERTY, store);
+					Iteration<? extends Value,QueryEvaluationException> bindingsIter = Statements.list((Resource) bindingsList, store);
+					while(bindingsIter.hasNext()) {
+						Value valueList = bindingsIter.next();
+						QueryBindingSet bs = new QueryBindingSet();
+						Iterator<String> nameIter = varNames.iterator();
+						Iteration<? extends Value,QueryEvaluationException> valueIter = Statements.list((Resource) valueList, store);
+						while(nameIter.hasNext() && valueIter.hasNext()) {
+							String name = nameIter.next();
+							Value value = valueIter.next();
+							bs.addBinding(name, value);
+						}
+						bindingSets.add(bs);
+					}
+					bsa.setBindingSets(bindingSets);
 					node = bsa;
 				}
 				else if(types.contains(RDF.LIST) || (Statements.singleValue(r, RDF.FIRST, store) != null)) {

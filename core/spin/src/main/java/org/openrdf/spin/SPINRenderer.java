@@ -845,12 +845,7 @@ public class SPINRenderer {
 			Resource bindingList = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(subject, SP.BINDINGS_PROPERTY, bindingList));
 			ListContext bindingCtx = newList(bindingList);
-			List<String> bindingVars = new ArrayList<String>();
-			for(ValueExpr valueExpr : inlineBindings.getValueExprs()) {
-				if(valueExpr instanceof Var) {
-					bindingVars.add(((Var)valueExpr).getName());
-				}
-			}
+			List<String> bindingVars = new ArrayList<String>(node.getBindingNames());
 			for(BindingSet bs : node.getBindingSets()) {
 				listEntry();
 				ListContext setCtx = newList(subject);
