@@ -1207,6 +1207,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return te;
 	}
 
+	@Override
 	public Object visit(ASTServiceGraphPattern node, Object data)
 		throws VisitorException
 	{
@@ -2420,13 +2421,18 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
 		List<Var> vars = new ArrayList<Var>(varNodes.size());
 
+		// preserve order in query
+		Set<String> bindingNames = new LinkdedHashSet<String>(varNodes.size());
 		for (ASTVar varNode : varNodes) {
 			Var var = (Var)varNode.jjtAccept(this, data);
 			vars.add(var);
+			bindingNames.add(var.getName());
 		}
 
-		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+		bsa.setBindingNames(bindingNames);
+
 		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+		List<BindingSet> bindingSets = new ArrayList<BindingSet>(bindingNodes.size());
 
 		for (ASTBindingSet bindingNode : bindingNodes) {
 			BindingSet bindingSet = (BindingSet)bindingNode.jjtAccept(this, vars);
@@ -2448,14 +2454,18 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		List<ASTVar> varNodes = node.jjtGetChildren(ASTVar.class);
 		List<Var> vars = new ArrayList<Var>(varNodes.size());
 
+		// preserve order in query
+		Set<String> bindingNames = new LinkedHashSet<String>(varNodes.size());
 		for (ASTVar varNode : varNodes) {
 			Var var = (Var)varNode.jjtAccept(this, data);
 			vars.add(var);
+			bindingNames.add(var.getName());
 		}
 
-		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+		bsa.setBindingNames(bindingNames);
 
-		List<BindingSet> bindingSets = new ArrayList<BindingSet>();
+		List<ASTBindingSet> bindingNodes = node.jjtGetChildren(ASTBindingSet.class);
+		List<BindingSet> bindingSets = new ArrayList<BindingSet>(bindingNodes.size());
 
 		for (ASTBindingSet bindingNode : bindingNodes) {
 			BindingSet bindingSet = (BindingSet)bindingNode.jjtAccept(this, vars);
@@ -2554,6 +2564,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return new IsNumeric(arg);
 	}
 
+	@Override
 	public Object visit(ASTBNodeFunc node, Object data)
 		throws VisitorException
 	{
@@ -2627,6 +2638,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return new Not(e);
 	}
 
+	@Override
 	public If visit(ASTIf node, Object data)
 		throws VisitorException
 	{
@@ -2645,6 +2657,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
+	@Override
 	public ValueExpr visit(ASTInfix node, Object data)
 		throws VisitorException
 	{
@@ -2654,6 +2667,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return rightArg;
 	}
 
+	@Override
 	public ValueExpr visit(ASTIn node, Object data)
 		throws VisitorException
 	{
@@ -2682,6 +2696,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		return result;
 	}
 
+	@Override
 	public ValueExpr visit(ASTNotIn node, Object data)
 		throws VisitorException
 	{
