@@ -3,7 +3,7 @@
 
 [ a       sp:Select ;
 	sp:text """
-SELECT (COUNT(?object) AS ?count)
+SELECT (COUNT(distinct ?object) AS ?count)
 WHERE {
 	?this ?arg1 ?object
 }
@@ -18,4 +18,5 @@ WHERE {
 _:object sp:varName "object" .
 _:count  sp:as [sp:varName "count"] ;
 		 sp:expression _:object;
+		 sp:distinct true;
 		 a       sp:Count .

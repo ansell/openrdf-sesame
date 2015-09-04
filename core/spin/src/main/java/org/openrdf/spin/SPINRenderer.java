@@ -875,6 +875,9 @@ public class SPINRenderer {
 			@Override
 			public void meet(Count node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.COUNT_CLASS));
+				if(node.isDistinct()) {
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DISTINCT_PROPERTY, BooleanLiteralImpl.TRUE));
+				}
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
@@ -884,6 +887,9 @@ public class SPINRenderer {
 			@Override
 			public void meet(Max node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.MAX_CLASS));
+				if(node.isDistinct()) {
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DISTINCT_PROPERTY, BooleanLiteralImpl.TRUE));
+				}
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
@@ -893,6 +899,9 @@ public class SPINRenderer {
 			@Override
 			public void meet(Min node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.MIN_CLASS));
+				if(node.isDistinct()) {
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DISTINCT_PROPERTY, BooleanLiteralImpl.TRUE));
+				}
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
@@ -902,6 +911,9 @@ public class SPINRenderer {
 			@Override
 			public void meet(Sum node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.SUM_CLASS));
+				if(node.isDistinct()) {
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DISTINCT_PROPERTY, BooleanLiteralImpl.TRUE));
+				}
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
@@ -911,6 +923,9 @@ public class SPINRenderer {
 			@Override
 			public void meet(Avg node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.AVG_CLASS));
+				if(node.isDistinct()) {
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DISTINCT_PROPERTY, BooleanLiteralImpl.TRUE));
+				}
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
@@ -920,6 +935,9 @@ public class SPINRenderer {
 			@Override
 			public void meet(GroupConcat node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.GROUP_CONCAT_CLASS));
+				if(node.isDistinct()) {
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DISTINCT_PROPERTY, BooleanLiteralImpl.TRUE));
+				}
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));
@@ -929,6 +947,9 @@ public class SPINRenderer {
 			@Override
 			public void meet(Sample node) throws RDFHandlerException {
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.SAMPLE_CLASS));
+				if(node.isDistinct()) {
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DISTINCT_PROPERTY, BooleanLiteralImpl.TRUE));
+				}
 				Resource oldSubject = subject;
 				super.meet(node);
 				handler.handleStatement(valueFactory.createStatement(oldSubject, SP.EXPRESSION_PROPERTY, subject));

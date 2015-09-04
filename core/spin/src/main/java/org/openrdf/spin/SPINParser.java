@@ -21,6 +21,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
+import org.openrdf.query.algebra.Count;
 import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
@@ -64,11 +66,14 @@ import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
+import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
+import org.openrdf.query.algebra.Max;
+import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Order;
@@ -78,11 +83,13 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.Reduced;
+import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.StatementPattern.Scope;
+import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
@@ -99,6 +106,7 @@ import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
+import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
 import org.openrdf.spin.util.Statements;
 
 import com.google.common.base.Function;
@@ -143,6 +151,7 @@ public class SPINParser {
 	private final Input input;
 	private final Function<URI,String> wellKnownVars;
 	private final Function<URI,String> wellKnownFunctions;
+	private boolean strictFunctionChecking = true;
 
 	public SPINParser() {
 		this(Input.TEXT_FIRST);
@@ -168,6 +177,14 @@ public class SPINParser {
 		this.input = input;
 		this.wellKnownVars = wellKnownVarsMapper;
 		this.wellKnownFunctions = wellKnownFuncMapper;
+	}
+
+	public boolean isStrictFunctionChecking() {
+		return strictFunctionChecking;
+	}
+
+	public void setStrictFunctionChecking(boolean strictFunctionChecking) {
+		this.strictFunctionChecking = strictFunctionChecking;
 	}
 
 	public Map<URI, RuleProperty> parseRuleProperties(TripleSource store)
@@ -375,28 +392,24 @@ public class SPINParser {
 		}
 		else {
 			// template
-			URI templateResource;
 			if (possibleTemplates.size() > 1) {
-				templateResource = null;
-				for (URI t : possibleTemplates) {
+				for (Iterator<URI> iter = possibleTemplates.iterator(); iter.hasNext(); ) {
+					URI t = iter.next();
 					Value abstractValue = Statements.singleValue(t, SPIN.ABSTRACT_PROPERTY, store);
-					if(abstractValue == null || BooleanLiteralImpl.FALSE.equals(abstractValue)) {
-						templateResource = t;
-						break;
+					if(BooleanLiteralImpl.TRUE.equals(abstractValue)) {
+						iter.remove();
 					}
 				}
 			}
-			else if (possibleTemplates.size() == 1) {
-				templateResource = possibleTemplates.iterator().next();
-			}
-			else {
-				templateResource = null;
-			}
 
-			if (templateResource == null) {
+			if (possibleTemplates.isEmpty()) {
 				throw new MalformedSPINException("Template missing RDF type: " + queryResource);
 			}
+			if (possibleTemplates.size() > 1) {
+				throw new MalformedSPINException("Template has unexpected RDF types: " + queryResource+" has non-abstract types "+possibleTemplates);
+			}
 
+			URI templateResource = possibleTemplates.iterator().next();
 			Template tmpl = parseTemplate(templateResource, queryClass, store);
 			// TODO
 			BindingSet args = null;
@@ -427,7 +440,7 @@ public class SPINParser {
 		if (possibleTmplTypes.isEmpty()) {
 			throw new MalformedSPINException("Template missing RDF type: " + tmplUri);
 		}
-		else if (possibleTmplTypes.size() > 1) {
+		if (possibleTmplTypes.size() > 1) {
 			throw new MalformedSPINException("Incompatible RDF types for template: " + tmplUri + " has types "
 					+ possibleTmplTypes);
 		}
@@ -530,7 +543,7 @@ public class SPINParser {
 		TupleExpr root;
 		TupleExpr node;
 		Var namedGraph;
-		Map<String,ExtensionElem> extElems;
+		Map<String,ProjectionElem> projElems;
 		Map<Resource,String> vars = new HashMap<Resource,String>();
 
 		SPINVisitor(TripleSource store) {
@@ -549,17 +562,10 @@ public class SPINParser {
 				throw new MalformedSPINException("Value of "+SP.TEMPLATES_PROPERTY+" is not a resource");
 			}
 
-			extElems = new LinkedHashMap<String,ExtensionElem>();
-
+			projElems = new LinkedHashMap<String,ProjectionElem>();
 			UnaryTupleOperator projection = visitTemplates((Resource) templates);
 			visitWhere(construct);
-
-			if(!extElems.isEmpty()) {
-				Extension ext = new Extension();
-				ext.setElements(extElems.values());
-				ext.setArg(projection.getArg());
-				projection.setArg(ext);
-			}
+			addSourceExpressions(projection, projElems.values());
 		}
 
 		public void visitDescribe(Resource describe)
@@ -570,17 +576,10 @@ public class SPINParser {
 				throw new MalformedSPINException("Value of "+SP.RESULT_NODES_PROPERTY+" is not a resource");
 			}
 
-			extElems = new LinkedHashMap<String,ExtensionElem>();
-
+			projElems = new LinkedHashMap<String,ProjectionElem>();
 			Projection projection = visitResultNodes((Resource) resultNodes);
 			visitWhere(describe);
-
-			if(!extElems.isEmpty()) {
-				Extension ext = new Extension();
-				ext.setElements(extElems.values());
-				ext.setArg(projection.getArg());
-				projection.setArg(ext);
-			}
+			addSourceExpressions(projection, projElems.values());
 		}
 
 		public void visitSelect(Resource select)
@@ -591,8 +590,7 @@ public class SPINParser {
 				throw new MalformedSPINException("Value of "+SP.RESULT_VARIABLES_PROPERTY+" is not a resource");
 			}
 
-			extElems = new LinkedHashMap<String,ExtensionElem>();
-
+			projElems = new LinkedHashMap<String,ProjectionElem>();
 			Projection projection = visitResultVariables((Resource) resultVars);
 			visitWhere(select);
 
@@ -603,12 +601,7 @@ public class SPINParser {
 				projection.setArg(group);
 			}
 
-			if(!extElems.isEmpty()) {
-				Extension ext = new Extension();
-				ext.setElements(extElems.values());
-				ext.setArg(projection.getArg());
-				projection.setArg(ext);
-			}
+			addSourceExpressions(projection, projElems.values());
 
 			Value orderby = Statements.singleValue(select, SP.ORDER_BY_PROPERTY, store);
 			if(orderby instanceof Resource) {
@@ -650,6 +643,20 @@ public class SPINParser {
 			node = new SingletonSet();
 			root = new Slice(node, 0, 1);
 			visitWhere(ask);
+		}
+
+		private void addSourceExpressions(UnaryTupleOperator op, Collection<ProjectionElem> elems) {
+			Extension ext = null;
+			for(ProjectionElem projElem : elems) {
+				ExtensionElem extElem = projElem.getSourceExpression();
+				if(extElem != null) {
+					if(ext == null) {
+						ext = new Extension(op.getArg());
+						op.setArg(ext);
+					}
+					ext.addElement(extElem);
+				}
+			}
 		}
 
 		private UnaryTupleOperator visitTemplates(Resource templates)
@@ -721,7 +728,7 @@ public class SPINParser {
 		private ProjectionElem visitResultNode(Resource r)
 				throws OpenRDFException
 		{
-			return createProjectionElem(r, getVarName(r));
+			return createProjectionElem(r, null);
 		}
 
 		private Projection visitResultVariables(Resource resultVars)
@@ -748,7 +755,7 @@ public class SPINParser {
 		private ProjectionElem visitResultVariable(Resource r)
 			throws OpenRDFException
 		{
-			return createProjectionElem(r, getVarName(r));
+			return createProjectionElem(r, null);
 		}
 
 		private Group visitGroupBy(Resource groupby)
@@ -797,19 +804,38 @@ public class SPINParser {
 		private ProjectionElem createProjectionElem(Value v, String projName)
 			throws OpenRDFException
 		{
+			ValueExpr valueExpr = visitExpression(v);
 			String varName = null;
-			if(v instanceof Resource) {
-				varName = getVarName((Resource) v);
+			if(valueExpr instanceof Var) {
+				varName = ((Var)valueExpr).getName();
+			}
+			else if(valueExpr instanceof ValueConstant) {
+				varName = getConstVarName(v);
 			}
 
-			if(varName != null) {
-				extElems.put(varName, new ExtensionElem(new Var(varName), varName));
+			if(v instanceof Resource) {
+				Value asVar = Statements.singleValue((Resource)v, SP.AS_PROPERTY, store);
+				if(asVar != null) {
+					if(projName != null) {
+						throw new MalformedSPINException("Illegal usage of "+SP.AS_PROPERTY+": "+v);
+					}
+					projName = getVarName((Resource) asVar);
+					if(varName == null) {
+						varName = projName;
+					}
+				}
 			}
-			else {
-				varName = getConstVarName(v);
-				extElems.put(varName, new ExtensionElem(new ValueConstant(v), varName));
+
+			if(projName == null) {
+				projName = varName;
 			}
-			return new ProjectionElem(varName, projName);
+
+			ProjectionElem projElem = new ProjectionElem(varName, projName);
+			projElem.setSourceExpression(new ExtensionElem(valueExpr, varName));
+			if(projElems != null) {
+				projElems.put(varName, projElem);
+			}
+			return projElem;
 		}
 
 		public void visitWhere(Resource query)
@@ -978,16 +1004,26 @@ public class SPINParser {
 				}
 				else if(types.contains(SP.SERVICE_CLASS)) {
 					Value serviceUri = Statements.singleValue(r, SP.SERVICE_URI_PROPERTY, store);
-					boolean isSilent = false;
 					node = new SingletonSet();
-					String exprString = ""; // TODO
-					Map<String,String> prefixDecls = Collections.emptyMap(); // TODO
-					Service service = new Service(getVar(serviceUri), node, exprString, prefixDecls, null, isSilent);
+					QueryRoot tempRoot = new QueryRoot(node);
+
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 					if(!(elements instanceof Resource)) {
 						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 					}
 					visitGroupGraphPattern((Resource) elements);
+
+					boolean isSilent = Statements.booleanValue(r, SP.SILENT_PROPERTY, store);
+					String exprString;
+					try {
+						exprString = new SPARQLQueryRenderer().render(new ParsedTupleQuery(tempRoot.getArg()));
+						exprString = exprString.substring("select *\n{\n".length(), exprString.length()-1);
+					}
+					catch(Exception e) {
+						throw new QueryEvaluationException(e);
+					}
+					Map<String,String> prefixDecls = Collections.emptyMap();
+					Service service = new Service(getVar(serviceUri), node, exprString, prefixDecls, null, isSilent);
 					node = service;
 				}
 				else {
@@ -1043,80 +1079,47 @@ public class SPINParser {
 			}
 			else {
 				Resource r = (Resource) v;
-				Set<URI> exprTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
-
-				URI func;
-				if(exprTypes.size() > 1) {
-					func = null;
-					if(exprTypes.remove(SPIN.FUNCTIONS_CLASS)) {
-						exprTypes.remove(SPIN.MODULES_CLASS);
-						exprTypes.remove(RDFS.RESOURCE);
-						for(URI f : exprTypes) {
-							Value abstractValue = Statements.singleValue(f, SPIN.ABSTRACT_PROPERTY, store);
-							if(abstractValue == null || BooleanLiteralImpl.FALSE.equals(abstractValue)) {
-								func = f;
-								break;
-							}
-						}
-						if(func == null) {
-							throw new MalformedSPINException("Function missing RDF type: "+r);
-						}
-					}
-					else if(exprTypes.contains(SP.VARIABLE_CLASS)) {
-						func = null;
-					}
-					else {
-						throw new MalformedSPINException("Expression missing RDF type: "+r);
-					}
-				}
-				else if(exprTypes.size() == 1) {
-					func = exprTypes.iterator().next();
+				String varName = getVarName(r);
+				if(varName != null) {
+					expr = createVar(varName);
 				}
 				else {
-					func = null;
-				}
-
-				if(func != null) {
-					SortedMap<URI, ValueExpr> argValues = new TreeMap<URI, ValueExpr>(new Comparator<URI>()
-					{
-						@Override
-						public int compare(URI uri1, URI uri2) {
-							return uri1.getLocalName().compareTo(uri2.getLocalName());
-						}
-					});
-					CloseableIteration<? extends Statement, QueryEvaluationException> iter = store.getStatements(r, null, null);
-					try {
-						while(iter.hasNext()) {
-							Statement stmt = iter.next();
-							URI argName = stmt.getPredicate();
-							if(!NON_ARG_PROPERTIES.contains(argName)) {
-								ValueExpr argValue = visitExpression(stmt.getObject());
-								argValues.put(argName, argValue);
+					Set<URI> exprTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
+					if(exprTypes.size() > 1) {
+						if(exprTypes.remove(SPIN.FUNCTIONS_CLASS)) {
+							exprTypes.remove(SPIN.MODULES_CLASS);
+							exprTypes.remove(RDFS.RESOURCE);
+							if(exprTypes.size() > 1) {
+								for(Iterator<URI> iter = exprTypes.iterator(); iter.hasNext(); ) {
+									URI f = iter.next();
+									Value abstractValue = Statements.singleValue(f, SPIN.ABSTRACT_PROPERTY, store);
+									if(BooleanLiteralImpl.TRUE.equals(abstractValue)) {
+										iter.remove();
+									}
+								}
+							}
+							if(exprTypes.isEmpty()) {
+								throw new MalformedSPINException("Function missing RDF type: "+r);
 							}
 						}
-					}
-					finally {
-						iter.close();
-					}
-
-					int numArgs = argValues.size();
-					List<ValueExpr> args = new ArrayList<ValueExpr>(numArgs);
-					for(int i=0; i<numArgs; i++) {
-						ValueExpr argExpr = argValues.remove(toArgProperty(i));
-						if(argExpr == null) {
-							argExpr = argValues.remove(argValues.firstKey());
+						else if(exprTypes.remove(SP.AGGREGATION_CLASS)) {
+							exprTypes.remove(SP.SYSTEM_CLASS);
+							exprTypes.remove(RDFS.RESOURCE);
+							if(exprTypes.isEmpty()) {
+								throw new MalformedSPINException("Aggregation missing RDF type: "+r);
+							}
 						}
-						args.add(argExpr);
+						else {
+							throw new MalformedSPINException("Expression missing RDF type: "+r);
+						}
 					}
 
-					expr = toValueExpr(r, func, args);
-				}
-				else {
-					String varName = getVarName(r);
-					if(varName != null) {
-						expr = createVar(varName);
+					expr = null;
+					if(exprTypes.size() == 1) {
+						URI func = exprTypes.iterator().next();
+						expr = toValueExpr(r, func);
 					}
-					else {
+					if(expr == null) {
 						expr = new ValueConstant(v);
 					}
 				}
@@ -1124,37 +1127,63 @@ public class SPINParser {
 			return expr;
 		}
 
-		private URI toArgProperty(int i) {
-			switch(i) {
-			case 1: return SP.ARG1_PROPERTY;
-			case 2: return SP.ARG2_PROPERTY;
-			case 3: return SP.ARG3_PROPERTY;
-			case 4: return SP.ARG4_PROPERTY;
-			case 5: return SP.ARG5_PROPERTY;
-			default:
-				return ValueFactoryImpl.getInstance().createURI(SP.NAMESPACE, "arg"+i);
-			}
-		}
-
-		private ValueExpr toValueExpr(Resource r, URI func, List<ValueExpr> args)
+		private ValueExpr toValueExpr(Resource r, URI func)
 			throws OpenRDFException
 		{
 			ValueExpr expr;
 			CompareOp compareOp;
 			MathOp mathOp;
 			if((compareOp = toCompareOp(func)) != null) {
+				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 2) {
 					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Compare(args.get(0), args.get(1), compareOp);
 			}
 			else if((mathOp = toMathOp(func)) != null) {
+				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 2) {
 					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
 				}
 				expr = new MathExpr(args.get(0), args.get(1), mathOp);
 			}
+			else if(SP.COUNT_CLASS.equals(func)) {
+				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
+				expr = new Count(visitExpression(arg), distinct);
+			}
+			else if(SP.MAX_CLASS.equals(func)) {
+				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
+				expr = new Max(visitExpression(arg), distinct);
+			}
+			else if(SP.MIN_CLASS.equals(func)) {
+				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
+				expr = new Min(visitExpression(arg), distinct);
+			}
+			else if(SP.SUM_CLASS.equals(func)) {
+				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
+				expr = new Sum(visitExpression(arg), distinct);
+			}
+			else if(SP.AVG_CLASS.equals(func)) {
+				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
+				expr = new Avg(visitExpression(arg), distinct);
+			}
+			else if(SP.GROUP_CONCAT_CLASS.equals(func)) {
+				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
+				expr = new GroupConcat(visitExpression(arg), distinct);
+			}
+			else if(SP.SAMPLE_CLASS.equals(func)) {
+				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
+				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
+				expr = new Sample(visitExpression(arg), distinct);
+			}
 			else if(SP.NOT.equals(func)) {
+				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
 					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
 				}
@@ -1184,10 +1213,16 @@ public class SPINParser {
 			}
 			else {
 				String funcName = wellKnownFunctions.apply(func);
-				if(funcName == null) {
+				if (funcName == null && !strictFunctionChecking) {
 					funcName = func.stringValue();
 				}
-				expr = new FunctionCall(funcName, args);
+				if (funcName != null) {
+					List<ValueExpr> args = getArgs(r);
+					expr = new FunctionCall(funcName, args);
+				}
+				else {
+					expr = null;
+				}
 			}
 			return expr;
 		}
@@ -1231,6 +1266,55 @@ public class SPINParser {
 			}
 			else {
 				return null;
+			}
+		}
+
+		private List<ValueExpr> getArgs(Resource r)
+			throws OpenRDFException
+		{
+			SortedMap<URI, ValueExpr> argValues = new TreeMap<URI, ValueExpr>(new Comparator<URI>()
+			{
+				@Override
+				public int compare(URI uri1, URI uri2) {
+					return uri1.getLocalName().compareTo(uri2.getLocalName());
+				}
+			});
+			CloseableIteration<? extends Statement, QueryEvaluationException> iter = store.getStatements(r, null, null);
+			try {
+				while(iter.hasNext()) {
+					Statement stmt = iter.next();
+					URI argName = stmt.getPredicate();
+					if(!NON_ARG_PROPERTIES.contains(argName)) {
+						ValueExpr argValue = visitExpression(stmt.getObject());
+						argValues.put(argName, argValue);
+					}
+				}
+			}
+			finally {
+				iter.close();
+			}
+
+			int numArgs = argValues.size();
+			List<ValueExpr> args = new ArrayList<ValueExpr>(numArgs);
+			for(int i=0; i<numArgs; i++) {
+				ValueExpr argExpr = argValues.remove(toArgProperty(i));
+				if(argExpr == null) {
+					argExpr = argValues.remove(argValues.firstKey());
+				}
+				args.add(argExpr);
+			}
+			return args;
+		}
+
+		private URI toArgProperty(int i) {
+			switch(i) {
+			case 1: return SP.ARG1_PROPERTY;
+			case 2: return SP.ARG2_PROPERTY;
+			case 3: return SP.ARG3_PROPERTY;
+			case 4: return SP.ARG4_PROPERTY;
+			case 5: return SP.ARG5_PROPERTY;
+			default:
+				return ValueFactoryImpl.getInstance().createURI(SP.NAMESPACE, "arg"+i);
 			}
 		}
 
@@ -1282,8 +1366,11 @@ public class SPINParser {
 		}
 
 		private Var createVar(String varName) {
-			if(extElems != null) {
-				extElems.remove(varName);
+			if(projElems != null) {
+				ProjectionElem projElem = projElems.get(varName);
+				if(projElem != null) {
+					projElem.setSourceExpression(null);
+				}
 			}
 			return new Var(varName);
 		}
