@@ -40,6 +40,7 @@ import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 import org.openrdf.sail.NotifyingSail;
+import org.openrdf.sail.inferencer.fc.DedupingInferencer;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -53,7 +54,8 @@ public class SPINSailTest {
 	@Before
 	public void setup() throws RepositoryException {
 		NotifyingSail baseSail = new MemoryStore();
-		ForwardChainingRDFSInferencer rdfsInferencer = new ForwardChainingRDFSInferencer(baseSail);
+		DedupingInferencer deduper = new DedupingInferencer(baseSail);
+		ForwardChainingRDFSInferencer rdfsInferencer = new ForwardChainingRDFSInferencer(deduper);
 		SPINSail spinSail = new SPINSail(rdfsInferencer);
 		repo = new SailRepository(spinSail);
 		repo.initialize();
