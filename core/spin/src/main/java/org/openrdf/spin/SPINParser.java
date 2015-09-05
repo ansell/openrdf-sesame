@@ -52,6 +52,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
@@ -544,7 +545,9 @@ public class SPINParser {
 		TupleExpr node;
 		Var namedGraph;
 		Map<String,ProjectionElem> projElems;
+		Group group;
 		Map<Resource,String> vars = new HashMap<Resource,String>();
+		Collection<AggregateOperator> aggregates = new ArrayList<AggregateOperator>();
 
 		SPINVisitor(TripleSource store) {
 			this.store = store;
@@ -596,7 +599,9 @@ public class SPINParser {
 
 			Value groupBy = Statements.singleValue(select, SP.GROUP_BY_PROPERTY, store);
 			if(groupBy instanceof Resource) {
-				Group group = visitGroupBy((Resource) groupBy);
+				visitGroupBy((Resource) groupBy);
+			}
+			if(group != null) {
 				group.setArg(projection.getArg());
 				projection.setArg(group);
 			}
@@ -758,24 +763,30 @@ public class SPINParser {
 			return createProjectionElem(r, null);
 		}
 
-		private Group visitGroupBy(Resource groupby)
+		private void visitGroupBy(Resource groupby)
 			throws OpenRDFException
 		{
-			Group group = new Group();
+			if(group == null) {
+				group = new Group();
+			}
 			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(groupby, store);
 			while(iter.hasNext()) {
 				Resource r = iter.next();
-				GroupElem orderElem = visitGroupByCondition(r);
-				group.addGroupElement(orderElem);
+				ValueExpr groupByExpr = visitGroupByCondition(r);
+				if(groupByExpr instanceof Var) {
+					group.addGroupBindingName(((Var)groupByExpr).getName());
+				}
+				else {
+					// TODO
+					throw new UnsupportedOperationException("TODO!");
+				}
 			}
-			return group;
 		}
 
-		private GroupElem visitGroupByCondition(Resource r)
+		private ValueExpr visitGroupByCondition(Resource r)
 				throws OpenRDFException
 		{
-			String varName = getVarName(r);
-			return new GroupElem(varName, new Avg(getVar(r)));
+			return visitExpression(r);
 		}
 
 		private Order visitOrderBy(Resource orderby)
@@ -804,7 +815,11 @@ public class SPINParser {
 		private ProjectionElem createProjectionElem(Value v, String projName)
 			throws OpenRDFException
 		{
+			Collection<AggregateOperator> oldAggregates = aggregates;
+			aggregates = new ArrayList<AggregateOperator>();
 			ValueExpr valueExpr = visitExpression(v);
+			boolean hasAggregates = !aggregates.isEmpty();
+
 			String varName = null;
 			if(valueExpr instanceof Var) {
 				varName = ((Var)valueExpr).getName();
@@ -832,6 +847,16 @@ public class SPINParser {
 
 			ProjectionElem projElem = new ProjectionElem(varName, projName);
 			projElem.setSourceExpression(new ExtensionElem(valueExpr, varName));
+			if(hasAggregates) {
+				projElem.setAggregateOperatorInExpression(true);
+				if(group == null) {
+					group = new Group();
+				}
+				for(AggregateOperator op : aggregates) {
+					group.addGroupElement(new GroupElem(projName, op));
+				}
+			}
+			aggregates = oldAggregates;
 			if(projElems != null) {
 				projElems.put(varName, projElem);
 			}
@@ -1085,10 +1110,11 @@ public class SPINParser {
 				}
 				else {
 					Set<URI> exprTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
+					exprTypes.remove(RDF.PROPERTY);
+					exprTypes.remove(RDFS.RESOURCE);
 					if(exprTypes.size() > 1) {
 						if(exprTypes.remove(SPIN.FUNCTIONS_CLASS)) {
 							exprTypes.remove(SPIN.MODULES_CLASS);
-							exprTypes.remove(RDFS.RESOURCE);
 							if(exprTypes.size() > 1) {
 								for(Iterator<URI> iter = exprTypes.iterator(); iter.hasNext(); ) {
 									URI f = iter.next();
@@ -1104,7 +1130,6 @@ public class SPINParser {
 						}
 						else if(exprTypes.remove(SP.AGGREGATION_CLASS)) {
 							exprTypes.remove(SP.SYSTEM_CLASS);
-							exprTypes.remove(RDFS.RESOURCE);
 							if(exprTypes.isEmpty()) {
 								throw new MalformedSPINException("Aggregation missing RDF type: "+r);
 							}
@@ -1150,37 +1175,51 @@ public class SPINParser {
 			else if(SP.COUNT_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
-				expr = new Count(visitExpression(arg), distinct);
+				Count count = new Count(visitExpression(arg), distinct);
+				aggregates.add(count);
+				expr = count;
 			}
 			else if(SP.MAX_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
-				expr = new Max(visitExpression(arg), distinct);
+				Max max = new Max(visitExpression(arg), distinct);
+				aggregates.add(max);
+				expr = max;
 			}
 			else if(SP.MIN_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
-				expr = new Min(visitExpression(arg), distinct);
+				Min min = new Min(visitExpression(arg), distinct);
+				aggregates.add(min);
+				expr = min;
 			}
 			else if(SP.SUM_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
-				expr = new Sum(visitExpression(arg), distinct);
+				Sum sum = new Sum(visitExpression(arg), distinct);
+				aggregates.add(sum);
+				expr = sum;
 			}
 			else if(SP.AVG_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
-				expr = new Avg(visitExpression(arg), distinct);
+				Avg avg = new Avg(visitExpression(arg), distinct);
+				aggregates.add(avg);
+				expr = avg;
 			}
 			else if(SP.GROUP_CONCAT_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
-				expr = new GroupConcat(visitExpression(arg), distinct);
+				GroupConcat groupConcat = new GroupConcat(visitExpression(arg), distinct);
+				aggregates.add(groupConcat);
+				expr = groupConcat;
 			}
 			else if(SP.SAMPLE_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 				boolean distinct = Statements.booleanValue(r, SP.DISTINCT_PROPERTY, store);
-				expr = new Sample(visitExpression(arg), distinct);
+				Sample sample = new Sample(visitExpression(arg), distinct);
+				aggregates.add(sample);
+				expr = sample;
 			}
 			else if(SP.NOT.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
