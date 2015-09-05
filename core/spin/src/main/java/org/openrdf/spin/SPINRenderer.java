@@ -333,6 +333,7 @@ public class SPINRenderer {
 		ListContext namedGraphContext;
 		boolean isMultiProjection;
 		boolean isSubQuery;
+		boolean hasGroup;
 
 		SPINVisitor(RDFHandler handler, Resource list, Resource subject) {
 			this.handler = handler;
@@ -502,6 +503,7 @@ public class SPINRenderer {
 			node.getArg().visit(new GroupVisitor());
 			node.getArg().visit(new OrderVisitor());
 			inlineBindings = oldInlineBindings;
+			hasGroup = false;
 		}
 
 		private void visitWhere(TupleExpr where) throws RDFHandlerException {
@@ -622,10 +624,13 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(Filter node) throws RDFHandlerException {
+			hasGroup = false;
 			node.getArg().visit(this);
-			listEntry();
-			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.FILTER_CLASS));
-			meet(node.getCondition());
+			if(!hasGroup) {
+				listEntry();
+				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.FILTER_CLASS));
+				meet(node.getCondition());
+			}
 		}
 
 		@Override
@@ -750,6 +755,7 @@ public class SPINRenderer {
 		public void meet(Group node) throws RDFHandlerException {
 			// skip over GroupElem - leave this to the GroupVisitor later
 			node.getArg().visit(this);
+			hasGroup = true;
 		}
 
 		@Override
@@ -964,6 +970,8 @@ public class SPINRenderer {
 
 		final class GroupVisitor extends QueryModelVisitorBase<RDFHandlerException>
 		{
+			Group group;
+
 			@Override
 			public void meet(Order node) throws RDFHandlerException {
 				node.getArg().visit(this);
@@ -976,6 +984,7 @@ public class SPINRenderer {
 
 			@Override
 			public void meet(Group node) throws RDFHandlerException {
+				group = node;
 				Set<String> groupNames = node.getGroupBindingNames();
 				if(!groupNames.isEmpty()) {
 					Resource groupByList = valueFactory.createBNode();
@@ -986,6 +995,19 @@ public class SPINRenderer {
 						listEntry(var);
 					}
 					endList(groupByCtx);
+				}
+			}
+
+			@Override
+			public void meet(Filter node) throws RDFHandlerException {
+				node.getArg().visit(this);
+				if(group != null) {
+					Resource havingList = valueFactory.createBNode();
+					handler.handleStatement(valueFactory.createStatement(subject, SP.HAVING_PROPERTY, havingList));
+					ListContext havingCtx = newList(havingList);
+					listEntry();
+					node.getCondition().visit(SPINVisitor.this);
+					endList(havingCtx);
 				}
 			}
 

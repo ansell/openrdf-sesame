@@ -606,6 +606,12 @@ public class SPINParser {
 				projection.setArg(group);
 			}
 
+			Value having = Statements.singleValue(select, SP.HAVING_PROPERTY, store);
+			if(having instanceof Resource) {
+				TupleExpr havingExpr = visitHaving((Resource) having);
+				projection.setArg(havingExpr);
+			}
+
 			addSourceExpressions(projection, projElems.values());
 
 			Value orderby = Statements.singleValue(select, SP.ORDER_BY_PROPERTY, store);
@@ -772,7 +778,7 @@ public class SPINParser {
 			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(groupby, store);
 			while(iter.hasNext()) {
 				Resource r = iter.next();
-				ValueExpr groupByExpr = visitGroupByCondition(r);
+				ValueExpr groupByExpr = visitExpression(r);
 				if(groupByExpr instanceof Var) {
 					group.addGroupBindingName(((Var)groupByExpr).getName());
 				}
@@ -783,10 +789,20 @@ public class SPINParser {
 			}
 		}
 
-		private ValueExpr visitGroupByCondition(Resource r)
-				throws OpenRDFException
+		private TupleExpr visitHaving(Resource having)
+			throws OpenRDFException
 		{
-			return visitExpression(r);
+			UnaryTupleOperator op = (UnaryTupleOperator) group.getParentNode();
+			op.setArg(new Extension(group));
+			Iteration<? extends Resource,QueryEvaluationException> iter = Statements.listResources(having, store);
+			while(iter.hasNext()) {
+				Resource r = iter.next();
+				ValueExpr havingExpr = visitExpression(r);
+				Filter filter = new Filter(op.getArg(), havingExpr);
+				op.setArg(filter);
+				op = filter;
+			}
+			return op;
 		}
 
 		private Order visitOrderBy(Resource orderby)
@@ -1408,7 +1424,10 @@ public class SPINParser {
 			if(projElems != null) {
 				ProjectionElem projElem = projElems.get(varName);
 				if(projElem != null) {
-					projElem.setSourceExpression(null);
+					ExtensionElem extElem = projElem.getSourceExpression();
+					if(extElem != null && extElem.getExpr() instanceof Var) {
+						projElem.setSourceExpression(null);
+					}
 				}
 			}
 			return new Var(varName);

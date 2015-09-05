@@ -1,13 +1,17 @@
 @prefix sp: <http://spinrdf.org/sp#>.
 @prefix spin: <http://spinrdf.org/spin#>.
+@prefix ex: <ex:>.
 
 [ a       sp:Select ;
 	sp:text """
+PREFIX ex: <ex:>
+
 SELECT ?this (MAX(?object) AS ?max)
 WHERE {
-	?this ?arg1 ?object
+	?this ex:prop ?object
 }
 GROUP BY ?this
+HAVING (?max > 0)
 ORDER BY ?max
 """;
   sp:resultVariables (
@@ -18,10 +22,11 @@ ORDER BY ?max
 	]
   ) ;
   sp:where ([ sp:object _:object ;
-              sp:predicate spin:_arg1 ;
+              sp:predicate ex:prop ;
               sp:subject spin:_this
             ]) ;
   sp:groupBy (spin:_this) ;
+  sp:having ([a sp:gt; sp:arg1 _:max; sp:arg2 0]);
   sp:orderBy ([a sp:Asc; sp:expression _:max])
 ].
 
