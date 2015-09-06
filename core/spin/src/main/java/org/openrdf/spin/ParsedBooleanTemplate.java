@@ -16,23 +16,20 @@
  */
 package org.openrdf.spin;
 
-import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.parser.ParsedOperation;
-import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.ParsedBooleanQuery;
 
-
-public class ParsedTemplateQuery extends ParsedQuery {
-	private final ParsedOperation template;
+public class ParsedBooleanTemplate extends ParsedBooleanQuery implements ParsedTemplate {
 	private final BindingSet args;
 
-	public ParsedTemplateQuery(URI uri, ParsedOperation template, BindingSet args) {
-		super(uri.stringValue());
-		this.template = template;
+	public ParsedBooleanTemplate(ParsedBooleanQuery query, BindingSet args) {
+		super(query.getSourceString(), query.getTupleExpr());
+		setDataset(query.getDataset());
 		this.args = args;
 	}
 
-	public BindingSet getArguments() {
+	@Override
+	public BindingSet getBindings() {
 		return args;
 	}
 }

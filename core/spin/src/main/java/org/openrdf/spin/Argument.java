@@ -17,34 +17,41 @@
 package org.openrdf.spin;
 
 import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.SPIN;
+import org.openrdf.model.Value;
 
 /**
- * Enum of possible SPIN constraint violation levels.
+ * Class to represent a SPIN argument.
  */
-public enum ConstraintViolationLevel {
-	INFO, WARNING, ERROR, FATAL;
+public class Argument {
 
-	public static ConstraintViolationLevel valueOf(URI levelValue) {
-		ConstraintViolationLevel level;
-		if (levelValue == null) {
-			level = ConstraintViolationLevel.ERROR;
-		}
-		else if (SPIN.INFO_VIOLATION_LEVEL.equals(levelValue)) {
-			level = ConstraintViolationLevel.INFO;
-		}
-		else if (SPIN.WARNING_VIOLATION_LEVEL.equals(levelValue)) {
-			level = ConstraintViolationLevel.WARNING;
-		}
-		else if (SPIN.ERROR_VIOLATION_LEVEL.equals(levelValue)) {
-			level = ConstraintViolationLevel.ERROR;
-		}
-		else if (SPIN.FATAL_VIOLATION_LEVEL.equals(levelValue)) {
-			level = ConstraintViolationLevel.FATAL;
-		}
-		else {
-			level = null;
-		}
-		return level;
+	private final URI uri;
+
+	private final URI valueType;
+
+	private final boolean optional;
+
+	private final Value defaultValue;
+
+	public Argument(URI uri, URI valueType, boolean optional, Value defaultValue) {
+		this.uri = uri;
+		this.valueType = valueType;
+		this.optional = optional;
+		this.defaultValue = defaultValue;
+	}
+
+	public URI getPredicate() {
+		return uri;
+	}
+
+	public URI getValueType() {
+		return valueType;
+	}
+
+	public boolean isOptional() {
+		return optional;
+	}
+
+	public Value getDefaultValue() {
+		return defaultValue;
 	}
 }

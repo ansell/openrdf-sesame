@@ -45,6 +45,8 @@ import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 
 public class SPINSailTest {
+	private static final String BASE_DIR = "/testcases/";
+
 	@Rule
 	public ExpectedException constraintException = ExpectedException.none();
 
@@ -84,8 +86,14 @@ public class SPINSailTest {
 		assertStatements("testConstructRule-expected.ttl");
 	}
 
+	@Test
+	public void testTemplateConstraint() throws Exception {
+		constraintException.expectCause(isA(ConstraintViolationException.class));
+		loadStatements("testTemplateConstraint.ttl");
+	}
+
 	private void loadStatements(String ttl) throws RepositoryException, RDFParseException, IOException {
-		URL url = getClass().getResource(ttl);
+		URL url = getClass().getResource(BASE_DIR+ttl);
 		InputStream in = url.openStream();
 		try {
 			conn.add(in, url.toString(), RDFFormat.TURTLE);
@@ -99,7 +107,7 @@ public class SPINSailTest {
 		StatementCollector expected = new StatementCollector();
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
 		parser.setRDFHandler(expected);
-		URL url = getClass().getResource(ttl);
+		URL url = getClass().getResource(BASE_DIR+ttl);
 		InputStream rdfStream = url.openStream();
 		parser.parse(rdfStream, url.toString());
 		rdfStream.close();

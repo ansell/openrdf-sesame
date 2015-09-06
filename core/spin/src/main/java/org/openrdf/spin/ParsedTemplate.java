@@ -16,40 +16,8 @@
  */
 package org.openrdf.spin;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.openrdf.query.BindingSet;
 
-import org.openrdf.model.URI;
-import org.openrdf.query.parser.ParsedOperation;
-
-/**
- * Class to represent a SPIN template.
- */
-public class Template {
-
-	private final URI uri;
-
-	private ParsedOperation parsedOp;
-
-	private final List<Argument> args = new ArrayList<Argument>(4);
-
-	public Template(URI uri) {
-		this.uri = uri;
-	}
-
-	public void setParsedOperation(ParsedOperation op) {
-		this.parsedOp = op;
-	}
-
-	public ParsedOperation getParsedOperation() {
-		return parsedOp;
-	}
-
-	public void addArgument(Argument arg) {
-		this.args.add(arg);
-	}
-
-	public List<Argument> getArguments() {
-		return args;
-	}
+public interface ParsedTemplate {
+	BindingSet getBindings();
 }

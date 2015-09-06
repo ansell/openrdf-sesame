@@ -83,7 +83,7 @@ public class SPINRendererTest {
 		StatementCollector actual = new StatementCollector();
 		renderer.render(pq, actual);
 
-		assertTrue("Expected\n"+toRDF(expected.getStatements())+"\nbut was\n"+toRDF(actual.getStatements()), Models.isomorphic(actual.getStatements(), expected.getStatements()));
+		assertTrue("Query was\n"+pq.getTupleExpr()+"\nExpected\n"+toRDF(expected.getStatements())+"\nbut was\n"+toRDF(actual.getStatements()), Models.isomorphic(actual.getStatements(), expected.getStatements()));
 	}
 
 	private static String toRDF(Iterable<Statement> stmts) throws RDFHandlerException

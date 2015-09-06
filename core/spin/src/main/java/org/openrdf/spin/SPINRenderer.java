@@ -36,10 +36,12 @@ import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.algebra.Avg;
+import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
+import org.openrdf.query.algebra.Datatype;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.Exists;
@@ -49,6 +51,12 @@ import org.openrdf.query.algebra.Filter;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
+import org.openrdf.query.algebra.IRIFunction;
+import org.openrdf.query.algebra.IsBNode;
+import org.openrdf.query.algebra.IsLiteral;
+import org.openrdf.query.algebra.IsNumeric;
+import org.openrdf.query.algebra.IsURI;
+import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
@@ -63,10 +71,12 @@ import org.openrdf.query.algebra.ProjectionElem;
 import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Reduced;
+import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.Sample;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
+import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
@@ -554,7 +564,10 @@ public class SPINRenderer {
 			}
 			else {
 				// any further Extension nodes produce BIND() clauses
-				super.meet(node);
+				node.getArg().visit(this);
+				for (ExtensionElem elem : node.getElements()) {
+					elem.visit(this);
+				}
 			}
 		}
 
@@ -665,6 +678,120 @@ public class SPINRenderer {
 			Resource currentSubj = subject;
 			flushPendingStatement();
 			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, toValue(node.getOperator())));
+			predicate = SP.ARG1_PROPERTY;
+			node.getLeftArg().visit(this);
+			predicate = SP.ARG2_PROPERTY;
+			node.getRightArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(IsURI node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.IS_IRI));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(IsBNode node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.IS_BLANK));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(IsLiteral node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.IS_LITERAL));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(IsNumeric node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.IS_NUMERIC));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(Str node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.STR));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(Lang node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.LANG));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(Datatype node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.DATATYPE));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(IRIFunction node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.IRI));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(BNodeGenerator node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.BNODE));
+			if(node.getNodeIdExpr() != null) {
+				predicate = SP.ARG1_PROPERTY;
+				node.getNodeIdExpr().visit(this);
+			}
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(Regex node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.REGEX));
 			predicate = SP.ARG1_PROPERTY;
 			node.getLeftArg().visit(this);
 			predicate = SP.ARG2_PROPERTY;

@@ -43,8 +43,10 @@ import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SPIN;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
+import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -66,8 +68,9 @@ import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnection;
 import org.openrdf.sail.inferencer.util.RDFInferencerInserter;
 import org.openrdf.spin.ConstraintViolation;
+import org.openrdf.spin.ConstraintViolationRDFHandler;
 import org.openrdf.spin.MalformedSPINException;
-import org.openrdf.spin.ParsedTemplateQuery;
+import org.openrdf.spin.ParsedTemplate;
 import org.openrdf.spin.RuleProperty;
 import org.openrdf.spin.SPINParser;
 import org.openrdf.spin.util.Statements;
@@ -290,9 +293,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		if (parsedOp instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedOp;
 			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, getWrappedConnection(), vf);
-			if (!parser.isThisUnbound(rule, tripleSource)) {
-				queryOp.setBinding(THIS_VAR, subj);
-			}
+			addBindings(subj, rule, tripleSource, graphQuery, queryOp);
 			CountingRDFInferencerInserter handler = new CountingRDFInferencerInserter(getWrappedConnection(), vf);
 			queryOp.evaluate(handler);
 			nofInferred = handler.getStatementCount();
@@ -300,9 +301,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		else if (parsedOp instanceof ParsedUpdate) {
 			ParsedUpdate graphUpdate = (ParsedUpdate)parsedOp;
 			SailConnectionUpdate updateOp = new SailConnectionUpdate(graphUpdate, getWrappedConnection(), vf, parserConfig);
-			if (!parser.isThisUnbound(rule, tripleSource)) {
-				updateOp.setBinding(THIS_VAR, subj);
-			}
+			addBindings(subj, rule, tripleSource, graphUpdate, updateOp);
 			UpdateCountListener listener = new UpdateCountListener();
 			getWrappedConnection().addConnectionListener(listener);
 			updateOp.execute();
@@ -425,43 +424,49 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		if (parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery)parsedQuery;
 			BooleanQuery queryOp = new SailConnectionBooleanQuery(askQuery, getWrappedConnection());
-			if (!parser.isThisUnbound(constraint, tripleSource)) {
-				queryOp.setBinding(THIS_VAR, subj);
-			}
+			addBindings(subj, constraint, tripleSource, askQuery, queryOp);
 			if (!queryOp.evaluate()) {
 				ConstraintViolation violation = parser.parseConstraintViolation(constraint, tripleSource);
-				switch (violation.getLevel()) {
-					case INFO:
-						logger.info(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-								violation.getMessage(), violation.getRoot(), violation.getPath(),
-								violation.getValue());
-						break;
-					case WARNING:
-						logger.warn(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-								violation.getMessage(), violation.getRoot(), violation.getPath(),
-								violation.getValue());
-						break;
-					case ERROR:
-						logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-								violation.getMessage(), violation.getRoot(), violation.getPath(),
-								violation.getValue());
-						throw new ConstraintViolationException(violation);
-					case FATAL:
-						logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-								violation.getMessage(), violation.getRoot(), violation.getPath(),
-								violation.getValue());
-						throw new ConstraintViolationException(violation);
-				}
+				handleConstraintViolation(violation);
 			}
 		}
 		else if (parsedQuery instanceof ParsedGraphQuery) {
-			// TODO
-		}
-		else if (parsedQuery instanceof ParsedTemplateQuery) {
-			// TODO
+			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedQuery;
+			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, getWrappedConnection(), vf);
+			addBindings(subj, constraint, tripleSource, graphQuery, queryOp);
+			ConstraintViolationRDFHandler handler = new ConstraintViolationRDFHandler();
+			queryOp.evaluate(handler);
+			handleConstraintViolation(handler.getConstraintViolation());
 		}
 		else {
 			throw new MalformedSPINException("Invalid constraint: " + constraint);
+		}
+	}
+
+	private void handleConstraintViolation(ConstraintViolation violation)
+		throws ConstraintViolationException
+	{
+		switch (violation.getLevel()) {
+			case INFO:
+				logger.info(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
+						violation.getMessage(), violation.getRoot(), violation.getPath(),
+						violation.getValue());
+				break;
+			case WARNING:
+				logger.warn(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
+						violation.getMessage(), violation.getRoot(), violation.getPath(),
+						violation.getValue());
+				break;
+			case ERROR:
+				logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
+						violation.getMessage(), violation.getRoot(), violation.getPath(),
+						violation.getValue());
+				throw new ConstraintViolationException(violation);
+			case FATAL:
+				logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
+						violation.getMessage(), violation.getRoot(), violation.getPath(),
+						violation.getValue());
+				throw new ConstraintViolationException(violation);
 		}
 	}
 
@@ -488,6 +493,19 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 				cls, SPIN.CONSTRAINT_PROPERTY, tripleSource);
 		Iterations.addAll(constraintIter, constraints);
 		return constraints;
+	}
+
+	private void addBindings(Resource subj, Resource opResource, TripleSource tripleSource, ParsedOperation parsedOp, Operation op)
+		throws OpenRDFException
+	{
+		if (!parser.isThisUnbound(opResource, tripleSource)) {
+			op.setBinding(THIS_VAR, subj);
+		}
+		if (parsedOp instanceof ParsedTemplate) {
+			for(Binding b : ((ParsedTemplate)parsedOp).getBindings()) {
+				op.setBinding(b.getName(), b.getValue());
+			}
+		}
 	}
 
 

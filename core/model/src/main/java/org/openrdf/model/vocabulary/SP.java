@@ -679,6 +679,18 @@ public class SP {
 	public static final URI NOT;
 	public static final URI EXISTS;
 	public static final URI NOT_EXISTS;
+	public static final URI IS_IRI;
+	public static final URI IS_URI;
+	public static final URI IS_BLANK;
+	public static final URI IS_LITERAL;
+	public static final URI IS_NUMERIC;
+	public static final URI STR;
+	public static final URI LANG;
+	public static final URI DATATYPE;
+	public static final URI IRI;
+	public static final URI URI;
+	public static final URI BNODE;
+	public static final URI REGEX;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -808,5 +820,18 @@ public class SP {
 
 		EXISTS = factory.createURI(NAMESPACE, "exists");
 		NOT_EXISTS = factory.createURI(NAMESPACE, "notExists");
+
+		IS_IRI = factory.createURI(NAMESPACE, "isIRI");
+		IS_URI = factory.createURI(NAMESPACE, "isURI");
+		IS_BLANK = factory.createURI(NAMESPACE, "isBlank");
+		IS_LITERAL = factory.createURI(NAMESPACE, "isLiteral");
+		IS_NUMERIC = factory.createURI(NAMESPACE, "isNumeric");
+		STR = factory.createURI(NAMESPACE, "str");
+		LANG = factory.createURI(NAMESPACE, "lang");
+		DATATYPE = factory.createURI(NAMESPACE, "datatype");
+		IRI = factory.createURI(NAMESPACE, "iri");
+		URI = factory.createURI(NAMESPACE, "uri");
+		BNODE = factory.createURI(NAMESPACE, "bnode");
+		REGEX = factory.createURI(NAMESPACE, "regex");
 	}
 }
