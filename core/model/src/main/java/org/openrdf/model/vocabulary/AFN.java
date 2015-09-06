@@ -14,49 +14,33 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.openrdf.model.vocabulary;
 
 import org.openrdf.model.URI;
-import org.openrdf.query.parser.ParsedOperation;
-
-import com.google.common.base.Joiner;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
 
 /**
- * Class to represent a SPIN template.
+ * http://jena.hpl.hp.com/ARQ/function#.
  */
-public class Template {
+public final class AFN {
 
-	private final URI uri;
+	private AFN() {}
 
-	private ParsedOperation parsedOp;
+	/**
+	 * http://jena.hpl.hp.com/ARQ/function
+	 */
+	public static final String NAMESPACE = "http://jena.hpl.hp.com/ARQ/function#";
 
-	private final List<Argument> args = new ArrayList<Argument>(4);
+	public static final String PREFIX = "afn";
 
-	public Template(URI uri) {
-		this.uri = uri;
-	}
+	/**
+	 * http://jena.hpl.hp.com/ARQ/function#localname The LocalName QueryModelNode as a SPARQL function.
+	 */
+	public static final URI LOCALNAME;
 
-	public void setParsedOperation(ParsedOperation op) {
-		this.parsedOp = op;
-	}
-
-	public ParsedOperation getParsedOperation() {
-		return parsedOp;
-	}
-
-	public void addArgument(Argument arg) {
-		this.args.add(arg);
-	}
-
-	public List<Argument> getArguments() {
-		return args;
-	}
-
-	@Override
-	public String toString() {
-		return uri+"("+ Joiner.on(", ").join(args)+")";
+	static {
+		ValueFactory factory = ValueFactoryImpl.getInstance();
+		LOCALNAME = factory.createURI(NAMESPACE, "localname");
 	}
 }

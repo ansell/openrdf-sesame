@@ -54,4 +54,14 @@ public class Argument {
 	public Value getDefaultValue() {
 		return defaultValue;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		if(valueType != null) {
+			buf.append(valueType).append(" ");
+		}
+		buf.append(uri);
+		return buf.toString();
+	}
 }

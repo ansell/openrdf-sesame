@@ -19,5 +19,6 @@ package org.openrdf.spin;
 import org.openrdf.query.BindingSet;
 
 public interface ParsedTemplate {
+	Template getTemplate();
 	BindingSet getBindings();
 }

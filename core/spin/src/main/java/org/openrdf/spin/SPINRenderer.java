@@ -31,13 +31,17 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.AFN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BindingSetAssignment;
+import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
@@ -52,6 +56,7 @@ import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.IRIFunction;
+import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -59,12 +64,14 @@ import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
+import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
@@ -688,6 +695,72 @@ public class SPINRenderer {
 		}
 
 		@Override
+		public void meet(And node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.AND));
+			predicate = SP.ARG1_PROPERTY;
+			node.getLeftArg().visit(this);
+			predicate = SP.ARG2_PROPERTY;
+			node.getRightArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(Or node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.OR));
+			predicate = SP.ARG1_PROPERTY;
+			node.getLeftArg().visit(this);
+			predicate = SP.ARG2_PROPERTY;
+			node.getRightArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(Bound node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.BOUND));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(If node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.IF));
+			predicate = SP.ARG1_PROPERTY;
+			node.getCondition().visit(this);
+			predicate = SP.ARG2_PROPERTY;
+			node.getResult().visit(this);
+			predicate = SP.ARG3_PROPERTY;
+			node.getAlternative().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(Coalesce node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.COALESCE));
+			List<ValueExpr> args = node.getArguments();
+			for(int i=0; i<args.size(); i++) {
+				predicate = toArgProperty(i+1);
+				args.get(i).visit(this);
+			}
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
 		public void meet(IsURI node) throws RDFHandlerException {
 			Resource currentSubj = subject;
 			flushPendingStatement();
@@ -797,6 +870,17 @@ public class SPINRenderer {
 			node.getLeftArg().visit(this);
 			predicate = SP.ARG2_PROPERTY;
 			node.getRightArg().visit(this);
+			subject = currentSubj;
+			predicate = null;
+		}
+
+		@Override
+		public void meet(LocalName node) throws RDFHandlerException {
+			Resource currentSubj = subject;
+			flushPendingStatement();
+			handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, AFN.LOCALNAME));
+			predicate = SP.ARG1_PROPERTY;
+			node.getArg().visit(this);
 			subject = currentSubj;
 			predicate = null;
 		}

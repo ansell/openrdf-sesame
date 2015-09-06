@@ -5,6 +5,7 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.FN;
 import org.openrdf.model.vocabulary.SP;
+import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -12,6 +13,7 @@ import com.google.common.collect.HashBiMap;
 final class SPINWellKnownFunctions
 {
 	private static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+	private static final FunctionRegistry functionRegistry = FunctionRegistry.getInstance();
 	static final SPINWellKnownFunctions INSTANCE = new SPINWellKnownFunctions();
 
 	private final BiMap<String,URI> stringToUri = HashBiMap.create(64);
@@ -56,10 +58,18 @@ final class SPINWellKnownFunctions
 	}
 
 	public URI getURI(String name) {
-		return stringToUri.get(name);
+		URI uri = stringToUri.get(name);
+		if(uri == null && functionRegistry.has(name)) {
+			uri = valueFactory.createURI(name);
+		}
+		return uri;
 	}
 
 	public String getName(URI uri) {
-		return uriToString.get(uri);
+		String name = uriToString.get(uri);
+		if(name == null && functionRegistry.has(uri.stringValue())) {
+			name = uri.stringValue();
+		}
+		return name;
 	}
 }

@@ -83,7 +83,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final Marker constraintViolationMarker = MarkerFactory.getMarker("ConstraintViolation");
 
-	private static final String CONSTRAINT_VIOLATION_MESSAGE = "{}: {} {} {}";
+	private static final String CONSTRAINT_VIOLATION_MESSAGE = "Constraint violation: {}: {} {} {}";
 
 	private final ValueFactory vf;
 
@@ -152,15 +152,15 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		throws SailException
 	{
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
-		loadAxiomStatements(parser, "/schema/sp.ttl", getWrappedConnection());
-		loadAxiomStatements(parser, "/schema/spin.ttl", getWrappedConnection());
-		loadAxiomStatements(parser, "/schema/spl.spin.ttl", getWrappedConnection());
+		loadAxiomStatements(parser, "/schema/sp.ttl");
+		loadAxiomStatements(parser, "/schema/spin.ttl");
+		loadAxiomStatements(parser, "/schema/spl.spin.ttl");
 	}
 
-	private void loadAxiomStatements(RDFParser parser, String file, InferencerConnection con)
+	private void loadAxiomStatements(RDFParser parser, String file)
 		throws SailException
 	{
-		RDFInferencerInserter inserter = new RDFInferencerInserter(con, vf);
+		RDFInferencerInserter inserter = new RDFInferencerInserter(this, vf);
 		parser.setRDFHandler(inserter);
 		URL url = getClass().getResource(file);
 		try {
@@ -292,20 +292,20 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		ParsedOperation parsedOp = parser.parse(rule, tripleSource);
 		if (parsedOp instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedOp;
-			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, getWrappedConnection(), vf);
+			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, this, vf);
 			addBindings(subj, rule, tripleSource, graphQuery, queryOp);
-			CountingRDFInferencerInserter handler = new CountingRDFInferencerInserter(getWrappedConnection(), vf);
+			CountingRDFInferencerInserter handler = new CountingRDFInferencerInserter(this, vf);
 			queryOp.evaluate(handler);
 			nofInferred = handler.getStatementCount();
 		}
 		else if (parsedOp instanceof ParsedUpdate) {
 			ParsedUpdate graphUpdate = (ParsedUpdate)parsedOp;
-			SailConnectionUpdate updateOp = new SailConnectionUpdate(graphUpdate, getWrappedConnection(), vf, parserConfig);
+			SailConnectionUpdate updateOp = new SailConnectionUpdate(graphUpdate, this, vf, parserConfig);
 			addBindings(subj, rule, tripleSource, graphUpdate, updateOp);
 			UpdateCountListener listener = new UpdateCountListener();
-			getWrappedConnection().addConnectionListener(listener);
+			addConnectionListener(listener);
 			updateOp.execute();
-			getWrappedConnection().removeConnectionListener(listener);
+			removeConnectionListener(listener);
 			// number of statement changes
 			nofInferred = listener.getAddedStatementCount() + listener.getRemovedStatementCount();
 		}
@@ -423,7 +423,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		ParsedQuery parsedQuery = parser.parseQuery(constraint, tripleSource);
 		if (parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery)parsedQuery;
-			BooleanQuery queryOp = new SailConnectionBooleanQuery(askQuery, getWrappedConnection());
+			BooleanQuery queryOp = new SailConnectionBooleanQuery(askQuery, this);
 			addBindings(subj, constraint, tripleSource, askQuery, queryOp);
 			if (!queryOp.evaluate()) {
 				ConstraintViolation violation = parser.parseConstraintViolation(constraint, tripleSource);
@@ -432,7 +432,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 		else if (parsedQuery instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedQuery;
-			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, getWrappedConnection(), vf);
+			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, this, vf);
 			addBindings(subj, constraint, tripleSource, graphQuery, queryOp);
 			ConstraintViolationRDFHandler handler = new ConstraintViolationRDFHandler();
 			queryOp.evaluate(handler);

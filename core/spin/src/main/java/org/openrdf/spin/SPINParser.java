@@ -44,6 +44,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.AFN;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SP;
@@ -54,9 +55,12 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.AggregateOperator;
+import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BindingSetAssignment;
+import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
@@ -73,6 +77,7 @@ import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IRIFunction;
+import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -80,12 +85,14 @@ import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
+import org.openrdf.query.algebra.Or;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.OrderElem;
 import org.openrdf.query.algebra.Projection;
@@ -429,10 +436,10 @@ public class SPINParser {
 
 			ParsedOperation tmplOp = tmpl.getParsedOperation();
 			if(tmplOp instanceof ParsedBooleanQuery) {
-				parsedOp = new ParsedBooleanTemplate((ParsedBooleanQuery) tmpl.getParsedOperation(), args);
+				parsedOp = new ParsedBooleanTemplate(tmpl, args);
 			}
 			else if(tmplOp instanceof ParsedGraphQuery) {
-				parsedOp = new ParsedGraphTemplate((ParsedGraphQuery) tmpl.getParsedOperation(), args);
+				parsedOp = new ParsedGraphTemplate(tmpl, args);
 			}
 			else {
 				throw new AssertionError("Unrecognised ParsedOperation: "+tmplOp.getClass());
@@ -1178,6 +1185,7 @@ public class SPINParser {
 					Set<URI> exprTypes = Iterations.asSet(Statements.getObjectURIs(r, RDF.TYPE, store));
 					exprTypes.remove(RDF.PROPERTY);
 					exprTypes.remove(RDFS.RESOURCE);
+					exprTypes.remove(RDFS.CLASS);
 					if(exprTypes.size() > 1) {
 						if(exprTypes.remove(SPIN.FUNCTIONS_CLASS)) {
 							exprTypes.remove(SPIN.MODULES_CLASS);
@@ -1237,6 +1245,20 @@ public class SPINParser {
 					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
 				}
 				expr = new MathExpr(args.get(0), args.get(1), mathOp);
+			}
+			else if(SP.AND.equals(func)) {
+				List<ValueExpr> args = getArgs(r);
+				if(args.size() != 2) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+				}
+				expr = new And(args.get(0), args.get(1));
+			}
+			else if(SP.OR.equals(func)) {
+				List<ValueExpr> args = getArgs(r);
+				if(args.size() != 2) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+				}
+				expr = new Or(args.get(0), args.get(1));
 			}
 			else if(SP.COUNT_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
@@ -1316,6 +1338,24 @@ public class SPINParser {
 				visitGroupGraphPattern((Resource) elements);
 				node = currentNode;
 			}
+			else if(SP.BOUND.equals(func)) {
+				List<ValueExpr> args = getArgs(r);
+				if(args.size() != 1) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+				}
+				expr = new Bound((Var)args.get(0));
+			}
+			else if(SP.IF.equals(func)) {
+				List<ValueExpr> args = getArgs(r);
+				if(args.size() != 3) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+				}
+				expr = new If(args.get(0), args.get(1), args.get(2));
+			}
+			else if(SP.COALESCE.equals(func)) {
+				List<ValueExpr> args = getArgs(r);
+				expr = new Coalesce(args);
+			}
 			else if(SP.IS_IRI.equals(func) || SP.IS_URI.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
@@ -1385,8 +1425,25 @@ public class SPINParser {
 				ValueExpr flagsArg = (args.size() == 3) ? args.get(2) : null;
 				expr = new Regex(args.get(0), args.get(1), flagsArg);
 			}
+			else if(AFN.LOCALNAME.equals(func)) {
+				List<ValueExpr> args = getArgs(r);
+				if(args.size() != 1) {
+					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+				}
+				expr = new LocalName(args.get(0));
+			}
 			else {
 				String funcName = wellKnownFunctions.apply(func);
+				if (funcName == null) {
+					// check if it is a SPIN function
+					Statement funcTypeStmt = Statements.single(func, RDF.TYPE, SPIN.FUNCTION_CLASS, store);
+					if(funcTypeStmt != null) {
+						funcName = func.stringValue();
+					}
+				}
+				// not enough information available to determine
+				// if it is really a function or not
+				// so by default we can either assume it is or it is not
 				if (funcName == null && !strictFunctionChecking) {
 					funcName = func.stringValue();
 				}

@@ -666,6 +666,8 @@ public class SP {
 
 	// "The SPIN RDF Syntax provides standard URIs for the built-in functions and operators of the SPARQL language.
 	// For example, sp:gt represents the > operator."
+	public static final URI AND;
+	public static final URI OR;
 	public static final URI ADD;
 	public static final URI SUB;
 	public static final URI MUL;
@@ -679,6 +681,9 @@ public class SP {
 	public static final URI NOT;
 	public static final URI EXISTS;
 	public static final URI NOT_EXISTS;
+	public static final URI BOUND;
+	public static final URI IF;
+	public static final URI COALESCE;
 	public static final URI IS_IRI;
 	public static final URI IS_URI;
 	public static final URI IS_BLANK;
@@ -806,6 +811,8 @@ public class SP {
 		GROUP_CONCAT_CLASS = factory.createURI(NAMESPACE, "GroupConcat");
 		SAMPLE_CLASS = factory.createURI(NAMESPACE, "Sample");
 
+		AND = factory.createURI(NAMESPACE, "and");
+		OR = factory.createURI(NAMESPACE, "or");
 		ADD = factory.createURI(NAMESPACE, "add");
 		SUB = factory.createURI(NAMESPACE, "sub");
 		MUL = factory.createURI(NAMESPACE, "mul");
@@ -821,6 +828,9 @@ public class SP {
 		EXISTS = factory.createURI(NAMESPACE, "exists");
 		NOT_EXISTS = factory.createURI(NAMESPACE, "notExists");
 
+		BOUND = factory.createURI(NAMESPACE, "bound");
+		IF = factory.createURI(NAMESPACE, "if");
+		COALESCE = factory.createURI(NAMESPACE, "coalesce");
 		IS_IRI = factory.createURI(NAMESPACE, "isIRI");
 		IS_URI = factory.createURI(NAMESPACE, "isURI");
 		IS_BLANK = factory.createURI(NAMESPACE, "isBlank");

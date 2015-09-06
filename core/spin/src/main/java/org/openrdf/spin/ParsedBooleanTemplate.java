@@ -20,12 +20,23 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 
 public class ParsedBooleanTemplate extends ParsedBooleanQuery implements ParsedTemplate {
+	private final Template template;
 	private final BindingSet args;
 
-	public ParsedBooleanTemplate(ParsedBooleanQuery query, BindingSet args) {
+	public ParsedBooleanTemplate(Template template, BindingSet args) {
+		this(template, (ParsedBooleanQuery)template.getParsedOperation(), args);
+	}
+
+	private ParsedBooleanTemplate(Template template, ParsedBooleanQuery query, BindingSet args) {
 		super(query.getSourceString(), query.getTupleExpr());
 		setDataset(query.getDataset());
+		this.template = template;
 		this.args = args;
+	}
+
+	@Override
+	public Template getTemplate() {
+		return template;
 	}
 
 	@Override
