@@ -41,11 +41,7 @@ public class SPINRendererTest {
 			String testFile = "/testcases/test"+suffix+".ttl";
 			URL rdfURL = SPINRendererTest.class.getResource(testFile);
 			if(rdfURL == null) {
-				testFile = "/testcases/test"+suffix+"r.ttl";
-				rdfURL = SPINRendererTest.class.getResource(testFile);
-				if(rdfURL == null) {
-					break;
-				}
+				break;
 			}
 			params.add(new Object[] {testFile, rdfURL});
 		}

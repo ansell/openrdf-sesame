@@ -917,7 +917,20 @@ public class SPINRenderer {
 
 		@Override
 		public void meet(Join node) throws RDFHandlerException {
-			super.meet(node);
+			boolean isGroupGraphPattern = (node.getRightArg() instanceof Join);
+			if(!isGroupGraphPattern) {
+				super.meet(node);
+			}
+			else {
+				listEntry();
+				ListContext leftGroupCtx = newList(subject);
+				node.getLeftArg().visit(this);
+				endList(leftGroupCtx);
+				listEntry();
+				ListContext rightGroupCtx = newList(subject);
+				node.getRightArg().visit(this);
+				endList(rightGroupCtx);
+			}
 		}
 
 		@Override

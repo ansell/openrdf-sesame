@@ -37,11 +37,7 @@ public class SPINParserTest {
 			String testFile = "/testcases/test"+suffix+".ttl";
 			URL rdfURL = SPINParserTest.class.getResource(testFile);
 			if(rdfURL == null) {
-				testFile = "/testcases/test"+suffix+"p.ttl";
-				rdfURL = SPINParserTest.class.getResource(testFile);
-				if(rdfURL == null) {
-					break;
-				}
+				break;
 			}
 			params.add(new Object[] {testFile, rdfURL});
 		}
