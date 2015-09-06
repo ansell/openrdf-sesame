@@ -56,6 +56,7 @@ import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
 import org.openrdf.query.algebra.IsURI;
+import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LeftJoin;
 import org.openrdf.query.algebra.MathExpr;
@@ -912,6 +913,11 @@ public class SPINRenderer {
 		public void meet(Reduced node) throws RDFHandlerException {
 			node.getArg().visit(this);
 			handler.handleStatement(valueFactory.createStatement(subject, SP.REDUCED_PROPERTY, BooleanLiteralImpl.TRUE));
+		}
+
+		@Override
+		public void meet(Join node) throws RDFHandlerException {
+			super.meet(node);
 		}
 
 		@Override

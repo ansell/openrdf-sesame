@@ -8,11 +8,16 @@ PREFIX ex: <ex:>
 
 DESCRIBE ?value
 WHERE {
+	?this a ex:Person .
 	?this ex:uncle ?value
 }
 """;
   sp:resultNodes (_:value) ;
-  sp:where ([ sp:object _:value ;
+  sp:where ([ sp:object ex:Person ;
+              sp:predicate rdf:type ;
+              sp:subject spin:_this
+            ]
+            [ sp:object _:value ;
               sp:predicate ex:uncle ;
               sp:subject spin:_this
             ])
