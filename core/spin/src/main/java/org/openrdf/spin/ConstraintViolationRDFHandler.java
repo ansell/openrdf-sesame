@@ -28,11 +28,12 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
 
 public class ConstraintViolationRDFHandler extends RDFHandlerBase {
 
+	private boolean hasStatements;
 	private String label;
 	private String root;
 	private String path;
 	private String value;
-	private ConstraintViolationLevel level = ConstraintViolationLevel.ERROR;
+	private ConstraintViolationLevel level;
 	private ConstraintViolation violation;
 
 	public ConstraintViolation getConstraintViolation() {
@@ -40,9 +41,23 @@ public class ConstraintViolationRDFHandler extends RDFHandlerBase {
 	}
 
 	@Override
+	public void startRDF()
+		throws RDFHandlerException
+	{
+		hasStatements = false;
+		label = null;
+		root = null;
+		path = null;
+		value = null;
+		level = ConstraintViolationLevel.ERROR;
+		violation = null;
+	}
+
+	@Override
 	public void handleStatement(Statement st)
 		throws RDFHandlerException
 	{
+		hasStatements = true;
 		URI pred = st.getPredicate();
 		if (RDFS.LABEL.equals(pred)) {
 			Value labelValue = st.getObject();
@@ -76,6 +91,8 @@ public class ConstraintViolationRDFHandler extends RDFHandlerBase {
 	public void endRDF()
 		throws RDFHandlerException
 	{
-		violation = new ConstraintViolation(label, root, path, value, level);
+		if(hasStatements) {
+			violation = new ConstraintViolation(label, root, path, value, level);
+		}
 	}
 }

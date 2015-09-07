@@ -32,8 +32,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
@@ -518,8 +518,49 @@ public class SPINParser {
 		ParsedOperation op = parse((Resource)body, queryType, store);
 		tmpl.setParsedOperation(op);
 
+		Map<URI,Argument> templateArgs = parseArguments(tmplUri, store);
+
+		List<URI> orderedArgs = orderArgs(templateArgs.keySet());
+		for(URI uri : orderedArgs) {
+			Argument arg = templateArgs.get(uri);
+			tmpl.addArgument(arg);
+		}
+
+		return tmpl;
+	}
+
+	public org.openrdf.query.algebra.evaluation.function.Function parseFunction(URI funcUri, TripleSource store)
+			throws OpenRDFException
+	{
+		Value body = Statements.singleValue(funcUri, SPIN.BODY_PROPERTY, store);
+		// TODO SPINx
+		if (!(body instanceof Resource)) {
+			throw new MalformedSPINException("Function body is not a resource: " + body);
+		}
+		ParsedQuery query = parseQuery((Resource)body, store);
+		if(query instanceof ParsedGraphQuery) {
+			throw new MalformedSPINException("Function body must be an ASK or SELECT query");
+		}
+
+		Map<URI,Argument> templateArgs = parseArguments(funcUri, store);
+
+		SPINFunction func = new SPINFunction(funcUri);
+		func.setParsedQuery(query);
+		List<URI> orderedArgs = orderArgs(templateArgs.keySet());
+		for(URI uri : orderedArgs) {
+			Argument arg = templateArgs.get(uri);
+			func.addArgument(arg);
+		}
+
+		return func;
+	}
+
+	private Map<URI,Argument> parseArguments(URI moduleUri, TripleSource store)
+		throws OpenRDFException
+	{
+		Map<URI,Argument> args = new HashMap<URI,Argument>();
 		CloseableIteration<? extends Resource, ? extends OpenRDFException> argIter = Statements.getObjectResources(
-				tmplUri, SPIN.CONSTRAINT_PROPERTY, store);
+				moduleUri, SPIN.CONSTRAINT_PROPERTY, store);
 		try {
 			while(argIter.hasNext()) {
 				Resource possibleArg = argIter.next();
@@ -529,15 +570,15 @@ public class SPINParser {
 					Value valueType = Statements.singleValue(possibleArg, SPL.VALUE_TYPE_PROPERTY, store);
 					boolean optional = Statements.booleanValue(possibleArg, SPL.OPTIONAL_PROPERTY, store);
 					Value defaultValue = Statements.singleValue(possibleArg, SPL.DEFAULT_VALUE_PROPERTY, store);
-					tmpl.addArgument(new Argument((URI) argPred, (URI) valueType, optional, defaultValue));
+					URI argUri = (URI) argPred;
+					args.put(argUri, new Argument(argUri, (URI) valueType, optional, defaultValue));
 				}
 			}
 		}
 		finally {
 			argIter.close();
 		}
-
-		return tmpl;
+		return args;
 	}
 
 	private ParsedOperation parseText(Resource queryResource, URI queryType, TripleSource store)
@@ -588,6 +629,41 @@ public class SPINParser {
 		}
 		else {
 			throw new MalformedSPINException("Unrecognised command type: " + queryType);
+		}
+	}
+
+	private static List<URI> orderArgs(Set<URI> args) {
+		SortedSet<URI> sortedArgs = new TreeSet<URI>(new Comparator<URI>()
+		{
+			@Override
+			public int compare(URI uri1, URI uri2) {
+				return uri1.getLocalName().compareTo(uri2.getLocalName());
+			}
+		});
+		sortedArgs.addAll(args);
+
+		int numArgs = sortedArgs.size();
+		List<URI> orderedArgs = new ArrayList<URI>(numArgs);
+		for(int i=0; i<numArgs; i++) {
+			URI arg = toArgProperty(i);
+			if(!sortedArgs.remove(arg)) {
+				arg = sortedArgs.first();
+				sortedArgs.remove(arg);
+			}
+			args.add(arg);
+		}
+		return orderedArgs;
+	}
+
+	private static URI toArgProperty(int i) {
+		switch(i) {
+		case 1: return SP.ARG1_PROPERTY;
+		case 2: return SP.ARG2_PROPERTY;
+		case 3: return SP.ARG3_PROPERTY;
+		case 4: return SP.ARG4_PROPERTY;
+		case 5: return SP.ARG5_PROPERTY;
+		default:
+			return ValueFactoryImpl.getInstance().createURI(SP.NAMESPACE, "arg"+i);
 		}
 	}
 
@@ -1503,13 +1579,7 @@ public class SPINParser {
 		private List<ValueExpr> getArgs(Resource r)
 			throws OpenRDFException
 		{
-			SortedMap<URI, ValueExpr> argValues = new TreeMap<URI, ValueExpr>(new Comparator<URI>()
-			{
-				@Override
-				public int compare(URI uri1, URI uri2) {
-					return uri1.getLocalName().compareTo(uri2.getLocalName());
-				}
-			});
+			Map<URI, ValueExpr> argValues = new HashMap<URI, ValueExpr>();
 			CloseableIteration<? extends Statement, QueryEvaluationException> iter = store.getStatements(r, null, null);
 			try {
 				while(iter.hasNext()) {
@@ -1525,28 +1595,13 @@ public class SPINParser {
 				iter.close();
 			}
 
-			int numArgs = argValues.size();
-			List<ValueExpr> args = new ArrayList<ValueExpr>(numArgs);
-			for(int i=0; i<numArgs; i++) {
-				ValueExpr argExpr = argValues.remove(toArgProperty(i));
-				if(argExpr == null) {
-					argExpr = argValues.remove(argValues.firstKey());
-				}
+			List<ValueExpr> args = new ArrayList<ValueExpr>(argValues.size());
+			List<URI> orderedArgs = orderArgs(argValues.keySet());
+			for(URI uri : orderedArgs) {
+				ValueExpr argExpr = argValues.get(uri);
 				args.add(argExpr);
 			}
 			return args;
-		}
-
-		private URI toArgProperty(int i) {
-			switch(i) {
-			case 1: return SP.ARG1_PROPERTY;
-			case 2: return SP.ARG2_PROPERTY;
-			case 3: return SP.ARG3_PROPERTY;
-			case 4: return SP.ARG4_PROPERTY;
-			case 5: return SP.ARG5_PROPERTY;
-			default:
-				return ValueFactoryImpl.getInstance().createURI(SP.NAMESPACE, "arg"+i);
-			}
 		}
 
 		private String getVarName(Resource r)

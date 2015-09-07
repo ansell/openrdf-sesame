@@ -16,47 +16,12 @@
  */
 package org.openrdf.spin;
 
-import java.util.ArrayList;
-import java.util.List;
 
-import org.openrdf.model.URI;
-import org.openrdf.query.parser.ParsedOperation;
 
-import com.google.common.base.Joiner;
-
-/**
- * Class to represent a SPIN template.
- */
-public class Template {
-
-	private final URI uri;
-
-	private ParsedOperation parsedOp;
-
-	private final List<Argument> arguments = new ArrayList<Argument>(4);
-
-	public Template(URI uri) {
-		this.uri = uri;
+public class QueryPreparationContext {
+	public static QueryPreparer getInstance() {
+		// TODO
+		return null;
 	}
 
-	public void setParsedOperation(ParsedOperation op) {
-		this.parsedOp = op;
-	}
-
-	public ParsedOperation getParsedOperation() {
-		return parsedOp;
-	}
-
-	public void addArgument(Argument arg) {
-		arguments.add(arg);
-	}
-
-	public List<Argument> getArguments() {
-		return arguments;
-	}
-
-	@Override
-	public String toString() {
-		return uri+"("+ Joiner.on(", ").join(arguments)+")";
-	}
 }

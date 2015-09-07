@@ -27,9 +27,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
@@ -44,11 +46,19 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.Update;
+import org.openrdf.query.algebra.FunctionCall;
+import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
@@ -58,10 +68,8 @@ import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
-import org.openrdf.sail.SailConnectionBooleanQuery;
-import org.openrdf.sail.SailConnectionGraphQuery;
 import org.openrdf.sail.SailConnectionListener;
-import org.openrdf.sail.SailConnectionUpdate;
+import org.openrdf.sail.SailConnectionQueryPreparer;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.SailTripleSource;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -77,6 +85,8 @@ import org.openrdf.spin.util.Statements;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import com.google.common.base.Strings;
+
 class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final String THIS_VAR = "this";
@@ -84,6 +94,8 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 	private static final Marker constraintViolationMarker = MarkerFactory.getMarker("ConstraintViolation");
 
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "Constraint violation: {}: {} {} {}";
+
+	private final FunctionRegistry functionRegistry = FunctionRegistry.getInstance();
 
 	private final ValueFactory vf;
 
@@ -97,11 +109,12 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private Map<URI, RuleProperty> rulePropertyMap;
 
-	private volatile ParserConfig parserConfig = new ParserConfig();
+	private SailConnectionQueryPreparer preparer;
 
 	public SPINSailConnection(SPINSail sail, InferencerConnection con) {
 		super(sail, con);
 		this.vf = sail.getValueFactory();
+		this.preparer = new SailConnectionQueryPreparer(this, vf);
 		this.tripleSource = new SailTripleSource(con, true, vf);
 		con.addConnectionListener(new SailConnectionListener() {
 
@@ -135,49 +148,32 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 	}
 
 	public void setParserConfig(ParserConfig parserConfig) {
-		this.parserConfig = parserConfig;
+		preparer.setParserConfig(parserConfig);
 	}
 
 	public ParserConfig getParserConfig() {
-		return parserConfig;
+		return preparer.getParserConfig();
 	}
 
 	@Override
-	protected Model createModel() {
-		return new TreeModel();
-	}
-
-	@Override
-	protected void addAxiomStatements()
+	public CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(TupleExpr tupleExpr,
+			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
-		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
-		loadAxiomStatements(parser, "/schema/sp.ttl");
-		loadAxiomStatements(parser, "/schema/spin.ttl");
-		loadAxiomStatements(parser, "/schema/spl.spin.ttl");
-	}
-
-	private void loadAxiomStatements(RDFParser parser, String file)
-		throws SailException
-	{
-		RDFInferencerInserter inserter = new RDFInferencerInserter(this, vf);
-		parser.setRDFHandler(inserter);
-		URL url = getClass().getResource(file);
-		try {
-			InputStream in = new BufferedInputStream(url.openStream());
+		UnknownFunctionCollector unknownFunctions = new UnknownFunctionCollector();
+		tupleExpr.visit(unknownFunctions);
+		for(String func : unknownFunctions.getFunctionNames()) {
+			URI funcUri = vf.createURI(func);
 			try {
-				parser.parse(in, url.toString());
+				Function f = parser.parseFunction(funcUri, tripleSource);
+				functionRegistry.add(f);
 			}
-			finally {
-				in.close();
+			catch(OpenRDFException e) {
+				logger.warn("Failed to parse function: {}", funcUri);
 			}
 		}
-		catch (IOException ioe) {
-			throw new SailException(ioe);
-		}
-		catch (OpenRDFException e) {
-			throw new SailException(e);
-		}
+
+		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}
 
 	private void initRuleProperties()
@@ -215,6 +211,44 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 				initRuleProperties();
 			}
 			return rulePropertyMap.get(ruleProp);
+		}
+	}
+
+	@Override
+	protected Model createModel() {
+		return new TreeModel();
+	}
+
+	@Override
+	protected void addAxiomStatements()
+		throws SailException
+	{
+		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
+		loadAxiomStatements(parser, "/schema/sp.ttl");
+		loadAxiomStatements(parser, "/schema/spin.ttl");
+		loadAxiomStatements(parser, "/schema/spl.spin.ttl");
+	}
+
+	private void loadAxiomStatements(RDFParser parser, String file)
+		throws SailException
+	{
+		RDFInferencerInserter inserter = new RDFInferencerInserter(this, vf);
+		parser.setRDFHandler(inserter);
+		URL url = getClass().getResource(file);
+		try {
+			InputStream in = new BufferedInputStream(url.openStream());
+			try {
+				parser.parse(in, url.toString());
+			}
+			finally {
+				in.close();
+			}
+		}
+		catch (IOException ioe) {
+			throw new SailException(ioe);
+		}
+		catch (OpenRDFException e) {
+			throw new SailException(e);
 		}
 	}
 
@@ -292,7 +326,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		ParsedOperation parsedOp = parser.parse(rule, tripleSource);
 		if (parsedOp instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedOp;
-			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, this, vf);
+			GraphQuery queryOp = preparer.prepare(graphQuery);
 			addBindings(subj, rule, tripleSource, graphQuery, queryOp);
 			CountingRDFInferencerInserter handler = new CountingRDFInferencerInserter(this, vf);
 			queryOp.evaluate(handler);
@@ -300,7 +334,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 		else if (parsedOp instanceof ParsedUpdate) {
 			ParsedUpdate graphUpdate = (ParsedUpdate)parsedOp;
-			SailConnectionUpdate updateOp = new SailConnectionUpdate(graphUpdate, this, vf, parserConfig);
+			Update updateOp = preparer.prepare(graphUpdate);
 			addBindings(subj, rule, tripleSource, graphUpdate, updateOp);
 			UpdateCountListener listener = new UpdateCountListener();
 			addConnectionListener(listener);
@@ -423,7 +457,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		ParsedQuery parsedQuery = parser.parseQuery(constraint, tripleSource);
 		if (parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery)parsedQuery;
-			BooleanQuery queryOp = new SailConnectionBooleanQuery(askQuery, this);
+			BooleanQuery queryOp = preparer.prepare(askQuery);
 			addBindings(subj, constraint, tripleSource, askQuery, queryOp);
 			if (!queryOp.evaluate()) {
 				ConstraintViolation violation = parser.parseConstraintViolation(constraint, tripleSource);
@@ -432,11 +466,13 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 		else if (parsedQuery instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedQuery;
-			GraphQuery queryOp = new SailConnectionGraphQuery(graphQuery, this, vf);
+			GraphQuery queryOp = preparer.prepare(graphQuery);
 			addBindings(subj, constraint, tripleSource, graphQuery, queryOp);
 			ConstraintViolationRDFHandler handler = new ConstraintViolationRDFHandler();
 			queryOp.evaluate(handler);
-			handleConstraintViolation(handler.getConstraintViolation());
+			if(handler.getConstraintViolation() != null) {
+				handleConstraintViolation(handler.getConstraintViolation());
+			}
 		}
 		else {
 			throw new MalformedSPINException("Invalid constraint: " + constraint);
@@ -448,26 +484,27 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 	{
 		switch (violation.getLevel()) {
 			case INFO:
-				logger.info(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-						violation.getMessage(), violation.getRoot(), violation.getPath(),
-						violation.getValue());
+				logger.info(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE, getConstraintViolationLogMessageArgs(violation));
 				break;
 			case WARNING:
-				logger.warn(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-						violation.getMessage(), violation.getRoot(), violation.getPath(),
-						violation.getValue());
+				logger.warn(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE, getConstraintViolationLogMessageArgs(violation));
 				break;
 			case ERROR:
-				logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-						violation.getMessage(), violation.getRoot(), violation.getPath(),
-						violation.getValue());
+				logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE, getConstraintViolationLogMessageArgs(violation));
 				throw new ConstraintViolationException(violation);
 			case FATAL:
-				logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE,
-						violation.getMessage(), violation.getRoot(), violation.getPath(),
-						violation.getValue());
+				logger.error(constraintViolationMarker, CONSTRAINT_VIOLATION_MESSAGE, getConstraintViolationLogMessageArgs(violation));
 				throw new ConstraintViolationException(violation);
 		}
+	}
+
+	private Object[] getConstraintViolationLogMessageArgs(ConstraintViolation violation) {
+		return new Object[] {
+			violation.getMessage() != null ? violation.getMessage() : "No message",
+			Strings.nullToEmpty(violation.getRoot()),
+			Strings.nullToEmpty(violation.getPath()),
+			Strings.nullToEmpty(violation.getValue())
+		};
 	}
 
 	private Map<Resource, List<Resource>> getConstraintsForSubject(Resource subj, List<Resource> classHierarchy)
@@ -505,6 +542,27 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			for(Binding b : ((ParsedTemplate)parsedOp).getBindings()) {
 				op.setBinding(b.getName(), b.getValue());
 			}
+		}
+	}
+
+
+
+	class UnknownFunctionCollector extends QueryModelVisitorBase<RuntimeException> {
+		final Set<String> functions = new HashSet<String>();
+
+		Set<String> getFunctionNames() {
+			return functions;
+		}
+
+		@Override
+		public void meet(FunctionCall node)
+			throws RuntimeException
+		{
+			String name = node.getURI();
+			if(!functionRegistry.has(name)) {
+				functions.add(name);
+			}
+			super.meet(node);
 		}
 	}
 

@@ -40,7 +40,7 @@ public abstract class ServiceRegistry<K, S> {
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	protected Map<K, S> services = new HashMap<K, S>();
+	protected Map<K, S> services = Collections.synchronizedMap(new HashMap<K, S>());
 
 	protected ServiceRegistry(Class<S> serviceClass) {
 		ServiceLoader<S> loader = java.util.ServiceLoader.load(serviceClass, serviceClass.getClassLoader());
