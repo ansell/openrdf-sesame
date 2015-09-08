@@ -14,9 +14,8 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail;
+package org.openrdf.repository.sail;
 
-import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.TupleQuery;
@@ -25,49 +24,37 @@ import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
-import org.openrdf.rio.ParserConfig;
 import org.openrdf.spin.QueryPreparer;
 
 /**
- * QueryPreparer for use with Sails.
+ * QueryPreparer for use with SailRepository.
  */
-public class SailConnectionQueryPreparer implements QueryPreparer {
+public class SailQueryPreparer implements QueryPreparer {
 
-	private final SailConnection con;
-	private final ValueFactory vf;
-	private ParserConfig parserConfig = new ParserConfig();
+	private final SailRepositoryConnection con;
 
-	public SailConnectionQueryPreparer(SailConnection con, ValueFactory vf) {
+	public SailQueryPreparer(SailRepositoryConnection con) {
 		this.con = con;
-		this.vf = vf;
-	}
-
-	public void setParserConfig(ParserConfig parserConfig) {
-		this.parserConfig = parserConfig;
-	}
-
-	public ParserConfig getParserConfig() {
-		return parserConfig;
 	}
 
 	@Override
 	public BooleanQuery prepare(ParsedBooleanQuery askQuery) {
-		return new SailConnectionBooleanQuery(askQuery, con);
+		return new SailBooleanQuery(askQuery, con);
 	}
 
 	@Override
 	public TupleQuery prepare(ParsedTupleQuery tupleQuery) {
-		return new SailConnectionTupleQuery(tupleQuery, con);
+		return new SailTupleQuery(tupleQuery, con);
 	}
 
 	@Override
 	public GraphQuery prepare(ParsedGraphQuery graphQuery) {
-		return new SailConnectionGraphQuery(graphQuery, con, vf);
+		return new SailGraphQuery(graphQuery, con);
 	}
 
 	@Override
 	public Update prepare(ParsedUpdate graphUpdate) {
-		return new SailConnectionUpdate(graphUpdate, con, vf, parserConfig);
+		return new SailUpdate(graphUpdate, con);
 	}
 
 }

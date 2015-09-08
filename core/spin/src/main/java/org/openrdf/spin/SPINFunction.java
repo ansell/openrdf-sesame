@@ -44,12 +44,22 @@ import com.google.common.base.Joiner;
 public class SPINFunction implements Function {
 	private final URI uri;
 
+	private QueryPreparer queryPreparer;
+
 	private ParsedQuery parsedQuery;
 
 	private final List<Argument> arguments = new ArrayList<Argument>(4);
 
 	public SPINFunction(URI uri) {
 		this.uri = uri;
+	}
+	
+	public QueryPreparer getQueryPreparer() {
+		return queryPreparer;
+	}
+	
+	public void setQueryPreparer(QueryPreparer queryPreparer) {
+		this.queryPreparer = queryPreparer;
 	}
 
 	public void setParsedQuery(ParsedQuery query) {
@@ -82,7 +92,10 @@ public class SPINFunction implements Function {
 	public Value evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
-		QueryPreparer qp = QueryPreparationContext.getInstance();
+		QueryPreparer qp = (queryPreparer != null) ? queryPreparer : QueryContext.getQueryPreparer();
+		if(qp == null) {
+			throw new IllegalStateException("No QueryPreparer!");
+		}
 		ResultHandler handler = new ResultHandler();
 		if(parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery) parsedQuery;

@@ -79,6 +79,7 @@ import org.openrdf.spin.ConstraintViolation;
 import org.openrdf.spin.ConstraintViolationRDFHandler;
 import org.openrdf.spin.MalformedSPINException;
 import org.openrdf.spin.ParsedTemplate;
+import org.openrdf.spin.QueryContext;
 import org.openrdf.spin.RuleProperty;
 import org.openrdf.spin.SPINParser;
 import org.openrdf.spin.util.Statements;
@@ -109,12 +110,12 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private Map<URI, RuleProperty> rulePropertyMap;
 
-	private SailConnectionQueryPreparer preparer;
+	private SailConnectionQueryPreparer queryPreparer;
 
 	public SPINSailConnection(SPINSail sail, InferencerConnection con) {
 		super(sail, con);
 		this.vf = sail.getValueFactory();
-		this.preparer = new SailConnectionQueryPreparer(this, vf);
+		this.queryPreparer = new SailConnectionQueryPreparer(this, vf);
 		this.tripleSource = new SailTripleSource(con, true, vf);
 		con.addConnectionListener(new SailConnectionListener() {
 
@@ -145,14 +146,15 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 				}
 			}
 		});
+		QueryContext.begin(queryPreparer);
 	}
 
 	public void setParserConfig(ParserConfig parserConfig) {
-		preparer.setParserConfig(parserConfig);
+		queryPreparer.setParserConfig(parserConfig);
 	}
 
 	public ParserConfig getParserConfig() {
-		return preparer.getParserConfig();
+		return queryPreparer.getParserConfig();
 	}
 
 	@Override
@@ -174,6 +176,14 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 
 		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
+	}
+
+	@Override
+	public void close()
+		throws SailException
+	{
+		super.close();
+		QueryContext.end();
 	}
 
 	private void initRuleProperties()
@@ -326,7 +336,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		ParsedOperation parsedOp = parser.parse(rule, tripleSource);
 		if (parsedOp instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedOp;
-			GraphQuery queryOp = preparer.prepare(graphQuery);
+			GraphQuery queryOp = queryPreparer.prepare(graphQuery);
 			addBindings(subj, rule, tripleSource, graphQuery, queryOp);
 			CountingRDFInferencerInserter handler = new CountingRDFInferencerInserter(this, vf);
 			queryOp.evaluate(handler);
@@ -334,7 +344,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 		else if (parsedOp instanceof ParsedUpdate) {
 			ParsedUpdate graphUpdate = (ParsedUpdate)parsedOp;
-			Update updateOp = preparer.prepare(graphUpdate);
+			Update updateOp = queryPreparer.prepare(graphUpdate);
 			addBindings(subj, rule, tripleSource, graphUpdate, updateOp);
 			UpdateCountListener listener = new UpdateCountListener();
 			addConnectionListener(listener);
@@ -457,7 +467,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		ParsedQuery parsedQuery = parser.parseQuery(constraint, tripleSource);
 		if (parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery)parsedQuery;
-			BooleanQuery queryOp = preparer.prepare(askQuery);
+			BooleanQuery queryOp = queryPreparer.prepare(askQuery);
 			addBindings(subj, constraint, tripleSource, askQuery, queryOp);
 			if (!queryOp.evaluate()) {
 				ConstraintViolation violation = parser.parseConstraintViolation(constraint, tripleSource);
@@ -466,7 +476,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 		else if (parsedQuery instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedQuery;
-			GraphQuery queryOp = preparer.prepare(graphQuery);
+			GraphQuery queryOp = queryPreparer.prepare(graphQuery);
 			addBindings(subj, constraint, tripleSource, graphQuery, queryOp);
 			ConstraintViolationRDFHandler handler = new ConstraintViolationRDFHandler();
 			queryOp.evaluate(handler);

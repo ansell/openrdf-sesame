@@ -56,6 +56,7 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.AggregateOperator;
 import org.openrdf.query.algebra.And;
+import org.openrdf.query.algebra.ArbitraryLengthPath;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BindingSetAssignment;
@@ -564,8 +565,8 @@ public class SPINParser {
 		try {
 			while(argIter.hasNext()) {
 				Resource possibleArg = argIter.next();
-				Set<URI> argTypes = Iterations.asSet(Statements.getObjectURIs(possibleArg, RDF.TYPE, store));
-				if(argTypes.contains(SPL.ARGUMENT_TEMPLATE)) {
+				Statement argTmpl = Statements.single(possibleArg, RDF.TYPE, SPL.ARGUMENT_TEMPLATE, store);
+				if(argTmpl != null) {
 					Value argPred = Statements.singleValue(possibleArg, SPL.PREDICATE_PROPERTY, store);
 					Value valueType = Statements.singleValue(possibleArg, SPL.VALUE_TYPE_PROPERTY, store);
 					boolean optional = Statements.booleanValue(possibleArg, SPL.OPTIONAL_PROPERTY, store);
@@ -650,7 +651,7 @@ public class SPINParser {
 				arg = sortedArgs.first();
 				sortedArgs.remove(arg);
 			}
-			args.add(arg);
+			orderedArgs.add(arg);
 		}
 		return orderedArgs;
 	}
@@ -952,8 +953,8 @@ public class SPINParser {
 		{
 			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 			ValueExpr valueExpr = visitExpression(expr);
-			Set<Resource> types = Iterations.asSet(Statements.getObjectResources(r, RDF.TYPE, store));
-			boolean asc = types.contains(SP.DESC_CLASS) ? false : true;
+			Statement descStmt = Statements.single(r, RDF.TYPE, SP.DESC_CLASS, store);
+			boolean asc = descStmt == null;
 			return new OrderElem(valueExpr, asc);
 		}
 
@@ -1067,9 +1068,10 @@ public class SPINParser {
 			throws OpenRDFException
 		{
 			TupleExpr currentNode = node;
-			Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
-			if(subj != null) {
-				Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
+			Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
+			if(pred != null) {
+				// only triple patterns have sp:predicate
+				Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
 				Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
 				Scope stmtScope = (namedGraph != null) ? Scope.NAMED_CONTEXTS : Scope.DEFAULT_CONTEXTS;
 				node = new StatementPattern(stmtScope, getVar(subj), getVar(pred), getVar(obj), namedGraph);
@@ -1181,6 +1183,26 @@ public class SPINParser {
 					QueryRoot group = new QueryRoot(node);
 					visitGroupGraphPattern(r);
 					node = group.getArg();
+				}
+				else if(types.contains(SP.TRIPLE_PATH_CLASS)) {
+					Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
+					Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
+					Resource path = (Resource) Statements.singleValue(r, SP.PATH_PROPERTY, store);
+					Set<URI> pathTypes = Iterations.asSet(Statements.getObjectURIs(path, RDF.TYPE, store));
+					if(pathTypes.contains(SP.MOD_PATH_CLASS)) {
+						Resource subPath = (Resource) Statements.singleValue(path, SP.SUB_PATH_PROPERTY, store);
+						Literal minPath = (Literal) Statements.singleValue(path, SP.MOD_MIN_PROPERTY, store);
+						Literal maxPath = (Literal) Statements.singleValue(path, SP.MOD_MAX_PROPERTY, store);
+						if(maxPath == null || maxPath.intValue() != -2) {
+							throw new UnsupportedOperationException("Unsupported mod path");
+						}
+						Var subjVar = getVar(subj);
+						Var objVar = getVar(obj);
+						node = new ArbitraryLengthPath(subjVar, new StatementPattern(subjVar, getVar(subPath), objVar), objVar, minPath.longValue());
+					}
+					else {
+						throw new UnsupportedOperationException(types.toString());
+					}
 				}
 				else if(types.contains(SP.SERVICE_CLASS)) {
 					Value serviceUri = Statements.singleValue(r, SP.SERVICE_URI_PROPERTY, store);

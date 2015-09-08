@@ -18,10 +18,24 @@ package org.openrdf.spin;
 
 
 
-public class QueryPreparationContext {
-	public static QueryPreparer getInstance() {
-		// TODO
-		return null;
+public class QueryContext {
+	private static final ThreadLocal<QueryPreparer> queryPreparer = new ThreadLocal<QueryPreparer>();
+
+	public static QueryPreparer getQueryPreparer() 
+	{
+		return queryPreparer.get();
 	}
 
+	public static void begin(QueryPreparer qp) 
+	{
+		queryPreparer.set(qp);
+	}
+
+	public static void end() 
+	{
+		queryPreparer.remove();
+	}
+
+	private QueryContext()
+	{}
 }
