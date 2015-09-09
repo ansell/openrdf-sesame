@@ -16,51 +16,38 @@
  */
 package org.openrdf.spin;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.Function;
 
-import com.google.common.base.Joiner;
 
+public class SPINxFunctionParser implements FunctionParser
+{
+	private final SPINParser parser;
 
-public class SPINxFunction implements Function {
-	private final URI uri;
-
-	private final List<Argument> arguments = new ArrayList<Argument>(4);
-
-	public SPINxFunction(URI uri) {
-		this.uri = uri;
-	}
-
-	public void addArgument(Argument arg) {
-		arguments.add(arg);
-	}
-
-	public List<Argument> getArguments() {
-		return arguments;
-	}
-
-	@Override
-	public String toString() {
-		return uri+"("+ Joiner.on(", ").join(arguments)+")";
-	}
-
-	@Override
-	public String getURI() {
-		return uri.stringValue();
-	}
-
-	@Override
-	public Value evaluate(ValueFactory valueFactory, Value... args)
-		throws ValueExprEvaluationException
+	public SPINxFunctionParser(SPINParser parser)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		this.parser = parser;
 	}
 
+	@Override
+	public Function parse(URI funcUri, TripleSource store)
+		throws OpenRDFException
+	{
+
+		Map<URI,Argument> templateArgs = parser.parseArguments(funcUri, store);
+
+		SPINxFunction func = new SPINxFunction(funcUri);
+		List<URI> orderedArgs = SPINParser.orderArguments(templateArgs.keySet());
+		for(URI uri : orderedArgs) {
+			Argument arg = templateArgs.get(uri);
+			func.addArgument(arg);
+		}
+
+		return func;
+	}
 }

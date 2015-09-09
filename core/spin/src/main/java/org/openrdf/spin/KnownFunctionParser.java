@@ -16,51 +16,26 @@
  */
 package org.openrdf.spin;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 
-import com.google.common.base.Joiner;
 
+public class KnownFunctionParser implements FunctionParser
+{
+	private final FunctionRegistry functionRegistry;
 
-public class SPINxFunction implements Function {
-	private final URI uri;
-
-	private final List<Argument> arguments = new ArrayList<Argument>(4);
-
-	public SPINxFunction(URI uri) {
-		this.uri = uri;
-	}
-
-	public void addArgument(Argument arg) {
-		arguments.add(arg);
-	}
-
-	public List<Argument> getArguments() {
-		return arguments;
-	}
-
-	@Override
-	public String toString() {
-		return uri+"("+ Joiner.on(", ").join(arguments)+")";
-	}
-
-	@Override
-	public String getURI() {
-		return uri.stringValue();
-	}
-
-	@Override
-	public Value evaluate(ValueFactory valueFactory, Value... args)
-		throws ValueExprEvaluationException
+	public KnownFunctionParser(FunctionRegistry functionRegistry)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		this.functionRegistry = functionRegistry;
 	}
 
+	@Override
+	public Function parse(URI funcUri, TripleSource store)
+		throws OpenRDFException
+	{
+		return functionRegistry.get(funcUri.stringValue());
+	}
 }

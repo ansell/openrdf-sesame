@@ -21,6 +21,7 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -118,6 +119,7 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -172,6 +174,7 @@ public class SPINParser {
 	private final Input input;
 	private final Function<URI,String> wellKnownVars;
 	private final Function<URI,String> wellKnownFunctions;
+	private List<FunctionParser> functionParsers;
 	private boolean strictFunctionChecking = true;
 
 	public SPINParser() {
@@ -198,6 +201,19 @@ public class SPINParser {
 		this.input = input;
 		this.wellKnownVars = wellKnownVarsMapper;
 		this.wellKnownFunctions = wellKnownFuncMapper;
+		this.functionParsers = Arrays.<FunctionParser>asList(
+			new SPINFunctionParser(this),
+			new SPINxFunctionParser(this),
+			new KnownFunctionParser(FunctionRegistry.getInstance())
+		);
+	}
+	
+	public List<FunctionParser> getFunctionParsers() {
+		return functionParsers;
+	}
+
+	public void setFunctionParsers(List<FunctionParser> functionParsers) {
+		this.functionParsers = functionParsers;
 	}
 
 	public boolean isStrictFunctionChecking() {
@@ -521,7 +537,7 @@ public class SPINParser {
 
 		Map<URI,Argument> templateArgs = parseArguments(tmplUri, store);
 
-		List<URI> orderedArgs = orderArgs(templateArgs.keySet());
+		List<URI> orderedArgs = orderArguments(templateArgs.keySet());
 		for(URI uri : orderedArgs) {
 			Argument arg = templateArgs.get(uri);
 			tmpl.addArgument(arg);
@@ -533,30 +549,17 @@ public class SPINParser {
 	public org.openrdf.query.algebra.evaluation.function.Function parseFunction(URI funcUri, TripleSource store)
 			throws OpenRDFException
 	{
-		Value body = Statements.singleValue(funcUri, SPIN.BODY_PROPERTY, store);
-		// TODO SPINx
-		if (!(body instanceof Resource)) {
-			throw new MalformedSPINException("Function body is not a resource: " + body);
+		for(FunctionParser functionParser : functionParsers)
+		{
+			org.openrdf.query.algebra.evaluation.function.Function function = functionParser.parse(funcUri, store);
+			if(function != null) {
+				return function;
+			}
 		}
-		ParsedQuery query = parseQuery((Resource)body, store);
-		if(query instanceof ParsedGraphQuery) {
-			throw new MalformedSPINException("Function body must be an ASK or SELECT query");
-		}
-
-		Map<URI,Argument> templateArgs = parseArguments(funcUri, store);
-
-		SPINFunction func = new SPINFunction(funcUri);
-		func.setParsedQuery(query);
-		List<URI> orderedArgs = orderArgs(templateArgs.keySet());
-		for(URI uri : orderedArgs) {
-			Argument arg = templateArgs.get(uri);
-			func.addArgument(arg);
-		}
-
-		return func;
+		throw new MalformedSPINException("No parser for function: " + funcUri);
 	}
 
-	private Map<URI,Argument> parseArguments(URI moduleUri, TripleSource store)
+	public Map<URI,Argument> parseArguments(URI moduleUri, TripleSource store)
 		throws OpenRDFException
 	{
 		Map<URI,Argument> args = new HashMap<URI,Argument>();
@@ -633,7 +636,7 @@ public class SPINParser {
 		}
 	}
 
-	private static List<URI> orderArgs(Set<URI> args) {
+	public static List<URI> orderArguments(Set<URI> args) {
 		SortedSet<URI> sortedArgs = new TreeSet<URI>(new Comparator<URI>()
 		{
 			@Override
@@ -1618,7 +1621,7 @@ public class SPINParser {
 			}
 
 			List<ValueExpr> args = new ArrayList<ValueExpr>(argValues.size());
-			List<URI> orderedArgs = orderArgs(argValues.keySet());
+			List<URI> orderedArgs = orderArguments(argValues.keySet());
 			for(URI uri : orderedArgs) {
 				ValueExpr argExpr = argValues.get(uri);
 				args.add(argExpr);
