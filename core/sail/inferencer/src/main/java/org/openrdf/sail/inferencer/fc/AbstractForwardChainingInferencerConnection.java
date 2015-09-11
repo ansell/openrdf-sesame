@@ -110,9 +110,7 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 			statementsRemoved = false;
 		}
 
-		if (hasNewStatements()) {
-			doInferencing();
-		}
+		doInferencing();
 
 		newStatements = null;
 	}
