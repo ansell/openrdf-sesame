@@ -28,14 +28,16 @@ import static org.openrdf.repository.contextaware.config.ContextAwareSchema.REMO
 
 import java.util.Set;
 
-import org.openrdf.model.Graph;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.Models;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.repository.config.AbstractDelegatingRepositoryImplConfig;
 import org.openrdf.repository.config.RepositoryConfigException;
@@ -174,7 +176,8 @@ public class ContextAwareConfig extends AbstractDelegatingRepositoryImplConfig {
 	}
 
 	/**
-	 * @param baseURI The default baseURI to set.
+	 * @param baseURI
+	 *        The default baseURI to set.
 	 */
 	public void setBaseURI(String baseURI) {
 		this.baseURI = baseURI;
@@ -195,86 +198,76 @@ public class ContextAwareConfig extends AbstractDelegatingRepositoryImplConfig {
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource repImplNode = super.export(graph);
+	public Resource export(Model model) {
+		Resource repImplNode = super.export(model);
 
-		ValueFactory vf = graph.getValueFactory();
+		ValueFactory vf = SimpleValueFactory.getInstance();
 
 		if (includeInferred != null) {
 			Literal bool = vf.createLiteral(includeInferred);
-			graph.add(repImplNode, INCLUDE_INFERRED, bool);
+			model.add(repImplNode, INCLUDE_INFERRED, bool);
 		}
 		if (maxQueryTime > 0) {
-			graph.add(repImplNode, MAX_QUERY_TIME, vf.createLiteral(maxQueryTime));
+			model.add(repImplNode, MAX_QUERY_TIME, vf.createLiteral(maxQueryTime));
 		}
 		if (queryLanguage != null) {
-			graph.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
+			model.add(repImplNode, QUERY_LANGUAGE, vf.createLiteral(queryLanguage.getName()));
 		}
 		if (baseURI != null) {
-			graph.add(repImplNode, BASE_URI, vf.createIRI(baseURI));
+			model.add(repImplNode, BASE_URI, vf.createIRI(baseURI));
 		}
 		for (IRI uri : readContexts) {
-			graph.add(repImplNode, READ_CONTEXT, uri);
+			model.add(repImplNode, READ_CONTEXT, uri);
 		}
 		for (IRI resource : addContexts) {
-			graph.add(repImplNode, ADD_CONTEXT, resource);
+			model.add(repImplNode, ADD_CONTEXT, resource);
 		}
 		for (IRI resource : removeContexts) {
-			graph.add(repImplNode, REMOVE_CONTEXT, resource);
+			model.add(repImplNode, REMOVE_CONTEXT, resource);
 		}
 		for (IRI resource : archiveContexts) {
-			graph.add(repImplNode, ARCHIVE_CONTEXT, resource);
+			model.add(repImplNode, ARCHIVE_CONTEXT, resource);
 		}
 		if (insertContext != null) {
-			graph.add(repImplNode, INSERT_CONTEXT, insertContext);
+			model.add(repImplNode, INSERT_CONTEXT, insertContext);
 		}
 
 		return repImplNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource resource)
 		throws RepositoryConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(model, resource);
 
 		try {
-			Literal lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, INCLUDE_INFERRED);
-			if (lit != null) {
-				setIncludeInferred(lit.booleanValue());
-			}
-			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, MAX_QUERY_TIME);
-			if (lit != null) {
-				setMaxQueryTime(lit.intValue());
-			}
-			lit = GraphUtil.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
-			if (lit != null) {
-				setQueryLanguage(QueryLanguage.valueOf(lit.getLabel()));
-			}
-			IRI uri = GraphUtil.getOptionalObjectURI(graph, implNode, BASE_URI);
-			if (uri != null) {
-				setBaseURI(uri.stringValue());
-			}
+			Models.objectLiteral(model.filter(resource, INCLUDE_INFERRED, null)).ifPresent(
+					lit -> setIncludeInferred(lit.booleanValue()));
 
-			Set<Value> objects = GraphUtil.getObjects(graph, implNode, READ_CONTEXT);
+			Models.objectLiteral(model.filter(resource, MAX_QUERY_TIME, null)).ifPresent(
+					lit -> setMaxQueryTime(lit.intValue()));
+
+			Models.objectLiteral(model.filter(resource, QUERY_LANGUAGE, null)).ifPresent(
+					lit -> setQueryLanguage(QueryLanguage.valueOf(lit.getLabel())));
+
+			Models.objectIRI(model.filter(resource, QUERY_LANGUAGE, null)).ifPresent(
+					iri -> setBaseURI(iri.stringValue()));
+
+			Set<Value> objects = model.filter(resource, READ_CONTEXT, null).objects();
 			setReadContexts(objects.toArray(new IRI[objects.size()]));
 
-			objects = GraphUtil.getObjects(graph, implNode, ADD_CONTEXT);
+			objects = model.filter(resource, ADD_CONTEXT, null).objects();
 			setAddContexts(objects.toArray(new IRI[objects.size()]));
 
-			objects = GraphUtil.getObjects(graph, implNode, REMOVE_CONTEXT);
+			objects = model.filter(resource, REMOVE_CONTEXT, null).objects();
 			setRemoveContexts(objects.toArray(new IRI[objects.size()]));
 
-			objects = GraphUtil.getObjects(graph, implNode, ARCHIVE_CONTEXT);
+			objects = model.filter(resource, ARCHIVE_CONTEXT, null).objects();
 			setArchiveContexts(objects.toArray(new IRI[objects.size()]));
 
-			uri = GraphUtil.getOptionalObjectURI(graph, implNode, INSERT_CONTEXT);
-			if (uri != null) {
-				setInsertContext(uri);
-			}
-		}
-		catch (GraphUtilException e) {
-			throw new RepositoryConfigException(e);
+			Models.objectIRI(model.filter(resource, INSERT_CONTEXT, null)).ifPresent(
+					iri -> setInsertContext(iri));
 		}
 		catch (ArrayStoreException e) {
 			throw new RepositoryConfigException(e);

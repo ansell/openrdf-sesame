@@ -21,20 +21,25 @@ import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSc
 import static org.openrdf.sail.inferencer.fc.config.CustomGraphQueryInferencerSchema.RULE_QUERY;
 
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.query.MalformedQueryException;
@@ -103,33 +108,39 @@ public final class CustomGraphQueryInferencerConfig extends AbstractDelegatingSa
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model m, Resource implNode)
 		throws SailConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(m, implNode);
 
 		try {
-			Literal language = GraphUtil.getOptionalObjectLiteral(graph, implNode, QUERY_LANGUAGE);
-			if (null == language) {
-				setQueryLanguage(QueryLanguage.SPARQL);
-			}
-			else {
-				setQueryLanguage(QueryLanguage.valueOf(language.stringValue()));
+
+			Optional<Literal> language = Models.objectLiteral(m.filter(implNode, QUERY_LANGUAGE, null));
+
+			if (language.isPresent()) {
+				setQueryLanguage(QueryLanguage.valueOf(language.get().stringValue()));
 				if (null == getQueryLanguage()) {
-					throw new SailConfigException("Valid value required for " + QUERY_LANGUAGE
-							+ " property, found " + language);
+					throw new SailConfigException(
+							"Valid value required for " + QUERY_LANGUAGE + " property, found " + language.get());
 				}
 			}
-			Iterator<Value> iter = GraphUtil.getObjectIterator(graph, implNode, RULE_QUERY);
-			if (iter.hasNext()) {
-				setRuleQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
+			else {
+				setQueryLanguage(QueryLanguage.SPARQL);
 			}
-			iter = GraphUtil.getObjectIterator(graph, implNode, MATCHER_QUERY);
-			if (iter.hasNext()) {
-				setMatcherQuery(GraphUtil.getUniqueObjectLiteral(graph, (Resource)iter.next(), SP.TEXT_PROPERTY).stringValue());
+
+			Optional<Resource> object = Models.objectResource(m.filter(implNode, RULE_QUERY, null));
+			if (object.isPresent()) {
+				Models.objectLiteral(m.filter(object.get(), SP.TEXT_PROPERTY, null)).ifPresent(
+						lit -> setRuleQuery(lit.stringValue()));
+			}
+
+			object = Models.objectResource(m.filter(implNode, MATCHER_QUERY, null));
+			if (object.isPresent()) {
+				Models.objectLiteral(m.filter(object.get(), SP.TEXT_PROPERTY, null)).ifPresent(
+						lit -> setMatcherQuery(lit.stringValue()));
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}
@@ -165,45 +176,45 @@ public final class CustomGraphQueryInferencerConfig extends AbstractDelegatingSa
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource implNode = super.export(graph);
+	public Resource export(Model m) {
+		Resource implNode = super.export(m);
 		if (null != language) {
-			graph.add(implNode, QUERY_LANGUAGE, SimpleValueFactory.getInstance().createLiteral(language.getName()));
+			m.add(implNode, QUERY_LANGUAGE, SimpleValueFactory.getInstance().createLiteral(language.getName()));
 		}
-		addQueryNode(graph, implNode, RULE_QUERY, ruleQuery);
-		addQueryNode(graph, implNode, MATCHER_QUERY, matcherQuery);
+		addQueryNode(m, implNode, RULE_QUERY, ruleQuery);
+		addQueryNode(m, implNode, MATCHER_QUERY, matcherQuery);
 		return implNode;
 	}
 
 	public static String buildMatcherQueryFromRuleQuery(QueryLanguage language, String ruleQuery)
-			throws MalformedQueryException
-		{
-			String result = "";
-			if (QueryLanguage.SPARQL == language) {
-				Matcher matcher = SPARQL_PATTERN.matcher(ruleQuery);
-				if (matcher.matches()) {
-					result = matcher.group(1) + "WHERE" + matcher.group(2);
-				}
+		throws MalformedQueryException
+	{
+		String result = "";
+		if (QueryLanguage.SPARQL == language) {
+			Matcher matcher = SPARQL_PATTERN.matcher(ruleQuery);
+			if (matcher.matches()) {
+				result = matcher.group(1) + "WHERE" + matcher.group(2);
 			}
-			else if (QueryLanguage.SERQL == language) {
-				Matcher matcher = SERQL_PATTERN.matcher(ruleQuery);
-				if (matcher.matches()) {
-					result = "CONSTRUCT * FROM" + matcher.group(1) + matcher.group(2);
-				}
-			}
-			else {
-				throw new IllegalStateException("language");
-			}
-			return result;
 		}
+		else if (QueryLanguage.SERQL == language) {
+			Matcher matcher = SERQL_PATTERN.matcher(ruleQuery);
+			if (matcher.matches()) {
+				result = "CONSTRUCT * FROM" + matcher.group(1) + matcher.group(2);
+			}
+		}
+		else {
+			throw new IllegalStateException("language");
+		}
+		return result;
+	}
 
-	private void addQueryNode(Graph graph, Resource implNode, IRI predicate, String queryText) {
+	private void addQueryNode(Model m, Resource implNode, IRI predicate, String queryText) {
 		if (null != queryText) {
 			ValueFactory factory = SimpleValueFactory.getInstance();
 			BNode queryNode = factory.createBNode();
-			graph.add(implNode, predicate, queryNode);
-			graph.add(queryNode, RDF.TYPE, SP.CONSTRUCT_CLASS);
-			graph.add(queryNode, SP.TEXT_PROPERTY, factory.createLiteral(queryText));
+			m.add(implNode, predicate, queryNode);
+			m.add(queryNode, RDF.TYPE, SP.CONSTRUCT_CLASS);
+			m.add(queryNode, SP.TEXT_PROPERTY, factory.createLiteral(queryText));
 		}
 	}
 }

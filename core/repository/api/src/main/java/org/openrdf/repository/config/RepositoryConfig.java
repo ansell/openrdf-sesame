@@ -23,10 +23,14 @@ import static org.openrdf.repository.config.RepositoryConfigSchema.REPOSITORYIMP
 import org.openrdf.model.BNode;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
@@ -123,59 +127,58 @@ public class RepositoryConfig {
 		implConfig.validate();
 	}
 
-	public void export(Graph graph) {
-		ValueFactory vf = graph.getValueFactory();
+	public void export(Model model) {
+		ValueFactory vf = SimpleValueFactory.getInstance();
 
 		BNode repositoryNode = vf.createBNode();
 
-		graph.add(repositoryNode, RDF.TYPE, REPOSITORY);
+		model.add(repositoryNode, RDF.TYPE, REPOSITORY);
 
 		if (id != null) {
-			graph.add(repositoryNode, REPOSITORYID, vf.createLiteral(id));
+			model.add(repositoryNode, REPOSITORYID, vf.createLiteral(id));
 		}
 		if (title != null) {
-			graph.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
+			model.add(repositoryNode, RDFS.LABEL, vf.createLiteral(title));
 		}
 		if (implConfig != null) {
-			Resource implNode = implConfig.export(graph);
-			graph.add(repositoryNode, REPOSITORYIMPL, implNode);
+			Resource implNode = implConfig.export(model);
+			model.add(repositoryNode, REPOSITORYIMPL, implNode);
 		}
 	}
 
-	public void parse(Graph graph, Resource repositoryNode)
+	public void parse(Model model, Resource repositoryNode)
 		throws RepositoryConfigException
 	{
 		try {
-			Literal idLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, REPOSITORYID);
-			if (idLit != null) {
-				setID(idLit.getLabel());
-			}
 
-			Literal titleLit = GraphUtil.getOptionalObjectLiteral(graph, repositoryNode, RDFS.LABEL);
-			if (titleLit != null) {
-				setTitle(titleLit.getLabel());
-			}
-
-			Resource implNode = GraphUtil.getOptionalObjectResource(graph, repositoryNode, REPOSITORYIMPL);
-			if (implNode != null) {
-				setRepositoryImplConfig(AbstractRepositoryImplConfig.create(graph, implNode));
-			}
+			Models.objectLiteral(model.filter(repositoryNode, REPOSITORYID, null)).ifPresent(
+					lit -> setID(lit.getLabel()));
+			Models.objectLiteral(model.filter(repositoryNode, RDFS.LABEL, null)).ifPresent(
+					lit -> setTitle(lit.getLabel()));
+			Models.objectResource(model.filter(repositoryNode, REPOSITORYIMPL, null)).ifPresent(
+					res -> setRepositoryImplConfig(AbstractRepositoryImplConfig.create(model, res)));
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}
 
 	/**
-	 * Creates a new <tt>RepositoryConfig</tt> object and initializes it by
-	 * supplying the <tt>graph</tt> and <tt>repositoryNode</tt> to its
+	 * Creates a new {@link RepositoryConfig} object and initializes it by
+	 * supplying the {@code model} and {@code repositoryNode} to its
 	 * {@link #parse(Graph, Resource) parse} method.
+	 * 
+	 * @param model
+	 *        the {@link Model} to read initialization data from.
+	 * @param repositoryNode
+	 *        the subject {@link Resource} that identifies the
+	 *        {@link RepositoryConfig} in the supplied Model.
 	 */
-	public static RepositoryConfig create(Graph graph, Resource repositoryNode)
+	public static RepositoryConfig create(Model model, Resource repositoryNode)
 		throws RepositoryConfigException
 	{
 		RepositoryConfig config = new RepositoryConfig();
-		config.parse(graph, repositoryNode);
+		config.parse(model, repositoryNode);
 		return config;
 	}
 }

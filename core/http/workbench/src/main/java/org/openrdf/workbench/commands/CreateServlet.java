@@ -29,9 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import info.aduna.io.IOUtil;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.util.GraphUtil;
+import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.repository.Repository;
@@ -84,7 +85,7 @@ public class CreateServlet extends TransformationServlet {
 	 * create.xsl form submissions.
 	 * 
 	 * @throws RepositoryException
-	 * @throws QueryResultHandlerException 
+	 * @throws QueryResultHandlerException
 	 */
 	@Override
 	protected void service(final WorkbenchRequest req, final HttpServletResponse resp, final String xslPath)
@@ -136,12 +137,15 @@ public class CreateServlet extends TransformationServlet {
 		throws IOException, OpenRDFException
 	{
 		final Repository systemRepo = manager.getSystemRepository();
-		final Graph graph = new LinkedHashModel();
+		final Model graph = new LinkedHashModel();
 		final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, systemRepo.getValueFactory());
 		rdfParser.setRDFHandler(new StatementCollector(graph));
 		rdfParser.parse(new StringReader(configString), RepositoryConfigSchema.NAMESPACE);
-		final RepositoryConfig repConfig = RepositoryConfig.create(graph,
-				GraphUtil.getUniqueSubject(graph, RDF.TYPE, RepositoryConfigSchema.REPOSITORY));
+
+		Resource res = Models.subject(
+				graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY)).orElseThrow(
+						() -> new RepositoryException("could not find instance of Repository class in config"));
+		final RepositoryConfig repConfig = RepositoryConfig.create(graph, res);
 		repConfig.validate();
 		RepositoryConfigUtil.updateRepositoryConfigs(systemRepo, repConfig);
 		return repConfig;

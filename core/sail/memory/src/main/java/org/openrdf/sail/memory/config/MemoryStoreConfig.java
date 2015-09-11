@@ -19,13 +19,14 @@ package org.openrdf.sail.memory.config;
 import static org.openrdf.sail.memory.config.MemoryStoreSchema.PERSIST;
 import static org.openrdf.sail.memory.config.MemoryStoreSchema.SYNC_DELAY;
 
-import org.openrdf.model.Graph;
-import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
-import org.openrdf.sail.config.SailConfigException;
+import org.openrdf.model.impl.BooleanLiteral;
+import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.sail.config.AbstractSailImplConfig;
+import org.openrdf.sail.config.SailConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -67,51 +68,49 @@ public class MemoryStoreConfig extends AbstractSailImplConfig {
 	}
 
 	@Override
-	public Resource export(Graph graph)
-	{
+	public Resource export(Model graph) {
 		Resource implNode = super.export(graph);
 
 		if (persist) {
-			graph.add(implNode, PERSIST, graph.getValueFactory().createLiteral(persist));
+			graph.add(implNode, PERSIST, BooleanLiteral.TRUE);
 		}
 
 		if (syncDelay != 0) {
-			graph.add(implNode, SYNC_DELAY, graph.getValueFactory().createLiteral(syncDelay));
+			graph.add(implNode, SYNC_DELAY, SimpleValueFactory.getInstance().createLiteral(syncDelay));
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model graph, Resource implNode)
 		throws SailConfigException
 	{
 		super.parse(graph, implNode);
 
 		try {
-			Literal persistValue = GraphUtil.getOptionalObjectLiteral(graph, implNode, PERSIST);
-			if (persistValue != null) {
+
+			Models.objectLiteral(graph.filter(implNode, PERSIST, null)).ifPresent(persistValue -> {
 				try {
 					setPersist((persistValue).booleanValue());
 				}
 				catch (IllegalArgumentException e) {
-					throw new SailConfigException("Boolean value required for " + PERSIST + " property, found "
-							+ persistValue);
+					throw new SailConfigException(
+							"Boolean value required for " + PERSIST + " property, found " + persistValue);
 				}
-			}
+			});
 
-			Literal syncDelayValue = GraphUtil.getOptionalObjectLiteral(graph, implNode, SYNC_DELAY);
-			if (syncDelayValue != null) {
+			Models.objectLiteral(graph.filter(implNode, SYNC_DELAY, null)).ifPresent(syncDelayValue -> {
 				try {
 					setSyncDelay((syncDelayValue).longValue());
 				}
 				catch (NumberFormatException e) {
-					throw new SailConfigException("Long integer value required for " + SYNC_DELAY
-							+ " property, found " + syncDelayValue);
+					throw new SailConfigException(
+							"Long integer value required for " + SYNC_DELAY + " property, found " + syncDelayValue);
 				}
-			}
+			});
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

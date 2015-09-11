@@ -16,7 +16,7 @@
  */
 package org.openrdf.repository.config;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 
 /**
@@ -37,8 +37,33 @@ public interface RepositoryImplConfig {
 	public void validate()
 		throws RepositoryConfigException;
 
-	public Resource export(Graph graph);
 
-	public void parse(Graph graph, Resource implNode)
+	/**
+	 * Export this {@link RepositoryImplConfig} to its RDF representation
+	 * 
+	 * @param model
+	 *        a {@link Model} object. After successful completion of this method
+	 *        this Model will contain the RDF representation of this
+	 *        {@link RepositoryImplConfig}.
+	 * @return the subject {@link Resource} that identifies this
+	 *         {@link RepositoryImplConfig} in the Model.
+	 */
+	public Resource export(Model model);
+
+	/**
+	 * Reads the properties of this {@link RepositoryImplConfig} from the
+	 * supplied Model and sets them accordingly.
+	 * 
+	 * @param model
+	 *        a {@link Model} containing repository configuration data.
+	 * @param resource
+	 *        the subject {@link Resource} that identifies the
+	 *        {@link RepositoryImplConfig} in the Model.
+	 * @throws RepositoryConfigException
+	 *         if the configuration data could not be read from the supplied
+	 *         Model.
+	 */
+	public void parse(Model model, Resource resource)
 		throws RepositoryConfigException;
+
 }

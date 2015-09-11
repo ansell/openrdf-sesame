@@ -19,14 +19,19 @@ package org.openrdf.sail.config;
 import static org.openrdf.sail.config.SailConfigSchema.DELEGATE;
 
 import org.openrdf.model.Graph;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 
 /**
  * @author Herko ter Horst
  */
-public abstract class AbstractDelegatingSailImplConfig extends AbstractSailImplConfig implements DelegatingSailImplConfig {
+public abstract class AbstractDelegatingSailImplConfig extends AbstractSailImplConfig
+		implements DelegatingSailImplConfig
+{
 
 	private SailImplConfig delegate;
 
@@ -72,31 +77,28 @@ public abstract class AbstractDelegatingSailImplConfig extends AbstractSailImplC
 	}
 
 	@Override
-	public Resource export(Graph graph)
-	{
-		Resource implNode = super.export(graph);
+	public Resource export(Model m) {
+		Resource implNode = super.export(m);
 
 		if (delegate != null) {
-			Resource delegateNode = delegate.export(graph);
-			graph.add(implNode, DELEGATE, delegateNode);
+			Resource delegateNode = delegate.export(m);
+			m.add(implNode, DELEGATE, delegateNode);
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model m, Resource implNode)
 		throws SailConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(m, implNode);
 
 		try {
-			Resource delegateNode = GraphUtil.getOptionalObjectResource(graph, implNode, DELEGATE);
-			if (delegateNode != null) {
-				setDelegate(SailConfigUtil.parseRepositoryImpl(graph, delegateNode));
-			}
+			Models.objectResource(m.filter(implNode, DELEGATE, null)).ifPresent(
+					delegate -> setDelegate(SailConfigUtil.parseRepositoryImpl(m, delegate)));
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

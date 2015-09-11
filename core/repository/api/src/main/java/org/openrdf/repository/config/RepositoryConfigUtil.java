@@ -27,11 +27,14 @@ import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.GraphImpl;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.query.QueryResults;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -113,8 +116,7 @@ public class RepositoryConfigUtil {
 				throw new RepositoryException("No configuration context for repository " + repositoryID);
 			}
 
-			Graph contextGraph = new GraphImpl();
-			Iterations.addAll(con.getStatements(null, null, null, true, context), contextGraph);
+			Model contextGraph = QueryResults.asModel(con.getStatements(null, null, null, true, context));
 
 			return RepositoryConfig.create(contextGraph, repositoryNode);
 		}
@@ -190,7 +192,7 @@ public class RepositoryConfigUtil {
 
 			con.add(context, RDF.TYPE, REPOSITORY_CONTEXT);
 
-			Graph graph = new GraphImpl(vf);
+			Model graph = new LinkedHashModel();
 			config.export(graph);
 			con.add(graph, context);
 		}

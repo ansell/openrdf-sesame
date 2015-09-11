@@ -20,10 +20,13 @@ import static org.openrdf.sail.lucene.config.LuceneSailConfigSchema.INDEX_DIR;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.Models;
 import org.openrdf.sail.config.AbstractDelegatingSailImplConfig;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailImplConfig;
@@ -70,30 +73,25 @@ public abstract class AbstractLuceneSailConfig extends AbstractDelegatingSailImp
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource implNode = super.export(graph);
+	public Resource export(Model m) {
+		Resource implNode = super.export(m);
 
 		if (indexDir != null) {
-			graph.add(implNode, INDEX_DIR, ValueFactoryImpl.getInstance().createLiteral(indexDir));
+			m.add(implNode, INDEX_DIR, SimpleValueFactory.getInstance().createLiteral(indexDir));
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model graph, Resource implNode)
 		throws SailConfigException
 	{
 		super.parse(graph, implNode);
 
-		try {
-			Literal indexDirLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, INDEX_DIR);
-			if (indexDirLit != null) {
-				setIndexDir(indexDirLit.getLabel());
-			}
-		}
-		catch (GraphUtilException e) {
-			throw new SailConfigException(e.getMessage(), e);
-		}
+		Literal indexDirLit = Models.objectLiteral(graph.filter(implNode, INDEX_DIR, null)).orElseThrow(
+				() -> new SailConfigException("no value found for " + INDEX_DIR));
+
+		setIndexDir(indexDirLit.getLabel());
 	}
 }

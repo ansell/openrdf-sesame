@@ -19,13 +19,17 @@ package org.openrdf.repository.sail.config;
 import static org.openrdf.repository.sail.config.SailRepositorySchema.SAILIMPL;
 import static org.openrdf.sail.config.SailConfigSchema.SAILTYPE;
 
-import org.openrdf.model.Graph;
+import java.util.Optional;
+
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
-import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.repository.config.AbstractRepositoryImplConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
@@ -73,37 +77,34 @@ public class SailRepositoryConfig extends AbstractRepositoryImplConfig {
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource repImplNode = super.export(graph);
+	public Resource export(Model model) {
+		Resource repImplNode = super.export(model);
 
 		if (sailImplConfig != null) {
-			Resource sailImplNode = sailImplConfig.export(graph);
-			graph.add(repImplNode, SAILIMPL, sailImplNode);
+			Resource sailImplNode = sailImplConfig.export(model);
+			model.add(repImplNode, SAILIMPL, sailImplNode);
 		}
 
 		return repImplNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource repImplNode)
+	public void parse(Model model, Resource repImplNode)
 		throws RepositoryConfigException
 	{
 		try {
-			Resource sailImplNode = GraphUtil.getOptionalObjectResource(graph, repImplNode, SAILIMPL);
-
-			if (sailImplNode != null) {
-				Literal typeLit = GraphUtil.getOptionalObjectLiteral(graph, sailImplNode, SAILTYPE);
-
-				if (typeLit != null) {
+			Optional<Resource> sailImplNode = Models.objectResource(model.filter(repImplNode, SAILIMPL, null));
+			if (sailImplNode.isPresent()) {
+				Models.objectLiteral(model.filter(sailImplNode.get(), SAILTYPE, null)).ifPresent(typeLit -> {
 					SailFactory factory = SailRegistry.getInstance().get(typeLit.getLabel()).orElseThrow(
 							() -> new RepositoryConfigException("Unsupported Sail type: " + typeLit.getLabel()));
 
 					sailImplConfig = factory.getConfig();
-					sailImplConfig.parse(graph, sailImplNode);
-				}
+					sailImplConfig.parse(model, sailImplNode.get());
+				});
 			}
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 		catch (SailConfigException e) {
