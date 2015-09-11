@@ -104,7 +104,7 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 		if (statementsRemoved) {
 			logger.debug("statements removed, starting inferencing from scratch");
 			resetInferred();
-
+			super.flushUpdates();
 			newStatements = new SailModel(getWrappedConnection(), true);
 
 			statementsRemoved = false;
