@@ -699,7 +699,7 @@ public class SesameSession extends SparqlSession {
 		RequestBuilder builder = null;
 		if (transactionURL != null) {
 			builder = RequestBuilder.put(transactionURL);
-			builder.setHeader("Content-Type", Protocol.SPARQL_QUERY_MIME_TYPE).setCharset(UTF8);
+			builder.setHeader("Content-Type", Protocol.SPARQL_QUERY_MIME_TYPE + "; charset=utf-8");
 			builder.addParameter(Protocol.ACTION_PARAM_NAME, Action.QUERY.toString());
 			for (NameValuePair nvp : getQueryMethodParameters(ql, null, baseURI, dataset, includeInferred,
 					maxQueryTime, bindings))
@@ -712,7 +712,7 @@ public class SesameSession extends SparqlSession {
 		}
 		else {
 			builder = RequestBuilder.post(getQueryURL());
-			builder.setHeader("Content-Type", Protocol.FORM_MIME_TYPE).setCharset(UTF8);
+			builder.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 			builder.setEntity(new UrlEncodedFormEntity(
 					getQueryMethodParameters(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings),
@@ -729,7 +729,7 @@ public class SesameSession extends SparqlSession {
 		RequestBuilder builder = null;
 		if (transactionURL != null) {
 			builder = RequestBuilder.put(transactionURL);
-			builder.addHeader("Content-Type", Protocol.SPARQL_UPDATE_MIME_TYPE).setCharset(UTF8);
+			builder.addHeader("Content-Type", Protocol.SPARQL_UPDATE_MIME_TYPE + "; charset=utf-8");
 			builder.addParameter(Protocol.ACTION_PARAM_NAME, Action.UPDATE.toString());
 			for (NameValuePair nvp : getUpdateMethodParameters(ql, null, baseURI, dataset, includeInferred,
 					bindings))
@@ -742,7 +742,7 @@ public class SesameSession extends SparqlSession {
 		}
 		else {
 			builder = RequestBuilder.post(getUpdateURL());
-			builder.addHeader("Content-Type", Protocol.FORM_MIME_TYPE).setCharset(UTF8);
+			builder.addHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
 			builder.setEntity(new UrlEncodedFormEntity(
 					getUpdateMethodParameters(ql, update, baseURI, dataset, includeInferred, bindings), UTF8));
