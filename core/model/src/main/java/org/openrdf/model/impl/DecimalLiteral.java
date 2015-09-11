@@ -37,14 +37,14 @@ public class DecimalLiteral extends SimpleLiteral {
 	/**
 	 * Creates an xsd:decimal literal with the specified value.
 	 */
-	public DecimalLiteral(BigDecimal value) {
+	protected DecimalLiteral(BigDecimal value) {
 		this(value, XMLSchema.DECIMAL);
 	}
 
 	/**
 	 * Creates a literal with the specified value and datatype.
 	 */
-	public DecimalLiteral(BigDecimal value, IRI datatype) {
+	protected DecimalLiteral(BigDecimal value, IRI datatype) {
 		// TODO: maybe DecimalLiteral should not extend SimpleLiteral?
 		super(value.toPlainString(), datatype);
 		this.value = value;

@@ -118,7 +118,7 @@ public class FN {
 	public static final IRI YEAR_FROM_DATETIME;
 
 	static {
-		ValueFactory f = new SimpleValueFactory();
+		ValueFactory f = SimpleValueFactory.getInstance();
 
 		CONCAT = f.createIRI(NAMESPACE, "concat");
 

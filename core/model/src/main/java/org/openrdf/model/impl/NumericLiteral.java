@@ -34,7 +34,7 @@ public class NumericLiteral extends SimpleLiteral {
 	/**
 	 * Creates a literal with the specified value and datatype.
 	 */
-	public NumericLiteral(Number number, IRI datatype) {
+	protected NumericLiteral(Number number, IRI datatype) {
 		super(number.toString(), datatype);
 		this.number = number;
 	}
@@ -42,42 +42,42 @@ public class NumericLiteral extends SimpleLiteral {
 	/**
 	 * Creates an xsd:byte typed litral with the specified value.
 	 */
-	public NumericLiteral(byte number) {
+	protected NumericLiteral(byte number) {
 		this(number, XMLSchema.BYTE);
 	}
 
 	/**
 	 * Creates an xsd:short typed litral with the specified value.
 	 */
-	public NumericLiteral(short number) {
+	protected NumericLiteral(short number) {
 		this(number, XMLSchema.SHORT);
 	}
 
 	/**
 	 * Creates an xsd:int typed litral with the specified value.
 	 */
-	public NumericLiteral(int number) {
+	protected NumericLiteral(int number) {
 		this(number, XMLSchema.INT);
 	}
 
 	/**
 	 * Creates an xsd:long typed litral with the specified value.
 	 */
-	public NumericLiteral(long n) {
+	protected NumericLiteral(long n) {
 		this(n, XMLSchema.LONG);
 	}
 
 	/**
 	 * Creates an xsd:float typed litral with the specified value.
 	 */
-	public NumericLiteral(float n) {
+	protected NumericLiteral(float n) {
 		this(n, XMLSchema.FLOAT);
 	}
 
 	/**
 	 * Creates an xsd:double typed litral with the specified value.
 	 */
-	public NumericLiteral(double n) {
+	protected NumericLiteral(double n) {
 		this(n, XMLSchema.DOUBLE);
 	}
 

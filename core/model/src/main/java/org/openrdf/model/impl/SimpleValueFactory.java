@@ -47,6 +47,12 @@ public class SimpleValueFactory extends AbstractValueFactory {
 		return sharedInstance;
 	}
 
+	/**
+	 * Hidden constructor to enforce singleton pattern.
+	 */
+	protected SimpleValueFactory() {
+	}
+
 	/*---------*
 	 * Methods *
 	 *---------*/

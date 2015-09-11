@@ -50,7 +50,7 @@ public class BooleanLiteral extends SimpleLiteral {
 	/**
 	 * Creates an xsd:boolean typed literal with the specified value.
 	 */
-	public BooleanLiteral(boolean value) {
+	protected BooleanLiteral(boolean value) {
 		super(Boolean.toString(value), XMLSchema.BOOLEAN);
 		this.value = value;
 	}

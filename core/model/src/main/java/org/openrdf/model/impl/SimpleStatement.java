@@ -27,6 +27,8 @@ import org.openrdf.model.Value;
  * A simple default implementation of the {@link Statement} interface for
  * statements that don't have an associated context. For statements that do have
  * an associated context, {@link ContextStatement} can be used.
+ * 
+ * @see {@link SimpleValueFactory}
  */
 public class SimpleStatement implements Statement {
 
@@ -56,14 +58,13 @@ public class SimpleStatement implements Statement {
 	 *--------------*/
 
 	/**
-	 * Creates a new Statement with the supplied subject, predicate and object.
-	 * *
+	 * Creates a new Statement with the supplied subject, predicate and object. *
 	 * <p>
 	 * Note that creating SimpleStatement objects directly via this constructor
 	 * is not the recommended approach. Instead, use a
 	 * {@link org.openrdf.model.ValueFactory ValueFactory} (obtained from your
-	 * repository or by using {@link SimpleValueFactory#getInstance()}) to
-	 * create new Statement objects.
+	 * repository or by using {@link SimpleValueFactory#getInstance()}) to create
+	 * new Statement objects.
 	 * 
 	 * @param subject
 	 *        The statement's subject, must not be <tt>null</tt>.
@@ -73,7 +74,7 @@ public class SimpleStatement implements Statement {
 	 *        The statement's object, must not be <tt>null</tt>.
 	 * @see {@link SimpleValueFactory#createStatement(Resource, IRI, Value)
 	 */
-	public SimpleStatement(Resource subject, IRI predicate, Value object) {
+	protected SimpleStatement(Resource subject, IRI predicate, Value object) {
 		this.subject = Objects.requireNonNull(subject, "subject must not be null");
 		this.predicate = Objects.requireNonNull(predicate, "predicate must not be null");
 		this.object = Objects.requireNonNull(object, "object must not be null");
@@ -120,7 +121,7 @@ public class SimpleStatement implements Statement {
 			 * these are checked last.
 			 */
 			return object.equals(that.getObject()) && subject.equals(that.getSubject())
-				&& predicate.equals(that.getPredicate()) && Objects.equals(getContext(), that.getContext());
+					&& predicate.equals(that.getPredicate()) && Objects.equals(getContext(), that.getContext());
 		}
 
 		return false;
