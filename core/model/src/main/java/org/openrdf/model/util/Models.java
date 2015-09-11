@@ -143,31 +143,6 @@ public class Models {
 	}
 
 	/**
-	 * Retrieves an object {@link URI} value from the statements in the given
-	 * model. If more than one possible URI value exists, any one value is picked
-	 * and returned.
-	 * 
-	 * @param m
-	 *        the model from which to retrieve an object IRI value.
-	 * @return an {@link Optional} object URI value from the given model, which
-	 *         will be {@link Optional#empty() empty} if no such value exists.
-	 * @deprecated since 4.0. Use {@link #objectIRI(Model)} instead.
-	 */
-	@Deprecated
-	public static Optional<URI> objectURI(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof IRI) {
-					return Optional.of((URI)v);
-				}
-			}
-		}
-
-		return Optional.empty();
-	}
-
-	/**
 	 * Retrieves an object {@link IRI} value from the statements in the given
 	 * model. If more than one possible IRI value exists, any one value is picked
 	 * and returned.
@@ -196,7 +171,7 @@ public class Models {
 	 */
 	@Deprecated
 	public static URI anyObjectURI(Model m) {
-		return objectURI(m).orElse(null);
+		return objectIRI(m).orElse(null);
 	}
 
 	/**
@@ -228,31 +203,6 @@ public class Models {
 	}
 
 	/**
-	 * Retrieves a subject {@link URI} from the statements in the given model. If
-	 * more than one possible URI value exists, any one URI value is picked and
-	 * returned.
-	 * 
-	 * @param m
-	 *        the model from which to retrieve a subject IRI value.
-	 * @return an {@link Optional} subject URI value from the given model, which
-	 *         will be {@link Optional#empty() empty} if no such value exists.
-	 * @deprecated since 4.0 use {@link #subjectIRI(Model)} instead.s
-	 */
-	@Deprecated
-	public static Optional<URI> subjectURI(Model m) {
-		final Set<Resource> objects = m.subjects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof IRI) {
-					return Optional.of((URI)v);
-				}
-			}
-		}
-
-		return Optional.empty();
-	}
-
-	/**
 	 * Retrieves a subject {@link IRI} from the statements in the given model. If
 	 * more than one possible IRI value exists, any one IRI value is picked and
 	 * returned.
@@ -280,7 +230,7 @@ public class Models {
 	 */
 	@Deprecated
 	public static URI anySubjectURI(Model m) {
-		return subjectURI(m).orElse(null);
+		return subjectIRI(m).orElse(null);
 	}
 
 	/**
