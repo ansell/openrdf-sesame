@@ -16,6 +16,14 @@
  */
 package org.openrdf.sail.spin;
 
+import info.aduna.iteration.Iterations;
+
+import java.util.Set;
+
+import org.openrdf.model.Statement;
+import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.SP;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -52,7 +60,10 @@ public class SPINSail extends AbstractForwardChainingInferencer {
 		SPINSailConnection con = getConnection();
 		try {
 			con.begin();
-			con.addAxiomStatements();
+			Set<Statement> stmts = Iterations.asSet(con.getStatements(getValueFactory().createURI(SP.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY, true));
+			if(stmts.isEmpty()) {
+				con.addAxiomStatements();
+			}
 			con.commit();
 		}
 		finally {
