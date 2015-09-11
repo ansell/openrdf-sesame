@@ -37,7 +37,7 @@ package org.openrdf.query.parser.sparql.ast;
 
 import java.io.StringReader;
 
-import org.openrdf.model.URI;
+import org.openrdf.model.IRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.Compare.CompareOp;
@@ -1638,7 +1638,7 @@ void NumericLiteral() #void :
 }
 
 void NumericLiteralUnsigned() #NumericLiteral :
-{ Token t; URI datatype; }
+{ Token t; IRI datatype; }
 {
 	(
 		t = <INTEGER> { datatype = XMLSchema.INTEGER; }
@@ -1653,7 +1653,7 @@ void NumericLiteralUnsigned() #NumericLiteral :
 }
 
 void NumericLiteralPositive() #NumericLiteral :
-{ Token t; URI datatype; }
+{ Token t; IRI datatype; }
 {
 	(
 		t = <INTEGER_POSITIVE> { datatype = XMLSchema.INTEGER; }
@@ -1668,7 +1668,7 @@ void NumericLiteralPositive() #NumericLiteral :
 }
 
 void NumericLiteralNegative() #NumericLiteral :
-{ Token t; URI datatype; }
+{ Token t; IRI datatype; }
 {
 	(
 		t = <INTEGER_NEGATIVE> { datatype = XMLSchema.INTEGER; }
