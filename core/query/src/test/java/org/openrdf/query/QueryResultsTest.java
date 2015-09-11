@@ -54,7 +54,7 @@ public class QueryResultsTest {
 	/** a stub GraphQueryResult, containing a number of duplicate statements */
 	private GraphQueryResult gqr;
 
-	private static ValueFactory VF = new SimpleValueFactory();
+	private static ValueFactory VF = SimpleValueFactory.getInstance();
 
 	private List<String> twoBindingNames = Arrays.asList("a", "b");
 
