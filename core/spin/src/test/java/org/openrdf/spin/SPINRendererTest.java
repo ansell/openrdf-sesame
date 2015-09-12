@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.junit.Test;
@@ -25,6 +26,7 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.WriterConfig;
 import org.openrdf.rio.helpers.BasicWriterSettings;
@@ -79,15 +81,26 @@ public class SPINRendererTest {
 		StatementCollector actual = new StatementCollector();
 		renderer.render(pq, actual);
 
-		assertTrue("Query was\n"+pq.getTupleExpr()+"\nExpected\n"+toRDF(expected.getStatements())+"\nbut was\n"+toRDF(actual.getStatements()), Models.isomorphic(actual.getStatements(), expected.getStatements()));
+		assertTrue("Query was\n"+pq.getTupleExpr()+"\nExpected\n"+toRDF(expected)+"\nbut was\n"+toRDF(actual), Models.isomorphic(actual.getStatements(), expected.getStatements()));
 	}
 
-	private static String toRDF(Iterable<Statement> stmts) throws RDFHandlerException
+	private static String toRDF(StatementCollector stmts) throws RDFHandlerException
 	{
 		WriterConfig config = new WriterConfig();
 		config.set(BasicWriterSettings.PRETTY_PRINT, false);
 		StringBuilderWriter writer = new StringBuilderWriter();
-		Rio.write(stmts, writer, RDFFormat.TURTLE, config);
+		final RDFWriter rdfWriter = Rio.createWriter(RDFFormat.TURTLE, writer);
+		rdfWriter.setWriterConfig(config);
+
+		rdfWriter.startRDF();
+		for (Map.Entry<String,String> entry : stmts.getNamespaces().entrySet()) {
+			rdfWriter.handleNamespace(entry.getKey(), entry.getValue());
+		}
+		for (final Statement st : stmts.getStatements()) {
+			rdfWriter.handleStatement(st);
+		}
+		rdfWriter.endRDF();
+
 		writer.close();
 		return writer.toString();
 	}

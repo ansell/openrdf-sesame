@@ -552,14 +552,13 @@ public class SPINRenderer {
 				valueExpr = inlineBindings.getValueExpr(varName);
 			}
 			Resource targetVar = getVar(node.getTargetName());
-			if(valueExpr == null || valueExpr instanceof Var) {
-				listEntry(targetVar);
-			}
-			else {
-				Resource res = valueFactory.createBNode();
-				listEntry(res);
-				handler.handleStatement(valueFactory.createStatement(res, SP.AS_PROPERTY, targetVar));
+			listEntry(targetVar);
+			if(valueExpr != null && !(valueExpr instanceof Var)) {
+				Resource currentSubj = subject;
+				subject = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(targetVar, SP.EXPRESSION_PROPERTY, subject));
 				valueExpr.visit(new ExtensionVisitor());
+				subject = currentSubj;
 			}
 		}
 

@@ -912,13 +912,12 @@ public class SPINParser {
 			while(iter.hasNext()) {
 				Resource r = iter.next();
 				ValueExpr groupByExpr = visitExpression(r);
-				if(groupByExpr instanceof Var) {
-					group.addGroupBindingName(((Var)groupByExpr).getName());
-				}
-				else {
+				if(!(groupByExpr instanceof Var)) {
 					// TODO
+					// have to create an intermediate Var/Extension for the expression
 					throw new UnsupportedOperationException("TODO!");
 				}
+				group.addGroupBindingName(((Var)groupByExpr).getName());
 			}
 		}
 
@@ -964,39 +963,48 @@ public class SPINParser {
 		private ProjectionElem createProjectionElem(Value v, String projName)
 			throws OpenRDFException
 		{
+			String varName;
+			ValueExpr valueExpr;
 			Collection<AggregateOperator> oldAggregates = aggregates;
-			aggregates = new ArrayList<AggregateOperator>();
-			ValueExpr valueExpr = visitExpression(v);
-			boolean hasAggregates = !aggregates.isEmpty();
-
-			String varName = null;
-			if(valueExpr instanceof Var) {
-				varName = ((Var)valueExpr).getName();
-			}
-			else if(valueExpr instanceof ValueConstant) {
+			aggregates = Collections.emptyList();
+			if(v instanceof Literal) {
+				// literal
+				if(projName == null) {
+					throw new MalformedSPINException("Expected a projection var: "+v);
+				}
 				varName = getConstVarName(v);
+				valueExpr = new ValueConstant(v);
 			}
-
-			if(v instanceof Resource) {
-				Value asVar = Statements.singleValue((Resource)v, SP.AS_PROPERTY, store);
-				if(asVar != null) {
-					if(projName != null) {
-						throw new MalformedSPINException("Illegal usage of "+SP.AS_PROPERTY+": "+v);
+			else {
+				varName = getVarName((Resource)v);
+				if(varName != null) {
+					// var
+					Value expr = Statements.singleValue((Resource)v, SP.EXPRESSION_PROPERTY, store);
+					if(expr != null) {
+						// AS
+						aggregates = new ArrayList<AggregateOperator>();
+						valueExpr = visitExpression(expr);
 					}
-					projName = getVarName((Resource) asVar);
-					if(varName == null) {
-						varName = projName;
+					else {
+						valueExpr = new Var(varName);
+					}
+					if(projName == null) {
+						projName = varName;
 					}
 				}
-			}
-
-			if(projName == null) {
-				projName = varName;
+				else {
+					// resource
+					if(projName == null) {
+						throw new MalformedSPINException("Expected a projection var: "+v);
+					}
+					varName = getConstVarName(v);
+					valueExpr = new ValueConstant(v);
+				}
 			}
 
 			ProjectionElem projElem = new ProjectionElem(varName, projName);
 			projElem.setSourceExpression(new ExtensionElem(valueExpr, varName));
-			if(hasAggregates) {
+			if(!aggregates.isEmpty()) {
 				projElem.setAggregateOperatorInExpression(true);
 				if(group == null) {
 					group = new Group();

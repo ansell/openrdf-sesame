@@ -16,7 +16,9 @@ WHERE {
 ].
 
 _:object sp:varName "object" .
-_:count  sp:as [sp:varName "count"] ;
-		 sp:expression _:object;
-		 sp:distinct true;
-		 a       sp:Count .
+_:count sp:varName "count" .
+_:count sp:expression [
+			a       sp:Count ;
+			sp:distinct true ;
+		 	sp:expression _:object
+		] .

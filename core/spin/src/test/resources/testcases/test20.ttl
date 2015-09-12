@@ -16,10 +16,7 @@ ORDER BY ?max
 """;
   sp:resultVariables (
   	spin:_this
-	[ a sp:Max ;
-	  sp:as _:max ;
-	  sp:expression _:object
-	]
+  	_:max
   ) ;
   sp:where ([ sp:object _:object ;
               sp:predicate ex:prop ;
@@ -32,3 +29,7 @@ ORDER BY ?max
 
 _:object sp:varName "object" .
 _:max  sp:varName "max" .
+_:max  sp:expression [
+	a sp:Max ;
+	  sp:expression _:object
+	] .
