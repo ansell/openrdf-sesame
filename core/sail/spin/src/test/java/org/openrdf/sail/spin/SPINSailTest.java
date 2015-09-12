@@ -77,6 +77,7 @@ public class SPINSailTest {
 	@Test
 	public void testAskConstraint() throws Exception {
 		constraintException.expectCause(isA(ConstraintViolationException.class));
+		constraintException.expectMessage("Test constraint");
 		loadStatements("testAskConstraint.ttl");
 	}
 
@@ -89,6 +90,7 @@ public class SPINSailTest {
 	@Test
 	public void testTemplateConstraint() throws Exception {
 		constraintException.expectCause(isA(ConstraintViolationException.class));
+		constraintException.expectMessage("Invalid number of values: 0");
 		loadStatements("testTemplateConstraint.ttl");
 	}
 

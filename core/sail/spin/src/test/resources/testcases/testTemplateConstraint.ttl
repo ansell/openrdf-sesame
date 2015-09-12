@@ -8,7 +8,8 @@ ex:Person a rdfs:Class ;
 		spin:constraint [
 				a spl:ObjectCountPropertyConstraint ;
 				arg:property ex:prop ;
-				arg:minCount 1
+				arg:minCount 1 ;
+				rdfs:label """Test constraint"""
 		] .
 
 ex:Tom a ex:Person .

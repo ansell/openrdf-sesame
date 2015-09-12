@@ -419,14 +419,20 @@ public class SPINParser {
 		}
 		else {
 			// template
+			Set<URI> abstractTemplates;
 			if (possibleTemplates.size() > 1) {
+				abstractTemplates = new HashSet<URI>();
 				for (Iterator<URI> iter = possibleTemplates.iterator(); iter.hasNext(); ) {
 					URI t = iter.next();
 					Value abstractValue = Statements.singleValue(t, SPIN.ABSTRACT_PROPERTY, store);
 					if(BooleanLiteralImpl.TRUE.equals(abstractValue)) {
+						abstractTemplates.add(t);
 						iter.remove();
 					}
 				}
+			}
+			else {
+				abstractTemplates = Collections.emptySet();
 			}
 
 			if (possibleTemplates.isEmpty()) {
@@ -437,7 +443,7 @@ public class SPINParser {
 			}
 
 			URI templateResource = possibleTemplates.iterator().next();
-			Template tmpl = getTemplate(templateResource, queryClass, store);
+			Template tmpl = getTemplate(templateResource, queryClass, abstractTemplates, store);
 			MapBindingSet args = new MapBindingSet();
 			for(Argument arg : tmpl.getArguments()) {
 				URI argPred = arg.getPredicate();
@@ -466,14 +472,14 @@ public class SPINParser {
 		return parsedOp;
 	}
 
-	private Template getTemplate(URI tmplUri, URI queryType, TripleSource store)
+	private Template getTemplate(URI tmplUri, URI queryType, Set<URI> abstractTmpls, TripleSource store)
 		throws OpenRDFException
 	{
 		// TODO add caching
-		return parseTemplate(tmplUri, queryType, store);
+		return parseTemplate(tmplUri, queryType, abstractTmpls, store);
 	}
 
-	private Template parseTemplate(URI tmplUri, URI queryType, TripleSource store)
+	private Template parseTemplate(URI tmplUri, URI queryType, Set<URI> abstractTmpls, TripleSource store)
 		throws OpenRDFException
 	{
 		Set<URI> possibleTmplTypes = new HashSet<URI>();
@@ -535,7 +541,7 @@ public class SPINParser {
 		ParsedOperation op = parse((Resource)body, queryType, store);
 		tmpl.setParsedOperation(op);
 
-		Map<URI,Argument> templateArgs = parseArguments(tmplUri, store);
+		Map<URI,Argument> templateArgs = parseTemplateArguments(tmplUri, abstractTmpls, store);
 
 		List<URI> orderedArgs = orderArguments(templateArgs.keySet());
 		for(URI uri : orderedArgs) {
@@ -544,6 +550,17 @@ public class SPINParser {
 		}
 
 		return tmpl;
+	}
+
+	private Map<URI,Argument> parseTemplateArguments(URI tmplUri, Set<URI> abstractTmpls, TripleSource store)
+			throws OpenRDFException
+	{
+		Map<URI,Argument> args = new HashMap<URI,Argument>();
+		for(URI abstractTmpl : abstractTmpls) {
+			parseArguments(abstractTmpl, store, args);
+		}
+		parseArguments(tmplUri, store, args);
+		return args;
 	}
 
 	public org.openrdf.query.algebra.evaluation.function.Function parseFunction(URI funcUri, TripleSource store)
@@ -563,6 +580,13 @@ public class SPINParser {
 		throws OpenRDFException
 	{
 		Map<URI,Argument> args = new HashMap<URI,Argument>();
+		parseArguments(moduleUri, store, args);
+		return args;
+	}
+
+	private void parseArguments(URI moduleUri, TripleSource store, Map<URI,Argument> args)
+		throws OpenRDFException
+	{
 		CloseableIteration<? extends Resource, ? extends OpenRDFException> argIter = Statements.getObjectResources(
 				moduleUri, SPIN.CONSTRAINT_PROPERTY, store);
 		try {
@@ -582,7 +606,6 @@ public class SPINParser {
 		finally {
 			argIter.close();
 		}
-		return args;
 	}
 
 	private ParsedOperation parseText(Resource queryResource, URI queryType, TripleSource store)
