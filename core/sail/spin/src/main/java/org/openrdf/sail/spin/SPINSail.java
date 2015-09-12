@@ -24,12 +24,17 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
+import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencer;
 
 public class SPINSail extends AbstractForwardChainingInferencer {
+
+	static {
+		FunctionRegistry.getInstance().add(new org.openrdf.sail.spin.function.Concat());
+	}
 
 	public SPINSail() {
 	}
