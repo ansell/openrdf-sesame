@@ -94,6 +94,12 @@ public class SPINSailTest {
 		loadStatements("testTemplateConstraint.ttl");
 	}
 
+	@Test
+	public void testSpinxRule() throws Exception {
+		loadStatements("testSpinxRule.ttl");
+		assertStatements("testSpinxRule-expected.ttl");
+	}
+
 	private void loadStatements(String ttl) throws RepositoryException, RDFParseException, IOException {
 		URL url = getClass().getResource(BASE_DIR+ttl);
 		InputStream in = url.openStream();
