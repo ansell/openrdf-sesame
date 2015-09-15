@@ -2,7 +2,7 @@
 @prefix spin: <http://spinrdf.org/spin#>.
 @prefix ex: <ex:>.
 
-ex:testClass a rdfs:Class ;
+ex:TestClass a rdfs:Class ;
 		spin:rule [
 				a sp:Construct ;
 				sp:text """PREFIX ex: <ex:>
@@ -10,6 +10,6 @@ ex:testClass a rdfs:Class ;
 							WHERE {?this ex:prop ?x . bind(?x+1 as ?y)}""" 
 		] .
 
-ex:testSubj1 a ex:testClass .
-ex:testSubj2 a ex:testClass ;
+ex:testSubj1 a ex:TestClass .
+ex:testSubj2 a ex:TestClass ;
 	ex:prop 5 .

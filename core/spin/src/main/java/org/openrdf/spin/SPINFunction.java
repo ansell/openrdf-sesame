@@ -53,7 +53,7 @@ public class SPINFunction implements Function {
 	public SPINFunction(URI uri) {
 		this.uri = uri;
 	}
-	
+
 	public QueryPreparer getQueryPreparer() {
 		return queryPreparer;
 	}

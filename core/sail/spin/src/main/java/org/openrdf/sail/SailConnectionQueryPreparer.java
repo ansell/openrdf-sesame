@@ -21,6 +21,7 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.Update;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
@@ -34,12 +35,20 @@ import org.openrdf.spin.QueryPreparer;
 public class SailConnectionQueryPreparer implements QueryPreparer {
 
 	private final SailConnection con;
+
+	private final boolean includeInferred;
+
 	private final ValueFactory vf;
+
+	private final TripleSource source;
+
 	private ParserConfig parserConfig = new ParserConfig();
 
-	public SailConnectionQueryPreparer(SailConnection con, ValueFactory vf) {
+	public SailConnectionQueryPreparer(SailConnection con, boolean includeInferred, ValueFactory vf) {
 		this.con = con;
+		this.includeInferred = includeInferred;
 		this.vf = vf;
+		this.source = new SailTripleSource(con, includeInferred, vf);
 	}
 
 	public void setParserConfig(ParserConfig parserConfig) {
@@ -52,22 +61,34 @@ public class SailConnectionQueryPreparer implements QueryPreparer {
 
 	@Override
 	public BooleanQuery prepare(ParsedBooleanQuery askQuery) {
-		return new SailConnectionBooleanQuery(askQuery, con);
+		BooleanQuery query = new SailConnectionBooleanQuery(askQuery, con);
+		query.setIncludeInferred(includeInferred);
+		return query;
 	}
 
 	@Override
 	public TupleQuery prepare(ParsedTupleQuery tupleQuery) {
-		return new SailConnectionTupleQuery(tupleQuery, con);
+		TupleQuery query = new SailConnectionTupleQuery(tupleQuery, con);
+		query.setIncludeInferred(includeInferred);
+		return query;
 	}
 
 	@Override
 	public GraphQuery prepare(ParsedGraphQuery graphQuery) {
-		return new SailConnectionGraphQuery(graphQuery, con, vf);
+		GraphQuery query = new SailConnectionGraphQuery(graphQuery, con, vf);
+		query.setIncludeInferred(includeInferred);
+		return query;
 	}
 
 	@Override
 	public Update prepare(ParsedUpdate graphUpdate) {
-		return new SailConnectionUpdate(graphUpdate, con, vf, parserConfig);
+		Update update = new SailConnectionUpdate(graphUpdate, con, vf, parserConfig);
+		update.setIncludeInferred(includeInferred);
+		return update;
 	}
 
+	@Override
+	public TripleSource getTripleSource() {
+		return source;
+	}
 }

@@ -24,23 +24,29 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
-import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencer;
+import org.openrdf.spin.SPINParser;
 
 public class SPINSail extends AbstractForwardChainingInferencer {
 
-	static {
-		FunctionRegistry.getInstance().add(new org.openrdf.sail.spin.function.Concat());
-	}
+	private SPINParser parser = new SPINParser();
 
 	public SPINSail() {
 	}
 
 	public SPINSail(NotifyingSail baseSail) {
 		super(baseSail);
+	}
+
+	public SPINParser getSPINParser() {
+		return parser;
+	}
+
+	public void setSPINParser(SPINParser parser) {
+		this.parser = parser;
 	}
 
 	@Override

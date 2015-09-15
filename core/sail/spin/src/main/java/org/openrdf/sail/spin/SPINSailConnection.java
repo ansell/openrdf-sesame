@@ -27,11 +27,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
@@ -53,12 +51,9 @@ import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.Update;
-import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
@@ -71,7 +66,6 @@ import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailConnectionQueryPreparer;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.SailTripleSource;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnection;
 import org.openrdf.sail.inferencer.util.RDFInferencerInserter;
@@ -102,7 +96,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private final TripleSource tripleSource;
 
-	private final SPINParser parser = new SPINParser();
+	private final SPINParser parser;
 
 	private final Object rulePropertyLock = new Object();
 
@@ -115,8 +109,9 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 	public SPINSailConnection(SPINSail sail, InferencerConnection con) {
 		super(sail, con);
 		this.vf = sail.getValueFactory();
-		this.queryPreparer = new SailConnectionQueryPreparer(this, vf);
-		this.tripleSource = new SailTripleSource(con, true, vf);
+		this.parser = sail.getSPINParser();
+		this.queryPreparer = new SailConnectionQueryPreparer(this, true, vf);
+		this.tripleSource = queryPreparer.getTripleSource();
 		con.addConnectionListener(new SailConnectionListener() {
 
 			@Override
@@ -162,18 +157,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
-		UnknownFunctionCollector unknownFunctions = new UnknownFunctionCollector();
-		tupleExpr.visit(unknownFunctions);
-		for(String func : unknownFunctions.getFunctionNames()) {
-			URI funcUri = vf.createURI(func);
-			try {
-				Function f = parser.parseFunction(funcUri, tripleSource);
-				functionRegistry.add(f);
-			}
-			catch(OpenRDFException e) {
-				logger.warn("Failed to parse function: {}", funcUri);
-			}
-		}
+		new SPINFunctionPreparer(tripleSource, parser, functionRegistry).optimize(tupleExpr, dataset, bindings);
 
 		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}
@@ -337,7 +321,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		if (parsedOp instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedOp;
 			GraphQuery queryOp = queryPreparer.prepare(graphQuery);
-			addBindings(subj, rule, tripleSource, graphQuery, queryOp);
+			addBindings(subj, rule, graphQuery, queryOp);
 			CountingRDFInferencerInserter handler = new CountingRDFInferencerInserter(this, vf);
 			queryOp.evaluate(handler);
 			nofInferred = handler.getStatementCount();
@@ -345,7 +329,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		else if (parsedOp instanceof ParsedUpdate) {
 			ParsedUpdate graphUpdate = (ParsedUpdate)parsedOp;
 			Update updateOp = queryPreparer.prepare(graphUpdate);
-			addBindings(subj, rule, tripleSource, graphUpdate, updateOp);
+			addBindings(subj, rule, graphUpdate, updateOp);
 			UpdateCountListener listener = new UpdateCountListener();
 			addConnectionListener(listener);
 			updateOp.execute();
@@ -468,7 +452,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		if (parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery)parsedQuery;
 			BooleanQuery queryOp = queryPreparer.prepare(askQuery);
-			addBindings(subj, constraint, tripleSource, askQuery, queryOp);
+			addBindings(subj, constraint, askQuery, queryOp);
 			if (!queryOp.evaluate()) {
 				ConstraintViolation violation = parser.parseConstraintViolation(constraint, tripleSource);
 				handleConstraintViolation(violation);
@@ -477,7 +461,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		else if (parsedQuery instanceof ParsedGraphQuery) {
 			ParsedGraphQuery graphQuery = (ParsedGraphQuery)parsedQuery;
 			GraphQuery queryOp = queryPreparer.prepare(graphQuery);
-			addBindings(subj, constraint, tripleSource, graphQuery, queryOp);
+			addBindings(subj, constraint, graphQuery, queryOp);
 			ConstraintViolationRDFHandler handler = new ConstraintViolationRDFHandler();
 			queryOp.evaluate(handler);
 			if(handler.getConstraintViolation() != null) {
@@ -542,7 +526,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 		return constraints;
 	}
 
-	private void addBindings(Resource subj, Resource opResource, TripleSource tripleSource, ParsedOperation parsedOp, Operation op)
+	private void addBindings(Resource subj, Resource opResource, ParsedOperation parsedOp, Operation op)
 		throws OpenRDFException
 	{
 		if (!parser.isThisUnbound(opResource, tripleSource)) {
@@ -552,27 +536,6 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			for(Binding b : ((ParsedTemplate)parsedOp).getBindings()) {
 				op.setBinding(b.getName(), b.getValue());
 			}
-		}
-	}
-
-
-
-	class UnknownFunctionCollector extends QueryModelVisitorBase<RuntimeException> {
-		final Set<String> functions = new HashSet<String>();
-
-		Set<String> getFunctionNames() {
-			return functions;
-		}
-
-		@Override
-		public void meet(FunctionCall node)
-			throws RuntimeException
-		{
-			String name = node.getURI();
-			if(!functionRegistry.has(name)) {
-				functions.add(name);
-			}
-			super.meet(node);
 		}
 	}
 

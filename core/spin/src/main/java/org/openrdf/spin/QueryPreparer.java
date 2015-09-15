@@ -20,6 +20,7 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.Update;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
@@ -31,4 +32,5 @@ public interface QueryPreparer {
 	TupleQuery prepare(ParsedTupleQuery q);
 	GraphQuery prepare(ParsedGraphQuery q);
 	Update prepare(ParsedUpdate u);
+	TripleSource getTripleSource();
 }
