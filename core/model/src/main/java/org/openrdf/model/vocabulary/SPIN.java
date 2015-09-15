@@ -353,6 +353,8 @@ public class SPIN {
 	 * first a property name, and then a value. These name/value pairs will be
 	 * pre-bound variables for the execution of the expression.
 	 */
+	public static final URI EVAL_FUNCTION;
+	@Deprecated
 	public static URI EVAL_CLASS;
 
 	/**
@@ -414,6 +416,8 @@ public class SPIN {
 	public static final URI ARG3_INSTANCE;
 	public static final URI ARG4_INSTANCE;
 	public static final URI ARG5_INSTANCE;
+
+	public static final URI ASK_FUNCTION;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -481,5 +485,8 @@ public class SPIN {
 		ARG3_INSTANCE = factory.createURI(NAMESPACE, "_arg3");
 		ARG4_INSTANCE = factory.createURI(NAMESPACE, "_arg4");
 		ARG5_INSTANCE = factory.createURI(NAMESPACE, "_arg5");
+
+		EVAL_FUNCTION = factory.createURI(NAMESPACE, "eval");
+		ASK_FUNCTION = factory.createURI(NAMESPACE, "ask");
 	}
 }

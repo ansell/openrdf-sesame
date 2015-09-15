@@ -20,10 +20,12 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.Update;
+import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.repository.RepositoryTripleSource;
 import org.openrdf.spin.QueryPreparer;
 
 /**
@@ -33,28 +35,46 @@ public class SailQueryPreparer implements QueryPreparer {
 
 	private final SailRepositoryConnection con;
 
-	public SailQueryPreparer(SailRepositoryConnection con) {
+	private final boolean includeInferred;
+
+	private final TripleSource source;
+
+	public SailQueryPreparer(SailRepositoryConnection con, boolean includeInferred) {
 		this.con = con;
+		this.includeInferred = includeInferred;
+		this.source = new RepositoryTripleSource(con, includeInferred);
 	}
 
 	@Override
 	public BooleanQuery prepare(ParsedBooleanQuery askQuery) {
-		return new SailBooleanQuery(askQuery, con);
+		BooleanQuery query = new SailBooleanQuery(askQuery, con);
+		query.setIncludeInferred(includeInferred);
+		return query;
 	}
 
 	@Override
 	public TupleQuery prepare(ParsedTupleQuery tupleQuery) {
-		return new SailTupleQuery(tupleQuery, con);
+		TupleQuery query = new SailTupleQuery(tupleQuery, con);
+		query.setIncludeInferred(includeInferred);
+		return query;
 	}
 
 	@Override
 	public GraphQuery prepare(ParsedGraphQuery graphQuery) {
-		return new SailGraphQuery(graphQuery, con);
+		GraphQuery query = new SailGraphQuery(graphQuery, con);
+		query.setIncludeInferred(includeInferred);
+		return query;
 	}
 
 	@Override
 	public Update prepare(ParsedUpdate graphUpdate) {
-		return new SailUpdate(graphUpdate, con);
+		Update update = new SailUpdate(graphUpdate, con);
+		update.setIncludeInferred(includeInferred);
+		return update;
 	}
 
+	@Override
+	public TripleSource getTripleSource() {
+		return source;
+	}
 }
