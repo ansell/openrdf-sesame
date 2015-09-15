@@ -27,11 +27,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
@@ -53,12 +51,9 @@ import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.Update;
-import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
@@ -162,18 +157,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
-		UnknownFunctionCollector unknownFunctions = new UnknownFunctionCollector();
-		tupleExpr.visit(unknownFunctions);
-		for(String func : unknownFunctions.getFunctionNames()) {
-			URI funcUri = vf.createURI(func);
-			try {
-				Function f = parser.parseFunction(funcUri, tripleSource);
-				functionRegistry.add(f);
-			}
-			catch(OpenRDFException e) {
-				logger.warn("Failed to parse function: {}", funcUri);
-			}
-		}
+		new SPINFunctionPreparer(tripleSource, parser, functionRegistry).optimize(tupleExpr, dataset, bindings);
 
 		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}
@@ -552,27 +536,6 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			for(Binding b : ((ParsedTemplate)parsedOp).getBindings()) {
 				op.setBinding(b.getName(), b.getValue());
 			}
-		}
-	}
-
-
-
-	class UnknownFunctionCollector extends QueryModelVisitorBase<RuntimeException> {
-		final Set<String> functions = new HashSet<String>();
-
-		Set<String> getFunctionNames() {
-			return functions;
-		}
-
-		@Override
-		public void meet(FunctionCall node)
-			throws RuntimeException
-		{
-			String name = node.getURI();
-			if(!functionRegistry.has(name)) {
-				functions.add(name);
-			}
-			super.meet(node);
 		}
 	}
 

@@ -41,14 +41,14 @@ public class SPIN {
 	 * classes that are instances of this metaclass. Function calls are instances
 	 * of the function classes, with property values for the arguments.
 	 */
-	public static URI FUNCTION_CLASS;
+	public static final URI FUNCTION_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Module An abstract building block of a SPARQL
 	 * system. A Module can take Arguments as input and applies them on an input
 	 * RDF Graph. The Arguments should be declared as spin:constraints.
 	 */
-	public static URI MODULE_CLASS;
+	public static final URI MODULE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#body The body of a Function or Template. This
@@ -58,7 +58,7 @@ public class SPIN {
 	 * return variable. The first binding of this SELECT query will be returned
 	 * as result of the function call.
 	 */
-	public static URI BODY_PROPERTY;
+	public static final URI BODY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#TableDataProvider An abstraction of objects that
@@ -70,9 +70,9 @@ public class SPIN {
 	 * definitions of columns via spin:column, and these definitions can inform
 	 * rendering engines.
 	 */
-	public static URI TABLE_DATA_PROVIDER_CLASS;
+	public static final URI TABLE_DATA_PROVIDER_CLASS;
 
-	public static URI CONSTRUCT_TEMPLATE_CLASS;
+	public static final URI CONSTRUCT_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Template The metaclass of SPIN templates.
@@ -82,51 +82,51 @@ public class SPIN {
 	 * where normally a SPARQL query or update request is used, in particular as
 	 * spin:rules and spin:constraints.
 	 */
-	public static URI TEMPLATE_CLASS;
+	public static final URI TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Rule Groups together the kinds of SPARQL commands
 	 * that can appear as SPIN rules and constructors: CONSTRUCT, DELETE WHERE
 	 * and DELETE/INSERT. This class is never to be instantiated directly.
 	 */
-	public static URI RULE_CLASS;
+	public static final URI RULE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#AskTemplate A SPIN template that wraps an ASK
 	 * query.
 	 */
-	public static URI ASK_TEMPLATE_CLASS;
+	public static final URI ASK_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#UpdateTemplate A SPIN template that has an UPDATE
 	 * command as its body.
 	 */
-	public static URI UPDATE_TEMPLATE_CLASS;
+	public static final URI UPDATE_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#RuleProperty The metaclass of spin:rule and its
 	 * subproperties. spin:RuleProperties can have additional metadata attached
 	 * to them.
 	 */
-	public static URI RULE_PROPERTY_CLASS;
+	public static final URI RULE_PROPERTY_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#ConstraintViolation An object that can be created
 	 * by spin:constraints to provide information about a constraint violation.
 	 */
-	public static URI CONSTRAINT_VIOLATION_CLASS;
+	public static final URI CONSTRAINT_VIOLATION_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Modules An "artificial" parent class for all
 	 * Functions and Templates.
 	 */
-	public static URI MODULES_CLASS;
+	public static final URI MODULES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#SelectTemplate A SPIN template that wraps a SELECT
 	 * query.
 	 */
-	public static URI SELECT_TEMPLATE_CLASS;
+	public static final URI SELECT_TEMPLATE_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Column Provides metadata about a column in the
@@ -134,7 +134,7 @@ public class SPIN {
 	 * templates. Columns can define human-readable labels that serve as column
 	 * titles, using rdfs:label.
 	 */
-	public static URI COLUMN_CLASS;
+	public static final URI COLUMN_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#LibraryOntology A marker class that can be
@@ -147,27 +147,27 @@ public class SPIN {
 	 * themselves, because we don't want the system to reason about the SPIN
 	 * triples to speed up things.
 	 */
-	public static URI LIBRARY_ONTOLOGY_CLASS;
+	public static final URI LIBRARY_ONTOLOGY_CLASS;
 
-	public static URI MAGIC_PROPERTY_CLASS;
+	public static final URI MAGIC_PROPERTY_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#update Can be used to point from any resource to
 	 * an Update.
 	 */
-	public static URI UPDATE_PROPERTY;
+	public static final URI UPDATE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#command Can be used to link a resource with a
 	 * SPARQL query or update request (sp:Command).
 	 */
-	public static URI COMMAND_PROPERTY;
+	public static final URI COMMAND_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#returnType The return type of a Function, e.g.
 	 * xsd:string.
 	 */
-	public static URI RETURN_TYPE_PROPERTY;
+	public static final URI RETURN_TYPE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#systemProperty An "abstract" base property that
@@ -175,7 +175,7 @@ public class SPIN {
 	 * need to see in property trees. This property may be dropped in future
 	 * versions of this ontology - right now it's mainly here for convenience.
 	 */
-	public static URI SYSTEM_PROPERTY_PROPERTY;
+	public static final URI SYSTEM_PROPERTY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#column Can link a TableDataProvider (esp.
@@ -185,26 +185,26 @@ public class SPIN {
 	 * with 0). Not all result variables of the underlying query need to have a
 	 * matching spin:Column.
 	 */
-	public static URI COLUMN_PROPERTY;
+	public static final URI COLUMN_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#symbol The symbol of a function, e.g. "=" for the
 	 * eq function.
 	 */
-	public static URI SYMBOL_PROPERTY;
+	public static final URI SYMBOL_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#violationRoot The root resource of the violation
 	 * (often ?this in the constraint body).
 	 */
-	public static URI VIOLATION_ROOT_PROPERTY;
+	public static final URI VIOLATION_ROOT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#columnType The datatype or resource type of a
 	 * spin:Column. For example this is useful as metadata to inform a rendering
 	 * engine that numeric columns (e.g. xsd:float) need to be right-aligned.
 	 */
-	public static URI COLUMN_TYPE_PROPERTY;
+	public static final URI COLUMN_TYPE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#nextRuleProperty Can be used to link two
@@ -212,7 +212,7 @@ public class SPIN {
 	 * engine to execute one set of rules before another one. The values of the
 	 * subject property will be executed before those of the object property.
 	 */
-	public static URI NEXT_RULE_PROPERTY_PROPERTY;
+	public static final URI NEXT_RULE_PROPERTY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#private Can be set to true to indicate that a SPIN
@@ -221,7 +221,7 @@ public class SPIN {
 	 * functions. Furthermore, it tells potential users of this function that
 	 * they should avoid using this function, as it may not be stable.
 	 */
-	public static URI PRIVATE_PROPERTY;
+	public static final URI PRIVATE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#labelTemplate A template string for displaying
@@ -229,7 +229,7 @@ public class SPIN {
 	 * contain the argument variable names in curly braces to support
 	 * substitution. For example, "The number of values of the {?arg1} property."
 	 */
-	public static URI LABEL_TEMPLATE_PROPERTY;
+	public static final URI LABEL_TEMPLATE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#violationPath An optional attribute of
@@ -238,7 +238,7 @@ public class SPIN {
 	 * the predicate of a subject/predicate combination. Otherwise it should be a
 	 * blank node of type sp:Path.
 	 */
-	public static URI VIOLATION_PATH_PROPERTY;
+	public static final URI VIOLATION_PATH_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#constructor Can be used to attach a "constructor"
@@ -250,14 +250,14 @@ public class SPIN {
 	 * resources that have received a new rdf:type triple as a result of
 	 * spin:rules firing.
 	 */
-	public static URI CONSTRUCTOR_PROPERTY;
+	public static final URI CONSTRUCTOR_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#abstract Can be set to true to indicate that this
 	 * module shall not be instantiated. Abstract modules are only there to
 	 * organize other modules into hierarchies.
 	 */
-	public static URI ABSTRACT_PROPERTY;
+	public static final URI ABSTRACT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#constraint Links a class with constraints on its
@@ -269,26 +269,26 @@ public class SPIN {
 	 * spin:ConstraintViolation to provide details on the reason for the
 	 * violation.
 	 */
-	public static URI CONSTRAINT_PROPERTY;
+	public static final URI CONSTRAINT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#query Can be used to point from any resource to a
 	 * Query.
 	 */
-	public static URI QUERY_PROPERTY;
+	public static final URI QUERY_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#fix Can be used to link a ConstraintViolation with
 	 * one or more UPDATE Templates that would help fix the violation.
 	 */
-	public static URI FIX_PROPERTY;
+	public static final URI FIX_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#columnWidth The preferred width of the associated
 	 * Column, for display purposes. Values in pixels (rendering engines may
 	 * multiply the values depending on resolution).
 	 */
-	public static URI COLUMN_WIDTH_PROPERTY;
+	public static final URI COLUMN_WIDTH_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#violationSource Can be used to link a
@@ -297,13 +297,13 @@ public class SPIN {
 	 * checking engine and does not need to be set manually. However, it can be
 	 * useful to learn more about the origin of a violation.
 	 */
-	public static URI VIOLATION_SOURCE_PROPERTY;
+	public static final URI VIOLATION_SOURCE_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#columnIndex The index of a column (from left to
 	 * right) starting at 0.
 	 */
-	public static URI COLUMN_INDEX_PROPERTY;
+	public static final URI COLUMN_INDEX_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#thisUnbound Can be set to true for SPIN rules and
@@ -314,7 +314,7 @@ public class SPIN {
 	 * greatly improve performance of query execution, because it does not need
 	 * to add clauses to narrow down the WHERE clause.
 	 */
-	public static URI THIS_UNBOUND_PROPERTY;
+	public static final URI THIS_UNBOUND_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#rulePropertyMaxIterationCount Can be attached to
@@ -322,7 +322,7 @@ public class SPIN {
 	 * shall only execute the rules max times. If no value is specified, then the
 	 * rules will be executed with no specific limit.
 	 */
-	public static URI RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY;
+	public static final URI RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#imports Can be used to link an RDF graph (usually
@@ -332,19 +332,19 @@ public class SPIN {
 	 * explicitly importing them using owl:imports, because it does not force all
 	 * the SPIN triples into the RDF model.
 	 */
-	public static URI IMPORTS_PROPERTY;
+	public static final URI IMPORTS_PROPERTY;
 
 	/**
 	 * http://spinrdf.org/spin#ConstructTemplates Suggested abstract base class
 	 * for all ConstructTemplates.
 	 */
-	public static URI CONSTRUCT_TEMPLATES_CLASS;
+	public static final URI CONSTRUCT_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Templates Suggested abstract base class for all
 	 * Templates.
 	 */
-	public static URI TEMPLATES_CLASS;
+	public static final URI TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#eval Evaluates a given SPIN expression or SELECT
@@ -355,45 +355,45 @@ public class SPIN {
 	 */
 	public static final URI EVAL_FUNCTION;
 	@Deprecated
-	public static URI EVAL_CLASS;
+	public static final URI EVAL_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#Functions An abstract base class for all defined
 	 * functions. This class mainly serves as a shared root so that the various
 	 * instances of the Function metaclass are grouped together.
 	 */
-	public static URI FUNCTIONS_CLASS;
+	public static final URI FUNCTIONS_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#AskTemplates Suggested abstract base class for all
 	 * AskTemplates.
 	 */
-	public static URI ASK_TEMPLATES_CLASS;
+	public static final URI ASK_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#SelectTemplates Suggested abstract base class for
 	 * all SelectTemplates.
 	 */
-	public static URI SELECT_TEMPLATES_CLASS;
+	public static final URI SELECT_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#MagicProperties An abstract superclass that can be
 	 * used to group all spin:MagicProperty instances under a single parent
 	 * class.
 	 */
-	public static URI MAGIC_PROPERTIES_CLASS;
+	public static final URI MAGIC_PROPERTIES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#_this A system variable representing the current
 	 * context instance in a rule or constraint.
 	 */
-	public static URI THIS_CONTEXT_INSTANCE;
+	public static final URI THIS_CONTEXT_INSTANCE;
 
 	/**
 	 * http://spinrdf.org/spin#UpdateTemplates Suggested abstract base class for
 	 * all UpdateTemplates.
 	 */
-	public static URI UPDATE_TEMPLATES_CLASS;
+	public static final URI UPDATE_TEMPLATES_CLASS;
 
 	/**
 	 * http://spinrdf.org/spin#rule An inferencing rule attached to a class.
@@ -402,14 +402,14 @@ public class SPIN {
 	 * These inferences can be used to derive new values from existing values at
 	 * the instance.
 	 */
-	public static URI RULE_PROPERTY;
+	public static final URI RULE_PROPERTY;
 
-	public static URI VIOLATION_VALUE_PROPERTY;
-	public static URI VIOLATION_LEVEL_PROPERTY;
-	public static URI INFO_VIOLATION_LEVEL;
-	public static URI WARNING_VIOLATION_LEVEL;
-	public static URI ERROR_VIOLATION_LEVEL;
-	public static URI FATAL_VIOLATION_LEVEL;
+	public static final URI VIOLATION_VALUE_PROPERTY;
+	public static final URI VIOLATION_LEVEL_PROPERTY;
+	public static final URI INFO_VIOLATION_LEVEL;
+	public static final URI WARNING_VIOLATION_LEVEL;
+	public static final URI ERROR_VIOLATION_LEVEL;
+	public static final URI FATAL_VIOLATION_LEVEL;
 
 	public static final URI ARG1_INSTANCE;
 	public static final URI ARG2_INSTANCE;
