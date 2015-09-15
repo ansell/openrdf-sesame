@@ -82,6 +82,11 @@ public class SPINSailTest {
 	}
 
 	@Test
+	public void testAskFunctionConstraint() throws Exception {
+		loadStatements("testAskFunctionConstraint.ttl");
+	}
+
+	@Test
 	public void testConstructRule() throws Exception {
 		loadStatements("testConstructRule.ttl");
 		assertStatements("testConstructRule-expected.ttl");
