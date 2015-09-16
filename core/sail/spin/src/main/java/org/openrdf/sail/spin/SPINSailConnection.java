@@ -51,6 +51,7 @@ import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.Update;
+import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
@@ -157,7 +158,21 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
-		new SPINFunctionPreparer(tripleSource, parser, functionRegistry).optimize(tupleExpr, dataset, bindings);
+		logger.trace("Incoming query model:\n{}", tupleExpr);
+
+		// Clone the tuple expression to allow for more aggresive optimizations
+		tupleExpr = tupleExpr.clone();
+
+		if (!(tupleExpr instanceof QueryRoot)) {
+			// Add a dummy root node to the tuple expressions to allow the
+			// optimizers to modify the actual root node
+			tupleExpr = new QueryRoot(tupleExpr);
+		}
+
+		new SPINFunctionInterpreter(parser, tripleSource, functionRegistry).optimize(tupleExpr, dataset, bindings);
+		new SPINPropertyInterpreter(parser, tripleSource).optimize(tupleExpr, dataset, bindings);
+
+		logger.trace("Optimized query model:\n{}", tupleExpr);
 
 		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}

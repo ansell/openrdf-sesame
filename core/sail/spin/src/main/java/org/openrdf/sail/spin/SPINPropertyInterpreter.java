@@ -16,63 +16,59 @@
  */
 package org.openrdf.sail.spin;
 
-import org.openrdf.OpenRDFException;
+import java.util.Collections;
+import java.util.Map;
+
 import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
-import org.openrdf.query.algebra.FunctionCall;
+import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.Service;
+import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.function.Function;
-import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
-import org.openrdf.spin.AskFunction;
 import org.openrdf.spin.SPINParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
-public class SPINFunctionPreparer implements QueryOptimizer {
-	private static final Logger logger = LoggerFactory.getLogger(SPINFunctionPreparer.class);
+public class SPINPropertyInterpreter implements QueryOptimizer {
 
 	private final TripleSource tripleSource;
 	private final SPINParser parser;
-	private final FunctionRegistry functionRegistry;
+	private final URI spinService;
 
-	public SPINFunctionPreparer(TripleSource tripleSource, SPINParser parser, FunctionRegistry functionRegistry) {
-		this.tripleSource = tripleSource;
+	public SPINPropertyInterpreter(SPINParser parser, TripleSource tripleSource) {
 		this.parser = parser;
-		this.functionRegistry = functionRegistry;
-		functionRegistry.add(new org.openrdf.sail.spin.function.Concat());
-		functionRegistry.add(new AskFunction(parser));
+		this.tripleSource = tripleSource;
+		this.spinService = tripleSource.getValueFactory().createURI("spin:/");
 	}
 
 	@Override
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new FunctionScanner());
+		tupleExpr.visit(new PropertyScanner());
 	}
 
 
 
-	class FunctionScanner extends QueryModelVisitorBase<RuntimeException> {
-		ValueFactory vf = tripleSource.getValueFactory();
-
+	class PropertyScanner extends QueryModelVisitorBase<RuntimeException> {
 		@Override
-		public void meet(FunctionCall node)
+		public void meet(StatementPattern node)
 			throws RuntimeException
 		{
-			String name = node.getURI();
-			if(!functionRegistry.has(name)) {
-				URI funcUri = vf.createURI(name);
-				try {
-					Function f = parser.parseFunction(funcUri, tripleSource);
-					functionRegistry.add(f);
-				}
-				catch(OpenRDFException e) {
-					logger.warn("Failed to parse function: {}", funcUri);
-				}
+			URI pred = (URI) node.getPredicateVar().getValue();
+			if(SPIN.CONSTRUCT_PROPERTY.equals(pred)) {
+				EmptySet stub = new EmptySet();
+				node.replaceWith(stub);
+				Var serviceRef = new Var("_const-spin-service-uri");
+				serviceRef.setAnonymous(true);
+				serviceRef.setConstant(true);
+				serviceRef.setValue(spinService);
+				Map<String,String> prefixDecls = Collections.emptyMap();
+				Service service = new Service(serviceRef, node, "", prefixDecls, null, false);
+				stub.replaceWith(service);
 			}
 			super.meet(node);
 		}

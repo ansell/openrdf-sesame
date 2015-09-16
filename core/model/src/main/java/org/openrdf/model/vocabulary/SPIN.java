@@ -418,6 +418,8 @@ public class SPIN {
 	public static final URI ARG5_INSTANCE;
 
 	public static final URI ASK_FUNCTION;
+	public static final URI CONSTRUCT_PROPERTY;
+	public static final URI SELECT_PROPERTY;
 
 	static {
 		ValueFactory factory = ValueFactoryImpl.getInstance();
@@ -488,5 +490,7 @@ public class SPIN {
 
 		EVAL_FUNCTION = factory.createURI(NAMESPACE, "eval");
 		ASK_FUNCTION = factory.createURI(NAMESPACE, "ask");
+		CONSTRUCT_PROPERTY = factory.createURI(NAMESPACE, "construct");
+		SELECT_PROPERTY = factory.createURI(NAMESPACE, "select");
 	}
 }
