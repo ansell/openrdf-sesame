@@ -125,8 +125,8 @@ public abstract class AbstractLuceneSailIndexedPropertiesTest {
 		connection.add(SUBJECT_3, RDFSLABEL, vf.createLiteral("the third resource"));
 		connection.add(SUBJECT_3, RDFSCOMMENT,
 				vf.createLiteral("a not well known fact, groucho marx was not a smoker"));
-		connection.add(SUBJECT_3, FOAFPLAN, vf.createLiteral("groucho did not smoke cigars nor cigarillos")); // this
-																																					// should
+		// this should not be indexed
+		connection.add(SUBJECT_3, FOAFPLAN, vf.createLiteral("groucho did not smoke cigars nor cigarillos"));
 		connection.commit();
 	}
 
@@ -161,12 +161,9 @@ public abstract class AbstractLuceneSailIndexedPropertiesTest {
 				connection.hasStatement(SUBJECT_3, RDFSLABEL, vf.createLiteral("the third resource"), false));
 		assertTrue(connection.hasStatement(SUBJECT_3, RDFSCOMMENT,
 				vf.createLiteral("a not well known fact, groucho marx was not a smoker"), false));
+		// this should not be indexed
 		assertTrue(connection.hasStatement(SUBJECT_3, FOAFPLAN,
-				vf.createLiteral("groucho did not smoke cigars nor cigarillos"), false)); // this
-																													// should
-																													// not
-																													// be
-																													// indexed
+				vf.createLiteral("groucho did not smoke cigars nor cigarillos"), false));
 	}
 
 	@Test
