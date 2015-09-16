@@ -24,22 +24,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.openrdf.model.Graph;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.ModelException;
 import org.openrdf.model.util.Models;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.RepositoryImplConfig;
-import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.AbstractSailImplConfig;
+import org.openrdf.sail.config.SailConfigException;
 
 /**
  * Lists the members of a federation and which properties describe a resource
@@ -52,24 +50,26 @@ public class FederationConfig extends AbstractSailImplConfig {
 	/** http://www.openrdf.org/config/sail/federation# */
 	public static final String NAMESPACE = "http://www.openrdf.org/config/sail/federation#";
 
-	public static final IRI MEMBER = new SimpleIRI(NAMESPACE + "member");
+	private static final ValueFactory vf = SimpleValueFactory.getInstance();
+	
+	public static final IRI MEMBER = vf.createIRI(NAMESPACE + "member");
 
 	/**
 	 * For all triples with a predicate in this space, the container RDF store
 	 * contains all triples with that subject and any predicate in this space.
 	 */
-	public static final IRI LOCALPROPERTYSPACE = new SimpleIRI(NAMESPACE // NOPMD
+	public static final IRI LOCALPROPERTYSPACE = vf.createIRI(NAMESPACE // NOPMD
 			+ "localPropertySpace");
 
 	/**
 	 * If no two members contain the same statement.
 	 */
-	public static final IRI DISTINCT = new SimpleIRI(NAMESPACE + "distinct");
+	public static final IRI DISTINCT = vf.createIRI(NAMESPACE + "distinct");
 
 	/**
 	 * If the federation should not try and add statements to its members.
 	 */
-	public static final IRI READ_ONLY = new SimpleIRI(NAMESPACE + "readOnly");
+	public static final IRI READ_ONLY = vf.createIRI(NAMESPACE + "readOnly");
 
 	private List<RepositoryImplConfig> members = new ArrayList<RepositoryImplConfig>();
 

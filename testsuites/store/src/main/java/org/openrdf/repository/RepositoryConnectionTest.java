@@ -72,15 +72,14 @@ import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.util.Namespaces;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.FOAF;
@@ -242,7 +241,7 @@ public abstract class RepositoryConnectionTest {
 
 		Александър = vf.createLiteral("Александър");
 
-		unknownContext = new SimpleIRI("urn:unknownContext");
+		unknownContext = vf.createIRI("urn:unknownContext");
 
 		context1 = vf.createIRI("urn:x-local:graph1");
 		context2 = vf.createIRI("urn:x-local:graph2");

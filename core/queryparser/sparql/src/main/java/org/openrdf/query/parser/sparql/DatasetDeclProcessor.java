@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.MalformedQueryException;
@@ -68,7 +69,7 @@ public class DatasetDeclProcessor {
 						IRI uri = SESAME.NIL;
 						
 						if (astIri != null) {
-							uri = new SimpleIRI(astIri.getValue());
+							uri = SimpleValueFactory.getInstance().createIRI(astIri.getValue());
 						}
 						
 						if (dc.isNamed()) {

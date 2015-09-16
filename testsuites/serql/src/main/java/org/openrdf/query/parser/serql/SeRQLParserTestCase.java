@@ -24,10 +24,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +31,7 @@ import info.aduna.io.IOUtil;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -47,6 +43,10 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public abstract class SeRQLParserTestCase extends TestCase {
 
@@ -68,9 +68,9 @@ public abstract class SeRQLParserTestCase extends TestCase {
 
 	private static String MFX = "http://www.openrdf.org/test-manifest-extensions#";
 
-	private static IRI MFX_CORRECT = new SimpleIRI(MFX + "Correct");
+	private static IRI MFX_CORRECT = SimpleValueFactory.getInstance().createIRI(MFX + "Correct");
 
-	private static IRI MFX_PARSE_ERROR = new SimpleIRI(MFX + "ParseError");
+	private static IRI MFX_PARSE_ERROR =  SimpleValueFactory.getInstance().createIRI(MFX + "ParseError");
 
 	/* Constructors */
 

@@ -65,7 +65,7 @@ class TransactionSAXParser extends SimpleSAXAdapter {
 	private SimpleDataset currentDataset;
 
 	public TransactionSAXParser() {
-		this(new SimpleValueFactory());
+		this(SimpleValueFactory.getInstance());
 	}
 
 	public TransactionSAXParser(ValueFactory valueFactory) {

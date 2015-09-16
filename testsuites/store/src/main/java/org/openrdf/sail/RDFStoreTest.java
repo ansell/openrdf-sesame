@@ -16,7 +16,11 @@
  */
 package org.openrdf.sail;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,16 +39,13 @@ import info.aduna.iteration.Iteration;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.NumericLiteral;
-import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -206,9 +207,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip1()
 		throws Exception
 	{
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA);
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = vf.createIRI(EXAMPLE_NS + GUERNICA);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -218,8 +219,8 @@ public abstract class RDFStoreTest {
 		throws Exception
 	{
 		BNode subj = vf.createBNode();
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = vf.createIRI(EXAMPLE_NS + GUERNICA);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -228,9 +229,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip3()
 		throws Exception
 	{
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new SimpleLiteral("guernica");
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral("guernica");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -239,9 +240,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip4()
 		throws Exception
 	{
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new SimpleLiteral("guernica", "es");
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral("guernica", "es");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -250,9 +251,9 @@ public abstract class RDFStoreTest {
 	public void testValueRoundTrip5()
 		throws Exception
 	{
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new NumericLiteral(3);
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral(3);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -261,9 +262,9 @@ public abstract class RDFStoreTest {
 	public void testDecimalRoundTrip()
 		throws Exception
 	{
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new NumericLiteral(3, XMLSchema.DECIMAL);
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral("3", XMLSchema.DECIMAL);
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -272,16 +273,16 @@ public abstract class RDFStoreTest {
 	public void testTimeZoneRoundTrip()
 		throws Exception
 	{
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new SimpleLiteral("2006-08-23+00:00", XMLSchema.DATE);
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral("2006-08-23+00:00", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 
 		con.begin();
 		con.removeStatements(null, null, null);
 		con.commit();
 
-		obj = new SimpleLiteral("2006-08-23", XMLSchema.DATE);
+		obj = vf.createLiteral("2006-08-23", XMLSchema.DATE);
 		testValueRoundTrip(subj, pred, obj);
 	}
 
@@ -293,9 +294,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		IRI obj = new SimpleIRI(EXAMPLE_NS + GUERNICA + sb.toString());
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		IRI obj = vf.createIRI(EXAMPLE_NS + GUERNICA + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -308,9 +309,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new SimpleLiteral("guernica" + sb.toString());
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral("guernica" + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -323,9 +324,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 1024000; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new SimpleLiteral("guernica" + sb.toString());
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral("guernica" + sb.toString());
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -338,9 +339,9 @@ public abstract class RDFStoreTest {
 		for (int i = 0; i < 512; i++) {
 			sb.append(Character.toChars('A' + (i % 26)));
 		}
-		IRI subj = new SimpleIRI(EXAMPLE_NS + PICASSO);
-		IRI pred = new SimpleIRI(EXAMPLE_NS + PAINTS);
-		Literal obj = new SimpleLiteral("guernica" + sb.toString(), "es");
+		IRI subj = vf.createIRI(EXAMPLE_NS + PICASSO);
+		IRI pred = vf.createIRI(EXAMPLE_NS + PAINTS);
+		Literal obj = vf.createLiteral("guernica" + sb.toString(), "es");
 
 		testValueRoundTrip(subj, pred, obj);
 	}
@@ -444,11 +445,11 @@ public abstract class RDFStoreTest {
 		assertEquals("Size of repository should be 5", 5, con.size());
 		assertEquals("Size of named context should be 3", 3, con.size(context1));
 
-		IRI unknownContext = new SimpleIRI(EXAMPLE_NS + "unknown");
+		IRI unknownContext = vf.createIRI(EXAMPLE_NS + "unknown");
 
 		assertEquals("Size of unknown context should be 0", 0, con.size(unknownContext));
 
-		SimpleIRI uriImplContext1 = new SimpleIRI(context1.toString());
+		IRI uriImplContext1 = vf.createIRI(context1.toString());
 
 		assertEquals("Size of named context (defined as URIImpl) should be 3", 3, con.size(uriImplContext1));
 	}
@@ -1004,8 +1005,8 @@ public abstract class RDFStoreTest {
 			con2.addStatement(RDF.NIL, RDF.TYPE, RDF.LIST);
 			String query = "SELECT S, P, O FROM {S} P {O}";
 			ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query, null);
-			assertEquals(5, countElements(con2.evaluate(tupleQuery.getTupleExpr(), null,
-					EmptyBindingSet.getInstance(), false)));
+			assertEquals(5, countElements(
+					con2.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false)));
 			Runnable clearer = new Runnable() {
 
 				public void run() {
@@ -1097,16 +1098,17 @@ public abstract class RDFStoreTest {
 	protected int countQueryResults(String query)
 		throws Exception
 	{
-		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL, query
-				+ " using namespace ex = <" + EXAMPLE_NS + ">", null);
+		ParsedTupleQuery tupleQuery = QueryParserUtil.parseTupleQuery(QueryLanguage.SERQL,
+				query + " using namespace ex = <" + EXAMPLE_NS + ">", null);
 
-		return countElements(con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false));
+		return countElements(
+				con.evaluate(tupleQuery.getTupleExpr(), null, EmptyBindingSet.getInstance(), false));
 	}
 
 	private int verifyQueryResult(
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> resultIter,
 			int expectedBindingCount)
-		throws QueryEvaluationException
+				throws QueryEvaluationException
 	{
 		int resultCount = 0;
 

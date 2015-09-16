@@ -26,7 +26,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
-import org.openrdf.model.impl.SimpleLiteral;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -54,10 +53,10 @@ public class LuceneSailTest extends AbstractLuceneSailTest {
 		throws Exception
 	{
 
-		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponectwo"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponectwo"), CONTEXT_1);
+		connection.add(SUBJECT_1, PREDICATE_1, vf.createLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, vf.createLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, vf.createLiteral("sfourponectwo"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, vf.createLiteral("sfourponectwo"), CONTEXT_1);
 
 		connection.commit();
 		assertEquals(0, index.getOldMonitors().size());
@@ -102,7 +101,7 @@ public class LuceneSailTest extends AbstractLuceneSailTest {
 		assertEquals(2, index.currentMonitor.getReadingCount());
 
 		// This should invalidate readers
-		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponecthree"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, vf.createLiteral("sfourponecthree"), CONTEXT_1);
 		connection.commit();
 		// But readers can not be closed, they are being iterated
 		assertEquals(1, index.getOldMonitors().size());

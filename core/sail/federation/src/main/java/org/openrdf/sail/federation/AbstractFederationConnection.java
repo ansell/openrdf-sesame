@@ -114,7 +114,7 @@ abstract class AbstractFederationConnection extends AbstractSailConnection imple
 			}
 
 			public ValueFactory getValueFactory() {
-				return null;
+				return SimpleValueFactory.getInstance();
 			}
 
 			@Override

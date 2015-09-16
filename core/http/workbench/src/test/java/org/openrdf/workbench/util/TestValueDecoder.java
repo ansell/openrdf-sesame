@@ -60,7 +60,7 @@ public class TestValueDecoder {
 	public void setUp()
 		throws Exception
 	{
-		factory = new SimpleValueFactory();
+		factory = SimpleValueFactory.getInstance();
 
 		// Build a mock repository instance that provides 'decoder' with all
 		// it would ever ask for a connection with an associated prefix-namespace

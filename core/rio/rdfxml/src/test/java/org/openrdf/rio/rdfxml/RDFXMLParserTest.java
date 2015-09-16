@@ -31,8 +31,8 @@ import org.junit.Test;
 
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.DC;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.helpers.StatementCollector;
@@ -46,6 +46,8 @@ public class RDFXMLParserTest {
 
 		assertNotNull("The sample-data.zip file must be present for this test", zipfileUrl);
 
+		ValueFactory vf = SimpleValueFactory.getInstance();
+		
 		String url = "jar:" + zipfileUrl + "!/index.rdf";
 
 		RDFParser parser = new RDFXMLParser();
@@ -66,8 +68,8 @@ public class RDFXMLParserTest {
 		Statement stmt1 = iter.next(),
 				stmt2 = iter.next();
 
-		assertEquals(new SimpleIRI("http://www.example.com/#"), stmt1.getSubject());
-		assertEquals(new SimpleIRI("http://www.example.com/ns/#document-about"), stmt1.getPredicate());
+		assertEquals(vf.createIRI("http://www.example.com/#"), stmt1.getSubject());
+		assertEquals(vf.createIRI("http://www.example.com/ns/#document-about"), stmt1.getPredicate());
 
 		Resource res = (Resource) stmt1.getObject();
 
@@ -84,6 +86,6 @@ public class RDFXMLParserTest {
 
 		assertEquals(res, stmt2.getSubject());
 		assertEquals(DC.TITLE, stmt2.getPredicate());
-		assertEquals(new SimpleLiteral("Empty File"), stmt2.getObject());
+		assertEquals(vf.createLiteral("Empty File"), stmt2.getObject());
 	}
 }

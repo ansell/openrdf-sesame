@@ -19,7 +19,6 @@ package org.openrdf.query.algebra.evaluation.function;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.junit.After;
@@ -40,7 +39,7 @@ public class TestStringCast {
 
 	private StringCast stringCast;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 	
 	/**
 	 * @throws java.lang.Exception

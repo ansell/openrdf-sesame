@@ -35,17 +35,17 @@ import info.aduna.iteration.CloseableIteration;
 import info.aduna.webapp.views.EmptySuccessView;
 
 import org.openrdf.http.server.ClientHTTPException;
-import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.ProtocolUtil;
+import org.openrdf.http.server.ServerHTTPException;
 import org.openrdf.http.server.repository.QueryResultView;
 import org.openrdf.http.server.repository.RepositoryInterceptor;
 import org.openrdf.http.server.repository.TupleQueryResultView;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
-import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.IteratingTupleQueryResult;
+import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.resultio.TupleQueryResultWriterFactory;
 import org.openrdf.query.resultio.TupleQueryResultWriterRegistry;
 import org.openrdf.repository.RepositoryConnection;
@@ -84,8 +84,8 @@ public class NamespacesController extends AbstractController {
 			return getClearNamespacesResult(request, response);
 		}
 
-		throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
-				+ reqMethod);
+		throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+				"Method not allowed: " + reqMethod);
 	}
 
 	private ModelAndView getExportNamespacesResult(HttpServletRequest request, HttpServletResponse response)
@@ -99,18 +99,18 @@ public class NamespacesController extends AbstractController {
 			List<BindingSet> namespaces = new ArrayList<BindingSet>();
 
 			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-			synchronized(repositoryCon)
-			{
+			synchronized (repositoryCon) {
+				final ValueFactory vf = repositoryCon.getValueFactory();
 				try {
 					CloseableIteration<? extends Namespace, RepositoryException> iter = repositoryCon.getNamespaces();
-	
+
 					try {
 						while (iter.hasNext()) {
 							Namespace ns = iter.next();
-	
-							Literal prefix = new SimpleLiteral(ns.getPrefix());
-							Literal namespace = new SimpleLiteral(ns.getName());
-	
+
+							Literal prefix = vf.createLiteral(ns.getPrefix());
+							Literal namespace = vf.createLiteral(ns.getName());
+
 							BindingSet bindingSet = new ListBindingSet(columnNames, prefix, namespace);
 							namespaces.add(bindingSet);
 						}
@@ -140,8 +140,7 @@ public class NamespacesController extends AbstractController {
 		throws ServerHTTPException
 	{
 		RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-		synchronized(repositoryCon)
-		{
+		synchronized (repositoryCon) {
 			try {
 				repositoryCon.clearNamespaces();
 			}
@@ -149,7 +148,7 @@ public class NamespacesController extends AbstractController {
 				throw new ServerHTTPException("Repository error: " + e.getMessage(), e);
 			}
 		}
-		
+
 		return new ModelAndView(EmptySuccessView.getInstance());
 	}
 }

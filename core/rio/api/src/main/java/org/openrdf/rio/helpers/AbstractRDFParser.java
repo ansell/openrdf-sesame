@@ -20,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,11 +31,11 @@ import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import info.aduna.net.ParsedURI;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleValueFactory;
@@ -114,7 +113,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 * create RDF model objects.
 	 */
 	public AbstractRDFParser() {
-		this(new SimpleValueFactory());
+		this(SimpleValueFactory.getInstance());
 	}
 
 	/**

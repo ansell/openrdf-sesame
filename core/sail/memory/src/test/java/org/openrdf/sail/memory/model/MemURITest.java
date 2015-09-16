@@ -20,7 +20,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 
 /**
@@ -48,7 +49,7 @@ public class MemURITest {
 	private void compareURIs(String uri)
 		throws Exception
 	{
-		SimpleIRI uriImpl = new SimpleIRI(uri);
+		IRI uriImpl = SimpleValueFactory.getInstance().createIRI(uri);
 		MemIRI memURI = new MemIRI(this, uriImpl.getNamespace(), uriImpl.getLocalName());
 
 		assertEquals("MemURI not equal to URIImpl for: " + uri, uriImpl, memURI);

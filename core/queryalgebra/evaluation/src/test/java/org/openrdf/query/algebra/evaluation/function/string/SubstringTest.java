@@ -35,7 +35,7 @@ public class SubstringTest {
 
 	private Substring substrFunc;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 
 	
 	/**

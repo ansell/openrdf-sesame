@@ -24,11 +24,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -53,7 +52,7 @@ public abstract class SparqlDatasetTest {
 
 	private SimpleDataset dataset;
 
-	private IRI graph1 = new SimpleIRI("http://example.org/graph1");
+	private IRI graph1;
 
 	private IRI george;
 
@@ -135,6 +134,7 @@ public abstract class SparqlDatasetTest {
 	{
 		repository = createRepository();
 		vf = repository.getValueFactory();
+		graph1 = vf.createIRI("http://example.org/graph1");
 		john = createUser("john", "John Lennon", "john@example.org");
 		paul = createUser("paul", "Paul McCartney", "paul@example.org");
 		george = createUser("george", "George Harrison", "george@example.org", graph1);

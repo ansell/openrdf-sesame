@@ -134,7 +134,7 @@ public abstract class RDFWriterTest {
 		rdfWriterFactory = writerF;
 		rdfParserFactory = parserF;
 
-		vf = new SimpleValueFactory();
+		vf = SimpleValueFactory.getInstance();
 
 		exNs = "http://example.org/";
 

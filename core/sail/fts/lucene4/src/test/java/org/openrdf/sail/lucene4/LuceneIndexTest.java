@@ -44,14 +44,16 @@ import org.apache.lucene.store.RAMDirectory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ContextStatementImpl;
 import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
@@ -61,20 +63,22 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneIndexTest {
 
-	public static final URI CONTEXT_1 = new SimpleIRI("urn:context1");
+	private static final ValueFactory vf = SimpleValueFactory.getInstance();
+	
+	public static final URI CONTEXT_1 = vf.createIRI("urn:context1");
 
-	public static final URI CONTEXT_2 = new SimpleIRI("urn:context2");
+	public static final URI CONTEXT_2 = vf.createIRI("urn:context2");
 
-	public static final URI CONTEXT_3 = new SimpleIRI("urn:context3");
+	public static final URI CONTEXT_3 = vf.createIRI("urn:context3");
 
 	// create some objects that we will use throughout this test
-	URI subject = new SimpleIRI("urn:subj");
+	URI subject = vf.createIRI("urn:subj");
 
-	URI subject2 = new SimpleIRI("urn:subj2");
+	URI subject2 = vf.createIRI("urn:subj2");
 
-	URI predicate1 = new SimpleIRI("urn:pred1");
+	URI predicate1 = vf.createIRI("urn:pred1");
 
-	URI predicate2 = new SimpleIRI("urn:pred2");
+	URI predicate2 = vf.createIRI("urn:pred2");
 
 	Literal object1 = new LiteralImpl("object1");
 
@@ -432,8 +436,8 @@ public class LuceneIndexTest {
 
 	@Test
 	public void testRejectedDatatypes() {
-		IRI STRING = new SimpleIRI("http://www.w3.org/2001/XMLSchema#string");
-		IRI FLOAT = new SimpleIRI("http://www.w3.org/2001/XMLSchema#float");
+		IRI STRING = vf.createIRI("http://www.w3.org/2001/XMLSchema#string");
+		IRI FLOAT = vf.createIRI("http://www.w3.org/2001/XMLSchema#float");
 		Literal literal1 = new LiteralImpl("hi there");
 		Literal literal2 = new LiteralImpl("hi there, too", STRING);
 		Literal literal3 = new LiteralImpl("1.0");

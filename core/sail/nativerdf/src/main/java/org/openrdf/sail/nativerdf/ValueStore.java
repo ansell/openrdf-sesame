@@ -30,11 +30,8 @@ import org.openrdf.model.BNode;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.AbstractValueFactory;
-import org.openrdf.model.impl.ContextStatement;
-import org.openrdf.model.impl.SimpleStatement;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
@@ -153,7 +150,7 @@ public class ValueStore extends AbstractValueFactory {
 
 	public ValueStore(File dataDir, boolean forceSync, int valueCacheSize, int valueIDCacheSize,
 			int namespaceCacheSize, int namespaceIDCacheSize)
-		throws IOException
+				throws IOException
 	{
 		super();
 		dataStore = new DataStore(dataDir, FILENAME_PREFIX, forceSync);
@@ -270,14 +267,14 @@ public class ValueStore extends AbstractValueFactory {
 		byte[] data = value2data(value, false);
 
 		if (data == null && value instanceof Literal) {
-			data = literal2legacy((Literal) value);
+			data = literal2legacy((Literal)value);
 		}
 
 		if (data != null) {
 			int id = dataStore.getID(data);
 
 			if (id == NativeValue.UNKNOWN_ID && value instanceof Literal) {
-				id = dataStore.getID(literal2legacy((Literal) value));
+				id = dataStore.getID(literal2legacy((Literal)value));
 			}
 
 			if (id != NativeValue.UNKNOWN_ID) {
@@ -442,14 +439,14 @@ public class ValueStore extends AbstractValueFactory {
 				catch (IllegalArgumentException e) {
 					// throw SailException
 				}
-				throw new SailException("Store must be manually exported and imported to fix namespaces like "
-						+ namespace);
+				throw new SailException(
+						"Store must be manually exported and imported to fix namespaces like " + namespace);
 			}
 			else {
 				Value value = this.data2value(id, data);
 				if (id != this.getID(copy(value))) {
-					throw new SailException("Store must be manually exported and imported to merge values like "
-							+ value);
+					throw new SailException(
+							"Store must be manually exported and imported to merge values like " + value);
 				}
 			}
 		}
@@ -458,14 +455,17 @@ public class ValueStore extends AbstractValueFactory {
 	private Value copy(Value value) {
 		if (value instanceof IRI) {
 			return createIRI(value.stringValue());
-		} else if (value instanceof Literal) {
-			Literal lit = (Literal) value;
+		}
+		else if (value instanceof Literal) {
+			Literal lit = (Literal)value;
 			if (Literals.isLanguageLiteral(lit)) {
 				return createLiteral(value.stringValue(), lit.getLanguage().orElse(null));
-			} else {
+			}
+			else {
 				return createLiteral(value.stringValue(), lit.getDatatype());
 			}
-		} else {
+		}
+		else {
 			return createBNode(value.stringValue());
 		}
 	}
@@ -609,8 +609,8 @@ public class ValueStore extends AbstractValueFactory {
 			case LITERAL_VALUE:
 				return data2literal(id, data);
 			default:
-				throw new IllegalArgumentException("Namespaces cannot be converted into values: "
-						+ data2namespace(data));
+				throw new IllegalArgumentException(
+						"Namespaces cannot be converted into values: " + data2namespace(data));
 		}
 	}
 
@@ -744,16 +744,6 @@ public class ValueStore extends AbstractValueFactory {
 		return new NativeLiteral(revision, value, datatype);
 	}
 
-	@Override
-	public Statement createStatement(Resource subject, IRI predicate, Value object) {
-		return new SimpleStatement(subject, predicate, object);
-	}
-
-	@Override
-	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
-		return new ContextStatement(subject, predicate, object, context);
-	}
-
 	/*----------------------------------------------------------------------*
 	 * Methods for converting model objects to NativeStore-specific objects * 
 	 *----------------------------------------------------------------------*/
@@ -851,7 +841,8 @@ public class ValueStore extends AbstractValueFactory {
 			if (valueStore.isNamespaceData(data)) {
 				String ns = valueStore.data2namespace(data);
 				System.out.println("[" + id + "] " + ns);
-			} else {
+			}
+			else {
 				Value value = valueStore.data2value(id, data);
 				System.out.println("[" + id + "] " + value.toString());
 			}

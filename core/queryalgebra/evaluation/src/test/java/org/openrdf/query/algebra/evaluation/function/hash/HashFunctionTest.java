@@ -40,7 +40,7 @@ public abstract class HashFunctionTest {
 
 	private String expectedDigest;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 
 	@Test
 	public void testEvaluate() {

@@ -39,16 +39,15 @@ import org.openrdf.OpenRDFUtil;
 import org.openrdf.http.client.HttpClientDependent;
 import org.openrdf.http.client.SparqlSession;
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.SimpleStatement;
-import org.openrdf.model.util.Literals;
 import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.util.Literals;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
@@ -89,7 +88,7 @@ import org.openrdf.rio.helpers.StatementCollector;
 public class SPARQLConnection extends AbstractRepositoryConnection implements HttpClientDependent {
 
 	private static final String EVERYTHING = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }";
-	
+
 	private static final String EVERYTHING_WITH_GRAPH = "SELECT * WHERE {  ?s ?p ?o . OPTIONAL { GRAPH ?ctx { ?s ?p ?o } } }";
 
 	private static final String SOMETHING = "ASK { ?s ?p ?o }";
@@ -101,13 +100,13 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 	private StringBuffer sparqlTransaction;
 
 	private Object transactionLock = new Object();
-	
+
 	private final boolean quadMode;
 
 	public SPARQLConnection(SPARQLRepository repository, SparqlSession client) {
 		this(repository, client, false); // in triple mode by default
 	}
-	
+
 	public SPARQLConnection(SPARQLRepository repository, SparqlSession client, boolean quadMode) {
 		super(repository);
 		this.client = client;
@@ -129,7 +128,7 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 
 	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
-		throws RepositoryException, RDFHandlerException
+				throws RepositoryException, RDFHandlerException
 	{
 		try {
 			GraphQuery query = prepareGraphQuery(SPARQL, EVERYTHING, "");
@@ -152,16 +151,16 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 			TupleQueryResult result = query.evaluate();
 			return new RepositoryResult<Resource>(
 					new ExceptionConvertingIteration<Resource, RepositoryException>(
-							new ConvertingIteration<BindingSet, Resource, QueryEvaluationException>(result) {
+							new ConvertingIteration<BindingSet, Resource, QueryEvaluationException>(result)
+			{
 
 								@Override
 								protected Resource convert(BindingSet bindings)
 									throws QueryEvaluationException
-								{
+				{
 									return (Resource)bindings.getValue("_");
 								}
-							})
-					{
+							}) {
 
 						@Override
 						protected RepositoryException convert(Exception e) {
@@ -208,7 +207,7 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 
 	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
-		throws RepositoryException
+				throws RepositoryException
 	{
 		try {
 			if (isQuadMode()) {
@@ -216,9 +215,11 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 				setBindings(tupleQuery, subj, pred, obj, contexts);
 				tupleQuery.setIncludeInferred(includeInferred);
 				TupleQueryResult qRes = tupleQuery.evaluate();
-				return new RepositoryResult<Statement>( 
+				return new RepositoryResult<Statement>(
 						new ExceptionConvertingIteration<Statement, RepositoryException>(
-								toStatementIteration(qRes, subj, pred, obj)) {
+								toStatementIteration(qRes, subj, pred, obj))
+				{
+
 							@Override
 							protected RepositoryException convert(Exception e) {
 								return new RepositoryException(e);
@@ -227,7 +228,7 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 			}
 			if (subj != null && pred != null && obj != null) {
 				if (hasStatement(subj, pred, obj, includeInferred, contexts)) {
-					Statement st = new SimpleStatement(subj, pred, obj);
+					Statement st = getValueFactory().createStatement(subj, pred, obj);
 					CloseableIteration<Statement, RepositoryException> cursor;
 					cursor = new SingletonIteration<Statement, RepositoryException>(st);
 					return new RepositoryResult<Statement>(cursor);
@@ -240,7 +241,8 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 			setBindings(query, subj, pred, obj, contexts);
 			GraphQueryResult result = query.evaluate();
 			return new RepositoryResult<Statement>(
-					new ExceptionConvertingIteration<Statement, RepositoryException>(result) {
+					new ExceptionConvertingIteration<Statement, RepositoryException>(result)
+			{
 
 						@Override
 						protected RepositoryException convert(Exception e) {
@@ -258,7 +260,7 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 
 	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
-		throws RepositoryException
+				throws RepositoryException
 	{
 		try {
 			BooleanQuery query = prepareBooleanQuery(SPARQL, SOMETHING, "");
@@ -328,8 +330,7 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 		synchronized (transactionLock) {
 			if (isActive()) {
 				synchronized (transactionLock) {
-					SPARQLUpdate transaction = new SPARQLUpdate(client, null,
-							sparqlTransaction.toString());
+					SPARQLUpdate transaction = new SPARQLUpdate(client, null, sparqlTransaction.toString());
 					try {
 						transaction.execute();
 					}
@@ -812,7 +813,7 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 				qb.append("<" + st.getObject().stringValue() + "> ");
 			}
 			qb.append(". \n");
-			
+
 			if (!ignoreContext && context != null) {
 				qb.append("    }\n");
 			}
@@ -945,46 +946,56 @@ public class SPARQLConnection extends AbstractRepositoryConnection implements Ht
 		}
 		qb.append(". \n");
 	}
-	
+
 	/**
-	 * Shall graph information also be retrieved, 
-	 * e.g. for {@link #getStatements(Resource, IRI, Value, boolean, Resource...)
+	 * Shall graph information also be retrieved, e.g. for
+	 * {@link #getStatements(Resource, IRI, Value, boolean, Resource...)
 	 * 
 	 * @return
 	 */
 	protected boolean isQuadMode() {
 		return quadMode;
 	}
-	
+
 	/**
-	 * Converts a {@link TupleQueryResult} resulting from the {@link #EVERYTHING_WITH_GRAPH}
-	 * to a statement by using the respective values from the {@link BindingSet} or (if
-	 * provided) the ones from the arguments.
+	 * Converts a {@link TupleQueryResult} resulting from the
+	 * {@link #EVERYTHING_WITH_GRAPH} to a statement by using the respective
+	 * values from the {@link BindingSet} or (if provided) the ones from the
+	 * arguments.
 	 * 
-	 * @param iter the {@link TupleQueryResult}
-	 * @param subj the subject {@link Resource} used as input or <code>null</code> if wildcard was used
-	 * @param pred the predicate {@link IRI} used as input or <code>null</code> if wildcard was used
-	 * @param obj the object {@link Value} used as input or <code>null</code> if wildcard was used
-	 * 
+	 * @param iter
+	 *        the {@link TupleQueryResult}
+	 * @param subj
+	 *        the subject {@link Resource} used as input or <code>null</code> if
+	 *        wildcard was used
+	 * @param pred
+	 *        the predicate {@link IRI} used as input or <code>null</code> if
+	 *        wildcard was used
+	 * @param obj
+	 *        the object {@link Value} used as input or <code>null</code> if
+	 *        wildcard was used
 	 * @return the converted iteration
 	 */
-	protected Iteration<Statement, QueryEvaluationException> toStatementIteration(TupleQueryResult iter, final Resource subj, final IRI pred, final Value obj) {
-		
+	protected Iteration<Statement, QueryEvaluationException> toStatementIteration(TupleQueryResult iter,
+			final Resource subj, final IRI pred, final Value obj)
+	{
+
 		return new ConvertingIteration<BindingSet, Statement, QueryEvaluationException>(iter) {
-			
+
 			@Override
-			protected Statement convert(BindingSet b) throws QueryEvaluationException {
-				
-				Resource s = subj==null ? (Resource)b.getValue("s") : subj;
-				IRI p = pred==null ? (IRI)b.getValue("p") : pred;
-				Value o = obj==null ? b.getValue("o") : obj;
+			protected Statement convert(BindingSet b)
+				throws QueryEvaluationException
+			{
+
+				Resource s = subj == null ? (Resource)b.getValue("s") : subj;
+				IRI p = pred == null ? (IRI)b.getValue("p") : pred;
+				Value o = obj == null ? b.getValue("o") : obj;
 				Resource ctx = (Resource)b.getValue("ctx");
-				
+
 				return SimpleValueFactory.getInstance().createStatement(s, p, o, ctx);
 			}
-			
+
 		};
 	}
-	
 
 }

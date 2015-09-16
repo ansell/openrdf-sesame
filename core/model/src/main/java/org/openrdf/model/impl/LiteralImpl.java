@@ -18,23 +18,38 @@ package org.openrdf.model.impl;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+
 /**
  * @author Jeen Broekstra
- * @deprecated since 4.0. Use {@link SimpleLiteral} instead.
+ * @deprecated since 4.0. Use {@link SimpleLiteral} for extending, and
+ *             instantiate using a {@link ValueFactory}.
  */
 @Deprecated
 public class LiteralImpl extends SimpleLiteral {
 
+	/**
+	 * @deprecated since 4.0. Use {@link ValueFactory#createLiteral(String)}
+	 *             instead.
+	 */
 	@Deprecated
 	public LiteralImpl(String label) {
 		super(label);
 	}
-	
+
+	/**
+	 * @deprecated since 4.0. Use
+	 *             {@link ValueFactory#createLiteral(String, String)} instead.
+	 */
 	@Deprecated
 	public LiteralImpl(String label, String language) {
 		super(label, language);
 	}
-	
+
+	/**
+	 * @deprecated since 4.0. Use {@link ValueFactory#createLiteral(String, IRI)}
+	 *             instead.
+	 */
 	@Deprecated
 	public LiteralImpl(String label, URI datatype) {
 		super(label, (IRI)datatype);

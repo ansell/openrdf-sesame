@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import org.openrdf.model.IRI;
 import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
@@ -81,7 +82,7 @@ public class ContextAwareConnectionTest {
 		}
 	}
 
-	IRI context = new SimpleIRI("urn:test:context");
+	IRI context = SimpleValueFactory.getInstance().createIRI("urn:test:context");
 
 	String queryString = "SELECT ?o WHERE { ?s ?p ?o}";
 
