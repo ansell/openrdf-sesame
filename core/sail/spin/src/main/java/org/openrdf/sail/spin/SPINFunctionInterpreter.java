@@ -19,6 +19,8 @@ package org.openrdf.sail.spin;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.FN;
+import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.FunctionCall;
@@ -47,8 +49,12 @@ public class SPINFunctionInterpreter implements QueryOptimizer {
 		this.parser = parser;
 		this.tripleSource = tripleSource;
 		this.functionRegistry = functionRegistry;
-		functionRegistry.add(new org.openrdf.sail.spin.function.Concat());
-		functionRegistry.add(new AskFunction(parser));
+		if(!(functionRegistry.get(FN.CONCAT.toString()) instanceof org.openrdf.sail.spin.function.Concat)) {
+			functionRegistry.add(new org.openrdf.sail.spin.function.Concat());
+		}
+		if(!functionRegistry.has(SPIN.ASK_FUNCTION.toString())) {
+			functionRegistry.add(new AskFunction(parser));
+		}
 	}
 
 	@Override
