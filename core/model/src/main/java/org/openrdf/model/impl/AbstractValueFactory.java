@@ -16,6 +16,8 @@
  */
 package org.openrdf.model.impl;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -25,18 +27,22 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.Value;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 /**
- * Abstract base class for {@link ValueFactory} implementations that implements
- * the utility methods for creating literals for basic types by calling the
- * generic {@link ValueFactory#createLiteral(String, IRI)} with the appropriate
- * value and datatype.
+ * Abstract base class for {@link ValueFactory} implementations. It implements
+ * all basic {@link Value} creation methods by using the default implementations
+ * ({@link SimpleBNode}, {@link SimpleIRI}, etc), and type-optimized subclasses
+ * (e.g. {@link BooleanLiteral}, {@link NumericLiteral}) where possible.
  * 
  * @author Arjohn Kampman
+ * @author Jeen Broekstra
  */
 public abstract class AbstractValueFactory implements ValueFactory {
 
@@ -87,6 +93,51 @@ public abstract class AbstractValueFactory implements ValueFactory {
 	 * Methods *
 	 *---------*/
 
+	@Override
+	public IRI createIRI(String iri) {
+		return new SimpleIRI(iri);
+	}
+
+	@Override
+	public IRI createIRI(String namespace, String localName) {
+		return createIRI(namespace + localName);
+	}
+
+	@Override
+	public BNode createBNode(String nodeID) {
+		return new SimpleBNode(nodeID);
+	}
+
+	@Override
+	public Literal createLiteral(String value) {
+		return new SimpleLiteral(value, XMLSchema.STRING);
+	}
+
+	@Override
+	public Literal createLiteral(String value, String language) {
+		return new SimpleLiteral(value, language);
+	}
+
+	@Override
+	public Literal createLiteral(boolean b) {
+		return b ? BooleanLiteral.TRUE : BooleanLiteral.FALSE;
+	}
+
+	@Override
+	public Literal createLiteral(String value, IRI datatype) {
+		return new SimpleLiteral(value, datatype);
+	}
+
+	@Override
+	public Statement createStatement(Resource subject, IRI predicate, Value object) {
+		return new SimpleStatement(subject, predicate, object);
+	}
+
+	@Override
+	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
+		return new ContextStatement(subject, predicate, object, context);
+	}
+
 	/**
 	 * Generates a new bnode prefix and resets <tt>nextBNodeID</tt> to <tt>1</tt>
 	 * .
@@ -110,16 +161,6 @@ public abstract class AbstractValueFactory implements ValueFactory {
 		}
 
 		return result;
-	}
-
-	/**
-	 * Calls {@link ValueFactory#createLiteral(String, IRI)} with the
-	 * String-value of the supplied value and {@link XMLSchema#BOOLEAN} as
-	 * parameters.
-	 */
-	@Override
-	public Literal createLiteral(boolean b) {
-		return createLiteral(Boolean.toString(b), XMLSchema.BOOLEAN);
 	}
 
 	/**
@@ -184,6 +225,16 @@ public abstract class AbstractValueFactory implements ValueFactory {
 		return createFPLiteral(value, XMLSchema.DOUBLE);
 	}
 
+	@Override
+	public Literal createLiteral(BigInteger bigInteger) {
+		return createIntegerLiteral(bigInteger, XMLSchema.INTEGER);
+	}
+
+	@Override
+	public Literal createLiteral(BigDecimal bigDecimal) {
+		return createNumericLiteral(bigDecimal, XMLSchema.DECIMAL);
+	}
+
 	/**
 	 * Calls {@link #createNumericLiteral(Number, IRI)} with the supplied value
 	 * and datatype as parameters.
@@ -193,12 +244,17 @@ public abstract class AbstractValueFactory implements ValueFactory {
 	}
 
 	/**
-	 * Calls {@link ValueFactory#createLiteral(String, IRI)} with the
-	 * String-value of the supplied number and the supplied datatype as
-	 * parameters.
+	 * Creates specific optimized subtypes of SimpleLiteral for numeric
+	 * datatypes.
 	 */
 	protected Literal createNumericLiteral(Number number, IRI datatype) {
-		return createLiteral(number.toString(), datatype);
+		if (number instanceof BigDecimal) {
+			return new DecimalLiteral((BigDecimal)number, datatype);
+		}
+		if (number instanceof BigInteger) {
+			return new IntegerLiteral((BigInteger)number, datatype);
+		}
+		return new NumericLiteral(number, datatype);
 	}
 
 	/**
@@ -225,7 +281,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
 	public Literal createLiteral(Date date) {
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(date);
-		
+
 		XMLGregorianCalendar xmlGregCalendar = datatypeFactory.newXMLGregorianCalendar(c);
 		return createLiteral(xmlGregCalendar);
 	}

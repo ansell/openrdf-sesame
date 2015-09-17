@@ -27,11 +27,10 @@ import info.aduna.iteration.ConvertingIteration;
 import info.aduna.iteration.Iteration;
 import info.aduna.iteration.IteratorIteration;
 
+import org.openrdf.model.IRI;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatement;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.MalformedQueryException;
@@ -87,11 +86,15 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		this(repository, repository.getConnection());
 	}
 
-	public ContextAwareConnection(RepositoryConnection connection) throws RepositoryException {
+	public ContextAwareConnection(RepositoryConnection connection)
+		throws RepositoryException
+	{
 		this(connection.getRepository(), connection);
 	}
 
-	public ContextAwareConnection(Repository repository, RepositoryConnection connection) throws RepositoryException {
+	public ContextAwareConnection(Repository repository, RepositoryConnection connection)
+		throws RepositoryException
+	{
 		super(repository, connection);
 		ContextAwareConnection next = null;
 		RepositoryConnection up = connection;
@@ -99,15 +102,18 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			if (up instanceof ContextAwareConnection) {
 				next = (ContextAwareConnection)up;
 				break;
-			} else {
-				up = ((RepositoryConnectionWrapper) up).getDelegate(); 
+			}
+			else {
+				up = ((RepositoryConnectionWrapper)up).getDelegate();
 			}
 		}
 		this.next = next;
 	}
 
 	@Override
-	protected boolean isDelegatingRemove() throws RepositoryException {
+	protected boolean isDelegatingRemove()
+		throws RepositoryException
+	{
 		return getArchiveContexts().length == 0 && getRemoveContexts().length < 2;
 	}
 
@@ -152,7 +158,6 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		}
 	}
 
-	
 	/**
 	 * @return Returns the default baseURI.
 	 */
@@ -160,9 +165,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		return baseURI;
 	}
 
-	
 	/**
-	 * @param baseURI The default baseURI to set.
+	 * @param baseURI
+	 *        The default baseURI to set.
 	 */
 	public void setBaseURI(String baseURI) {
 		this.baseURI = baseURI;
@@ -172,18 +177,18 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	/**
-	 * The default context(s) to get the data from. Note that this parameter is a vararg
-	 * and as such is optional. If no contexts are supplied the method operates
-	 * on the entire repository.
+	 * The default context(s) to get the data from. Note that this parameter is a
+	 * vararg and as such is optional. If no contexts are supplied the method
+	 * operates on the entire repository.
 	 */
 	public IRI[] getReadContexts() {
 		return readContexts;
 	}
 
 	/**
-	 * The default context(s) to get the data from. Note that this parameter is a vararg
-	 * and as such is optional. If no contexts are supplied the method operates
-	 * on the entire repository.
+	 * The default context(s) to get the data from. Note that this parameter is a
+	 * vararg and as such is optional. If no contexts are supplied the method
+	 * operates on the entire repository.
 	 */
 	public void setReadContexts(IRI... readContexts) {
 		this.readContexts = readContexts;
@@ -220,7 +225,8 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 		this.addContexts = addContexts;
 		if (isNilContext(addContexts)) {
 			this.insertContext = null;
-		} else if (addContexts.length == 1) {
+		}
+		else if (addContexts.length == 1) {
 			this.insertContext = addContexts[0];
 		}
 		if (next != null) {
@@ -271,24 +277,24 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	}
 
 	/**
-	 * The default context to add the statements to. For INSERT/add
-	 * operations Each statement is added to any context specified in the
-	 * statement, or if the statement contains no context, it is added with the
-	 * context specified here.
+	 * The default context to add the statements to. For INSERT/add operations
+	 * Each statement is added to any context specified in the statement, or if
+	 * the statement contains no context, it is added with the context specified
+	 * here.
 	 */
 	public IRI getInsertContext() {
 		return insertContext;
 	}
 
 	/**
-	 * The default context to add the statements to. For INSERT/add
-	 * operations Each statement is added to any context specified in the
-	 * statement, or if the statement contains no context, it is added with the
-	 * context specified here.
+	 * The default context to add the statements to. For INSERT/add operations
+	 * Each statement is added to any context specified in the statement, or if
+	 * the statement contains no context, it is added with the context specified
+	 * here.
 	 */
 	public void setInsertContext(IRI insertContext) {
 		this.insertContext = insertContext;
-		this.addContexts = new IRI[]{insertContext};
+		this.addContexts = new IRI[] { insertContext };
 		if (next != null) {
 			next.setInsertContext(insertContext);
 		}
@@ -361,7 +367,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	@Override
 	public <E extends Exception> void add(Iteration<? extends Statement, E> statementIter,
 			Resource... contexts)
-		throws RepositoryException, E
+				throws RepositoryException, E
 	{
 		final IRI insertContext = getInsertContext();
 		if (isNilContext(contexts)) {
@@ -369,7 +375,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 				protected Statement convert(Statement st) {
 					if (st.getContext() == null)
-						return new ContextStatement(st.getSubject(), st.getPredicate(), st.getObject(),
+						return getValueFactory().createStatement(st.getSubject(), st.getPredicate(), st.getObject(),
 								insertContext);
 					return st;
 				}
@@ -511,7 +517,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	@Override
 	public void exportStatements(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			RDFHandler handler, Resource... contexts)
-		throws RepositoryException, RDFHandlerException
+				throws RepositoryException, RDFHandlerException
 	{
 		if (isAllContext(contexts)) {
 			super.exportStatements(subj, pred, obj, includeInferred, handler, getReadContexts());
@@ -554,7 +560,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	@Override
 	public RepositoryResult<Statement> getStatements(Resource subj, IRI pred, Value obj,
 			boolean includeInferred, Resource... contexts)
-		throws RepositoryException
+				throws RepositoryException
 	{
 		if (isAllContext(contexts)) {
 			return super.getStatements(subj, pred, obj, includeInferred, getReadContexts());
@@ -567,7 +573,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	@Override
 	public boolean hasStatement(Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
-		throws RepositoryException
+				throws RepositoryException
 	{
 		if (isAllContext(contexts)) {
 			return super.hasStatement(subj, pred, obj, includeInferred, getReadContexts());
@@ -776,7 +782,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 	@Override
 	public <E extends Exception> void remove(Iteration<? extends Statement, E> statementIter,
 			Resource... contexts)
-		throws RepositoryException, E
+				throws RepositoryException, E
 	{
 		final IRI[] removeContexts = getRemoveContexts();
 		if (isAllContext(contexts) && removeContexts.length == 1) {
@@ -784,7 +790,7 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 
 				protected Statement convert(Statement st) {
 					if (st.getContext() == null)
-						return new ContextStatement(st.getSubject(), st.getPredicate(), st.getObject(),
+						return getValueFactory().createStatement(st.getSubject(), st.getPredicate(), st.getObject(),
 								removeContexts[0]);
 					return st;
 				}
@@ -911,9 +917,9 @@ public class ContextAwareConnection extends RepositoryConnectionWrapper {
 			ds.setDefaultInsertGraph(insertContext);
 			op.setDataset(ds);
 		}
-	
+
 		op.setIncludeInferred(isIncludeInferred());
-	
+
 		return op;
 	}
 

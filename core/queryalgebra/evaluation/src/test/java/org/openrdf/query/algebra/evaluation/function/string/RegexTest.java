@@ -48,7 +48,7 @@ import org.openrdf.query.impl.EmptyBindingSet;
  * @author james
  */
 public class RegexTest {
-	private ValueFactory vf = new SimpleValueFactory();
+	private ValueFactory vf = SimpleValueFactory.getInstance();
 	private FederatedServiceResolverImpl serviceResolver;
 
 	@Before

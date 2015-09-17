@@ -54,7 +54,7 @@ public class ContextStatement extends SimpleStatement {
 	 *        The statement's context, <tt>null</tt> to indicate no context is
 	 *        associated.
 	 */
-	public ContextStatement(Resource subject, IRI predicate, Value object, Resource context) {
+	protected ContextStatement(Resource subject, IRI predicate, Value object, Resource context) {
 		super(subject, predicate, object);
 		this.context = context;
 	}

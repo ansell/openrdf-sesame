@@ -40,7 +40,7 @@ public class TestDateTimeCast {
 
 	private DateTimeCast dtCast;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 	
 	/**
 	 * @throws java.lang.Exception

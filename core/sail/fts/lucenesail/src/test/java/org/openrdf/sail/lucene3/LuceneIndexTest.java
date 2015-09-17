@@ -43,14 +43,13 @@ import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
-import org.openrdf.model.impl.ContextStatement;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.SimpleStatement;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 import org.openrdf.sail.lucene.LuceneSail;
@@ -59,55 +58,52 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public class LuceneIndexTest {
 
-	public static final IRI CONTEXT_1 = new SimpleIRI("urn:context1");
+	private static final ValueFactory vf = SimpleValueFactory.getInstance();
 
-	public static final IRI CONTEXT_2 = new SimpleIRI("urn:context2");
+	public static final IRI CONTEXT_1 = vf.createIRI("urn:context1");
 
-	public static final IRI CONTEXT_3 = new SimpleIRI("urn:context3");
+	public static final IRI CONTEXT_2 = vf.createIRI("urn:context2");
+
+	public static final IRI CONTEXT_3 = vf.createIRI("urn:context3");
 
 	// create some objects that we will use throughout this test
-	IRI subject = new SimpleIRI("urn:subj");
+	IRI subject = vf.createIRI("urn:subj");
 
-	IRI subject2 = new SimpleIRI("urn:subj2");
+	IRI subject2 = vf.createIRI("urn:subj2");
 
-	IRI predicate1 = new SimpleIRI("urn:pred1");
+	IRI predicate1 = vf.createIRI("urn:pred1");
 
-	IRI predicate2 = new SimpleIRI("urn:pred2");
+	IRI predicate2 = vf.createIRI("urn:pred2");
 
-	Literal object1 = new SimpleLiteral("object1");
+	Literal object1 = vf.createLiteral("object1");
 
-	Literal object2 = new SimpleLiteral("object2");
+	Literal object2 = vf.createLiteral("object2");
 
-	Literal object3 = new SimpleLiteral("cats");
+	Literal object3 = vf.createLiteral("cats");
 
-	Literal object4 = new SimpleLiteral("dogs");
+	Literal object4 = vf.createLiteral("dogs");
 
-	Literal object5 = new SimpleLiteral("chicken");
+	Literal object5 = vf.createLiteral("chicken");
 
-	Statement statement11 = new SimpleStatement(subject, predicate1, object1);
+	Statement statement11 = vf.createStatement(subject, predicate1, object1);
 
-	Statement statement12 = new SimpleStatement(subject, predicate2, object2);
+	Statement statement12 = vf.createStatement(subject, predicate2, object2);
 
-	Statement statement21 = new SimpleStatement(subject2, predicate1, object3);
+	Statement statement21 = vf.createStatement(subject2, predicate1, object3);
 
-	Statement statement22 = new SimpleStatement(subject2, predicate2, object4);
+	Statement statement22 = vf.createStatement(subject2, predicate2, object4);
 
-	Statement statement23 = new SimpleStatement(subject2, predicate2, object5);
+	Statement statement23 = vf.createStatement(subject2, predicate2, object5);
 
-	ContextStatement statementContext111 = new ContextStatement(subject, predicate1, object1,
-			CONTEXT_1);
+	Statement statementContext111 = vf.createStatement(subject, predicate1, object1, CONTEXT_1);
 
-	ContextStatement statementContext121 = new ContextStatement(subject, predicate2, object2,
-			CONTEXT_1);
+	Statement statementContext121 = vf.createStatement(subject, predicate2, object2, CONTEXT_1);
 
-	ContextStatement statementContext211 = new ContextStatement(subject2, predicate1, object3,
-			CONTEXT_1);
+	Statement statementContext211 = vf.createStatement(subject2, predicate1, object3, CONTEXT_1);
 
-	ContextStatement statementContext222 = new ContextStatement(subject2, predicate2, object4,
-			CONTEXT_2);
+	Statement statementContext222 = vf.createStatement(subject2, predicate2, object4, CONTEXT_2);
 
-	ContextStatement statementContext232 = new ContextStatement(subject2, predicate2, object5,
-			CONTEXT_2);
+	Statement statementContext232 = vf.createStatement(subject2, predicate2, object5, CONTEXT_2);
 
 	// add a statement to an index
 	RAMDirectory directory;
@@ -416,12 +412,12 @@ public class LuceneIndexTest {
 
 	@Test
 	public void testRejectedDatatypes() {
-		IRI STRING = new SimpleIRI("http://www.w3.org/2001/XMLSchema#string");
-		IRI FLOAT = new SimpleIRI("http://www.w3.org/2001/XMLSchema#float");
-		Literal literal1 = new SimpleLiteral("hi there");
-		Literal literal2 = new SimpleLiteral("hi there, too", STRING);
-		Literal literal3 = new SimpleLiteral("1.0");
-		Literal literal4 = new SimpleLiteral("1.0", FLOAT);
+		IRI STRING = vf.createIRI("http://www.w3.org/2001/XMLSchema#string");
+		IRI FLOAT = vf.createIRI("http://www.w3.org/2001/XMLSchema#float");
+		Literal literal1 = vf.createLiteral("hi there");
+		Literal literal2 = vf.createLiteral("hi there, too", STRING);
+		Literal literal3 = vf.createLiteral("1.0");
+		Literal literal4 = vf.createLiteral("1.0", FLOAT);
 		assertEquals("Is the first literal accepted?", true, index.accept(literal1));
 		assertEquals("Is the second literal accepted?", true, index.accept(literal2));
 		assertEquals("Is the third literal accepted?", true, index.accept(literal3));
@@ -488,7 +484,7 @@ public class LuceneIndexTest {
 				assertEquals("Was the text value '" + field.stringValue() + "' expected to exist?", false, true);
 			}
 		}
-
+	
 		for(String notFound : toFind) {
 			assertEquals("Was the expected text value '" + notFound + "' found?", true, false);
 		}

@@ -40,7 +40,7 @@ import org.openrdf.model.vocabulary.XMLSchema;
  */
 public class LiteralComparatorTest {
 
-	private ValueFactory vf = new SimpleValueFactory();
+	private ValueFactory vf = SimpleValueFactory.getInstance();
 
 	private Literal one = vf.createLiteral(1);
 

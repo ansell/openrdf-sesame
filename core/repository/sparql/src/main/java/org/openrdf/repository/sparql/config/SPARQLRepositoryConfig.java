@@ -34,13 +34,16 @@ import org.openrdf.repository.config.RepositoryConfigException;
  */
 public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 
-	public static final IRI QUERY_ENDPOINT = new SimpleIRI(
+	private static final ValueFactory vf = SimpleValueFactory.getInstance();
+
+	public static final IRI QUERY_ENDPOINT = vf.createIRI(
 			"http://www.openrdf.org/config/repository/sparql#query-endpoint");
 
-	public static final IRI UPDATE_ENDPOINT = new SimpleIRI(
+	public static final IRI UPDATE_ENDPOINT = vf.createIRI(
 			"http://www.openrdf.org/config/repository/sparql#update-endpoint");
 
 	private String queryEndpointUrl;
+
 	private String updateEndpointUrl;
 
 	public SPARQLRepositoryConfig() {
@@ -50,7 +53,7 @@ public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 	public SPARQLRepositoryConfig(String queryEndpointUrl) {
 		setQueryEndpointUrl(queryEndpointUrl);
 	}
-	
+
 	public SPARQLRepositoryConfig(String queryEndpointUrl, String updateEndpointUrl) {
 		this(queryEndpointUrl);
 		setUpdateEndpointUrl(updateEndpointUrl);
@@ -71,13 +74,14 @@ public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 	public void setUpdateEndpointUrl(String url) {
 		this.updateEndpointUrl = url;
 	}
-	
+
 	@Override
-	public void validate() throws RepositoryConfigException {
+	public void validate()
+		throws RepositoryConfigException
+	{
 		super.validate();
 		if (getQueryEndpointUrl() == null) {
-			throw new RepositoryConfigException(
-					"No endpoint URL specified for SPARQL repository");
+			throw new RepositoryConfigException("No endpoint URL specified for SPARQL repository");
 		}
 	}
 
@@ -85,7 +89,6 @@ public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 	public Resource export(Model m) {
 		Resource implNode = super.export(m);
 
-		ValueFactory vf = SimpleValueFactory.getInstance();
 		if (getQueryEndpointUrl() != null) {
 			m.add(implNode, QUERY_ENDPOINT, vf.createIRI(getQueryEndpointUrl()));
 		}
@@ -98,13 +101,17 @@ public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 
 	@Override
 	public void parse(Model m, Resource implNode)
-			throws RepositoryConfigException {
+		throws RepositoryConfigException
+	{
 		super.parse(m, implNode);
 
 		try {
-			Models.objectIRI(m.filter(implNode, QUERY_ENDPOINT, null)).ifPresent(iri -> setQueryEndpointUrl(iri.stringValue()));
-			Models.objectIRI(m.filter(implNode, UPDATE_ENDPOINT, null)).ifPresent(iri -> setUpdateEndpointUrl(iri.stringValue()));
-		} catch (ModelException e) {
+			Models.objectIRI(m.filter(implNode, QUERY_ENDPOINT, null)).ifPresent(
+					iri -> setQueryEndpointUrl(iri.stringValue()));
+			Models.objectIRI(m.filter(implNode, UPDATE_ENDPOINT, null)).ifPresent(
+					iri -> setUpdateEndpointUrl(iri.stringValue()));
+		}
+		catch (ModelException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

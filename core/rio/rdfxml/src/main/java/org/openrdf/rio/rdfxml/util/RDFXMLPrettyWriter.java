@@ -24,12 +24,12 @@ import java.io.Writer;
 import java.util.Stack;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -47,8 +47,8 @@ import org.openrdf.rio.rdfxml.RDFXMLWriter;
  * object of the previous statement) and written to the output when the stripe
  * is broken.
  * <p>
- * The abbreviations used are <a
- * href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes"
+ * The abbreviations used are
+ * <a href="http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-typed-nodes"
  * >typed node elements</a>, <a href=
  * "http://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-empty-property-elements"
  * >empty property elements</a> and <a href=
@@ -364,7 +364,8 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 			// element is possible
 			// FIXME: verify that an XML namespace-qualified name can be created
 			// for the type URI
-			if (pred.equals(RDF.TYPE) && obj instanceof IRI && !topSubject.hasType() && !topSubject.isWritten())
+			if (pred.equals(RDF.TYPE) && obj instanceof IRI && !topSubject.hasType()
+					&& !topSubject.isWritten())
 			{
 				// Use typed node element
 				topSubject.setType((IRI)obj);
@@ -553,7 +554,7 @@ public class RDFXMLPrettyWriter extends RDFXMLWriter implements Closeable, Flush
 
 		Resource nextLi() {
 			if (nextLi == null) {
-				nextLi = new SimpleIRI(RDF.NAMESPACE + "_" + nextLiIndex);
+				nextLi = SimpleValueFactory.getInstance().createIRI(RDF.NAMESPACE + "_" + nextLiIndex);
 			}
 
 			return nextLi;

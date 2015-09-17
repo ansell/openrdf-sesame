@@ -30,14 +30,12 @@ import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
@@ -57,6 +55,8 @@ public abstract class SailIsolationLevelTest {
 
 	protected Sail store;
 
+	private ValueFactory vf;
+
 	private String failedMessage;
 
 	private Throwable failed;
@@ -71,6 +71,7 @@ public abstract class SailIsolationLevelTest {
 	{
 		store = createSail();
 		store.initialize();
+		vf = store.getValueFactory();
 		failed = null;
 	}
 
@@ -629,7 +630,7 @@ public abstract class SailIsolationLevelTest {
 
 	protected long count(SailConnection con, Resource subj, IRI pred, Value obj, boolean includeInferred,
 			Resource... contexts)
-		throws SailException
+				throws SailException
 	{
 		CloseableIteration<? extends Statement, SailException> stmts;
 		stmts = con.getStatements(subj, pred, obj, includeInferred, contexts);
@@ -667,9 +668,9 @@ public abstract class SailIsolationLevelTest {
 	protected void insertTestStatement(SailConnection connection, int i)
 		throws SailException
 	{
-		SimpleLiteral lit = new SimpleLiteral(Integer.toString(i), XMLSchema.INTEGER);
-		connection.addStatement(new SimpleIRI("http://test#s" + i), new SimpleIRI("http://test#p"), lit,
-				new SimpleIRI("http://test#context_" + i));
+		Literal lit = vf.createLiteral(Integer.toString(i), XMLSchema.INTEGER);
+		connection.addStatement(vf.createIRI("http://test#s" + i), vf.createIRI("http://test#p"), lit,
+				vf.createIRI("http://test#context_" + i));
 	}
 
 	protected synchronized void fail(String message, Throwable t) {

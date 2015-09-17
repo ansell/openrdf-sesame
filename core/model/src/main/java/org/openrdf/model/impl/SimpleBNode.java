@@ -57,7 +57,7 @@ public class SimpleBNode implements BNode {
 	 * @param id
 	 *        The identifier for this blank node, must not be <tt>null</tt>.
 	 */
-	public SimpleBNode(String id) {
+	protected SimpleBNode(String id) {
 		this();
 		setID(id);
 	}

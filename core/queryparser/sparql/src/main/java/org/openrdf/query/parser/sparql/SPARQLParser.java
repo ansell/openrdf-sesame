@@ -116,7 +116,7 @@ public class SPARQLParser implements QueryParser {
 					}
 				}
 
-				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(new SimpleValueFactory());
+				UpdateExprBuilder updateExprBuilder = new UpdateExprBuilder(SimpleValueFactory.getInstance());
 
 				ASTUpdate updateNode = uc.getUpdate();
 				if (updateNode != null) {
@@ -205,7 +205,7 @@ public class SPARQLParser implements QueryParser {
 	private TupleExpr buildQueryModel(Node qc)
 		throws MalformedQueryException
 	{
-		TupleExprBuilder tupleExprBuilder = new TupleExprBuilder(new SimpleValueFactory());
+		TupleExprBuilder tupleExprBuilder = new TupleExprBuilder(SimpleValueFactory.getInstance());
 		try {
 			return (TupleExpr)qc.jjtAccept(tupleExprBuilder, null);
 		}

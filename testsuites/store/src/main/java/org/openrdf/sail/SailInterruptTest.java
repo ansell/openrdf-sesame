@@ -24,10 +24,9 @@ import org.junit.Test;
 
 import info.aduna.iteration.CloseableIteration;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.Literal;
+import org.openrdf.model.ValueFactory;
 
 /**
  * Tests thread interrupts on a Sail implementation.
@@ -38,12 +37,15 @@ public abstract class SailInterruptTest {
 
 	private Sail store;
 
+	private ValueFactory vf;
+
 	@Before
 	public void setUp()
 		throws Exception
 	{
 		store = createSail();
 		store.initialize();
+		vf = store.getValueFactory();
 	}
 
 	protected abstract Sail createSail()
@@ -60,7 +62,7 @@ public abstract class SailInterruptTest {
 	public void testQueryInterrupt()
 		throws Exception
 	{
-//		System.out.println("Preparing data set for query interruption test");
+		// System.out.println("Preparing data set for query interruption test");
 		final Random r = new Random(12345);
 		SailConnection con = store.getConnection();
 		try {
@@ -79,7 +81,7 @@ public abstract class SailInterruptTest {
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
 					try {
-//						System.out.println("query sail...");
+						// System.out.println("query sail...");
 						iterateStatements();
 					}
 					catch (Throwable t) {
@@ -89,30 +91,30 @@ public abstract class SailInterruptTest {
 			}
 		};
 
-//		System.out.println("Starting query thread...");
+		// System.out.println("Starting query thread...");
 		Thread queryThread = new Thread(queryJob);
 		queryThread.start();
 
 		queryThread.join(50);
 
-//		System.out.println("Interrupting query thread...");
+		// System.out.println("Interrupting query thread...");
 		queryThread.interrupt();
 
-//		System.out.println("Waiting for query thread to finish...");
+		// System.out.println("Waiting for query thread to finish...");
 		queryThread.join();
 
-//		System.out.println("Verifying that the sail can still be queried...");
+		// System.out.println("Verifying that the sail can still be queried...");
 		iterateStatements();
 
-//		System.out.println("Done");
+		// System.out.println("Done");
 	}
 
 	private void insertTestStatement(SailConnection connection, int seed)
 		throws SailException
 	{
-		IRI subj = new SimpleIRI("http://test#s" + seed % 293);
-		IRI pred = new SimpleIRI("http://test#p" + seed % 29);
-		Literal obj = new SimpleLiteral(Integer.toString(seed % 2903));
+		IRI subj = vf.createIRI("http://test#s" + seed % 293);
+		IRI pred = vf.createIRI("http://test#p" + seed % 29);
+		Literal obj = vf.createLiteral(Integer.toString(seed % 2903));
 		connection.addStatement(subj, pred, obj);
 	}
 

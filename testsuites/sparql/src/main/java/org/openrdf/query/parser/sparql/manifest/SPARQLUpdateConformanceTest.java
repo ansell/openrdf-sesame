@@ -39,6 +39,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.util.Models;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -119,7 +120,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 			ds.setDefaultInsertGraph(null);
 
 			for (String ng : inputNamedGraphs.keySet()) {
-				IRI namedGraph = new SimpleIRI(ng);
+				IRI namedGraph = SimpleValueFactory.getInstance().createIRI(ng);
 				ds.addNamedGraph(namedGraph);
 			}
 			this.dataset = ds;
@@ -144,44 +145,32 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 			if (inputDefaultGraph != null) {
 				URL graphURL = new URL(inputDefaultGraph.stringValue());
-				conn.add(
-						graphURL,
-						null,
-						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
-								Rio.unsupportedFormat(graphURL.toString())));
+				conn.add(graphURL, null, Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+						Rio.unsupportedFormat(graphURL.toString())));
 			}
 
 			for (String ng : inputNamedGraphs.keySet()) {
 				URL graphURL = new URL(inputNamedGraphs.get(ng).stringValue());
-				conn.add(
-						graphURL,
-						null,
-						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
-								Rio.unsupportedFormat(graphURL.toString())), dataRep.getValueFactory().createIRI(ng));
+				conn.add(graphURL, null, Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+						Rio.unsupportedFormat(graphURL.toString())), dataRep.getValueFactory().createIRI(ng));
 			}
 		}
 
 		expectedResultRepo = createRepository();
 
-		try (RepositoryConnection conn = expectedResultRepo.getConnection();){
+		try (RepositoryConnection conn = expectedResultRepo.getConnection();) {
 			conn.clear();
 
 			if (resultDefaultGraph != null) {
 				URL graphURL = new URL(resultDefaultGraph.stringValue());
-				conn.add(
-						graphURL,
-						null,
-						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
-								Rio.unsupportedFormat(graphURL.toString())));
+				conn.add(graphURL, null, Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+						Rio.unsupportedFormat(graphURL.toString())));
 			}
 
 			for (String ng : resultNamedGraphs.keySet()) {
 				URL graphURL = new URL(resultNamedGraphs.get(ng).stringValue());
-				conn.add(
-						graphURL,
-						null,
-						Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
-								Rio.unsupportedFormat(graphURL.toString())), dataRep.getValueFactory().createIRI(ng));
+				conn.add(graphURL, null, Rio.getParserFormatForFileName(graphURL.toString()).orElseThrow(
+						Rio.unsupportedFormat(graphURL.toString())), dataRep.getValueFactory().createIRI(ng));
 			}
 		}
 	}
@@ -191,12 +180,12 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	{
 		ContextAwareRepository repo = newRepository();
 		repo.initialize();
-		
+
 		Repositories.consume(repo, con -> {
 			con.clear();
 			con.clearNamespaces();
 		});
-		
+
 		return repo;
 	}
 
@@ -333,7 +322,8 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		// Extract test case information from the manifest file. Note that we only
 		// select those test cases that are mentioned in the list.
 		StringBuilder query = new StringBuilder(512);
-		query.append(" SELECT DISTINCT testURI, testName, result, action, requestFile, defaultGraph, resultDefaultGraph ");
+		query.append(
+				" SELECT DISTINCT testURI, testName, result, action, requestFile, defaultGraph, resultDefaultGraph ");
 		query.append(" FROM {} rdf:first {testURI} rdf:type {mf:UpdateEvaluationTest}; ");
 		if (approvedOnly) {
 			query.append("                          dawgt:approval {dawgt:Approved}; ");
@@ -427,7 +417,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 	protected static String getManifestName(Repository manifestRep, RepositoryConnection con,
 			String manifestFileURL)
-		throws QueryEvaluationException, RepositoryException, MalformedQueryException
+				throws QueryEvaluationException, RepositoryException, MalformedQueryException
 	{
 		// Try to extract suite name from manifest file
 		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,

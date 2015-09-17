@@ -33,13 +33,11 @@ import info.aduna.iteration.CloseableIteration;
 import org.openrdf.IsolationLevel;
 import org.openrdf.IsolationLevels;
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.ContextStatement;
-import org.openrdf.model.impl.SimpleStatement;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
@@ -181,8 +179,8 @@ public abstract class AbstractSailConnection implements SailConnection {
 		IsolationLevel compatibleLevel = IsolationLevels.getCompatibleIsolationLevel(level,
 				this.sailBase.getSupportedIsolationLevels());
 		if (compatibleLevel == null) {
-			throw new UnknownSailTransactionStateException("Isolation level " + level
-					+ " not compatible with this Sail");
+			throw new UnknownSailTransactionStateException(
+					"Isolation level " + level + " not compatible with this Sail");
 		}
 		this.transactionIsolationLevel = compatibleLevel;
 
@@ -270,7 +268,7 @@ public abstract class AbstractSailConnection implements SailConnection {
 
 	public final CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluate(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException
+				throws SailException
 	{
 		flushPendingUpdates();
 		connectionLock.readLock().lock();
@@ -280,7 +278,8 @@ public abstract class AbstractSailConnection implements SailConnection {
 			CloseableIteration<? extends BindingSet, QueryEvaluationException> iteration = evaluateInternal(
 					tupleExpr, dataset, bindings, includeInferred);
 			try {
-				CloseableIteration<? extends BindingSet, QueryEvaluationException> registeredIteration = registerIteration(iteration);
+				CloseableIteration<? extends BindingSet, QueryEvaluationException> registeredIteration = registerIteration(
+						iteration);
 				registered = true;
 				return registeredIteration;
 			}
@@ -318,7 +317,7 @@ public abstract class AbstractSailConnection implements SailConnection {
 	@Override
 	public final CloseableIteration<? extends Statement, SailException> getStatements(Resource subj, IRI pred,
 			Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException
+				throws SailException
 	{
 		flushPendingUpdates();
 		connectionLock.readLock().lock();
@@ -328,7 +327,8 @@ public abstract class AbstractSailConnection implements SailConnection {
 			CloseableIteration<? extends Statement, SailException> iteration = getStatementsInternal(subj, pred,
 					obj, includeInferred, contexts);
 			try {
-				CloseableIteration<? extends Statement, SailException> registeredIteration = registerIteration(iteration);
+				CloseableIteration<? extends Statement, SailException> registeredIteration = registerIteration(
+						iteration);
 				registered = true;
 				return registeredIteration;
 			}
@@ -512,12 +512,12 @@ public abstract class AbstractSailConnection implements SailConnection {
 			flushPendingUpdates();
 		}
 		synchronized (removed) {
-			assert !removed.containsKey(op);
+			assert!removed.containsKey(op);
 			removed.put(op, new LinkedList<Statement>());
 		}
 
 		synchronized (added) {
-			assert !added.containsKey(op);
+			assert!added.containsKey(op);
 			added.put(op, new LinkedList<Statement>());
 		}
 	}
@@ -536,11 +536,11 @@ public abstract class AbstractSailConnection implements SailConnection {
 			assert added.containsKey(op);
 			Collection<Statement> pending = added.get(op);
 			if (contexts == null || contexts.length == 0) {
-				pending.add(new SimpleStatement(subj, pred, obj));
+				pending.add(sailBase.getValueFactory().createStatement(subj, pred, obj));
 			}
 			else {
 				for (Resource ctx : contexts) {
-					pending.add(new ContextStatement(subj, pred, obj, ctx));
+					pending.add(sailBase.getValueFactory().createStatement(subj, pred, obj, ctx));
 				}
 			}
 			if (pending.size() % BLOCK_SIZE == 0 && !isActiveOperation()) {
@@ -798,7 +798,8 @@ public abstract class AbstractSailConnection implements SailConnection {
 	 * {@link SailBaseIteration} object and adding it to the list of active
 	 * iterations.
 	 */
-	protected <T, E extends Exception> CloseableIteration<T, E> registerIteration(CloseableIteration<T, E> iter)
+	protected <T, E extends Exception> CloseableIteration<T, E> registerIteration(
+			CloseableIteration<T, E> iter)
 	{
 		SailBaseIteration<T, E> result = new SailBaseIteration<T, E>(iter, this);
 		Throwable stackTrace = debugEnabled ? new Throwable() : null;
@@ -822,14 +823,14 @@ public abstract class AbstractSailConnection implements SailConnection {
 
 	protected abstract CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateInternal(
 			TupleExpr tupleExpr, Dataset dataset, BindingSet bindings, boolean includeInferred)
-		throws SailException;
+				throws SailException;
 
 	protected abstract CloseableIteration<? extends Resource, SailException> getContextIDsInternal()
 		throws SailException;
 
 	protected abstract CloseableIteration<? extends Statement, SailException> getStatementsInternal(
 			Resource subj, IRI pred, Value obj, boolean includeInferred, Resource... contexts)
-		throws SailException;
+				throws SailException;
 
 	protected abstract long sizeInternal(Resource... contexts)
 		throws SailException;
@@ -838,7 +839,8 @@ public abstract class AbstractSailConnection implements SailConnection {
 		throws SailException;
 
 	protected void prepareInternal()
-		throws SailException {
+		throws SailException
+	{
 		// do nothing
 	}
 
@@ -918,8 +920,8 @@ public abstract class AbstractSailConnection implements SailConnection {
 	private void flushPendingUpdates()
 		throws SailException
 	{
-		if (!isActiveOperation() || isActive()
-				&& !getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
+		if (!isActiveOperation()
+				|| isActive() && !getTransactionIsolation().isCompatibleWith(IsolationLevels.SNAPSHOT_READ))
 		{
 			flush();
 		}

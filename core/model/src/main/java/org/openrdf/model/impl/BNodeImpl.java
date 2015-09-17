@@ -16,11 +16,30 @@
  */
 package org.openrdf.model.impl;
 
+import org.openrdf.model.ValueFactory;
+
 /**
  * @author Jeen Broekstra
- * @deprecated since 4.0. Use {@link SimpleBNode} instead.
+ * @deprecated since 4.0. Use {@link SimpleBNode} instead for extending, and
+ *             {@link ValueFactory} for instantiation.
  */
 @Deprecated
 public class BNodeImpl extends SimpleBNode {
 
+	/**
+	 * @deprecated since 4.0. Use {@link ValueFactory#createBNode()} instead.
+	 */
+	@Deprecated
+	public BNodeImpl() {
+		super();
+	}
+
+	/**
+	 * @deprecated since 4.0. Use {@link ValueFactory#createBNode(String)}
+	 *             instead.
+	 */
+	@Deprecated
+	public BNodeImpl(String nodeID) {
+		super(nodeID);
+	}
 }

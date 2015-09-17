@@ -39,7 +39,7 @@ public class RandTest {
 
 	private Rand rand;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 
 	/**
 	 * @throws java.lang.Exception

@@ -30,32 +30,37 @@ import org.junit.Test;
 
 import org.openrdf.http.protocol.transaction.operations.AddStatementOperation;
 import org.openrdf.http.protocol.transaction.operations.TransactionOperation;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.IRI;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.SimpleIRI;
-
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 
 /**
- *
  * @author jeen
  */
 public class TransactionReaderTest {
 
-	private static final IRI bob = new SimpleIRI("http://example.org/bob");
-	private static final IRI alice = new SimpleIRI("http://example.org/alice");
-	private static final IRI knows = new SimpleIRI("http://example.org/knows");
+	private static final ValueFactory vf = SimpleValueFactory.getInstance();
+
+	private static final IRI bob = vf.createIRI("http://example.org/bob");
+
+	private static final IRI alice = vf.createIRI("http://example.org/alice");
+
+	private static final IRI knows = vf.createIRI("http://example.org/knows");
 
 	private static final char ux0005 = 0x0005;
 
-	private static final Literal controlCharText = new SimpleLiteral("foobar." + ux0005 + " foo.");
+	private static final Literal controlCharText = vf.createLiteral("foobar." + ux0005 + " foo.");
 
-	private static final IRI context1 = new SimpleIRI("http://example.org/context1");
-	private static final IRI context2 = new SimpleIRI("http://example.org/context2");
+	private static final IRI context1 = vf.createIRI("http://example.org/context1");
+
+	private static final IRI context2 = vf.createIRI("http://example.org/context2");
 
 	@Test
-	public void testRoundtrip() throws Exception {
+	public void testRoundtrip()
+		throws Exception
+	{
 
 		AddStatementOperation operation = new AddStatementOperation(bob, knows, alice, context1, context2);
 
@@ -65,7 +70,6 @@ public class TransactionReaderTest {
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TransactionWriter w = new TransactionWriter();
 		w.serialize(txn, out);
-
 
 		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 		TransactionReader r = new TransactionReader();
@@ -87,7 +91,9 @@ public class TransactionReaderTest {
 	}
 
 	@Test
-	public void testControlCharHandling() throws Exception {
+	public void testControlCharHandling()
+		throws Exception
+	{
 		AddStatementOperation operation = new AddStatementOperation(bob, knows, controlCharText);
 
 		List<TransactionOperation> txn = new ArrayList<TransactionOperation>();

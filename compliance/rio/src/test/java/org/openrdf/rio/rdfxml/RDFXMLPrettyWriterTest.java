@@ -30,14 +30,16 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.impl.SimpleStatement;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.rdfxml.util.RDFXMLPrettyWriterFactory;
 
 public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
+
+	private static ValueFactory vf = SimpleValueFactory.getInstance();
 
 	public RDFXMLPrettyWriterTest() {
 		super(new RDFXMLPrettyWriterFactory(), new RDFXMLParserFactory());
@@ -71,14 +73,14 @@ public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
 
 		rdfWriter.startRDF();
 
-		Resource res = new SimpleIRI("http://example.com/#");
+		Resource res = vf.createIRI("http://example.com/#");
 
-		rdfWriter.handleStatement(new SimpleStatement(res, RDF.TYPE, RDF.BAG));
+		rdfWriter.handleStatement(vf.createStatement(res, RDF.TYPE, RDF.BAG));
 
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_1"), new SimpleIRI(
-				"http://example.com/#1")));
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
-				"http://example.com/#2")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_1"),
+				vf.createIRI("http://example.com/#1")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_2"),
+				vf.createIRI("http://example.com/#2")));
 		rdfWriter.endRDF();
 
 		List<String> rdfLines = rdfOpenTags(writer.toString());
@@ -95,14 +97,14 @@ public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
 
 		rdfWriter.startRDF();
 
-		Resource res = new SimpleIRI("http://example.com/#");
+		Resource res = vf.createIRI("http://example.com/#");
 
-		rdfWriter.handleStatement(new SimpleStatement(res, RDF.TYPE, RDF.BAG));
+		rdfWriter.handleStatement(vf.createStatement(res, RDF.TYPE, RDF.BAG));
 
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_0"), new SimpleIRI(
-				"http://example.com/#0")));
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
-				"http://example.com/#2")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_0"),
+				vf.createIRI("http://example.com/#0")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_2"),
+				vf.createIRI("http://example.com/#2")));
 		rdfWriter.endRDF();
 
 		List<String> rdfLines = rdfOpenTags(writer.toString());
@@ -119,18 +121,18 @@ public class RDFXMLPrettyWriterTest extends RDFXMLWriterTestCase {
 
 		rdfWriter.startRDF();
 
-		Resource res = new SimpleIRI("http://example.com/#");
+		Resource res = vf.createIRI("http://example.com/#");
 
-		rdfWriter.handleStatement(new SimpleStatement(res, RDF.TYPE, RDF.BAG));
+		rdfWriter.handleStatement(vf.createStatement(res, RDF.TYPE, RDF.BAG));
 
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
-				"http://example.com/#2")));
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_1"), new SimpleIRI(
-				"http://example.com/#1")));
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_3"), new SimpleIRI(
-				"http://example.com/#3")));
-		rdfWriter.handleStatement(new SimpleStatement(res, new SimpleIRI(RDF.NAMESPACE + "_2"), new SimpleIRI(
-				"http://example.com/#2")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_2"),
+				vf.createIRI("http://example.com/#2")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_1"),
+				vf.createIRI("http://example.com/#1")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_3"),
+				vf.createIRI("http://example.com/#3")));
+		rdfWriter.handleStatement(vf.createStatement(res, vf.createIRI(RDF.NAMESPACE + "_2"),
+				vf.createIRI("http://example.com/#2")));
 		rdfWriter.endRDF();
 
 		List<String> rdfLines = rdfOpenTags(writer.toString());

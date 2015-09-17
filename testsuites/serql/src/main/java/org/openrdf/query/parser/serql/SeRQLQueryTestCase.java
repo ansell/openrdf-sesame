@@ -129,7 +129,7 @@ public abstract class SeRQLQueryTestCase extends TestCase {
 		for (String graphName : graphNames) {
 			dataCon.add(url(graphName), base(graphName),
 					Rio.getParserFormatForFileName(graphName).orElseThrow(Rio.unsupportedFormat(graphName)),
-					new SimpleIRI(graphName));
+					dataCon.getValueFactory().createIRI(graphName));
 		}
 
 		// Evaluate the query on the query data

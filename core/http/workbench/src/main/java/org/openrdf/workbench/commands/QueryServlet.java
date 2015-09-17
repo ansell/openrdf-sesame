@@ -20,7 +20,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -40,17 +39,16 @@ import org.slf4j.LoggerFactory;
 import info.aduna.iteration.Iterations;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.Namespace;
 import org.openrdf.model.IRI;
-import org.openrdf.model.impl.IntegerLiteral;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Namespace;
+import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResultHandlerException;
-import org.openrdf.query.resultio.BooleanQueryResultFormat;
 import org.openrdf.query.resultio.QueryResultFormat;
 import org.openrdf.query.resultio.QueryResultIO;
-import org.openrdf.query.resultio.TupleQueryResultFormat;
 import org.openrdf.query.resultio.UnsupportedQueryResultFormatException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -91,7 +89,8 @@ public class QueryServlet extends TransformationServlet {
 
 	// Poor Man's Cache: At the very least, garbage collection can clean up keys
 	// followed by values whenever the JVM faces memory pressure.
-	private static Map<String, String> queryCache = Collections.synchronizedMap(new WeakHashMap<String, String>());
+	private static Map<String, String> queryCache = Collections.synchronizedMap(
+			new WeakHashMap<String, String>());
 
 	/**
 	 * For testing purposes only.
@@ -261,7 +260,8 @@ public class QueryServlet extends TransformationServlet {
 				final String queryLn = req.getParameter(EDIT_PARAMS[0]);
 				final String query = getQueryText(req);
 				final Boolean infer = Boolean.valueOf(req.getParameter(EDIT_PARAMS[2]));
-				final IntegerLiteral limit = new IntegerLiteral(new BigInteger(req.getParameter(EDIT_PARAMS[3])));
+				final Literal limit = SimpleValueFactory.getInstance().createLiteral(
+						req.getParameter(EDIT_PARAMS[3]), XMLSchema.INTEGER);
 				builder.result(queryLn, query, infer, limit);
 				builder.end();
 			}
@@ -345,7 +345,8 @@ public class QueryServlet extends TransformationServlet {
 					ext = tupleFormat.get().getDefaultFileExtension();
 				}
 				else {
-					final Optional<QueryResultFormat> booleanFormat = QueryResultIO.getBooleanWriterFormatForMIMEType(accept);
+					final Optional<QueryResultFormat> booleanFormat = QueryResultIO.getBooleanWriterFormatForMIMEType(
+							accept);
 
 					if (booleanFormat.isPresent()) {
 						result = booleanFormat.get().getDefaultMIMEType();
@@ -364,7 +365,7 @@ public class QueryServlet extends TransformationServlet {
 
 	private void service(final WorkbenchRequest req, final HttpServletResponse resp, final OutputStream out,
 			final String xslPath)
-		throws BadRequestException, OpenRDFException, UnsupportedQueryResultFormatException, IOException
+				throws BadRequestException, OpenRDFException, UnsupportedQueryResultFormatException, IOException
 	{
 		final RepositoryConnection con = repository.getConnection();
 		con.setParserConfig(NON_VERIFYING_PARSER_CONFIG);
@@ -450,9 +451,12 @@ public class QueryServlet extends TransformationServlet {
 		throws BadRequestException, OpenRDFException
 	{
 		if (req.isParameterPresent(REF)) {
-			return "id".equals(req.getParameter(REF)) ? storage.canRead(storage.selectSavedQuery(
-					(HTTPRepository)repository, getUserNameFromParameter(req, "owner"), req.getParameter(QUERY)),
-					getUserNameFromParameter(req, SERVER_USER)) : true;
+			return "id".equals(req.getParameter(REF))
+					? storage.canRead(
+							storage.selectSavedQuery((HTTPRepository)repository,
+									getUserNameFromParameter(req, "owner"), req.getParameter(QUERY)),
+							getUserNameFromParameter(req, SERVER_USER))
+					: true;
 		}
 		else {
 			throw new BadRequestException("Expected 'ref' parameter in request.");

@@ -43,9 +43,9 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteral;
-import org.openrdf.model.impl.SimpleIRI;
-import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.BindingSet;
@@ -58,6 +58,8 @@ import org.openrdf.sail.lucene.util.MapOfListMaps;
 public abstract class AbstractSearchIndex implements SearchIndex {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	private final ValueFactory vf = SimpleValueFactory.getInstance();
 
 	private static final Set<String> REJECTED_DATATYPES = new HashSet<String>();
 
@@ -594,12 +596,12 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 
 										if (query.getSnippetVariableName() != null) {
 											snippetBindings.addBinding(query.getSnippetVariableName(),
-													new SimpleLiteral(snippet));
+													vf.createLiteral(snippet));
 										}
 
 										if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
 											snippetBindings.addBinding(query.getPropertyVariableName(),
-													new SimpleIRI(field));
+													vf.createIRI(field));
 										}
 
 										bindingSets.add(snippetBindings);

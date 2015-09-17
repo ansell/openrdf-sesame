@@ -25,8 +25,21 @@ public class ValueFactoryImpl extends SimpleValueFactory {
 
 	private static final ValueFactoryImpl sharedInstance = new ValueFactoryImpl();
 
+	/**
+	 * @deprecated since 4.0. Use {@link SimpleValueFactory#getInstance()}
+	 *             instead.
+	 */
 	@Deprecated
 	public static ValueFactoryImpl getInstance() {
 		return sharedInstance;
+	}
+
+	/**
+	 * @deprecated since 4.0. Use {@link SimpleValueFactory#getInstance()}
+	 *             instead.
+	 */
+	@Deprecated
+	public ValueFactoryImpl() {
+		super();
 	}
 }

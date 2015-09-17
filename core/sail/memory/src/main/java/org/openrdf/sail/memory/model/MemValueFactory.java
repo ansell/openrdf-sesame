@@ -23,17 +23,12 @@ import java.util.Set;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
-import org.openrdf.model.impl.SimpleBNode;
-import org.openrdf.model.impl.ContextStatement;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.SimpleStatement;
-import org.openrdf.model.impl.SimpleIRI;
 import org.openrdf.model.impl.AbstractValueFactory;
 import org.openrdf.model.util.Literals;
 import org.openrdf.model.util.URIUtil;
@@ -352,8 +347,7 @@ public class MemValueFactory extends AbstractValueFactory {
 
 	@Override
 	public synchronized IRI createIRI(String uri) {
-		IRI tempURI = new SimpleIRI(uri);
-		return getOrCreateMemURI(tempURI);
+		return getOrCreateMemURI(super.createIRI(uri));
 	}
 
 	@Override
@@ -369,7 +363,7 @@ public class MemValueFactory extends AbstractValueFactory {
 			tempURI = new MemIRI(null, namespace, localName);
 		}
 		else {
-			tempURI = new SimpleIRI(namespace + localName);
+			tempURI = super.createIRI(namespace + localName);
 		}
 
 		return getOrCreateMemURI(tempURI);
@@ -377,26 +371,22 @@ public class MemValueFactory extends AbstractValueFactory {
 
 	@Override
 	public synchronized BNode createBNode(String nodeID) {
-		BNode tempBNode = new SimpleBNode(nodeID);
-		return getOrCreateMemBNode(tempBNode);
+		return getOrCreateMemBNode(super.createBNode(nodeID));
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value) {
-		Literal tempLiteral = new SimpleLiteral(value, XMLSchema.STRING);
-		return getOrCreateMemLiteral(tempLiteral);
+		return getOrCreateMemLiteral(super.createLiteral(value));
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value, String language) {
-		Literal tempLiteral = new SimpleLiteral(value, language);
-		return getOrCreateMemLiteral(tempLiteral);
+		return getOrCreateMemLiteral(super.createLiteral(value, language));
 	}
 
 	@Override
 	public synchronized Literal createLiteral(String value, IRI datatype) {
-		Literal tempLiteral = new SimpleLiteral(value, datatype);
-		return getOrCreateMemLiteral(tempLiteral);
+		return getOrCreateMemLiteral(super.createLiteral(value, datatype));
 	}
 
 	@Override
@@ -435,18 +425,4 @@ public class MemValueFactory extends AbstractValueFactory {
 		return sharedLiteral;
 	}
 
-	@Override
-	public Statement createStatement(Resource subject, IRI predicate, Value object) {
-		return new SimpleStatement(subject, predicate, object);
-	}
-
-	@Override
-	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context) {
-		if (context == null) {
-			return new SimpleStatement(subject, predicate, object);
-		}
-		else {
-			return new ContextStatement(subject, predicate, object, context);
-		}
-	}
 }

@@ -53,7 +53,7 @@ public abstract class AbstractRepositoryServlet extends AbstractServlet implemen
 
 	public void setRepository(Repository repository) {
 		if (repository == null) {
-			this.vf = new SimpleValueFactory();
+			this.vf = SimpleValueFactory.getInstance();
 		} else {
 			this.repository = repository;
 			this.vf = repository.getValueFactory();

@@ -57,7 +57,7 @@ public class SeRQLParser implements QueryParser {
 
 			// TODO: check use of unbound variables?
 
-			TupleExpr tupleExpr = QueryModelBuilder.buildQueryModel(qc, new SimpleValueFactory());
+			TupleExpr tupleExpr = QueryModelBuilder.buildQueryModel(qc, SimpleValueFactory.getInstance());
 
 			ASTQuery queryNode = qc.getQuery();
 			ParsedQuery query;

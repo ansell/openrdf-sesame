@@ -76,7 +76,7 @@ public class RDFParserHelperTest {
 		// Ensure that the set of non-fatal errors is empty by default
 		parserConfig.setNonFatalErrors(new HashSet<RioSetting<?>>());
 		errListener = new ParseErrorCollector();
-		valueFactory = new SimpleValueFactory();
+		valueFactory = SimpleValueFactory.getInstance();
 	}
 
 	/**

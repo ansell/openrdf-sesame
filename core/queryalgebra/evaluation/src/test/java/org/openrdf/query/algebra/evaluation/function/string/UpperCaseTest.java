@@ -35,7 +35,7 @@ public class UpperCaseTest {
 
 	private UpperCase ucaseFunc;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 
 	
 	/**

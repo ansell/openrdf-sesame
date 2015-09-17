@@ -73,6 +73,11 @@ public class InterceptorTest {
 			Object proxy = Proxy.newProxyInstance(cl, classes, handler);
 			return (RepositoryConnection)proxy;
 		}
+		
+		@Override
+		public ValueFactory getValueFactory() {
+			return SimpleValueFactory.getInstance();
+		}
 	}
 
 	static class RepositoryConnectionStub extends RepositoryConnectionWrapper {
@@ -176,6 +181,6 @@ public class InterceptorTest {
 			}
 
 		});
-		con.remove(new SimpleStatement(uri, uri, uri));
+		con.remove(con.getValueFactory().createStatement(uri, uri, uri));
 	}
 }

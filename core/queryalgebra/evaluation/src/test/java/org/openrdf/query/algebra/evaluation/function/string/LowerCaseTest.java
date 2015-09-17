@@ -35,7 +35,7 @@ public class LowerCaseTest {
 
 	private LowerCase lcaseFunc;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 
 	
 	/**

@@ -76,7 +76,7 @@ public class SimpleLiteral implements Literal {
 	 * @param label
 	 *        The label for the literal, must not be <tt>null</tt>.
 	 */
-	public SimpleLiteral(String label) {
+	protected SimpleLiteral(String label) {
 		setLabel(label);
 		setDatatype(XMLSchema.STRING);
 	}
@@ -89,7 +89,7 @@ public class SimpleLiteral implements Literal {
 	 * @param language
 	 *        The language tag for the literal, must not be <tt>null</tt>.
 	 */
-	public SimpleLiteral(String label, String language) {
+	protected SimpleLiteral(String label, String language) {
 		setLabel(label);
 		setLanguage(language);
 	}
@@ -102,7 +102,7 @@ public class SimpleLiteral implements Literal {
 	 * @param datatype
 	 *        The datatype for the literal.
 	 */
-	public SimpleLiteral(String label, IRI datatype) {
+	protected SimpleLiteral(String label, IRI datatype) {
 		setLabel(label);
 		if (RDF.LANGSTRING.equals(datatype)) {
 			throw new IllegalArgumentException("datatype rdf:langString requires a language tag");
