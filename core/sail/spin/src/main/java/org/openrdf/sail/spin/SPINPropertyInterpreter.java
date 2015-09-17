@@ -19,11 +19,14 @@ package org.openrdf.sail.spin;
 import java.util.Collections;
 import java.util.Map;
 
+import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.EmptySet;
+import org.openrdf.query.algebra.Join;
+import org.openrdf.query.algebra.QueryModelNode;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
@@ -54,9 +57,17 @@ public class SPINPropertyInterpreter implements QueryOptimizer {
 
 
 	class PropertyScanner extends QueryModelVisitorBase<RuntimeException> {
+		Map<Resource,StatementPattern> joins;
+
+		@Override
+		public void meet(Join node)
+		{
+			node.getLeftArg().visit(this);
+			node.getRightArg().visit(this);
+		}
+
 		@Override
 		public void meet(StatementPattern node)
-			throws RuntimeException
 		{
 			URI pred = (URI) node.getPredicateVar().getValue();
 			if(SPIN.CONSTRUCT_PROPERTY.equals(pred)) {
@@ -70,7 +81,49 @@ public class SPINPropertyInterpreter implements QueryOptimizer {
 				Service service = new Service(serviceRef, node, "", prefixDecls, null, false);
 				stub.replaceWith(service);
 			}
-			super.meet(node);
+		}
+
+		@Override
+		protected void meetNode(QueryModelNode node)
+		{
+			if(joins != null) {
+				joins = null;
+			}
+		}
+	}
+
+	class JoinCollector extends QueryModelVisitorBase<RuntimeException> {
+		Map<Resource,StatementPattern> joins;
+		List<QueryModelNode> leaves;
+
+		@Override
+		public void meet(Join node)
+		{
+			node.getLeftArg().visit(this);
+			node.getRightArg().visit(this);
+		}
+
+		@Override
+		public void meet(StatementPattern node)
+		{
+			URI pred = (URI) node.getPredicateVar().getValue();
+			if(SPIN.CONSTRUCT_PROPERTY.equals(pred)) {
+				EmptySet stub = new EmptySet();
+				node.replaceWith(stub);
+				Var serviceRef = new Var("_const-spin-service-uri");
+				serviceRef.setAnonymous(true);
+				serviceRef.setConstant(true);
+				serviceRef.setValue(spinService);
+				Map<String,String> prefixDecls = Collections.emptyMap();
+				Service service = new Service(serviceRef, node, "", prefixDecls, null, false);
+				stub.replaceWith(service);
+			}
+		}
+
+		@Override
+		protected void meetNode(QueryModelNode node)
+		{
+			leaves.add(node);
 		}
 	}
 }
