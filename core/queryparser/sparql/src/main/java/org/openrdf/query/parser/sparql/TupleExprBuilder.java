@@ -1031,7 +1031,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				projectionElements.addElement(new ProjectionElem(((Var)resource).getName()));
 			}
 			else {
-				String alias = "-describe-" + UUID.randomUUID();
+				String alias = "_describe-" + UUID.randomUUID();
 				ExtensionElem elem = new ExtensionElem(resource, alias);
 				e.addElement(elem);
 				projectionElements.addElement(new ProjectionElem(alias));
