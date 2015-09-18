@@ -1059,11 +1059,35 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		TupleExpr tupleExpr = graphPattern.buildTupleExpr();
 		tupleExpr = new Slice(tupleExpr, 0, 1);
 
+		// Apply grouping
+		ASTGroupClause groupNode = node.getGroupClause();
+		if (groupNode != null) {
+
+			tupleExpr = (TupleExpr)groupNode.jjtAccept(this, tupleExpr);
+		}
+
+		Group group = null;
+		if (tupleExpr instanceof Group) {
+			group = (Group)tupleExpr;
+		}
+		else {
+			// create a new implicit group. Note that this group will only actually
+			// be used in the query model if the query has HAVING or ORDER BY
+			// clause
+			group = new Group(tupleExpr);
+		}
+
+		// Apply HAVING group filter condition
+		tupleExpr = processHavingClause(node.getHavingClause(), tupleExpr, group);
+
 		// process bindings clause
 		ASTBindingsClause bindingsClause = node.getBindingsClause();
 		if (bindingsClause != null) {
 			tupleExpr = new Join((BindingSetAssignment)bindingsClause.jjtAccept(this, null), tupleExpr);
 		}
+
+		// Apply result ordering
+		tupleExpr = processOrderClause(node.getOrderClause(), tupleExpr, null);
 
 		return tupleExpr;
 	}
