@@ -325,8 +325,8 @@ public class TupleExprBuilder extends AbstractASTVisitor {
 			if (lit.getDatatype() != null) {
 				uniqueStringForValue += "-" + lit.getDatatype().stringValue();
 			}
-			if (lit.getLanguage() != null) {
-				uniqueStringForValue += "-" + lit.getLanguage();
+			if (lit.getLanguage().isPresent()) {
+				uniqueStringForValue += "-" + lit.getLanguage().get();
 			}
 		}
 		else if (value instanceof BNode) {
