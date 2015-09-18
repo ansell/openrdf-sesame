@@ -204,10 +204,10 @@ public class QueryResults extends Iterations {
 	/**
 	 * Compares two tuple query results and returns {@code true} if they are
 	 * equal. Tuple query results are equal if they contain the same set of
-	 * {@link BindingSet}ingSet and have the same headers. Blank nodes
-	 * identifiers are not relevant for equality, they are mapped from one model
-	 * to the other by using the attached properties. Note that the method
-	 * consumes both query results fully.
+	 * {@link BindingSet}s and have the same headers. Blank nodes identifiers are
+	 * not relevant for equality, they are matched by trying to find compatible
+	 * mappings between BindingSets. Note that the method consumes both query
+	 * results fully.
 	 * 
 	 * @param tqr1
 	 *        the first {@link TupleQueryResult} to compare.
