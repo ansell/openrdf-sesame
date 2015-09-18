@@ -303,13 +303,7 @@ class MemorySailStore implements SailStore {
 					// stale statement
 					statements.remove(i);
 				}
-				else {
-					// Reset snapshot
-					st.setSinceSnapshot(1);
-				}
 			}
-
-			currentSnapshot = 1;
 		}
 		finally {
 			stLock.release();
