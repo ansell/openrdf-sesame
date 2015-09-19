@@ -16,6 +16,7 @@
  */
 package org.openrdf.query.algebra.evaluation.function;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.openrdf.model.Literal;
@@ -28,7 +29,8 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
- * A {@link Function} that tries to cast its argument to an <tt>xsd:integer</tt>.
+ * A {@link Function} that tries to cast its argument to an <tt>xsd:integer</tt>
+ * .
  * 
  * @author Arjohn Kampman
  */
@@ -42,8 +44,8 @@ public class IntegerCast implements Function {
 		throws ValueExprEvaluationException
 	{
 		if (args.length != 1) {
-			throw new ValueExprEvaluationException("xsd:integer cast requires exactly 1 argument, got "
-					+ args.length);
+			throw new ValueExprEvaluationException(
+					"xsd:integer cast requires exactly 1 argument, got " + args.length);
 		}
 
 		if (args[0] instanceof Literal) {
@@ -61,11 +63,17 @@ public class IntegerCast implements Function {
 					return literal;
 				}
 				else if (XMLDatatypeUtil.isNumericDatatype(datatype)) {
-					// FIXME: decimals, floats and doubles must be processed
+					// decimals, floats and doubles must be processed
 					// separately, see
 					// http://www.w3.org/TR/xpath-functions/#casting-from-primitive-to-primitive
+					BigInteger integerValue = null;
+					if (XMLSchema.DECIMAL.equals(datatype) || XMLDatatypeUtil.isFloatingPointDatatype(datatype)) {
+						integerValue = literal.decimalValue().toBigInteger();
+					}
+					else {
+						integerValue = literal.integerValue();
+					}
 					try {
-						BigInteger integerValue = literal.integerValue();
 						return valueFactory.createLiteral(integerValue.toString(), XMLSchema.INTEGER);
 					}
 					catch (NumberFormatException e) {
