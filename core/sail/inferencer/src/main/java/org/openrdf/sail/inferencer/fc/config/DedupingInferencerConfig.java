@@ -14,40 +14,18 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail;
+package org.openrdf.sail.inferencer.fc.config;
 
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.parser.ParsedUpdate;
-import org.openrdf.repository.sail.AbstractSailUpdate;
-import org.openrdf.rio.ParserConfig;
+import org.openrdf.sail.config.DelegatingSailImplConfigBase;
+import org.openrdf.sail.config.SailImplConfig;
 
+public class DedupingInferencerConfig extends DelegatingSailImplConfigBase {
 
-public class SailConnectionUpdate extends AbstractSailUpdate {
-
-	public SailConnectionUpdate(ParsedUpdate parsedUpdate, SailConnection con, ValueFactory vf,
-			ParserConfig parserConfig)
-	{
-		super(parsedUpdate, con, vf, parserConfig);
+	public DedupingInferencerConfig() {
+		super(DedupingInferencerFactory.SAIL_TYPE);
 	}
 
-	@Override
-	protected boolean isLocalTransaction()
-		throws SailException
-	{
-		return !getSailConnection().isActive();
-	}
-
-	@Override
-	protected void beginLocalTransaction()
-		throws SailException
-	{
-		getSailConnection().begin();
-	}
-
-	@Override
-	protected void commitLocalTransaction()
-		throws SailException
-	{
-		getSailConnection().commit();
+	public DedupingInferencerConfig(SailImplConfig delegate) {
+		super(DedupingInferencerFactory.SAIL_TYPE, delegate);
 	}
 }

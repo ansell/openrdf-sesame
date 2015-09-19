@@ -1738,25 +1738,25 @@ public class SPINParser {
 			String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
 
 			if (value instanceof Literal) {
-				uniqueStringForValue += "-lit";
+				uniqueStringForValue += "_lit";
 
 				// we need to append datatype and/or language tag to ensure a unique
 				// var name (see SES-1927)
 				Literal lit = (Literal)value;
 				if (lit.getDatatype() != null) {
-					uniqueStringForValue += "-" + lit.getDatatype().stringValue();
+					uniqueStringForValue += "_" + lit.getDatatype().stringValue();
 				}
 				if (lit.getLanguage() != null) {
-					uniqueStringForValue += "-" + lit.getLanguage();
+					uniqueStringForValue += "_" + lit.getLanguage();
 				}
 			}
 			else if (value instanceof BNode) {
-				uniqueStringForValue += "-node";
+				uniqueStringForValue += "_node";
 			}
 			else {
-				uniqueStringForValue += "-uri";
+				uniqueStringForValue += "_uri";
 			}
-			return "_const-" + uniqueStringForValue;
+			return "_const_" + uniqueStringForValue;
 		}
 	}
 }

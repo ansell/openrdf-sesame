@@ -16,8 +16,8 @@
  */
 package org.openrdf.repository.sail;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.repository.RepositoryException;
 
 /**
  * @author Jeen Broekstra
@@ -37,21 +37,21 @@ public class SailUpdate extends AbstractSailUpdate {
 
 	@Override
 	protected boolean isLocalTransaction()
-		throws OpenRDFException
+		throws RepositoryException
 	{
 		return !getConnection().isActive();
 	}
 
 	@Override
 	protected void beginLocalTransaction()
-		throws OpenRDFException
+		throws RepositoryException
 	{
 		getConnection().begin();
 	}
 
 	@Override
 	protected void commitLocalTransaction()
-		throws OpenRDFException
+		throws RepositoryException
 	{
 		getConnection().commit();
 	}
