@@ -25,6 +25,7 @@ import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Query;
+import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.parser.ParsedBooleanQuery;

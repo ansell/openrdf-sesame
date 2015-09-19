@@ -16,18 +16,32 @@
  */
 package org.openrdf.repository.sail;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.openrdf.OpenRDFException;
+import org.openrdf.query.Dataset;
+import org.openrdf.query.UpdateExecutionException;
+import org.openrdf.query.algebra.UpdateExpr;
+import org.openrdf.query.impl.AbstractParserUpdate;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sail.helpers.SailUpdateExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeen Broekstra
  */
-public class SailUpdate extends AbstractSailUpdate {
+public class SailUpdate extends AbstractParserUpdate {
+
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final SailRepositoryConnection con;
 
 	protected SailUpdate(ParsedUpdate parsedUpdate, SailRepositoryConnection con) {
-		super(parsedUpdate, con.getSailConnection(), con.getValueFactory(), con.getParserConfig());
+		super(parsedUpdate);
 		this.con = con;
 	}
 
@@ -36,21 +50,59 @@ public class SailUpdate extends AbstractSailUpdate {
 	}
 
 	@Override
-	protected boolean isLocalTransaction()
+	public void execute()
+		throws UpdateExecutionException
+	{
+		ParsedUpdate parsedUpdate = getParsedUpdate();
+		List<UpdateExpr> updateExprs = parsedUpdate.getUpdateExprs();
+		Map<UpdateExpr, Dataset> datasetMapping = parsedUpdate.getDatasetMapping();
+
+		SailUpdateExecutor executor = new SailUpdateExecutor(con.getSailConnection(), con.getValueFactory(), con.getParserConfig());
+
+		for (UpdateExpr updateExpr : updateExprs) {
+
+			Dataset activeDataset = getMergedDataset(datasetMapping.get(updateExpr));
+
+			try {
+				boolean localTransaction = isLocalTransaction();
+				if (localTransaction) {
+					beginLocalTransaction();
+				}
+
+				executor.executeUpdate(updateExpr, activeDataset, getBindings(), getIncludeInferred(), getMaxExecutionTime());
+
+				if (localTransaction) {
+					commitLocalTransaction();
+				}
+			}
+			catch (OpenRDFException e) {
+				logger.warn("exception during update execution: ", e);
+				if (!updateExpr.isSilent()) {
+					throw new UpdateExecutionException(e);
+				}
+			}
+			catch (IOException e) {
+				logger.warn("exception during update execution: ", e);
+				if (!updateExpr.isSilent()) {
+					throw new UpdateExecutionException(e);
+				}
+			}
+		}
+	}
+
+	private boolean isLocalTransaction()
 		throws RepositoryException
 	{
 		return !getConnection().isActive();
 	}
 
-	@Override
-	protected void beginLocalTransaction()
+	private void beginLocalTransaction()
 		throws RepositoryException
 	{
 		getConnection().begin();
 	}
 
-	@Override
-	protected void commitLocalTransaction()
+	private void commitLocalTransaction()
 		throws RepositoryException
 	{
 		getConnection().commit();
