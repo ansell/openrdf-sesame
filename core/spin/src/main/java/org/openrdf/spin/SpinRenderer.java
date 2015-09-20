@@ -102,7 +102,7 @@ import org.openrdf.rio.RDFHandlerException;
 
 import com.google.common.base.Function;
 
-public class SPINRenderer {
+public class SpinRenderer {
 	public enum Output {
 		TEXT_AND_RDF(true, true), TEXT_ONLY(true, false), RDF_ONLY(false, true);
 
@@ -119,30 +119,30 @@ public class SPINRenderer {
 	private final Function<String,URI> wellKnownVars;
 	private final Function<String,URI> wellKnownFunctions;
 
-	public SPINRenderer()
+	public SpinRenderer()
 	{
 		this(Output.TEXT_AND_RDF);
 	}
 
-	public SPINRenderer(Output output)
+	public SpinRenderer(Output output)
 	{
 		this(output,
 			new Function<String,URI>() {
 				@Override
 				public URI apply(String name) {
-					return SPINWellKnownVars.INSTANCE.getURI(name);
+					return SpinWellKnownVars.INSTANCE.getURI(name);
 				}
 			},
 			new Function<String,URI>() {
 				@Override
 				public URI apply(String name) {
-					return SPINWellKnownFunctions.INSTANCE.getURI(name);
+					return SpinWellKnownFunctions.INSTANCE.getURI(name);
 				}
 			},
 			ValueFactoryImpl.getInstance());
 	}
 
-	public SPINRenderer(Output output, Function<String,URI> wellKnownVarMapper, Function<String,URI> wellKnownFuncMapper, ValueFactory vf)
+	public SpinRenderer(Output output, Function<String,URI> wellKnownVarMapper, Function<String,URI> wellKnownFuncMapper, ValueFactory vf)
 	{
 		this.output = output;
 		this.wellKnownVars = wellKnownVarMapper;

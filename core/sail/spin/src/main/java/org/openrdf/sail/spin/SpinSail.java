@@ -28,34 +28,34 @@ import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencer;
-import org.openrdf.spin.SPINParser;
+import org.openrdf.spin.SpinParser;
 
-public class SPINSail extends AbstractForwardChainingInferencer {
+public class SpinSail extends AbstractForwardChainingInferencer {
 
-	private SPINParser parser = new SPINParser();
+	private SpinParser parser = new SpinParser();
 
-	public SPINSail() {
+	public SpinSail() {
 	}
 
-	public SPINSail(NotifyingSail baseSail) {
+	public SpinSail(NotifyingSail baseSail) {
 		super(baseSail);
 	}
 
-	public SPINParser getSPINParser() {
+	public SpinParser getSPINParser() {
 		return parser;
 	}
 
-	public void setSPINParser(SPINParser parser) {
+	public void setSPINParser(SpinParser parser) {
 		this.parser = parser;
 	}
 
 	@Override
-	public SPINSailConnection getConnection()
+	public SpinSailConnection getConnection()
 		throws SailException
 	{
 		try {
 			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new SPINSailConnection(this, con);
+			return new SpinSailConnection(this, con);
 		}
 		catch (ClassCastException e) {
 			throw new SailException(e.getMessage(), e);
@@ -68,7 +68,7 @@ public class SPINSail extends AbstractForwardChainingInferencer {
 	{
 		super.initialize();
 
-		SPINSailConnection con = getConnection();
+		SpinSailConnection con = getConnection();
 		try {
 			con.begin();
 			Set<Statement> stmts = Iterations.asSet(con.getStatements(getValueFactory().createURI(SP.NAMESPACE), RDF.TYPE, OWL.ONTOLOGY, true));

@@ -31,21 +31,21 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.spin.AskFunction;
-import org.openrdf.spin.SPINParser;
+import org.openrdf.spin.SpinParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * QueryOptimizer that adds support for SPIN functions.
  */
-public class SPINFunctionInterpreter implements QueryOptimizer {
-	private static final Logger logger = LoggerFactory.getLogger(SPINFunctionInterpreter.class);
+public class SpinFunctionInterpreter implements QueryOptimizer {
+	private static final Logger logger = LoggerFactory.getLogger(SpinFunctionInterpreter.class);
 
 	private final TripleSource tripleSource;
-	private final SPINParser parser;
+	private final SpinParser parser;
 	private final FunctionRegistry functionRegistry;
 
-	public SPINFunctionInterpreter(SPINParser parser, TripleSource tripleSource, FunctionRegistry functionRegistry) {
+	public SpinFunctionInterpreter(SpinParser parser, TripleSource tripleSource, FunctionRegistry functionRegistry) {
 		this.parser = parser;
 		this.tripleSource = tripleSource;
 		this.functionRegistry = functionRegistry;

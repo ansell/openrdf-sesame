@@ -39,12 +39,12 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.spin.util.Statements;
 
 
-public class SPINxFunctionParser implements FunctionParser
+public class SpinxFunctionParser implements FunctionParser
 {
-	private final SPINParser parser;
+	private final SpinParser parser;
 	private final ScriptEngineManager scriptManager;
 
-	public SPINxFunctionParser(SPINParser parser)
+	public SpinxFunctionParser(SpinParser parser)
 	{
 		this.parser = parser;
 		this.scriptManager = new ScriptEngineManager();
@@ -97,11 +97,11 @@ public class SPINxFunctionParser implements FunctionParser
 
 		Map<URI,Argument> templateArgs = parser.parseArguments(funcUri, store);
 
-		SPINxFunction func = new SPINxFunction(funcUri);
+		SpinxFunction func = new SpinxFunction(funcUri);
 		func.setScriptEngine(engine);
 		func.setScript(code);
 		func.setReturnType((returnValue instanceof URI) ? (URI) returnValue : null);
-		List<URI> orderedArgs = SPINParser.orderArguments(templateArgs.keySet());
+		List<URI> orderedArgs = SpinParser.orderArguments(templateArgs.keySet());
 		for(URI uri : orderedArgs) {
 			Argument arg = templateArgs.get(uri);
 			func.addArgument(arg);

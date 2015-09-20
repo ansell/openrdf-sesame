@@ -35,12 +35,12 @@ public class AskFunction implements Function {
 
 	private QueryPreparer queryPreparer;
 
-	private SPINParser parser;
+	private SpinParser parser;
 
 	public AskFunction() {
 	}
 
-	public AskFunction(SPINParser parser) {
+	public AskFunction(SpinParser parser) {
 		this.parser = parser;
 	}
 
@@ -57,11 +57,11 @@ public class AskFunction implements Function {
 		this.queryPreparer = queryPreparer;
 	}
 
-	public SPINParser getSPINParser() {
+	public SpinParser getSPINParser() {
 		return parser;
 	}
 
-	public void setSPINParser(SPINParser parser) {
+	public void setSPINParser(SpinParser parser) {
 		this.parser = parser;
 	}
 

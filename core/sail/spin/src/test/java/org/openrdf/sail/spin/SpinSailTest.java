@@ -44,7 +44,7 @@ import org.openrdf.sail.inferencer.fc.DedupingInferencer;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 
-public class SPINSailTest {
+public class SpinSailTest {
 	private static final String BASE_DIR = "/testcases/";
 
 	@Rule
@@ -58,7 +58,7 @@ public class SPINSailTest {
 		NotifyingSail baseSail = new MemoryStore();
 		DedupingInferencer deduper = new DedupingInferencer(baseSail);
 		ForwardChainingRDFSInferencer rdfsInferencer = new ForwardChainingRDFSInferencer(deduper);
-		SPINSail spinSail = new SPINSail(rdfsInferencer);
+		SpinSail spinSail = new SpinSail(rdfsInferencer);
 		repo = new SailRepository(spinSail);
 		repo.initialize();
 		conn = repo.getConnection();

@@ -42,7 +42,7 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import com.google.common.base.Joiner;
 
 
-public class SPINFunction implements Function {
+public class SpinFunction implements Function {
 	private final URI uri;
 
 	private QueryPreparer queryPreparer;
@@ -51,7 +51,7 @@ public class SPINFunction implements Function {
 
 	private final List<Argument> arguments = new ArrayList<Argument>(4);
 
-	public SPINFunction(URI uri) {
+	public SpinFunction(URI uri) {
 		this.uri = uri;
 	}
 

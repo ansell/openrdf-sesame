@@ -14,31 +14,34 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.sail.spin.config;
 
-import org.openrdf.OpenRDFException;
+import org.openrdf.sail.Sail;
+import org.openrdf.sail.config.SailConfigException;
+import org.openrdf.sail.config.SailFactory;
+import org.openrdf.sail.config.SailImplConfig;
 
-/**
- * An exception thrown by the SPIN parser when it encounters malformed
- * SPIN rules, constraints or constructors.
- */
-public class MalformedSPINException extends OpenRDFException {
 
-	private static final long serialVersionUID = -5345676977796873420L;
+public class SpinSailFactory implements SailFactory {
 
-	public MalformedSPINException() {
-		super();
+	@Override
+	public String getSailType() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	public MalformedSPINException(String msg) {
-		super(msg);
+	@Override
+	public SailImplConfig getConfig() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	public MalformedSPINException(Throwable t) {
-		super(t);
+	@Override
+	public Sail getSail(SailImplConfig config)
+		throws SailConfigException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	public MalformedSPINException(String msg, Throwable t) {
-		super(msg, t);
-	}
 }
