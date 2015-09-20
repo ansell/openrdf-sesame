@@ -26,9 +26,9 @@ import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.spin.util.Statements;
 
 
 public class SpinFunctionParser implements FunctionParser

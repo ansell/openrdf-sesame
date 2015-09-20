@@ -36,7 +36,7 @@ import org.openrdf.model.vocabulary.SPINX;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.Function;
-import org.openrdf.spin.util.Statements;
+import org.openrdf.query.algebra.evaluation.util.Statements;
 
 
 public class SpinxFunctionParser implements FunctionParser

@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin.util;
+package org.openrdf.query.algebra.evaluation.util;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ConvertingIteration;

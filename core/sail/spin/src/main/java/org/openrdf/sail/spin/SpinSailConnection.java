@@ -55,6 +55,7 @@ import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
@@ -77,7 +78,6 @@ import org.openrdf.spin.ParsedTemplate;
 import org.openrdf.spin.QueryContext;
 import org.openrdf.spin.RuleProperty;
 import org.openrdf.spin.SpinParser;
-import org.openrdf.spin.util.Statements;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 

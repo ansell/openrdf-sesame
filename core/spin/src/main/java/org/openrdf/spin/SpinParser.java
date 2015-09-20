@@ -122,6 +122,7 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -132,7 +133,6 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
-import org.openrdf.spin.util.Statements;
 
 import com.google.common.base.Function;
 import com.google.common.cache.Cache;
