@@ -16,43 +16,17 @@
  */
 package org.openrdf.sail.spin.config;
 
-import org.openrdf.sail.Sail;
-import org.openrdf.sail.config.SailConfigException;
-import org.openrdf.sail.config.SailFactory;
+import org.openrdf.sail.config.DelegatingSailImplConfigBase;
 import org.openrdf.sail.config.SailImplConfig;
-import org.openrdf.sail.spin.SpinSail;
 
 
-public class SpinSailFactory implements SailFactory {
+public class SpinSailConfig extends DelegatingSailImplConfigBase {
 
-	/**
-	 * The type of repositories that are created by this factory.
-	 * 
-	 * @see SailFactory#getSailType()
-	 */
-	public static final String SAIL_TYPE = "openrdf:SpinSail";
-
-	/**
-	 * Returns the Sail's type: <tt>openrdf:SpinSail</tt>.
-	 */
-	@Override
-	public String getSailType() {
-		return SAIL_TYPE;
+	public SpinSailConfig() {
+		super(SpinSailFactory.SAIL_TYPE);
 	}
 
-	@Override
-	public SailImplConfig getConfig() {
-		return new SpinSailConfig();
-	}
-
-	@Override
-	public Sail getSail(SailImplConfig config)
-		throws SailConfigException
-	{
-		if (!SAIL_TYPE.equals(config.getType())) {
-			throw new SailConfigException("Invalid Sail type: " + config.getType());
-		}
-
-		return new SpinSail();
+	public SpinSailConfig(SailImplConfig delegate) {
+		super(SpinSailFactory.SAIL_TYPE, delegate);
 	}
 }
