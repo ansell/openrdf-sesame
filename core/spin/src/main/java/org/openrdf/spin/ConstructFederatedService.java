@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.spin;
+package org.openrdf.spin;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -26,7 +26,13 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 
 
-public class SpinFederatedService implements FederatedService {
+public class ConstructFederatedService implements FederatedService {
+
+	private final SpinParser parser;
+
+	public ConstructFederatedService(SpinParser parser) {
+		this.parser = parser;
+	}
 
 	@Override
 	public boolean ask(Service service, BindingSet bindings, String baseUri)

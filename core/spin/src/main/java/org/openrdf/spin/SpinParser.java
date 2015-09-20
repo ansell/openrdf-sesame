@@ -39,7 +39,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -121,8 +120,10 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.util.Statements;
+import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -589,7 +590,7 @@ public class SpinParser {
 	}
 
 	public org.openrdf.query.algebra.evaluation.function.Function parseFunction(URI funcUri, TripleSource store)
-			throws OpenRDFException
+		throws OpenRDFException
 	{
 		for(FunctionParser functionParser : functionParsers)
 		{
@@ -599,6 +600,13 @@ public class SpinParser {
 			}
 		}
 		throw new MalformedSpinException("No parser for function: " + funcUri);
+	}
+
+	public FederatedService parseMagicProperty(URI propUri, TripleSource store)
+			throws OpenRDFException
+	{
+		// TODO
+		return null;
 	}
 
 	public Map<URI,Argument> parseArguments(URI moduleUri, TripleSource store)
@@ -657,22 +665,22 @@ public class SpinParser {
 		throws OpenRDFException
 	{
 		if(SP.CONSTRUCT_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitConstruct(queryResource);
 			return new ParsedGraphQuery(visitor.getTupleExpr());
 		}
 		else if(SP.SELECT_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitSelect(queryResource);
 			return new ParsedTupleQuery(visitor.getTupleExpr());
 		}
 		else if(SP.ASK_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitAsk(queryResource);
 			return new ParsedBooleanQuery(visitor.getTupleExpr());
 		}
 		else if(SP.DESCRIBE_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitDescribe(queryResource);
 			return new ParsedDescribeQuery(visitor.getTupleExpr());
 		}
@@ -720,7 +728,7 @@ public class SpinParser {
 	}
 
 
-	class SPINVisitor {
+	class SpinVisitor {
 		final TripleSource store;
 		TupleExpr root;
 		TupleExpr node;
@@ -730,7 +738,7 @@ public class SpinParser {
 		Map<Resource,String> vars = new HashMap<Resource,String>();
 		Collection<AggregateOperator> aggregates = new ArrayList<AggregateOperator>();
 
-		SPINVisitor(TripleSource store) {
+		SpinVisitor(TripleSource store) {
 			this.store = store;
 		}
 
@@ -1020,7 +1028,7 @@ public class SpinParser {
 				if(projName == null) {
 					throw new MalformedSpinException("Expected a projection var: "+v);
 				}
-				varName = getConstVarName(v);
+				varName = TupleExprs.getConstVarName(v);
 				valueExpr = new ValueConstant(v);
 			}
 			else {
@@ -1045,7 +1053,7 @@ public class SpinParser {
 					if(projName == null) {
 						throw new MalformedSpinException("Expected a projection var: "+v);
 					}
-					varName = getConstVarName(v);
+					varName = TupleExprs.getConstVarName(v);
 					valueExpr = new ValueConstant(v);
 				}
 			}
@@ -1726,7 +1734,7 @@ public class SpinParser {
 
 			if(var == null) {
 				// it must be a constant then
-				var = createConstVar(v);
+				var = TupleExprs.createConstVar(v);
 			}
 
 			return var;
@@ -1743,45 +1751,6 @@ public class SpinParser {
 				}
 			}
 			return new Var(varName);
-		}
-
-		private Var createConstVar(Value value) {
-			if (value == null) {
-				throw new IllegalArgumentException("value can not be null");
-			}
-
-			String varName = getConstVarName(value);
-			Var var = new Var(varName);
-			var.setConstant(true);
-			var.setAnonymous(true);
-			var.setValue(value);
-			return var;
-		}
-
-		private String getConstVarName(Value value) {
-			// We use toHexString to get a more compact stringrep.
-			String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
-
-			if (value instanceof Literal) {
-				uniqueStringForValue += "_lit";
-
-				// we need to append datatype and/or language tag to ensure a unique
-				// var name (see SES-1927)
-				Literal lit = (Literal)value;
-				if (lit.getDatatype() != null) {
-					uniqueStringForValue += "_" + lit.getDatatype().stringValue();
-				}
-				if (lit.getLanguage() != null) {
-					uniqueStringForValue += "_" + lit.getLanguage();
-				}
-			}
-			else if (value instanceof BNode) {
-				uniqueStringForValue += "_node";
-			}
-			else {
-				uniqueStringForValue += "_uri";
-			}
-			return "_const_" + uniqueStringForValue;
 		}
 	}
 }

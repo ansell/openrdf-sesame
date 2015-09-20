@@ -57,11 +57,11 @@ public class AskFunction implements Function {
 		this.queryPreparer = queryPreparer;
 	}
 
-	public SpinParser getSPINParser() {
+	public SpinParser getSpinParser() {
 		return parser;
 	}
 
-	public void setSPINParser(SpinParser parser) {
+	public void setSpinParser(SpinParser parser) {
 		this.parser = parser;
 	}
 

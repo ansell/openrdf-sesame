@@ -16,9 +16,13 @@
  */
 package org.openrdf.query.algebra.helpers;
 
+import org.openrdf.model.BNode;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Value;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Projection;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.Var;
 
 /**
  * Utility methods for {@link TupleExpr} objects.
@@ -72,5 +76,51 @@ public class TupleExprs {
 			// meeting of Projection or Join.
 		}
 		return result[0];
+	}
+
+	/**
+	 * Creates an (anonymous) Var representing a constant value. The variable
+	 * name will be derived from the actual value to guarantee uniqueness.
+	 * 
+	 * @param value
+	 * @return an (anonymous) Var representing a constant value.
+	 */
+	public static Var createConstVar(Value value) {
+		if (value == null) {
+			throw new IllegalArgumentException("value can not be null");
+		}
+
+		String varName = getConstVarName(value);
+		Var var = new Var(varName);
+		var.setConstant(true);
+		var.setAnonymous(true);
+		var.setValue(value);
+		return var;
+	}
+
+	public static String getConstVarName(Value value) {
+		// We use toHexString to get a more compact stringrep.
+		String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
+
+		if (value instanceof Literal) {
+			uniqueStringForValue += "_lit";
+
+			// we need to append datatype and/or language tag to ensure a unique
+			// var name (see SES-1927)
+			Literal lit = (Literal)value;
+			if (lit.getDatatype() != null) {
+				uniqueStringForValue += "_" + lit.getDatatype().stringValue();
+			}
+			if (lit.getLanguage() != null) {
+				uniqueStringForValue += "_" + lit.getLanguage();
+			}
+		}
+		else if (value instanceof BNode) {
+			uniqueStringForValue += "_node";
+		}
+		else {
+			uniqueStringForValue += "_uri";
+		}
+		return "_const_" + uniqueStringForValue;
 	}
 }

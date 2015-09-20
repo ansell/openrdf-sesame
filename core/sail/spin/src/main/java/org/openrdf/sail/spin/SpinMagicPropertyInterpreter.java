@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -40,21 +41,31 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
 import org.openrdf.query.algebra.helpers.BGPCollector;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.query.algebra.helpers.TupleExprs;
+import org.openrdf.spin.ConstructFederatedService;
 import org.openrdf.spin.SpinParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
-public class SpinPropertyInterpreter implements QueryOptimizer {
+public class SpinMagicPropertyInterpreter implements QueryOptimizer {
+	private static final Logger logger = LoggerFactory.getLogger(SpinMagicPropertyInterpreter.class);
 
 	private final TripleSource tripleSource;
 	private final SpinParser parser;
-	private final URI spinService;
+	private final FederatedServiceResolverBase serviceRegistry;
 
-	public SpinPropertyInterpreter(SpinParser parser, TripleSource tripleSource) {
+	public SpinMagicPropertyInterpreter(SpinParser parser, TripleSource tripleSource, FederatedServiceResolverBase serviceRegistry) {
 		this.parser = parser;
 		this.tripleSource = tripleSource;
-		this.spinService = tripleSource.getValueFactory().createURI(SpinFederatedServiceResolver.SPIN_SERVICE);
+		this.serviceRegistry = serviceRegistry;
+		if(!serviceRegistry.hasService(SPIN.CONSTRUCT_PROPERTY.stringValue())) {
+			serviceRegistry.registerService(SPIN.CONSTRUCT_PROPERTY.stringValue(), new ConstructFederatedService(parser));
+		}
 	}
 
 	@Override
@@ -67,9 +78,7 @@ public class SpinPropertyInterpreter implements QueryOptimizer {
 	class PropertyScanner extends QueryModelVisitorBase<RuntimeException> {
 		Map<Resource,StatementPattern> joins;
 
-		private void processGraphPattern(TupleExpr node, List<StatementPattern> sps) {
-			TupleExpr magicPropNode = null;
-
+		private void processGraphPattern(List<StatementPattern> sps) {
 			List<StatementPattern> magicProperties = new ArrayList<StatementPattern>();
 			Map<String,Map<URI,List<StatementPattern>>> spIndex = new HashMap<String,Map<URI,List<StatementPattern>>>();
 
@@ -102,7 +111,21 @@ public class SpinPropertyInterpreter implements QueryOptimizer {
 			}
 
 			for(StatementPattern sp : magicProperties) {
-				magicPropNode = join(magicPropNode, sp);
+				URI magicPropUri = (URI) sp.getPredicateVar().getValue();
+				String magicProp = magicPropUri.stringValue();
+				if(!serviceRegistry.hasService(magicProp)) {
+					try {
+						FederatedService fs = parser.parseMagicProperty(magicPropUri, tripleSource);
+						serviceRegistry.registerService(magicProp, fs);
+					}
+					catch(OpenRDFException e) {
+						logger.warn("Failed to parse magic property: {}", magicPropUri);
+					}
+				}
+
+				SingletonSet stub = new SingletonSet();
+				sp.replaceWith(stub);
+				TupleExpr magicPropNode = sp;
 
 				TupleExpr subjList = list(sp.getSubjectVar().getName(), spIndex);
 				if(subjList != null) {
@@ -113,22 +136,14 @@ public class SpinPropertyInterpreter implements QueryOptimizer {
 				if(objList != null) {
 					magicPropNode = new Join(magicPropNode, objList);
 				}
-			}
 
-			if(magicPropNode != null) {
-				Var serviceRef = new Var("_const_spin_service_uri");
-				serviceRef.setAnonymous(true);
-				serviceRef.setConstant(true);
-				serviceRef.setValue(spinService);
+				Var serviceRef = TupleExprs.createConstVar(magicPropUri);
 				Map<String,String> prefixDecls = new HashMap<String,String>(8);
 				prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
 				prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
 				prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
 				Service service = new Service(serviceRef, magicPropNode, "", prefixDecls, null, false);
-				Join join = new Join();
-				node.replaceWith(join);
-				join.setLeftArg(node);
-				join.setRightArg(service);
+				stub.replaceWith(service);
 			}
 		}
 
@@ -181,13 +196,13 @@ public class SpinPropertyInterpreter implements QueryOptimizer {
 		{
 			BGPCollector<RuntimeException> collector = new BGPCollector<RuntimeException>(this);
 			node.visit(collector);
-			processGraphPattern(node, collector.getStatementPatterns());
+			processGraphPattern(collector.getStatementPatterns());
 		}
 
 		@Override
 		public void meet(StatementPattern node)
 		{
-			processGraphPattern(node, Collections.singletonList(node));
+			processGraphPattern(Collections.singletonList(node));
 		}
 	}
 }

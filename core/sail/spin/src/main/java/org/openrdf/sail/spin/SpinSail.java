@@ -24,6 +24,10 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
+import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -32,20 +36,45 @@ import org.openrdf.spin.SpinParser;
 
 public class SpinSail extends AbstractForwardChainingInferencer {
 
+	private FunctionRegistry functionRegistry = FunctionRegistry.getInstance();
+	private FederatedServiceResolverBase serviceRegistry = new FederatedServiceResolverImpl();
 	private SpinParser parser = new SpinParser();
 
 	public SpinSail() {
+		super.setFederatedServiceResolver(serviceRegistry);
 	}
 
 	public SpinSail(NotifyingSail baseSail) {
 		super(baseSail);
+		super.setFederatedServiceResolver(serviceRegistry);
 	}
 
-	public SpinParser getSPINParser() {
+	public FunctionRegistry getFunctionRegistry() {
+		return functionRegistry;
+	}
+
+	public void setFunctionRegistry(FunctionRegistry registry) {
+		this.functionRegistry = registry;
+	}
+
+	public FederatedServiceResolver getFederatedServiceResolver() {
+		return serviceRegistry;
+	}
+
+	@Override
+	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
+		if(!(resolver instanceof FederatedServiceResolverBase)) {
+			throw new IllegalArgumentException("Required to be an instance of "+FederatedServiceResolverBase.class.getName());
+		}
+		serviceRegistry = (FederatedServiceResolverBase) resolver;
+		super.setFederatedServiceResolver(resolver);
+	}
+
+	public SpinParser getSpinParser() {
 		return parser;
 	}
 
-	public void setSPINParser(SpinParser parser) {
+	public void setSpinParser(SpinParser parser) {
 		this.parser = parser;
 	}
 

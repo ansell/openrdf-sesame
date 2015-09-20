@@ -58,7 +58,7 @@ public class SpinRendererTest {
 	}
 
 	@Test
-	public void testSPINRenderer() throws IOException, OpenRDFException {
+	public void testSpinRenderer() throws IOException, OpenRDFException {
 		StatementCollector expected = new StatementCollector();
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
 		parser.setRDFHandler(expected);
