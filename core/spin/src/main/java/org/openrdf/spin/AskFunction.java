@@ -25,6 +25,7 @@ import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.Query;
+import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -34,12 +35,12 @@ public class AskFunction implements Function {
 
 	private QueryPreparer queryPreparer;
 
-	private SPINParser parser;
+	private SpinParser parser;
 
 	public AskFunction() {
 	}
 
-	public AskFunction(SPINParser parser) {
+	public AskFunction(SpinParser parser) {
 		this.parser = parser;
 	}
 
@@ -56,11 +57,11 @@ public class AskFunction implements Function {
 		this.queryPreparer = queryPreparer;
 	}
 
-	public SPINParser getSPINParser() {
+	public SpinParser getSpinParser() {
 		return parser;
 	}
 
-	public void setSPINParser(SPINParser parser) {
+	public void setSpinParser(SpinParser parser) {
 		this.parser = parser;
 	}
 

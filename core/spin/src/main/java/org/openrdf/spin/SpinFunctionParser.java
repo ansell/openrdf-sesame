@@ -26,16 +26,16 @@ import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.spin.util.Statements;
 
 
-public class SPINFunctionParser implements FunctionParser
+public class SpinFunctionParser implements FunctionParser
 {
-	private final SPINParser parser;
+	private final SpinParser parser;
 
-	public SPINFunctionParser(SPINParser parser)
+	public SpinFunctionParser(SpinParser parser)
 	{
 		this.parser = parser;
 	}
@@ -50,14 +50,14 @@ public class SPINFunctionParser implements FunctionParser
 		}
 		ParsedQuery query = parser.parseQuery((Resource)body, store);
 		if(query instanceof ParsedGraphQuery) {
-			throw new MalformedSPINException("Function body must be an ASK or SELECT query");
+			throw new MalformedSpinException("Function body must be an ASK or SELECT query");
 		}
 
 		Map<URI,Argument> templateArgs = parser.parseArguments(funcUri, store);
 
-		SPINFunction func = new SPINFunction(funcUri);
+		SpinFunction func = new SpinFunction(funcUri);
 		func.setParsedQuery(query);
-		List<URI> orderedArgs = SPINParser.orderArguments(templateArgs.keySet());
+		List<URI> orderedArgs = SpinParser.orderArguments(templateArgs.keySet());
 		for(URI uri : orderedArgs) {
 			Argument arg = templateArgs.get(uri);
 			func.addArgument(arg);

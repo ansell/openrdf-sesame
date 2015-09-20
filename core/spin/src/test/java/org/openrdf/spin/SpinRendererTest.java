@@ -33,7 +33,7 @@ import org.openrdf.rio.helpers.BasicWriterSettings;
 import org.openrdf.rio.helpers.StatementCollector;
 
 @RunWith(Parameterized.class)
-public class SPINRendererTest {
+public class SpinRendererTest {
 
 	@Parameters(name="{0}")
 	public static Collection<Object[]> testData() {
@@ -41,7 +41,7 @@ public class SPINRendererTest {
 		for(int i=0; ; i++) {
 			String suffix = String.valueOf(i+1);
 			String testFile = "/testcases/test"+suffix+".ttl";
-			URL rdfURL = SPINRendererTest.class.getResource(testFile);
+			URL rdfURL = SpinRendererTest.class.getResource(testFile);
 			if(rdfURL == null) {
 				break;
 			}
@@ -51,14 +51,14 @@ public class SPINRendererTest {
 	}
 
 	private final URL testURL;
-	private final SPINRenderer renderer = new SPINRenderer();
+	private final SpinRenderer renderer = new SpinRenderer();
 
-	public SPINRendererTest(String testName, URL testURL) {
+	public SpinRendererTest(String testName, URL testURL) {
 		this.testURL = testURL;
 	}
 
 	@Test
-	public void testSPINRenderer() throws IOException, OpenRDFException {
+	public void testSpinRenderer() throws IOException, OpenRDFException {
 		StatementCollector expected = new StatementCollector();
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
 		parser.setRDFHandler(expected);

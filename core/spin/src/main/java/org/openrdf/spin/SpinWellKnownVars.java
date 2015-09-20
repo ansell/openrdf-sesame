@@ -8,15 +8,15 @@ import org.openrdf.model.vocabulary.SPIN;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-final class SPINWellKnownVars
+final class SpinWellKnownVars
 {
 	private static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
-	static final SPINWellKnownVars INSTANCE = new SPINWellKnownVars();
+	static final SpinWellKnownVars INSTANCE = new SpinWellKnownVars();
 
 	private final BiMap<String,URI> stringToUri = HashBiMap.create();
 	private final BiMap<URI,String> uriToString = stringToUri.inverse();
 
-	public SPINWellKnownVars() {
+	public SpinWellKnownVars() {
 		stringToUri.put("this", SPIN.THIS_CONTEXT_INSTANCE);
 		stringToUri.put("arg1", SPIN.ARG1_INSTANCE);
 		stringToUri.put("arg2", SPIN.ARG2_INSTANCE);

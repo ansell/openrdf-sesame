@@ -32,6 +32,7 @@ import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -41,7 +42,7 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import com.google.common.base.Joiner;
 
 
-public class SPINFunction implements Function {
+public class SpinFunction implements Function {
 	private final URI uri;
 
 	private QueryPreparer queryPreparer;
@@ -50,7 +51,7 @@ public class SPINFunction implements Function {
 
 	private final List<Argument> arguments = new ArrayList<Argument>(4);
 
-	public SPINFunction(URI uri) {
+	public SpinFunction(URI uri) {
 		this.uri = uri;
 	}
 

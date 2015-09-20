@@ -35,9 +35,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -119,7 +120,10 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.util.Statements;
+import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
@@ -130,12 +134,13 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
-import org.openrdf.spin.util.Statements;
 
 import com.google.common.base.Function;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 
-public class SPINParser {
+public class SpinParser {
 
 	private static final Set<URI> QUERY_TYPES = Sets.newHashSet(SP.SELECT_CLASS, SP.CONSTRUCT_CLASS,
 			SP.ASK_CLASS, SP.DESCRIBE_CLASS);
@@ -176,34 +181,35 @@ public class SPINParser {
 	private final Function<URI,String> wellKnownFunctions;
 	private List<FunctionParser> functionParsers;
 	private boolean strictFunctionChecking = true;
+	private final Cache<URI,Template> templateCache = CacheBuilder.newBuilder().maximumSize(100).build();
 
-	public SPINParser() {
+	public SpinParser() {
 		this(Input.TEXT_FIRST);
 	}
 
-	public SPINParser(Input input) {
+	public SpinParser(Input input) {
 		this(input,
 			new Function<URI,String>() {
 				@Override
 				public String apply(URI uri) {
-					return SPINWellKnownVars.INSTANCE.getName(uri);
+					return SpinWellKnownVars.INSTANCE.getName(uri);
 				}
 			},
 			new Function<URI,String>() {
 				@Override
 				public String apply(URI uri) {
-					return SPINWellKnownFunctions.INSTANCE.getName(uri);
+					return SpinWellKnownFunctions.INSTANCE.getName(uri);
 				}
 			});
 	}
 
-	public SPINParser(Input input, Function<URI,String> wellKnownVarsMapper, Function<URI,String> wellKnownFuncMapper) {
+	public SpinParser(Input input, Function<URI,String> wellKnownVarsMapper, Function<URI,String> wellKnownFuncMapper) {
 		this.input = input;
 		this.wellKnownVars = wellKnownVarsMapper;
 		this.wellKnownFunctions = wellKnownFuncMapper;
 		this.functionParsers = Arrays.<FunctionParser>asList(
-			new SPINFunctionParser(this),
-			new SPINxFunctionParser(this),
+			new SpinFunctionParser(this),
+			new SpinxFunctionParser(this),
 			new KnownFunctionParser(FunctionRegistry.getInstance())
 		);
 	}
@@ -279,12 +285,12 @@ public class SPINParser {
 				return ((Literal)v).intValue();
 			}
 			catch (NumberFormatException e) {
-				throw new MalformedSPINException("Value for " + SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY
+				throw new MalformedSpinException("Value for " + SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY
 						+ " must be of datatype " + XMLSchema.INTEGER + ": " + ruleProp);
 			}
 		}
 		else {
-			throw new MalformedSPINException("Non-literal value for "
+			throw new MalformedSpinException("Non-literal value for "
 					+ SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY + ": " + ruleProp);
 		}
 	}
@@ -313,7 +319,7 @@ public class SPINParser {
 				level = ConstraintViolationLevel.valueOf((URI) levelValue);
 			}
 			if (level == null) {
-				throw new MalformedSPINException("Invalid value " + levelValue + " for "
+				throw new MalformedSpinException("Invalid value " + levelValue + " for "
 						+ SPIN.VIOLATION_LEVEL_PROPERTY + ": " + subj);
 			}
 		}
@@ -389,12 +395,12 @@ public class SPINParser {
 
 		ParsedOperation parsedOp;
 		if (isQueryElseTemplate == null) {
-			throw new MalformedSPINException("Missing RDF type: " + queryResource);
+			throw new MalformedSpinException("Missing RDF type: " + queryResource);
 		}
 		else if (isQueryElseTemplate == Boolean.TRUE) {
 			// command (query or update)
 			if (possibleQueryTypes.size() > 1) {
-				throw new MalformedSPINException("Incompatible RDF types for command: " + queryResource
+				throw new MalformedSpinException("Incompatible RDF types for command: " + queryResource
 						+ " has types " + possibleQueryTypes);
 			}
 
@@ -414,7 +420,7 @@ public class SPINParser {
 			}
 
 			if (parsedOp == null) {
-				throw new MalformedSPINException("Command is not parsable: " + queryResource);
+				throw new MalformedSpinException("Command is not parsable: " + queryResource);
 			}
 		}
 		else {
@@ -436,10 +442,10 @@ public class SPINParser {
 			}
 
 			if (possibleTemplates.isEmpty()) {
-				throw new MalformedSPINException("Template missing RDF type: " + queryResource);
+				throw new MalformedSpinException("Template missing RDF type: " + queryResource);
 			}
 			if (possibleTemplates.size() > 1) {
-				throw new MalformedSPINException("Template has unexpected RDF types: " + queryResource+" has non-abstract types "+possibleTemplates);
+				throw new MalformedSpinException("Template has unexpected RDF types: " + queryResource+" has non-abstract types "+possibleTemplates);
 			}
 
 			URI templateResource = possibleTemplates.iterator().next();
@@ -449,7 +455,7 @@ public class SPINParser {
 				URI argPred = arg.getPredicate();
 				Value argValue = Statements.singleValue(queryResource, argPred, store);
 				if(argValue == null && !arg.isOptional()) {
-					throw new MalformedSPINException("Missing value for template argument: "+queryResource+" "+argPred);
+					throw new MalformedSpinException("Missing value for template argument: "+queryResource+" "+argPred);
 				}
 				if(argValue == null) {
 					argValue = arg.getDefaultValue();
@@ -472,11 +478,31 @@ public class SPINParser {
 		return parsedOp;
 	}
 
-	private Template getTemplate(URI tmplUri, URI queryType, Set<URI> abstractTmpls, TripleSource store)
+	private Template getTemplate(final URI tmplUri, final URI queryType, final Set<URI> abstractTmpls, final TripleSource store)
 		throws OpenRDFException
 	{
-		// TODO add caching
-		return parseTemplate(tmplUri, queryType, abstractTmpls, store);
+		try {
+			return templateCache.get(tmplUri, new Callable<Template>()
+			{
+				@Override
+				public Template call()
+					throws OpenRDFException
+				{
+					return parseTemplate(tmplUri, queryType, abstractTmpls, store);
+				}
+			});
+		}
+		catch (ExecutionException e) {
+			if(e.getCause() instanceof OpenRDFException) {
+				throw (OpenRDFException) e.getCause();
+			}
+			else if(e.getCause() instanceof RuntimeException) {
+				throw (RuntimeException) e.getCause();
+			}
+			else {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	private Template parseTemplate(URI tmplUri, URI queryType, Set<URI> abstractTmpls, TripleSource store)
@@ -498,10 +524,10 @@ public class SPINParser {
 		}
 
 		if (possibleTmplTypes.isEmpty()) {
-			throw new MalformedSPINException("Template missing RDF type: " + tmplUri);
+			throw new MalformedSpinException("Template missing RDF type: " + tmplUri);
 		}
 		if (possibleTmplTypes.size() > 1) {
-			throw new MalformedSPINException("Incompatible RDF types for template: " + tmplUri + " has types "
+			throw new MalformedSpinException("Incompatible RDF types for template: " + tmplUri + " has types "
 					+ possibleTmplTypes);
 		}
 
@@ -528,7 +554,7 @@ public class SPINParser {
 			compatibleTmplTypes = TEMPLATE_TYPES;
 		}
 		if (!compatibleTmplTypes.contains(tmplType)) {
-			throw new MalformedSPINException("Template type " + tmplType + " is incompatible with command type "
+			throw new MalformedSpinException("Template type " + tmplType + " is incompatible with command type "
 					+ queryType);
 		}
 
@@ -536,7 +562,7 @@ public class SPINParser {
 
 		Value body = Statements.singleValue(tmplUri, SPIN.BODY_PROPERTY, store);
 		if (!(body instanceof Resource)) {
-			throw new MalformedSPINException("Template body is not a resource: " + body);
+			throw new MalformedSpinException("Template body is not a resource: " + body);
 		}
 		ParsedOperation op = parse((Resource)body, queryType, store);
 		tmpl.setParsedOperation(op);
@@ -564,7 +590,7 @@ public class SPINParser {
 	}
 
 	public org.openrdf.query.algebra.evaluation.function.Function parseFunction(URI funcUri, TripleSource store)
-			throws OpenRDFException
+		throws OpenRDFException
 	{
 		for(FunctionParser functionParser : functionParsers)
 		{
@@ -573,7 +599,14 @@ public class SPINParser {
 				return function;
 			}
 		}
-		throw new MalformedSPINException("No parser for function: " + funcUri);
+		throw new MalformedSpinException("No parser for function: " + funcUri);
+	}
+
+	public FederatedService parseMagicProperty(URI propUri, TripleSource store)
+			throws OpenRDFException
+	{
+		// TODO
+		return null;
 	}
 
 	public Map<URI,Argument> parseArguments(URI moduleUri, TripleSource store)
@@ -620,7 +653,7 @@ public class SPINParser {
 				return QueryParserUtil.parseUpdate(QueryLanguage.SPARQL, text.stringValue(), null);
 			}
 			else {
-				throw new MalformedSPINException("Unrecognised command type: " + queryType);
+				throw new MalformedSpinException("Unrecognised command type: " + queryType);
 			}
 		}
 		else {
@@ -632,22 +665,22 @@ public class SPINParser {
 		throws OpenRDFException
 	{
 		if(SP.CONSTRUCT_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitConstruct(queryResource);
 			return new ParsedGraphQuery(visitor.getTupleExpr());
 		}
 		else if(SP.SELECT_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitSelect(queryResource);
 			return new ParsedTupleQuery(visitor.getTupleExpr());
 		}
 		else if(SP.ASK_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitAsk(queryResource);
 			return new ParsedBooleanQuery(visitor.getTupleExpr());
 		}
 		else if(SP.DESCRIBE_CLASS.equals(queryType)) {
-			SPINVisitor visitor = new SPINVisitor(store);
+			SpinVisitor visitor = new SpinVisitor(store);
 			visitor.visitDescribe(queryResource);
 			return new ParsedDescribeQuery(visitor.getTupleExpr());
 		}
@@ -655,7 +688,7 @@ public class SPINParser {
 			return new ParsedUpdate();
 		}
 		else {
-			throw new MalformedSPINException("Unrecognised command type: " + queryType);
+			throw new MalformedSpinException("Unrecognised command type: " + queryType);
 		}
 	}
 
@@ -695,7 +728,7 @@ public class SPINParser {
 	}
 
 
-	class SPINVisitor {
+	class SpinVisitor {
 		final TripleSource store;
 		TupleExpr root;
 		TupleExpr node;
@@ -705,7 +738,7 @@ public class SPINParser {
 		Map<Resource,String> vars = new HashMap<Resource,String>();
 		Collection<AggregateOperator> aggregates = new ArrayList<AggregateOperator>();
 
-		SPINVisitor(TripleSource store) {
+		SpinVisitor(TripleSource store) {
 			this.store = store;
 		}
 
@@ -718,7 +751,7 @@ public class SPINParser {
 		{
 			Value templates = Statements.singleValue(construct, SP.TEMPLATES_PROPERTY, store);
 			if(!(templates instanceof Resource)) {
-				throw new MalformedSPINException("Value of "+SP.TEMPLATES_PROPERTY+" is not a resource");
+				throw new MalformedSpinException("Value of "+SP.TEMPLATES_PROPERTY+" is not a resource");
 			}
 
 			projElems = new LinkedHashMap<String,ProjectionElem>();
@@ -732,7 +765,7 @@ public class SPINParser {
 		{
 			Value resultNodes = Statements.singleValue(describe, SP.RESULT_NODES_PROPERTY, store);
 			if(!(resultNodes instanceof Resource)) {
-				throw new MalformedSPINException("Value of "+SP.RESULT_NODES_PROPERTY+" is not a resource");
+				throw new MalformedSpinException("Value of "+SP.RESULT_NODES_PROPERTY+" is not a resource");
 			}
 
 			projElems = new LinkedHashMap<String,ProjectionElem>();
@@ -746,7 +779,7 @@ public class SPINParser {
 		{
 			Value resultVars = Statements.singleValue(select, SP.RESULT_VARIABLES_PROPERTY, store);
 			if(!(resultVars instanceof Resource)) {
-				throw new MalformedSPINException("Value of "+SP.RESULT_VARIABLES_PROPERTY+" is not a resource");
+				throw new MalformedSpinException("Value of "+SP.RESULT_VARIABLES_PROPERTY+" is not a resource");
 			}
 
 			projElems = new LinkedHashMap<String,ProjectionElem>();
@@ -993,9 +1026,9 @@ public class SPINParser {
 			if(v instanceof Literal) {
 				// literal
 				if(projName == null) {
-					throw new MalformedSPINException("Expected a projection var: "+v);
+					throw new MalformedSpinException("Expected a projection var: "+v);
 				}
-				varName = getConstVarName(v);
+				varName = TupleExprs.getConstVarName(v);
 				valueExpr = new ValueConstant(v);
 			}
 			else {
@@ -1018,9 +1051,9 @@ public class SPINParser {
 				else {
 					// resource
 					if(projName == null) {
-						throw new MalformedSPINException("Expected a projection var: "+v);
+						throw new MalformedSpinException("Expected a projection var: "+v);
 					}
-					varName = getConstVarName(v);
+					varName = TupleExprs.getConstVarName(v);
 					valueExpr = new ValueConstant(v);
 				}
 			}
@@ -1048,7 +1081,7 @@ public class SPINParser {
 		{
 			Value where = Statements.singleValue(query, SP.WHERE_PROPERTY, store);
 			if(!(where instanceof Resource)) {
-				throw new MalformedSPINException("Value of "+SP.WHERE_PROPERTY+" is not a resource");
+				throw new MalformedSpinException("Value of "+SP.WHERE_PROPERTY+" is not a resource");
 			}
 			visitGroupGraphPattern((Resource) where);
 		}
@@ -1117,7 +1150,7 @@ public class SPINParser {
 					namedGraph = getVar(graphValue);
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 					if(!(elements instanceof Resource)) {
-						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+						throw new MalformedSpinException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 					}
 					node = new SingletonSet();
 					QueryRoot group = new QueryRoot(node);
@@ -1128,7 +1161,7 @@ public class SPINParser {
 				else if(types.contains(SP.UNION_CLASS)) {
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 					if(!(elements instanceof Resource)) {
-						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+						throw new MalformedSpinException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 					}
 
 					Iteration<? extends Resource, QueryEvaluationException> iter = Statements.listResources((Resource) elements, store);
@@ -1148,7 +1181,7 @@ public class SPINParser {
 				else if(types.contains(SP.OPTIONAL_CLASS)) {
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 					if(!(elements instanceof Resource)) {
-						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+						throw new MalformedSpinException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 					}
 					node = new SingletonSet();
 					QueryRoot groupRoot = new QueryRoot(node);
@@ -1163,7 +1196,7 @@ public class SPINParser {
 				else if(types.contains(SP.MINUS_CLASS)) {
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 					if(!(elements instanceof Resource)) {
-						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+						throw new MalformedSpinException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 					}
 					node = new SingletonSet();
 					QueryRoot groupRoot = new QueryRoot(node);
@@ -1245,7 +1278,7 @@ public class SPINParser {
 
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 					if(!(elements instanceof Resource)) {
-						throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+						throw new MalformedSpinException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 					}
 					visitGroupGraphPattern((Resource) elements);
 
@@ -1294,7 +1327,7 @@ public class SPINParser {
 			ValueExpr valueExpr = visitExpression(expr);
 			Value varValue = Statements.singleValue(r, SP.VARIABLE_PROPERTY, store);
 			if(!(varValue instanceof Resource)) {
-				throw new MalformedSPINException("Value of "+SP.VARIABLE_PROPERTY+" is not a resource");
+				throw new MalformedSpinException("Value of "+SP.VARIABLE_PROPERTY+" is not a resource");
 			}
 			String varName = getVarName((Resource)varValue);
 			node = new Extension(node, new ExtensionElem(valueExpr, varName));
@@ -1331,17 +1364,17 @@ public class SPINParser {
 								}
 							}
 							if(exprTypes.isEmpty()) {
-								throw new MalformedSPINException("Function missing RDF type: "+r);
+								throw new MalformedSpinException("Function missing RDF type: "+r);
 							}
 						}
 						else if(exprTypes.remove(SP.AGGREGATION_CLASS)) {
 							exprTypes.remove(SP.SYSTEM_CLASS);
 							if(exprTypes.isEmpty()) {
-								throw new MalformedSPINException("Aggregation missing RDF type: "+r);
+								throw new MalformedSpinException("Aggregation missing RDF type: "+r);
 							}
 						}
 						else {
-							throw new MalformedSPINException("Expression missing RDF type: "+r);
+							throw new MalformedSpinException("Expression missing RDF type: "+r);
 						}
 					}
 
@@ -1367,28 +1400,28 @@ public class SPINParser {
 			if((compareOp = toCompareOp(func)) != null) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 2) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Compare(args.get(0), args.get(1), compareOp);
 			}
 			else if((mathOp = toMathOp(func)) != null) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 2) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new MathExpr(args.get(0), args.get(1), mathOp);
 			}
 			else if(SP.AND.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 2) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new And(args.get(0), args.get(1));
 			}
 			else if(SP.OR.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 2) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Or(args.get(0), args.get(1));
 			}
@@ -1444,14 +1477,14 @@ public class SPINParser {
 			else if(SP.NOT.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Not(args.get(0));
 			}
 			else if(SP.EXISTS.equals(func)) {
 				Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 				if(!(elements instanceof Resource)) {
-					throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+					throw new MalformedSpinException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 				}
 				TupleExpr currentNode = node;
 				node = new SingletonSet();
@@ -1462,7 +1495,7 @@ public class SPINParser {
 			else if(SP.NOT_EXISTS.equals(func)) {
 				Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 				if(!(elements instanceof Resource)) {
-					throw new MalformedSPINException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
+					throw new MalformedSpinException("Value of "+SP.ELEMENTS_PROPERTY+" is not a resource");
 				}
 				TupleExpr currentNode = node;
 				node = new SingletonSet();
@@ -1473,14 +1506,14 @@ public class SPINParser {
 			else if(SP.BOUND.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Bound((Var)args.get(0));
 			}
 			else if(SP.IF.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 3) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new If(args.get(0), args.get(1), args.get(2));
 			}
@@ -1491,56 +1524,56 @@ public class SPINParser {
 			else if(SP.IS_IRI.equals(func) || SP.IS_URI.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new IsURI(args.get(0));
 			}
 			else if(SP.IS_BLANK.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new IsBNode(args.get(0));
 			}
 			else if(SP.IS_LITERAL.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new IsLiteral(args.get(0));
 			}
 			else if(SP.IS_NUMERIC.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new IsNumeric(args.get(0));
 			}
 			else if(SP.STR.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Str(args.get(0));
 			}
 			else if(SP.LANG.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Lang(args.get(0));
 			}
 			else if(SP.DATATYPE.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new Datatype(args.get(0));
 			}
 			else if(SP.IRI.equals(func) || SP.URI.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new IRIFunction(args.get(0));
 			}
@@ -1552,7 +1585,7 @@ public class SPINParser {
 			else if(SP.REGEX.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() < 2) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				ValueExpr flagsArg = (args.size() == 3) ? args.get(2) : null;
 				expr = new Regex(args.get(0), args.get(1), flagsArg);
@@ -1560,7 +1593,7 @@ public class SPINParser {
 			else if(AFN.LOCALNAME.equals(func)) {
 				List<ValueExpr> args = getArgs(r);
 				if(args.size() != 1) {
-					throw new MalformedSPINException("Invalid number of arguments for function: "+func);
+					throw new MalformedSpinException("Invalid number of arguments for function: "+func);
 				}
 				expr = new LocalName(args.get(0));
 			}
@@ -1682,7 +1715,7 @@ public class SPINParser {
 					}
 				}
 				else if(nameValue != null) {
-					throw new MalformedSPINException("Value of "+SP.VAR_NAME_PROPERTY+" is not a literal");
+					throw new MalformedSpinException("Value of "+SP.VAR_NAME_PROPERTY+" is not a literal");
 				}
 			}
 			return varName;
@@ -1701,7 +1734,7 @@ public class SPINParser {
 
 			if(var == null) {
 				// it must be a constant then
-				var = createConstVar(v);
+				var = TupleExprs.createConstVar(v);
 			}
 
 			return var;
@@ -1718,45 +1751,6 @@ public class SPINParser {
 				}
 			}
 			return new Var(varName);
-		}
-
-		private Var createConstVar(Value value) {
-			if (value == null) {
-				throw new IllegalArgumentException("value can not be null");
-			}
-
-			String varName = getConstVarName(value);
-			Var var = new Var(varName);
-			var.setConstant(true);
-			var.setAnonymous(true);
-			var.setValue(value);
-			return var;
-		}
-
-		private String getConstVarName(Value value) {
-			// We use toHexString to get a more compact stringrep.
-			String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
-
-			if (value instanceof Literal) {
-				uniqueStringForValue += "-lit";
-
-				// we need to append datatype and/or language tag to ensure a unique
-				// var name (see SES-1927)
-				Literal lit = (Literal)value;
-				if (lit.getDatatype() != null) {
-					uniqueStringForValue += "-" + lit.getDatatype().stringValue();
-				}
-				if (lit.getLanguage() != null) {
-					uniqueStringForValue += "-" + lit.getLanguage();
-				}
-			}
-			else if (value instanceof BNode) {
-				uniqueStringForValue += "-node";
-			}
-			else {
-				uniqueStringForValue += "-uri";
-			}
-			return "_const-" + uniqueStringForValue;
 		}
 	}
 }

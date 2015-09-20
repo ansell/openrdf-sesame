@@ -102,7 +102,7 @@ import org.openrdf.rio.RDFHandlerException;
 
 import com.google.common.base.Function;
 
-public class SPINRenderer {
+public class SpinRenderer {
 	public enum Output {
 		TEXT_AND_RDF(true, true), TEXT_ONLY(true, false), RDF_ONLY(false, true);
 
@@ -119,30 +119,30 @@ public class SPINRenderer {
 	private final Function<String,URI> wellKnownVars;
 	private final Function<String,URI> wellKnownFunctions;
 
-	public SPINRenderer()
+	public SpinRenderer()
 	{
 		this(Output.TEXT_AND_RDF);
 	}
 
-	public SPINRenderer(Output output)
+	public SpinRenderer(Output output)
 	{
 		this(output,
 			new Function<String,URI>() {
 				@Override
 				public URI apply(String name) {
-					return SPINWellKnownVars.INSTANCE.getURI(name);
+					return SpinWellKnownVars.INSTANCE.getURI(name);
 				}
 			},
 			new Function<String,URI>() {
 				@Override
 				public URI apply(String name) {
-					return SPINWellKnownFunctions.INSTANCE.getURI(name);
+					return SpinWellKnownFunctions.INSTANCE.getURI(name);
 				}
 			},
 			ValueFactoryImpl.getInstance());
 	}
 
-	public SPINRenderer(Output output, Function<String,URI> wellKnownVarMapper, Function<String,URI> wellKnownFuncMapper, ValueFactory vf)
+	public SpinRenderer(Output output, Function<String,URI> wellKnownVarMapper, Function<String,URI> wellKnownFuncMapper, ValueFactory vf)
 	{
 		this.output = output;
 		this.wellKnownVars = wellKnownVarMapper;
@@ -181,7 +181,7 @@ public class SPINRenderer {
 			Resource whereBNode = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(querySubj, SP.WHERE_PROPERTY, whereBNode));
 			TupleExpr expr = query.getTupleExpr();
-			SPINVisitor visitor = new AskVisitor(handler, whereBNode);
+			SpinVisitor visitor = new AskVisitor(handler, whereBNode);
 			expr.visit(visitor);
 			visitor.end();
 		}
@@ -197,7 +197,7 @@ public class SPINRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SPINVisitor visitor = new SPINVisitor(handler, null, querySubj);
+			SpinVisitor visitor = new SpinVisitor(handler, null, querySubj);
 			expr.visit(visitor);
 			visitor.end();
 		}
@@ -213,7 +213,7 @@ public class SPINRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SPINVisitor visitor = new DescribeVisitor(handler, querySubj);
+			SpinVisitor visitor = new DescribeVisitor(handler, querySubj);
 			expr.visit(visitor);
 			visitor.end();
 		}
@@ -229,7 +229,7 @@ public class SPINRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SPINVisitor visitor = new ConstructVisitor(handler, querySubj);
+			SpinVisitor visitor = new ConstructVisitor(handler, querySubj);
 			expr.visit(visitor);
 			visitor.end();
 		}
@@ -237,7 +237,7 @@ public class SPINRenderer {
 	}
 
 
-	class AskVisitor extends SPINVisitor
+	class AskVisitor extends SpinVisitor
 	{
 		AskVisitor(RDFHandler handler, Resource list) {
 			super(handler, list, null);
@@ -255,7 +255,7 @@ public class SPINRenderer {
 	}
 
 
-	class DescribeVisitor extends SPINVisitor
+	class DescribeVisitor extends SpinVisitor
 	{
 		DescribeVisitor(RDFHandler handler, Resource subject) {
 			super(handler, null, subject);
@@ -277,7 +277,7 @@ public class SPINRenderer {
 	}
 
 
-	class ConstructVisitor extends SPINVisitor
+	class ConstructVisitor extends SpinVisitor
 	{
 		ConstructVisitor(RDFHandler handler, Resource subject) {
 			super(handler, null, subject);
@@ -339,7 +339,7 @@ public class SPINRenderer {
 	}
 
 
-	class SPINVisitor extends QueryModelVisitorBase<RDFHandlerException>
+	class SpinVisitor extends QueryModelVisitorBase<RDFHandlerException>
 	{
 		final RDFHandler handler;
 		final Map<String,BNode> varBNodes = new HashMap<String,BNode>();
@@ -353,7 +353,7 @@ public class SPINRenderer {
 		boolean isSubQuery;
 		boolean hasGroup;
 
-		SPINVisitor(RDFHandler handler, Resource list, Resource subject) {
+		SpinVisitor(RDFHandler handler, Resource list, Resource subject) {
 			this.handler = handler;
 			this.list = list;
 			this.subject = subject;
@@ -1235,7 +1235,7 @@ public class SPINRenderer {
 					handler.handleStatement(valueFactory.createStatement(subject, SP.HAVING_PROPERTY, havingList));
 					ListContext havingCtx = newList(havingList);
 					listEntry();
-					node.getCondition().visit(SPINVisitor.this);
+					node.getCondition().visit(SpinVisitor.this);
 					endList(havingCtx);
 				}
 			}
@@ -1264,7 +1264,7 @@ public class SPINRenderer {
 				URI asc = node.isAscending() ? SP.ASC_CLASS : SP.DESC_CLASS;
 				listEntry();
 				handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, asc));
-				SPINVisitor.this.meet(node.getExpr());
+				SpinVisitor.this.meet(node.getExpr());
 			}
 
 			@Override

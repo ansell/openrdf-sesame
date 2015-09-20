@@ -14,31 +14,22 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.query.algebra.evaluation;
 
-import org.openrdf.OpenRDFException;
+import org.openrdf.query.BooleanQuery;
+import org.openrdf.query.GraphQuery;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.Update;
+import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 
-/**
- * An exception thrown by the SPIN parser when it encounters malformed
- * SPIN rules, constraints or constructors.
- */
-public class MalformedSPINException extends OpenRDFException {
 
-	private static final long serialVersionUID = -5345676977796873420L;
-
-	public MalformedSPINException() {
-		super();
-	}
-
-	public MalformedSPINException(String msg) {
-		super(msg);
-	}
-
-	public MalformedSPINException(Throwable t) {
-		super(t);
-	}
-
-	public MalformedSPINException(String msg, Throwable t) {
-		super(msg, t);
-	}
+public interface QueryPreparer {
+	BooleanQuery prepare(ParsedBooleanQuery q);
+	TupleQuery prepare(ParsedTupleQuery q);
+	GraphQuery prepare(ParsedGraphQuery q);
+	Update prepare(ParsedUpdate u);
+	TripleSource getTripleSource();
 }

@@ -14,23 +14,18 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.sail.inferencer.fc.config;
 
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.GraphQuery;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.Update;
-import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.parser.ParsedBooleanQuery;
-import org.openrdf.query.parser.ParsedGraphQuery;
-import org.openrdf.query.parser.ParsedTupleQuery;
-import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.sail.config.DelegatingSailImplConfigBase;
+import org.openrdf.sail.config.SailImplConfig;
 
+public class DedupingInferencerConfig extends DelegatingSailImplConfigBase {
 
-public interface QueryPreparer {
-	BooleanQuery prepare(ParsedBooleanQuery q);
-	TupleQuery prepare(ParsedTupleQuery q);
-	GraphQuery prepare(ParsedGraphQuery q);
-	Update prepare(ParsedUpdate u);
-	TripleSource getTripleSource();
+	public DedupingInferencerConfig() {
+		super(DedupingInferencerFactory.SAIL_TYPE);
+	}
+
+	public DedupingInferencerConfig(SailImplConfig delegate) {
+		super(DedupingInferencerFactory.SAIL_TYPE, delegate);
+	}
 }

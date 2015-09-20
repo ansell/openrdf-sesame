@@ -19,6 +19,8 @@ package org.openrdf.sail.spin;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.model.vocabulary.FN;
+import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.FunctionCall;
@@ -29,24 +31,30 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.spin.AskFunction;
-import org.openrdf.spin.SPINParser;
+import org.openrdf.spin.SpinParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-public class SPINFunctionPreparer implements QueryOptimizer {
-	private static final Logger logger = LoggerFactory.getLogger(SPINFunctionPreparer.class);
+/**
+ * QueryOptimizer that adds support for SPIN functions.
+ */
+public class SpinFunctionInterpreter implements QueryOptimizer {
+	private static final Logger logger = LoggerFactory.getLogger(SpinFunctionInterpreter.class);
 
 	private final TripleSource tripleSource;
-	private final SPINParser parser;
+	private final SpinParser parser;
 	private final FunctionRegistry functionRegistry;
 
-	public SPINFunctionPreparer(TripleSource tripleSource, SPINParser parser, FunctionRegistry functionRegistry) {
-		this.tripleSource = tripleSource;
+	public SpinFunctionInterpreter(SpinParser parser, TripleSource tripleSource, FunctionRegistry functionRegistry) {
 		this.parser = parser;
+		this.tripleSource = tripleSource;
 		this.functionRegistry = functionRegistry;
-		functionRegistry.add(new org.openrdf.sail.spin.function.Concat());
-		functionRegistry.add(new AskFunction(parser));
+		if(!(functionRegistry.get(FN.CONCAT.toString()) instanceof org.openrdf.sail.spin.function.Concat)) {
+			functionRegistry.add(new org.openrdf.sail.spin.function.Concat());
+		}
+		if(!functionRegistry.has(SPIN.ASK_FUNCTION.toString())) {
+			functionRegistry.add(new AskFunction(parser));
+		}
 	}
 
 	@Override

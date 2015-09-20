@@ -20,13 +20,13 @@ import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.Update;
+import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.RepositoryTripleSource;
-import org.openrdf.spin.QueryPreparer;
 
 /**
  * QueryPreparer for use with SailRepository.

@@ -16,6 +16,8 @@
  */
 package org.openrdf.spin;
 
+import org.openrdf.query.algebra.evaluation.QueryPreparer;
+
 
 
 public class QueryContext {

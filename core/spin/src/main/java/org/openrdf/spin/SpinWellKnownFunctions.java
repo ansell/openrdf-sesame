@@ -10,16 +10,16 @@ import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-final class SPINWellKnownFunctions
+final class SpinWellKnownFunctions
 {
 	private static final ValueFactory valueFactory = ValueFactoryImpl.getInstance();
 	private static final FunctionRegistry functionRegistry = FunctionRegistry.getInstance();
-	static final SPINWellKnownFunctions INSTANCE = new SPINWellKnownFunctions();
+	static final SpinWellKnownFunctions INSTANCE = new SpinWellKnownFunctions();
 
 	private final BiMap<String,URI> stringToUri = HashBiMap.create(64);
 	private final BiMap<URI,String> uriToString = stringToUri.inverse();
 
-	public SPINWellKnownFunctions() {
+	public SpinWellKnownFunctions() {
 		stringToUri.put(FN.SUBSTRING.stringValue(), valueFactory.createURI(SP.NAMESPACE, "substr"));
 		stringToUri.put(FN.SUBSTRING_BEFORE.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strbefore"));
 		stringToUri.put(FN.SUBSTRING_AFTER.stringValue(), valueFactory.createURI(SP.NAMESPACE, "strafter"));

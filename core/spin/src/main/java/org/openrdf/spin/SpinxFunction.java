@@ -37,7 +37,7 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import com.google.common.base.Joiner;
 
 
-public class SPINxFunction implements Function {
+public class SpinxFunction implements Function {
 	private final URI uri;
 
 	private final List<Argument> arguments = new ArrayList<Argument>(4);
@@ -47,7 +47,7 @@ public class SPINxFunction implements Function {
 	private String script;
 	private URI returnType;
 
-	public SPINxFunction(URI uri) {
+	public SpinxFunction(URI uri) {
 		this.uri = uri;
 	}
 

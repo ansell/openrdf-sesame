@@ -22,7 +22,9 @@ import java.util.concurrent.Executors;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.openrdf.http.client.util.HttpClientBuilders;
 
 /**
  * Uses {@link HttpClient} to manage HTTP connections.
@@ -38,6 +40,12 @@ public class SesameClientImpl implements SesameClient, HttpClientDependent {
 	private CloseableHttpClient dependentClient;
 
 	private ExecutorService executor = null;
+	
+	/**
+	 * Optional {@link HttpClientBuilder} to create the inner
+	 * {@link #httpClient} (if not provided externally)
+	 */
+	private HttpClientBuilder httpClientBuilder;
 
 	/*--------------*
 	 * Constructors *
@@ -69,7 +77,22 @@ public class SesameClientImpl implements SesameClient, HttpClientDependent {
 		this.httpClient = httpClient;
 	}
 
+	/**
+	 * Set an optional {@link HttpClientBuilder} to create the inner
+	 * {@link #httpClient} (if the latter is not provided externally
+	 * as dependent client).
+	 *
+	 * @param httpClientBuilder the builder for the managed HttpClient
+	 * @see HttpClientBuilders
+	 */
+	public synchronized void setHttpClientBuilder(HttpClientBuilder httpClientBuilder) {
+		this.httpClientBuilder = httpClientBuilder;
+	}
+	
 	private CloseableHttpClient createHttpClient() {
+		if (this.httpClientBuilder!=null) {
+			return httpClientBuilder.build();
+		}
 		return HttpClients.createSystem();
 	}
 

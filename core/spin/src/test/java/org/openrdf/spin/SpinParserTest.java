@@ -27,7 +27,7 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.StatementCollector;
 
 @RunWith(Parameterized.class)
-public class SPINParserTest {
+public class SpinParserTest {
 
 	@Parameters(name="{0}")
 	public static Collection<Object[]> testData() {
@@ -35,7 +35,7 @@ public class SPINParserTest {
 		for(int i=0; ; i++) {
 			String suffix = String.valueOf(i+1);
 			String testFile = "/testcases/test"+suffix+".ttl";
-			URL rdfURL = SPINParserTest.class.getResource(testFile);
+			URL rdfURL = SpinParserTest.class.getResource(testFile);
 			if(rdfURL == null) {
 				break;
 			}
@@ -45,15 +45,15 @@ public class SPINParserTest {
 	}
 
 	private final URL testURL;
-	private final SPINParser textParser = new SPINParser(SPINParser.Input.TEXT_ONLY);
-	private final SPINParser rdfParser = new SPINParser(SPINParser.Input.RDF_ONLY);
+	private final SpinParser textParser = new SpinParser(SpinParser.Input.TEXT_ONLY);
+	private final SpinParser rdfParser = new SpinParser(SpinParser.Input.RDF_ONLY);
 
-	public SPINParserTest(String testName, URL testURL) {
+	public SpinParserTest(String testName, URL testURL) {
 		this.testURL = testURL;
 	}
 
 	@Test
-	public void testSPINParser() throws IOException, OpenRDFException {
+	public void testSpinParser() throws IOException, OpenRDFException {
 		StatementCollector expected = new StatementCollector();
 		RDFParser parser = Rio.createParser(RDFFormat.TURTLE);
 		parser.setRDFHandler(expected);

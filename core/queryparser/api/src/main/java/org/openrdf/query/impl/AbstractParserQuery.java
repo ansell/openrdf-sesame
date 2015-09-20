@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository.sail;
+package org.openrdf.query.impl;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.Iteration;
@@ -31,11 +31,11 @@ import org.openrdf.query.parser.ParsedQuery;
 /**
  * @author Arjohn Kampman
  */
-public abstract class AbstractSailQuery extends AbstractQuery {
+public abstract class AbstractParserQuery extends AbstractQuery {
 
 	private final ParsedQuery parsedQuery;
 
-	protected AbstractSailQuery(ParsedQuery parsedQuery) {
+	protected AbstractParserQuery(ParsedQuery parsedQuery) {
 		this.parsedQuery = parsedQuery;
 	}
 

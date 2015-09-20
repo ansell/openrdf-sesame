@@ -30,8 +30,10 @@ public abstract class FederatedServiceResolverBase implements FederatedServiceRe
 	 * @param serviceUrl
 	 * @param service
 	 */
-	public synchronized void registerService(String serviceUrl, FederatedService service) {
-		endpointToService.put(serviceUrl, service);
+	public void registerService(String serviceUrl, FederatedService service) {
+		synchronized (endpointToService) {
+			endpointToService.put(serviceUrl, service);
+		}
 	}
 
 	/**
@@ -64,6 +66,7 @@ public abstract class FederatedServiceResolverBase implements FederatedServiceRe
 	 * @return the {@link FederatedService}, created fresh if necessary
 	 * @throws RepositoryException
 	 */
+	@Override
 	public FederatedService getService(String serviceUrl)
 		throws QueryEvaluationException
 	{
@@ -80,7 +83,13 @@ public abstract class FederatedServiceResolverBase implements FederatedServiceRe
 		}
 		return service;
 	}
-	
+
+	public boolean hasService(String serviceUrl) {
+		synchronized (endpointToService) {
+			return endpointToService.containsKey(serviceUrl);
+		}
+	}
+
 	/**
 	 * Create a new {@link FederatedService} for the given serviceUrl. This method
 	 * is invoked, if no {@link FederatedService} has been created yet for the

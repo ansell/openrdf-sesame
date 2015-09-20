@@ -14,34 +14,44 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail.spin.config;
+package org.openrdf.sail.inferencer.fc.config;
 
 import org.openrdf.sail.Sail;
 import org.openrdf.sail.config.SailConfigException;
 import org.openrdf.sail.config.SailFactory;
 import org.openrdf.sail.config.SailImplConfig;
+import org.openrdf.sail.inferencer.fc.DedupingInferencer;
 
+public class DedupingInferencerFactory implements SailFactory {
 
-public class SPINSailFactory implements SailFactory {
+	/**
+	 * The type of repositories that are created by this factory.
+	 * 
+	 * @see SailFactory#getSailType()
+	 */
+	public static final String SAIL_TYPE = "openrdf:DedupingInferencer";
 
+	/**
+	 * Returns the Sail's type: <tt>openrdf:DedupingInferencer</tt>.
+	 */
 	@Override
 	public String getSailType() {
-		// TODO Auto-generated method stub
-		return null;
+		return SAIL_TYPE;
 	}
 
 	@Override
 	public SailImplConfig getConfig() {
-		// TODO Auto-generated method stub
-		return null;
+		return new DedupingInferencerConfig();
 	}
 
 	@Override
 	public Sail getSail(SailImplConfig config)
 		throws SailConfigException
 	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+		if (!SAIL_TYPE.equals(config.getType())) {
+			throw new SailConfigException("Invalid Sail type: " + config.getType());
+		}
 
+		return new DedupingInferencer();
+	}
 }

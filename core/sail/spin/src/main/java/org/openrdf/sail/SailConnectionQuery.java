@@ -16,13 +16,13 @@
  */
 package org.openrdf.sail;
 
+import org.openrdf.query.impl.AbstractParserQuery;
 import org.openrdf.query.parser.ParsedQuery;
-import org.openrdf.repository.sail.AbstractSailQuery;
 
 /**
  * @author Arjohn Kampman
  */
-public abstract class SailConnectionQuery extends AbstractSailQuery {
+public abstract class SailConnectionQuery extends AbstractParserQuery {
 
 	private final SailConnection con;
 

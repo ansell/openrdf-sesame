@@ -51,9 +51,12 @@ import org.openrdf.query.GraphQuery;
 import org.openrdf.query.Operation;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.Update;
+import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
@@ -71,18 +74,17 @@ import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnectio
 import org.openrdf.sail.inferencer.util.RDFInferencerInserter;
 import org.openrdf.spin.ConstraintViolation;
 import org.openrdf.spin.ConstraintViolationRDFHandler;
-import org.openrdf.spin.MalformedSPINException;
+import org.openrdf.spin.MalformedSpinException;
 import org.openrdf.spin.ParsedTemplate;
 import org.openrdf.spin.QueryContext;
 import org.openrdf.spin.RuleProperty;
-import org.openrdf.spin.SPINParser;
-import org.openrdf.spin.util.Statements;
+import org.openrdf.spin.SpinParser;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import com.google.common.base.Strings;
 
-class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
+class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final String THIS_VAR = "this";
 
@@ -90,13 +92,15 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "Constraint violation: {}: {} {} {}";
 
-	private final FunctionRegistry functionRegistry = FunctionRegistry.getInstance();
+	private final FunctionRegistry functionRegistry;
+
+	private final FederatedServiceResolverBase serviceRegistry;
 
 	private final ValueFactory vf;
 
 	private final TripleSource tripleSource;
 
-	private final SPINParser parser;
+	private final SpinParser parser;
 
 	private final Object rulePropertyLock = new Object();
 
@@ -106,10 +110,12 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private SailConnectionQueryPreparer queryPreparer;
 
-	public SPINSailConnection(SPINSail sail, InferencerConnection con) {
+	public SpinSailConnection(SpinSail sail, InferencerConnection con) {
 		super(sail, con);
+		this.functionRegistry = sail.getFunctionRegistry();
+		this.serviceRegistry = (FederatedServiceResolverBase) sail.getFederatedServiceResolver();
 		this.vf = sail.getValueFactory();
-		this.parser = sail.getSPINParser();
+		this.parser = sail.getSpinParser();
 		this.queryPreparer = new SailConnectionQueryPreparer(this, true, vf);
 		this.tripleSource = queryPreparer.getTripleSource();
 		con.addConnectionListener(new SailConnectionListener() {
@@ -157,7 +163,21 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			Dataset dataset, BindingSet bindings, boolean includeInferred)
 		throws SailException
 	{
-		new SPINFunctionPreparer(tripleSource, parser, functionRegistry).optimize(tupleExpr, dataset, bindings);
+		logger.trace("Incoming query model:\n{}", tupleExpr);
+
+		// Clone the tuple expression to allow for more aggresive optimizations
+		tupleExpr = tupleExpr.clone();
+
+		if (!(tupleExpr instanceof QueryRoot)) {
+			// Add a dummy root node to the tuple expressions to allow the
+			// optimizers to modify the actual root node
+			tupleExpr = new QueryRoot(tupleExpr);
+		}
+
+		new SpinFunctionInterpreter(parser, tripleSource, functionRegistry).optimize(tupleExpr, dataset, bindings);
+		new SpinMagicPropertyInterpreter(parser, tripleSource, serviceRegistry).optimize(tupleExpr, dataset, bindings);
+
+		logger.trace("Optimized query model:\n{}", tupleExpr);
 
 		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
 	}
@@ -338,7 +358,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			nofInferred = listener.getAddedStatementCount() + listener.getRemovedStatementCount();
 		}
 		else {
-			throw new MalformedSPINException("Invalid rule: " + rule);
+			throw new MalformedSpinException("Invalid rule: " + rule);
 		}
 
 		return nofInferred;
@@ -469,7 +489,7 @@ class SPINSailConnection extends AbstractForwardChainingInferencerConnection {
 			}
 		}
 		else {
-			throw new MalformedSPINException("Invalid constraint: " + constraint);
+			throw new MalformedSpinException("Invalid constraint: " + constraint);
 		}
 	}
 
