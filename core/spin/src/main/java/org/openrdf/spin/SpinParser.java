@@ -1286,12 +1286,15 @@ public class SpinParser {
 					String exprString;
 					try {
 						exprString = new SPARQLQueryRenderer().render(new ParsedTupleQuery(tempRoot.getArg()));
-						exprString = exprString.substring("select *\n{\n".length(), exprString.length()-1);
+						exprString = exprString.substring(exprString.indexOf('{')+1, exprString.lastIndexOf('}'));
 					}
 					catch(Exception e) {
 						throw new QueryEvaluationException(e);
 					}
-					Map<String,String> prefixDecls = Collections.emptyMap();
+					Map<String,String> prefixDecls = new HashMap<String,String>(8);
+					prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
+					prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
+					prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
 					Service service = new Service(getVar(serviceUri), node, exprString, prefixDecls, null, isSilent);
 					node = service;
 				}

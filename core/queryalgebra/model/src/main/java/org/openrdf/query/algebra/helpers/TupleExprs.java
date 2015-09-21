@@ -109,18 +109,18 @@ public class TupleExprs {
 			// var name (see SES-1927)
 			Literal lit = (Literal)value;
 			if (lit.getDatatype() != null) {
-				uniqueStringForValue += "_" + lit.getDatatype().stringValue();
+				uniqueStringForValue += "-" + lit.getDatatype().stringValue();
 			}
 			if (lit.getLanguage() != null) {
-				uniqueStringForValue += "_" + lit.getLanguage();
+				uniqueStringForValue += "-" + lit.getLanguage();
 			}
 		}
 		else if (value instanceof BNode) {
-			uniqueStringForValue += "_node";
+			uniqueStringForValue += "-node";
 		}
 		else {
-			uniqueStringForValue += "_uri";
+			uniqueStringForValue += "-uri";
 		}
-		return "_const_" + uniqueStringForValue;
+		return "_const-" + uniqueStringForValue;
 	}
 }

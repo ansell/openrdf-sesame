@@ -46,6 +46,8 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverB
 import org.openrdf.query.algebra.helpers.BGPCollector;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.TupleExprs;
+import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
 import org.openrdf.spin.ConstructFederatedService;
 import org.openrdf.spin.SpinParser;
 import org.slf4j.Logger;
@@ -138,11 +140,19 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 				}
 
 				Var serviceRef = TupleExprs.createConstVar(magicPropUri);
+				String exprString;
+				try {
+					exprString = new SPARQLQueryRenderer().render(new ParsedTupleQuery(magicPropNode));
+					exprString = exprString.substring(exprString.indexOf('{')+1, exprString.lastIndexOf('}'));
+				}
+				catch(Exception e) {
+					throw new RuntimeException(e);
+				}
 				Map<String,String> prefixDecls = new HashMap<String,String>(8);
 				prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
 				prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
 				prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
-				Service service = new Service(serviceRef, magicPropNode, "", prefixDecls, null, false);
+				Service service = new Service(serviceRef, magicPropNode, exprString, prefixDecls, null, false);
 				stub.replaceWith(service);
 			}
 		}
