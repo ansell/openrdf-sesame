@@ -99,6 +99,7 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 		arg.setParentNode(this);
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -122,6 +123,19 @@ public class FunctionCall extends QueryModelNodeBase implements ValueExpr {
 			return;
 		}
 		super.replaceChildNode(current, replacement);
+	}
+
+	@Override
+	public String getSignature() {
+		StringBuilder sb = new StringBuilder(64);
+
+		sb.append(super.getSignature());
+
+		sb.append(" (").append(uri);
+
+		sb.append(")");
+
+		return sb.toString();
 	}
 
 	@Override
