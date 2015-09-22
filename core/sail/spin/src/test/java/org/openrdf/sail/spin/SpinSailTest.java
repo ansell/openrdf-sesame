@@ -99,6 +99,12 @@ public class SpinSailTest {
 	}
 
 	@Test
+	public void testSelectProperty() throws Exception {
+		loadStatements("testSelectProperty.ttl");
+		assertStatements("testSelectProperty-expected.ttl");
+	}
+
+	@Test
 	public void testTemplateConstraint() throws Exception {
 		constraintException.expectCause(isA(ConstraintViolationException.class));
 		constraintException.expectMessage("Invalid number of values: 0");

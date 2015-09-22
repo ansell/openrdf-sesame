@@ -166,10 +166,12 @@ public class SpinFunction implements Function {
 		public void handleSolution(BindingSet bindingSet)
 			throws TupleQueryResultHandlerException
 		{
-			if(bindingSet.size() != 1) {
-				throw new TupleQueryResultHandlerException("Only a single result variables is supported: "+bindingSet);
+			if(result == null) {
+				if(bindingSet.size() != 1) {
+					throw new TupleQueryResultHandlerException("Only a single result variables is supported: "+bindingSet);
+				}
+				result = bindingSet.iterator().next().getValue();
 			}
-			result = bindingSet.iterator().next().getValue();
 		}
 
 		@Override

@@ -69,15 +69,15 @@ public class AskFunction implements Function {
 	public Value evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
+		QueryPreparer qp = (queryPreparer != null) ? queryPreparer : QueryContext.getQueryPreparer();
+		if(qp == null) {
+			throw new IllegalStateException("No QueryPreparer!");
+		}
 		if(args.length == 0 || !(args[0] instanceof Resource)) {
 			throw new ValueExprEvaluationException("First argument must be a resource");
 		}
 		if((args.length % 2) == 0) {
 			throw new ValueExprEvaluationException("Old number of arguments required");
-		}
-		QueryPreparer qp = (queryPreparer != null) ? queryPreparer : QueryContext.getQueryPreparer();
-		if(qp == null) {
-			throw new IllegalStateException("No QueryPreparer!");
 		}
 		try {
 			ParsedBooleanQuery askQuery = parser.parseAskQuery((Resource) args[0], qp.getTripleSource());

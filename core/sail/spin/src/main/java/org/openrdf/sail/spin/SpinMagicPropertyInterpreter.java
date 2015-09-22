@@ -49,6 +49,7 @@ import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
 import org.openrdf.spin.ConstructFederatedService;
+import org.openrdf.spin.SelectFederatedService;
 import org.openrdf.spin.SpinParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,9 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 		this.serviceRegistry = serviceRegistry;
 		if(!serviceRegistry.hasService(SPIN.CONSTRUCT_PROPERTY.stringValue())) {
 			serviceRegistry.registerService(SPIN.CONSTRUCT_PROPERTY.stringValue(), new ConstructFederatedService(parser));
+		}
+		if(!serviceRegistry.hasService(SPIN.SELECT_PROPERTY.stringValue())) {
+			serviceRegistry.registerService(SPIN.SELECT_PROPERTY.stringValue(), new SelectFederatedService(parser));
 		}
 	}
 
