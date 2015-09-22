@@ -120,8 +120,8 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.impl.MapBindingSet;
@@ -602,7 +602,7 @@ public class SpinParser {
 		throw new MalformedSpinException("No parser for function: " + funcUri);
 	}
 
-	public FederatedService parseMagicProperty(URI propUri, TripleSource store)
+	public TupleFunction parseMagicProperty(URI propUri, TripleSource store)
 			throws OpenRDFException
 	{
 		// TODO

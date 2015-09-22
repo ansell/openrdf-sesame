@@ -44,7 +44,7 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.parser.ParsedGraphQuery;
 
 
-public class ConstructFederatedService extends AbstractSpinFederatedService {
+public class ConstructFederatedService extends SpinFederatedService {
 
 	private SpinParser parser;
 

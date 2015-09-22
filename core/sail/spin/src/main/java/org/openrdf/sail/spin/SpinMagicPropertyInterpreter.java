@@ -91,15 +91,13 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 			for(StatementPattern sp : sps) {
 				URI pred = (URI) sp.getPredicateVar().getValue();
 				if(pred != null) {
-					if(SPIN.CONSTRUCT_PROPERTY.equals(pred)) {
-						magicProperties.add(sp);
-					}
-					else if(SPIN.SELECT_PROPERTY.equals(pred)) {
+					if(serviceRegistry.hasService(pred.stringValue())) {
 						magicProperties.add(sp);
 					}
 					else {
 						// TODO check for defined magic properties
 						// else below
+						// normal statement
 						String subj = sp.getSubjectVar().getName();
 						Map<URI,List<StatementPattern>> predMap = spIndex.get(subj);
 						if(predMap == null) {
@@ -121,7 +119,7 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 				String magicProp = magicPropUri.stringValue();
 				if(!serviceRegistry.hasService(magicProp)) {
 					try {
-						FederatedService fs = parser.parseMagicProperty(magicPropUri, tripleSource);
+						FederatedService fs = null;/* TODO */parser.parseMagicProperty(magicPropUri, tripleSource);
 						serviceRegistry.registerService(magicProp, fs);
 					}
 					catch(OpenRDFException e) {

@@ -17,44 +17,29 @@
 package org.openrdf.spin;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.Query;
 import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 
 
-public class AskFunction implements Function {
-
-	private QueryPreparer queryPreparer;
+public class AskFunction extends AbstractSpinFunction implements Function {
 
 	private SpinParser parser;
 
 	public AskFunction() {
+		super(SPIN.ASK_FUNCTION.stringValue());
 	}
 
 	public AskFunction(SpinParser parser) {
+		this();
 		this.parser = parser;
-	}
-
-	@Override
-	public String getURI() {
-		return SPIN.ASK_FUNCTION.toString();
-	}
-
-	public QueryPreparer getQueryPreparer() {
-		return queryPreparer;
-	}
-	
-	public void setQueryPreparer(QueryPreparer queryPreparer) {
-		this.queryPreparer = queryPreparer;
 	}
 
 	public SpinParser getSpinParser() {
@@ -69,10 +54,7 @@ public class AskFunction implements Function {
 	public Value evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
-		QueryPreparer qp = (queryPreparer != null) ? queryPreparer : QueryContext.getQueryPreparer();
-		if(qp == null) {
-			throw new IllegalStateException("No QueryPreparer!");
-		}
+		QueryPreparer qp = getCurrentQueryPreparer();
 		if(args.length == 0 || !(args[0] instanceof Resource)) {
 			throw new ValueExprEvaluationException("First argument must be a resource");
 		}
@@ -90,17 +72,6 @@ public class AskFunction implements Function {
 		}
 		catch (OpenRDFException e) {
 			throw new ValueExprEvaluationException(e);
-		}
-	}
-
-	private void addBindings(Query query, Value... args)
-		throws ValueExprEvaluationException
-	{
-		for(int i=1; i<args.length; i+=2) {
-			if(!(args[i] instanceof Literal)) {
-				throw new ValueExprEvaluationException("Argument "+i+" must be a literal");
-			}
-			query.setBinding(((Literal)args[i]).getLabel(), args[i+1]);
 		}
 	}
 }

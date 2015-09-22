@@ -55,7 +55,7 @@ public class SpinFunctionParser implements FunctionParser
 
 		Map<URI,Argument> templateArgs = parser.parseArguments(funcUri, store);
 
-		SpinFunction func = new SpinFunction(funcUri);
+		SpinFunction func = new SpinFunction(funcUri.stringValue());
 		func.setParsedQuery(query);
 		List<URI> orderedArgs = SpinParser.orderArguments(templateArgs.keySet());
 		for(URI uri : orderedArgs) {

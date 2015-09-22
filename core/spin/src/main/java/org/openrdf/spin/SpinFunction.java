@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
@@ -42,25 +41,14 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import com.google.common.base.Joiner;
 
 
-public class SpinFunction implements Function {
-	private final URI uri;
-
-	private QueryPreparer queryPreparer;
+public class SpinFunction extends AbstractSpinFunction implements Function {
 
 	private ParsedQuery parsedQuery;
 
 	private final List<Argument> arguments = new ArrayList<Argument>(4);
 
-	public SpinFunction(URI uri) {
-		this.uri = uri;
-	}
-
-	public QueryPreparer getQueryPreparer() {
-		return queryPreparer;
-	}
-	
-	public void setQueryPreparer(QueryPreparer queryPreparer) {
-		this.queryPreparer = queryPreparer;
+	public SpinFunction(String uri) {
+		super(uri);
 	}
 
 	public void setParsedQuery(ParsedQuery query) {
@@ -81,27 +69,19 @@ public class SpinFunction implements Function {
 
 	@Override
 	public String toString() {
-		return uri+"("+ Joiner.on(", ").join(arguments)+")";
-	}
-
-	@Override
-	public String getURI() {
-		return uri.stringValue();
+		return getURI()+"("+ Joiner.on(", ").join(arguments)+")";
 	}
 
 	@Override
 	public Value evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
-		QueryPreparer qp = (queryPreparer != null) ? queryPreparer : QueryContext.getQueryPreparer();
-		if(qp == null) {
-			throw new IllegalStateException("No QueryPreparer!");
-		}
+		QueryPreparer qp = getCurrentQueryPreparer();
 		ResultHandler handler = new ResultHandler();
 		if(parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery) parsedQuery;
 			BooleanQuery queryOp = qp.prepare(askQuery);
-			addBindings(queryOp, args);
+			addBindings(queryOp, arguments, args);
 			try {
 				handler.handleBoolean(queryOp.evaluate());
 			}
@@ -112,7 +92,7 @@ public class SpinFunction implements Function {
 		else if(parsedQuery instanceof ParsedTupleQuery) {
 			ParsedTupleQuery selectQuery = (ParsedTupleQuery) parsedQuery;
 			TupleQuery queryOp = qp.prepare(selectQuery);
-			addBindings(queryOp, args);
+			addBindings(queryOp, arguments, args);
 			try {
 				queryOp.evaluate(handler);
 			}
@@ -126,7 +106,7 @@ public class SpinFunction implements Function {
 		return handler.getResult();
 	}
 
-	private void addBindings(Query query, Value... args)
+	private static void addBindings(Query query, List<Argument> arguments, Value... args)
 	{
 		for(int i=0; i<args.length; i++) {
 			Argument argument = arguments.get(i);

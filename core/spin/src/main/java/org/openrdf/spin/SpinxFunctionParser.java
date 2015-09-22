@@ -97,7 +97,7 @@ public class SpinxFunctionParser implements FunctionParser
 
 		Map<URI,Argument> templateArgs = parser.parseArguments(funcUri, store);
 
-		SpinxFunction func = new SpinxFunction(funcUri);
+		SpinxFunction func = new SpinxFunction(funcUri.stringValue());
 		func.setScriptEngine(engine);
 		func.setScript(code);
 		func.setReturnType((returnValue instanceof URI) ? (URI) returnValue : null);

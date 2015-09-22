@@ -49,7 +49,7 @@ import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 
 
-public class SelectFederatedService extends AbstractSpinFederatedService {
+public class SelectFederatedService extends SpinFederatedService {
 
 	private SpinParser parser;
 
