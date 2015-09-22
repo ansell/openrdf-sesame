@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +37,7 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.spin.Argument;
 
 import com.google.common.base.Joiner;
 

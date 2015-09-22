@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
@@ -27,6 +27,7 @@ import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.spin.SpinParser;
 
 
 public class AskFunction extends AbstractSpinFunction implements Function {

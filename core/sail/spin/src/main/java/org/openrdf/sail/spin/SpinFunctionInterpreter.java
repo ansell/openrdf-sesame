@@ -30,8 +30,8 @@ import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
-import org.openrdf.spin.AskFunction;
 import org.openrdf.spin.SpinParser;
+import org.openrdf.spin.function.AskFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,9 @@ import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.spin.Argument;
+import org.openrdf.spin.MalformedSpinException;
+import org.openrdf.spin.SpinParser;
 
 
 public class SpinFunctionParser implements FunctionParser

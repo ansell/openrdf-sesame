@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,7 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.spin.Argument;
 
 import com.google.common.base.Joiner;
 

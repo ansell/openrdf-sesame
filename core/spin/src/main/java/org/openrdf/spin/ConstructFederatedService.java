@@ -41,10 +41,11 @@ import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.federation.TupleFunctionFederatedService;
 import org.openrdf.query.parser.ParsedGraphQuery;
 
 
-public class ConstructFederatedService extends SpinFederatedService {
+public class ConstructFederatedService extends TupleFunctionFederatedService {
 
 	private SpinParser parser;
 

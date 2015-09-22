@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.query.algebra.evaluation.federation;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -36,18 +36,18 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
+import org.openrdf.spin.QueryContext;
 
 
-public abstract class SpinFederatedService implements FederatedService {
+public abstract class TupleFunctionFederatedService implements FederatedService {
 	private final URI uri;
 
 	private QueryPreparer queryPreparer;
 
 	private volatile boolean isInitialized;
 
-	protected SpinFederatedService(URI magicProperty) {
+	protected TupleFunctionFederatedService(URI magicProperty) {
 		this.uri = magicProperty;
 	}
 
@@ -107,7 +107,7 @@ public abstract class SpinFederatedService implements FederatedService {
 	protected abstract CloseableIteration<BindingSet,QueryEvaluationException> evaluate(List<Var> args, List<Var> resultBindings, CloseableIteration<BindingSet, QueryEvaluationException> bindings, QueryPreparer qp)
 		throws OpenRDFException;
 
-	static Value getValue(Var var, BindingSet bs)
+	protected static Value getValue(Var var, BindingSet bs)
 		throws ValueExprEvaluationException
 	{
 		Value v = var.getValue();

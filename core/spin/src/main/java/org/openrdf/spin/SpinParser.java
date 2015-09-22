@@ -134,6 +134,10 @@ import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
+import org.openrdf.spin.function.FunctionParser;
+import org.openrdf.spin.function.KnownFunctionParser;
+import org.openrdf.spin.function.SpinFunctionParser;
+import org.openrdf.spin.function.SpinxFunctionParser;
 
 import com.google.common.base.Function;
 import com.google.common.cache.Cache;

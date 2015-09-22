@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import info.aduna.iteration.CloseableIteration;
 
@@ -34,6 +34,7 @@ import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.spin.SpinParser;
 
 
 public class ConstructTupleFunction extends AbstractSpinFunction implements TupleFunction {
