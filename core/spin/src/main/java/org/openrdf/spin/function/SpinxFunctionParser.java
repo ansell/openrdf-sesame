@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,6 +37,8 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.util.Statements;
+import org.openrdf.spin.Argument;
+import org.openrdf.spin.SpinParser;
 
 
 public class SpinxFunctionParser implements FunctionParser
@@ -97,7 +99,7 @@ public class SpinxFunctionParser implements FunctionParser
 
 		Map<URI,Argument> templateArgs = parser.parseArguments(funcUri, store);
 
-		SpinxFunction func = new SpinxFunction(funcUri);
+		SpinxFunction func = new SpinxFunction(funcUri.stringValue());
 		func.setScriptEngine(engine);
 		func.setScript(code);
 		func.setReturnType((returnValue instanceof URI) ? (URI) returnValue : null);

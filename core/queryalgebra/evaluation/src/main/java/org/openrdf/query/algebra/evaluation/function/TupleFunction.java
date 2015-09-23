@@ -14,28 +14,24 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.query.algebra.evaluation.function;
 
-import org.openrdf.OpenRDFException;
-import org.openrdf.model.URI;
-import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.function.Function;
-import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import info.aduna.iteration.CloseableIteration;
 
+import java.util.List;
 
-public class KnownFunctionParser implements FunctionParser
-{
-	private final FunctionRegistry functionRegistry;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.query.QueryEvaluationException;
 
-	public KnownFunctionParser(FunctionRegistry functionRegistry)
-	{
-		this.functionRegistry = functionRegistry;
-	}
+/**
+ * A function that can return a tuple of {@link Value}s.
+ * This can be used to implement "property functions" or "magic properties".
+ */
+public interface TupleFunction {
 
-	@Override
-	public Function parse(URI funcUri, TripleSource store)
-		throws OpenRDFException
-	{
-		return functionRegistry.get(funcUri.stringValue());
-	}
+	public String getURI();
+
+	public CloseableIteration<? extends List<? extends Value>,QueryEvaluationException> evaluate(ValueFactory valueFactory, Value... args)
+		throws QueryEvaluationException;
 }

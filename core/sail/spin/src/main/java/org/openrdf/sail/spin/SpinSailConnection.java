@@ -56,6 +56,7 @@ import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
@@ -94,7 +95,9 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private final FunctionRegistry functionRegistry;
 
-	private final FederatedServiceResolverBase serviceRegistry;
+	private final TupleFunctionRegistry tupleFunctionRegistry;
+
+	private final FederatedServiceResolverBase serviceResolver;
 
 	private final ValueFactory vf;
 
@@ -113,7 +116,8 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	public SpinSailConnection(SpinSail sail, InferencerConnection con) {
 		super(sail, con);
 		this.functionRegistry = sail.getFunctionRegistry();
-		this.serviceRegistry = (FederatedServiceResolverBase) sail.getFederatedServiceResolver();
+		this.tupleFunctionRegistry = sail.getTupleFunctionRegistry();
+		this.serviceResolver = (FederatedServiceResolverBase) sail.getFederatedServiceResolver();
 		this.vf = sail.getValueFactory();
 		this.parser = sail.getSpinParser();
 		this.queryPreparer = new SailConnectionQueryPreparer(this, true, vf);
@@ -175,7 +179,7 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 
 		new SpinFunctionInterpreter(parser, tripleSource, functionRegistry).optimize(tupleExpr, dataset, bindings);
-		new SpinMagicPropertyInterpreter(parser, tripleSource, serviceRegistry).optimize(tupleExpr, dataset, bindings);
+		new SpinMagicPropertyInterpreter(parser, tripleSource, tupleFunctionRegistry, serviceResolver).optimize(tupleExpr, dataset, bindings);
 
 		logger.trace("Optimized query model:\n{}", tupleExpr);
 

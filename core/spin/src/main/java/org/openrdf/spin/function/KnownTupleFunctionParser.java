@@ -14,14 +14,28 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.query.algebra.evaluation.function.TupleFunction;
+import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 
 
-public interface FunctionParser {
-	Function parse(URI uri, TripleSource store) throws OpenRDFException;
+public class KnownTupleFunctionParser implements TupleFunctionParser
+{
+	private final TupleFunctionRegistry functionRegistry;
+
+	public KnownTupleFunctionParser(TupleFunctionRegistry functionRegistry)
+	{
+		this.functionRegistry = functionRegistry;
+	}
+
+	@Override
+	public TupleFunction parse(URI funcUri, TripleSource store)
+		throws OpenRDFException
+	{
+		return functionRegistry.get(funcUri.stringValue());
+	}
 }

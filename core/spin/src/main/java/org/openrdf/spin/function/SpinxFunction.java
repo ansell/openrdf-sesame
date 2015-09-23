@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin;
+package org.openrdf.spin.function;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +33,13 @@ import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
+import org.openrdf.spin.Argument;
 
 import com.google.common.base.Joiner;
 
 
 public class SpinxFunction implements Function {
-	private final URI uri;
+	private final String uri;
 
 	private final List<Argument> arguments = new ArrayList<Argument>(4);
 
@@ -47,7 +48,7 @@ public class SpinxFunction implements Function {
 	private String script;
 	private URI returnType;
 
-	public SpinxFunction(URI uri) {
+	public SpinxFunction(String uri) {
 		this.uri = uri;
 	}
 
@@ -90,7 +91,7 @@ public class SpinxFunction implements Function {
 
 	@Override
 	public String getURI() {
-		return uri.stringValue();
+		return uri;
 	}
 
 	@Override
