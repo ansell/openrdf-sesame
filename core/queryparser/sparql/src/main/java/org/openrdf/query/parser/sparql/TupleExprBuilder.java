@@ -317,26 +317,26 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
 
 		if (value instanceof Literal) {
-			uniqueStringForValue += "-lit";
+			uniqueStringForValue += "_lit";
 
 			// we need to append datatype and/or language tag to ensure a unique
 			// var name (see SES-1927)
 			Literal lit = (Literal)value;
 			if (lit.getDatatype() != null) {
-				uniqueStringForValue += "-" + lit.getDatatype().stringValue();
+				uniqueStringForValue += "_" + lit.getDatatype().stringValue();
 			}
 			if (lit.getLanguage() != null) {
-				uniqueStringForValue += "-" + lit.getLanguage();
+				uniqueStringForValue += "_" + lit.getLanguage();
 			}
 		}
 		else if (value instanceof BNode) {
-			uniqueStringForValue += "-node";
+			uniqueStringForValue += "_node";
 		}
 		else {
-			uniqueStringForValue += "-uri";
+			uniqueStringForValue += "_uri";
 		}
 
-		Var var = new Var("_const-" + uniqueStringForValue);
+		Var var = new Var("_const_" + uniqueStringForValue);
 		var.setConstant(true);
 		var.setAnonymous(true);
 		var.setValue(value);
@@ -349,7 +349,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	 * @return an anonymous Var with a unique, randomly generated, variable name
 	 */
 	private Var createAnonVar() {
-		final Var var = new Var("_anon-" + UUID.randomUUID().toString());
+		// dashes ('-') in the generated UUID are replaced with underscores so the varname
+		// remains compatible with the SPARQL grammar. See SES-2310.
+		final Var var = new Var("_anon_" + UUID.randomUUID().toString().replaceAll("-", "_"));
 		var.setAnonymous(true);
 		return var;
 	}
@@ -1031,7 +1033,7 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				projectionElements.addElement(new ProjectionElem(((Var)resource).getName()));
 			}
 			else {
-				String alias = "_describe-" + UUID.randomUUID();
+				String alias = "_describe_" + UUID.randomUUID().toString().replaceAll("-", "_");
 				ExtensionElem elem = new ExtensionElem(resource, alias);
 				e.addElement(elem);
 				projectionElements.addElement(new ProjectionElem(alias));
