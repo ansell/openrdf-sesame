@@ -16,9 +16,10 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
-import java.util.List;
-
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.LookAheadIteration;
+
+import java.util.List;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -30,6 +31,7 @@ import org.openrdf.query.algebra.TupleFunctionCall;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
@@ -93,7 +95,6 @@ public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 		List<ValueExpr> args = expr.getArgs();
 
 		Value[] argValues = new Value[args.size()];
-
 		for (int i = 0; i < args.size(); i++) {
 			argValues[i] = evaluate(args.get(i), bindings);
 		}
@@ -118,11 +119,51 @@ public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 
 
 	public static CloseableIteration<BindingSet, QueryEvaluationException> evaluate(TupleFunction func,
-			List<Var> resultVars, BindingSet bindings,
+			final List<Var> resultVars, final BindingSet bindings,
 			ValueFactory valueFactory, Value... argValues)
 		throws QueryEvaluationException
 	{
 		final CloseableIteration<? extends List<? extends Value>, QueryEvaluationException> iter = func.evaluate(valueFactory, argValues);
-		return null; // TODO
+		return new LookAheadIteration<BindingSet, QueryEvaluationException>()
+		{
+			@Override
+			public BindingSet getNextElement()
+				throws QueryEvaluationException
+			{
+				QueryBindingSet resultBindings;
+				if(iter.hasNext()) {
+					resultBindings = new QueryBindingSet();
+					List<? extends Value> values = iter.next();
+					if(resultVars.size() != values.size()) {
+						throw new QueryEvaluationException("Incorrect number of result vars: require "+values.size());
+					}
+					for(int i=0; i<values.size(); i++) {
+						Value result = values.get(i);
+						Var resultVar = resultVars.get(i);
+						Value varValue = resultVar.getValue();
+						String varName = resultVar.getName();
+						Value boundValue = bindings.getValue(varName);
+						if((varValue == null || result.equals(varValue)) && (boundValue == null || result.equals(boundValue))) {
+							resultBindings.addBinding(varName, result);
+						}
+						else {
+							resultBindings = null;
+							break;
+						}
+					}
+				}
+				else {
+					resultBindings = null;
+				}
+				return resultBindings;
+			}
+
+			@Override
+			protected void handleClose()
+				throws QueryEvaluationException
+			{
+				iter.close();
+			}
+		};
 	}
 }

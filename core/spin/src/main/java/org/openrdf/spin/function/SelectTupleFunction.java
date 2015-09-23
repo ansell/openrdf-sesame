@@ -82,43 +82,7 @@ public class SelectTupleFunction extends AbstractSpinFunction implements TupleFu
 				TupleQuery queryOp = qp.prepare(tupleQuery);
 				addBindings(queryOp, args);
 				final TupleQueryResult queryResult = queryOp.evaluate();
-				return new CloseableIteration<List<Value>, QueryEvaluationException>()
-				{
-					final List<String> bindingNames = queryResult.getBindingNames();
-
-					@Override
-					public boolean hasNext()
-						throws QueryEvaluationException
-					{
-						return queryResult.hasNext();
-					}
-
-					@Override
-					public List<Value> next()
-						throws QueryEvaluationException
-					{
-						BindingSet bs = queryResult.next();
-						List<Value> values = new ArrayList<Value>(bindingNames.size());
-						for(String bindingName : bindingNames) {
-							values.add(bs.getValue(bindingName));
-						}
-						return values;
-					}
-
-					@Override
-					public void remove()
-						throws QueryEvaluationException
-					{
-						queryResult.remove();
-					}
-
-					@Override
-					public void close()
-						throws QueryEvaluationException
-					{
-						queryResult.close();
-					}
-				};
+				return new TupleQueryResultIteration(queryResult);
 			}
 			else if(parsedQuery instanceof ParsedBooleanQuery) {
 				ParsedBooleanQuery booleanQuery = (ParsedBooleanQuery) parsedQuery;
@@ -136,6 +100,56 @@ public class SelectTupleFunction extends AbstractSpinFunction implements TupleFu
 		}
 		catch (OpenRDFException e) {
 			throw new ValueExprEvaluationException(e);
+		}
+	}
+
+
+	static class TupleQueryResultIteration implements
+		CloseableIteration<List<Value>, QueryEvaluationException>
+	{
+
+		private final TupleQueryResult queryResult;
+
+		private final List<String> bindingNames;
+
+		TupleQueryResultIteration(TupleQueryResult queryResult)
+			throws QueryEvaluationException
+		{
+			this.queryResult = queryResult;
+			this.bindingNames = queryResult.getBindingNames();
+		}
+
+		@Override
+		public boolean hasNext()
+			throws QueryEvaluationException
+		{
+			return queryResult.hasNext();
+		}
+
+		@Override
+		public List<Value> next()
+			throws QueryEvaluationException
+		{
+			BindingSet bs = queryResult.next();
+			List<Value> values = new ArrayList<Value>(bindingNames.size());
+			for(String bindingName : bindingNames) {
+				values.add(bs.getValue(bindingName));
+			}
+			return values;
+		}
+
+		@Override
+		public void remove()
+			throws QueryEvaluationException
+		{
+			queryResult.remove();
+		}
+
+		@Override
+		public void close()
+			throws QueryEvaluationException
+		{
+			queryResult.close();
 		}
 	}
 }

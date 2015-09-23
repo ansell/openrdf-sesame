@@ -74,49 +74,60 @@ public class ConstructTupleFunction extends AbstractSpinFunction implements Tupl
 			GraphQuery queryOp = qp.prepare(graphQuery);
 			addBindings(queryOp, args);
 			final GraphQueryResult queryResult = queryOp.evaluate();
-			return new CloseableIteration<List<Value>, QueryEvaluationException>()
-			{
-				@Override
-				public boolean hasNext()
-					throws QueryEvaluationException
-				{
-					return queryResult.hasNext();
-				}
-
-				@Override
-				public List<Value> next()
-					throws QueryEvaluationException
-				{
-					Statement stmt = queryResult.next();
-					Resource ctx = stmt.getContext();
-					if(ctx != null) {
-						return Arrays.asList(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), ctx);
-					}
-					else {
-						return Arrays.asList(stmt.getSubject(), stmt.getPredicate(), stmt.getObject());
-					}
-				}
-
-				@Override
-				public void remove()
-					throws QueryEvaluationException
-				{
-					queryResult.remove();
-				}
-
-				@Override
-				public void close()
-					throws QueryEvaluationException
-				{
-					queryResult.close();
-				}
-			};
+			return new GraphQueryResultIteration(queryResult);
 		}
 		catch (QueryEvaluationException e) {
 			throw e;
 		}
 		catch (OpenRDFException e) {
 			throw new ValueExprEvaluationException(e);
+		}
+	}
+
+
+	static class GraphQueryResultIteration implements
+			CloseableIteration<List<Value>, QueryEvaluationException>
+	{
+
+		private final GraphQueryResult queryResult;
+
+		GraphQueryResultIteration(GraphQueryResult queryResult) {
+			this.queryResult = queryResult;
+		}
+
+		@Override
+		public boolean hasNext()
+			throws QueryEvaluationException
+		{
+			return queryResult.hasNext();
+		}
+
+		@Override
+		public List<Value> next()
+			throws QueryEvaluationException
+		{
+			Statement stmt = queryResult.next();
+			Resource ctx = stmt.getContext();
+			if(ctx != null) {
+				return Arrays.asList(stmt.getSubject(), stmt.getPredicate(), stmt.getObject(), ctx);
+			}
+			else {
+				return Arrays.asList(stmt.getSubject(), stmt.getPredicate(), stmt.getObject());
+			}
+		}
+
+		@Override
+		public void remove()
+			throws QueryEvaluationException
+		{
+			queryResult.remove();
+		}
+
+		@Override
+		public void close()
+			throws QueryEvaluationException
+		{
+			queryResult.close();
 		}
 	}
 }

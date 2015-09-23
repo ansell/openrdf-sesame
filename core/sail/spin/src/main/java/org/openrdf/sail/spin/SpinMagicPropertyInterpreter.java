@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -43,14 +42,17 @@ import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
+import org.openrdf.query.algebra.evaluation.federation.TupleFunctionFederatedService;
+import org.openrdf.query.algebra.evaluation.function.TupleFunction;
+import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.query.algebra.helpers.BGPCollector;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
-import org.openrdf.spin.ConstructFederatedService;
-import org.openrdf.spin.SelectFederatedService;
 import org.openrdf.spin.SpinParser;
+import org.openrdf.spin.function.ConstructTupleFunction;
+import org.openrdf.spin.function.SelectTupleFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,17 +62,19 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 
 	private final TripleSource tripleSource;
 	private final SpinParser parser;
-	private final FederatedServiceResolverBase serviceRegistry;
+	private final TupleFunctionRegistry tupleFunctionRegistry;
+	private final FederatedServiceResolverBase serviceResolver;
 
-	public SpinMagicPropertyInterpreter(SpinParser parser, TripleSource tripleSource, FederatedServiceResolverBase serviceRegistry) {
+	public SpinMagicPropertyInterpreter(SpinParser parser, TripleSource tripleSource, TupleFunctionRegistry tupleFunctionRegistry, FederatedServiceResolverBase serviceResolver) {
 		this.parser = parser;
 		this.tripleSource = tripleSource;
-		this.serviceRegistry = serviceRegistry;
-		if(!serviceRegistry.hasService(SPIN.CONSTRUCT_PROPERTY.stringValue())) {
-			serviceRegistry.registerService(SPIN.CONSTRUCT_PROPERTY.stringValue(), new ConstructFederatedService(parser));
+		this.tupleFunctionRegistry = tupleFunctionRegistry;
+		this.serviceResolver = serviceResolver;
+		if(!tupleFunctionRegistry.has(SPIN.CONSTRUCT_PROPERTY.stringValue())) {
+			tupleFunctionRegistry.add(new ConstructTupleFunction(parser));
 		}
-		if(!serviceRegistry.hasService(SPIN.SELECT_PROPERTY.stringValue())) {
-			serviceRegistry.registerService(SPIN.SELECT_PROPERTY.stringValue(), new SelectFederatedService(parser));
+		if(!tupleFunctionRegistry.has(SPIN.SELECT_PROPERTY.stringValue())) {
+			tupleFunctionRegistry.add(new SelectTupleFunction(parser));
 		}
 	}
 
@@ -91,11 +95,11 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 			for(StatementPattern sp : sps) {
 				URI pred = (URI) sp.getPredicateVar().getValue();
 				if(pred != null) {
-					if(serviceRegistry.hasService(pred.stringValue())) {
+					if(tupleFunctionRegistry.has(pred.stringValue())) {
 						magicProperties.add(sp);
 					}
 					else {
-						// TODO check for defined magic properties
+						// TODO check for defined magic properties and add to registry
 						// else below
 						// normal statement
 						String subj = sp.getSubjectVar().getName();
@@ -117,14 +121,10 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 			for(StatementPattern sp : magicProperties) {
 				URI magicPropUri = (URI) sp.getPredicateVar().getValue();
 				String magicProp = magicPropUri.stringValue();
-				if(!serviceRegistry.hasService(magicProp)) {
-					try {
-						FederatedService fs = null;/* TODO */parser.parseMagicProperty(magicPropUri, tripleSource);
-						serviceRegistry.registerService(magicProp, fs);
-					}
-					catch(OpenRDFException e) {
-						logger.warn("Failed to parse magic property: {}", magicPropUri);
-					}
+				if(!serviceResolver.hasService(magicProp)) {
+					TupleFunction func = tupleFunctionRegistry.get(magicProp);
+					FederatedService fs = new TupleFunctionFederatedService(func, tripleSource.getValueFactory());
+					serviceResolver.registerService(magicProp, fs);
 				}
 
 				SingletonSet stub = new SingletonSet();

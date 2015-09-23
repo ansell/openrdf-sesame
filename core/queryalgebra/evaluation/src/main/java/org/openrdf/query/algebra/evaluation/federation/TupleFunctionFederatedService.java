@@ -17,16 +17,20 @@
 package org.openrdf.query.algebra.evaluation.federation;
 
 import info.aduna.iteration.CloseableIteration;
+import info.aduna.iteration.DistinctIteration;
+import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.UnionIteration;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
@@ -34,29 +38,21 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
+import org.openrdf.query.algebra.evaluation.function.TupleFunction;
+import org.openrdf.query.algebra.evaluation.impl.TupleFunctionEvaluationStrategy;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
-import org.openrdf.spin.QueryContext;
 
 
-public abstract class TupleFunctionFederatedService implements FederatedService {
-	private final URI uri;
-
-	private QueryPreparer queryPreparer;
+public class TupleFunctionFederatedService implements FederatedService {
+	private final TupleFunction func;
+	private final ValueFactory vf;
 
 	private volatile boolean isInitialized;
 
-	protected TupleFunctionFederatedService(URI magicProperty) {
-		this.uri = magicProperty;
-	}
-
-	public QueryPreparer getQueryPreparer() {
-		return queryPreparer;
-	}
-	
-	public void setQueryPreparer(QueryPreparer queryPreparer) {
-		this.queryPreparer = queryPreparer;
+	public TupleFunctionFederatedService(TupleFunction func, ValueFactory vf) {
+		this.func = func;
+		this.vf = vf;
 	}
 
 	@Override
@@ -77,37 +73,49 @@ public abstract class TupleFunctionFederatedService implements FederatedService 
 	}
 
 	@Override
+	public boolean ask(Service service, BindingSet bindings, String baseUri)
+		throws QueryEvaluationException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public CloseableIteration<BindingSet, QueryEvaluationException> select(Service service,
+			Set<String> projectionVars, BindingSet bindings, String baseUri)
+		throws QueryEvaluationException
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public final CloseableIteration<BindingSet, QueryEvaluationException> evaluate(Service service,
 			CloseableIteration<BindingSet, QueryEvaluationException> bindings, String baseUri)
 		throws QueryEvaluationException
 	{
-		QueryPreparer qp = (queryPreparer != null) ? queryPreparer : QueryContext.getQueryPreparer();
-		if(qp == null) {
-			throw new IllegalStateException("No QueryPreparer!");
+		if(!bindings.hasNext()) {
+			return new EmptyIteration<BindingSet, QueryEvaluationException>();
 		}
 
 		TupleExpr expr = service.getArg();
-		ListIndexer visitor = new ListIndexer(uri);
+		ListIndexer visitor = new ListIndexer(vf.createURI(func.getURI()));
 		expr.visit(visitor);
 
 		List<Var> args = readList(visitor.subj, visitor.listEntries, visitor.listNexts);
-		List<Var> resultBindings = readList(visitor.obj, visitor.listEntries, visitor.listNexts);
+		List<Var> resultVars = readList(visitor.obj, visitor.listEntries, visitor.listNexts);
 
-		try {
-			return evaluate(args, resultBindings, bindings, qp);
+		List<CloseableIteration<BindingSet,QueryEvaluationException>> resultIters = new ArrayList<CloseableIteration<BindingSet,QueryEvaluationException>>();
+		while(bindings.hasNext()) {
+			BindingSet bs = bindings.next();
+			Value[] argValues = new Value[args.size()];
+			for (int i = 0; i < args.size(); i++) {
+				argValues[i] = getValue(args.get(i), bs);
+			}
+			resultIters.add(TupleFunctionEvaluationStrategy.evaluate(func, resultVars, bs, vf, argValues));
 		}
-		catch (QueryEvaluationException e) {
-			throw e;
-		}
-		catch (OpenRDFException e) {
-			throw new QueryEvaluationException(e);
-		}
+		return (resultIters.size() > 1) ? new DistinctIteration<BindingSet, QueryEvaluationException>(new UnionIteration<BindingSet, QueryEvaluationException>(resultIters)) : resultIters.get(0);
 	}
 
-	protected abstract CloseableIteration<BindingSet,QueryEvaluationException> evaluate(List<Var> args, List<Var> resultBindings, CloseableIteration<BindingSet, QueryEvaluationException> bindings, QueryPreparer qp)
-		throws OpenRDFException;
-
-	protected static Value getValue(Var var, BindingSet bs)
+	private static Value getValue(Var var, BindingSet bs)
 		throws ValueExprEvaluationException
 	{
 		Value v = var.getValue();
@@ -143,20 +151,20 @@ public abstract class TupleFunctionFederatedService implements FederatedService 
 
 
 	static class ListIndexer extends QueryModelVisitorBase<RuntimeException> {
-		final URI magicProperty;
+		final URI property;
 		final Map<String,Var> listEntries = new HashMap<String,Var>();
 		final Map<String,Var> listNexts = new HashMap<String,Var>();
 		Var subj;
 		Var obj;
 
-		ListIndexer(URI magicProperty) {
-			this.magicProperty = magicProperty;
+		ListIndexer(URI property) {
+			this.property = property;
 		}
 
 		@Override
 		public void meet(StatementPattern node) {
 			URI pred = (URI) node.getPredicateVar().getValue();
-			if(magicProperty.equals(pred)) {
+			if(property.equals(pred)) {
 				subj = node.getSubjectVar();
 				obj = node.getObjectVar();
 			}

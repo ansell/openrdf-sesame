@@ -122,6 +122,7 @@ import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
+import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.impl.MapBindingSet;
@@ -136,8 +137,11 @@ import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.queryrender.sparql.SPARQLQueryRenderer;
 import org.openrdf.spin.function.FunctionParser;
 import org.openrdf.spin.function.KnownFunctionParser;
+import org.openrdf.spin.function.KnownTupleFunctionParser;
 import org.openrdf.spin.function.SpinFunctionParser;
+import org.openrdf.spin.function.SpinTupleFunctionParser;
 import org.openrdf.spin.function.SpinxFunctionParser;
+import org.openrdf.spin.function.TupleFunctionParser;
 
 import com.google.common.base.Function;
 import com.google.common.cache.Cache;
@@ -184,6 +188,7 @@ public class SpinParser {
 	private final Function<URI,String> wellKnownVars;
 	private final Function<URI,String> wellKnownFunctions;
 	private List<FunctionParser> functionParsers;
+	private List<TupleFunctionParser> tupleFunctionParsers;
 	private boolean strictFunctionChecking = true;
 	private final Cache<URI,Template> templateCache = CacheBuilder.newBuilder().maximumSize(100).build();
 
@@ -212,9 +217,13 @@ public class SpinParser {
 		this.wellKnownVars = wellKnownVarsMapper;
 		this.wellKnownFunctions = wellKnownFuncMapper;
 		this.functionParsers = Arrays.<FunctionParser>asList(
-			new SpinFunctionParser(this),
-			new SpinxFunctionParser(this),
-			new KnownFunctionParser(FunctionRegistry.getInstance())
+				new SpinFunctionParser(this),
+				new SpinxFunctionParser(this),
+				new KnownFunctionParser(FunctionRegistry.getInstance())
+			);
+		this.tupleFunctionParsers = Arrays.<TupleFunctionParser>asList(
+			new SpinTupleFunctionParser(this),
+			new KnownTupleFunctionParser(TupleFunctionRegistry.getInstance())
 		);
 	}
 	
@@ -603,14 +612,20 @@ public class SpinParser {
 				return function;
 			}
 		}
-		throw new MalformedSpinException("No parser for function: " + funcUri);
+		throw new MalformedSpinException("No FunctionParser for function: " + funcUri);
 	}
 
 	public TupleFunction parseMagicProperty(URI propUri, TripleSource store)
 			throws OpenRDFException
 	{
-		// TODO
-		return null;
+		for(TupleFunctionParser tupleFunctionParser : tupleFunctionParsers)
+		{
+			TupleFunction tupleFunction = tupleFunctionParser.parse(propUri, store);
+			if(tupleFunction != null) {
+				return tupleFunction;
+			}
+		}
+		throw new MalformedSpinException("No TupleFunctionParser for magic property: " + propUri);
 	}
 
 	public Map<URI,Argument> parseArguments(URI moduleUri, TripleSource store)

@@ -21,10 +21,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.query.algebra.evaluation.function.TupleFunction;
-
 /**
- * A call to a {@link TupleFunction}.
+ * A call to a TupleFunction.
  */
 public class TupleFunctionCall extends QueryModelNodeBase implements TupleExpr {
 

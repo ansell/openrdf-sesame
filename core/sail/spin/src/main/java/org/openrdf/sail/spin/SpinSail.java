@@ -28,6 +28,7 @@ import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.sail.NotifyingSail;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.inferencer.InferencerConnection;
@@ -37,6 +38,7 @@ import org.openrdf.spin.SpinParser;
 public class SpinSail extends AbstractForwardChainingInferencer {
 
 	private FunctionRegistry functionRegistry = FunctionRegistry.getInstance();
+	private TupleFunctionRegistry tupleFunctionRegistry = TupleFunctionRegistry.getInstance();
 	private FederatedServiceResolverBase serviceRegistry = new FederatedServiceResolverImpl();
 	private SpinParser parser = new SpinParser();
 
@@ -55,6 +57,14 @@ public class SpinSail extends AbstractForwardChainingInferencer {
 
 	public void setFunctionRegistry(FunctionRegistry registry) {
 		this.functionRegistry = registry;
+	}
+
+	public TupleFunctionRegistry getTupleFunctionRegistry() {
+		return tupleFunctionRegistry;
+	}
+
+	public void setTupleFunctionRegistry(TupleFunctionRegistry registry) {
+		this.tupleFunctionRegistry = registry;
 	}
 
 	public FederatedServiceResolver getFederatedServiceResolver() {
@@ -82,13 +92,8 @@ public class SpinSail extends AbstractForwardChainingInferencer {
 	public SpinSailConnection getConnection()
 		throws SailException
 	{
-		try {
-			InferencerConnection con = (InferencerConnection)super.getConnection();
-			return new SpinSailConnection(this, con);
-		}
-		catch (ClassCastException e) {
-			throw new SailException(e.getMessage(), e);
-		}
+		InferencerConnection con = (InferencerConnection)super.getConnection();
+		return new SpinSailConnection(this, con);
 	}
 
 	@Override
