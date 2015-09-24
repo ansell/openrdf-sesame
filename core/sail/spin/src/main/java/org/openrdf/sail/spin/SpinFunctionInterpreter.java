@@ -59,28 +59,28 @@ public class SpinFunctionInterpreter implements QueryOptimizer {
 
 	@Override
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new FunctionScanner());
+		try {
+			tupleExpr.visit(new FunctionScanner());
+		}
+		catch(OpenRDFException e) {
+			logger.warn("Failed to parse function");
+		}
 	}
 
 
 
-	class FunctionScanner extends QueryModelVisitorBase<RuntimeException> {
+	class FunctionScanner extends QueryModelVisitorBase<OpenRDFException> {
 		ValueFactory vf = tripleSource.getValueFactory();
 
 		@Override
 		public void meet(FunctionCall node)
-			throws RuntimeException
+			throws OpenRDFException
 		{
 			String name = node.getURI();
 			if(!functionRegistry.has(name)) {
 				URI funcUri = vf.createURI(name);
-				try {
-					Function f = parser.parseFunction(funcUri, tripleSource);
-					functionRegistry.add(f);
-				}
-				catch(OpenRDFException e) {
-					logger.warn("Failed to parse function: {}", funcUri);
-				}
+				Function f = parser.parseFunction(funcUri, tripleSource);
+				functionRegistry.add(f);
 			}
 			super.meet(node);
 		}

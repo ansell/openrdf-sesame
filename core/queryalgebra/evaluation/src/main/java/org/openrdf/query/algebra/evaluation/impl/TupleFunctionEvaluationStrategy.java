@@ -89,7 +89,7 @@ public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 		TupleFunction func = tupleFuncRegistry.get(expr.getURI());
 
 		if(func == null) {
-			throw new QueryEvaluationException("Unknown function '" + expr.getURI() + "'");
+			throw new QueryEvaluationException("Unknown tuple function '" + expr.getURI() + "'");
 		}
 
 		List<ValueExpr> args = expr.getArgs();
@@ -132,7 +132,7 @@ public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 			{
 				QueryBindingSet resultBindings;
 				if(iter.hasNext()) {
-					resultBindings = new QueryBindingSet();
+					resultBindings = new QueryBindingSet(bindings);
 					List<? extends Value> values = iter.next();
 					if(resultVars.size() != values.size()) {
 						throw new QueryEvaluationException("Incorrect number of result vars: require "+values.size());

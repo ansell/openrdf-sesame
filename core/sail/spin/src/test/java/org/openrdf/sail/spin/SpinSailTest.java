@@ -82,6 +82,13 @@ public class SpinSailTest {
 	}
 
 	@Test
+	public void testTemplateConstraint() throws Exception {
+		constraintException.expectCause(isA(ConstraintViolationException.class));
+		constraintException.expectMessage("Invalid number of values: 0");
+		loadStatements("testTemplateConstraint.ttl");
+	}
+
+	@Test
 	public void testAskFunctionConstraint() throws Exception {
 		loadStatements("testAskFunctionConstraint.ttl");
 	}
@@ -105,10 +112,9 @@ public class SpinSailTest {
 	}
 
 	@Test
-	public void testTemplateConstraint() throws Exception {
-		constraintException.expectCause(isA(ConstraintViolationException.class));
-		constraintException.expectMessage("Invalid number of values: 0");
-		loadStatements("testTemplateConstraint.ttl");
+	public void testMagicProperty() throws Exception {
+		loadStatements("testMagicProperty.ttl");
+		assertStatements("testMagicProperty-expected.ttl");
 	}
 
 	@Test

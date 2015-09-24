@@ -22,7 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
@@ -32,19 +34,23 @@ import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.model.vocabulary.SPL;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.Dataset;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.TupleFunctionCall;
+import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.QueryOptimizer;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
 import org.openrdf.query.algebra.evaluation.federation.TupleFunctionFederatedService;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
+import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.algebra.helpers.BGPCollector;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.TupleExprs;
@@ -60,16 +66,21 @@ import org.slf4j.LoggerFactory;
 public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 	private static final Logger logger = LoggerFactory.getLogger(SpinMagicPropertyInterpreter.class);
 
+	private static final String SPIN_SERVICE = "spin:/";
+
 	private final TripleSource tripleSource;
 	private final SpinParser parser;
 	private final TupleFunctionRegistry tupleFunctionRegistry;
 	private final FederatedServiceResolverBase serviceResolver;
+	private final URI spinServiceUri;
 
 	public SpinMagicPropertyInterpreter(SpinParser parser, TripleSource tripleSource, TupleFunctionRegistry tupleFunctionRegistry, FederatedServiceResolverBase serviceResolver) {
 		this.parser = parser;
 		this.tripleSource = tripleSource;
 		this.tupleFunctionRegistry = tupleFunctionRegistry;
 		this.serviceResolver = serviceResolver;
+		this.spinServiceUri = tripleSource.getValueFactory().createURI(SPIN_SERVICE);
+
 		if(!tupleFunctionRegistry.has(SPIN.CONSTRUCT_PROPERTY.stringValue())) {
 			tupleFunctionRegistry.add(new ConstructTupleFunction(parser));
 		}
@@ -80,15 +91,20 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 
 	@Override
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new PropertyScanner());
+		try {
+			tupleExpr.visit(new PropertyScanner());
+		}
+		catch(OpenRDFException e) {
+			logger.warn("Failed to parse tuple function");
+		}
 	}
 
 
 
-	class PropertyScanner extends QueryModelVisitorBase<RuntimeException> {
+	class PropertyScanner extends QueryModelVisitorBase<OpenRDFException> {
 		Map<Resource,StatementPattern> joins;
 
-		private void processGraphPattern(List<StatementPattern> sps) {
+		private void processGraphPattern(List<StatementPattern> sps) throws OpenRDFException {
 			List<StatementPattern> magicProperties = new ArrayList<StatementPattern>();
 			Map<String,Map<URI,List<StatementPattern>>> spIndex = new HashMap<String,Map<URI,List<StatementPattern>>>();
 
@@ -99,63 +115,80 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 						magicProperties.add(sp);
 					}
 					else {
-						// TODO check for defined magic properties and add to registry
-						// else below
-						// normal statement
-						String subj = sp.getSubjectVar().getName();
-						Map<URI,List<StatementPattern>> predMap = spIndex.get(subj);
-						if(predMap == null) {
-							predMap = new HashMap<URI,List<StatementPattern>>(8);
-							spIndex.put(subj, predMap);
+						Statement magicPropStmt = Statements.single(pred, RDF.TYPE, SPIN.MAGIC_PROPERTY_CLASS, tripleSource);
+						if(magicPropStmt != null) {
+							TupleFunction func = parser.parseMagicProperty(pred, tripleSource);
+							tupleFunctionRegistry.add(func);
 						}
-						List<StatementPattern> v = predMap.get(pred);
-						if(v == null) {
-							v = new ArrayList<StatementPattern>(1);
-							predMap.put(pred, v);
+						else {
+							// normal statement
+							String subj = sp.getSubjectVar().getName();
+							Map<URI,List<StatementPattern>> predMap = spIndex.get(subj);
+							if(predMap == null) {
+								predMap = new HashMap<URI,List<StatementPattern>>(8);
+								spIndex.put(subj, predMap);
+							}
+							List<StatementPattern> v = predMap.get(pred);
+							if(v == null) {
+								v = new ArrayList<StatementPattern>(1);
+								predMap.put(pred, v);
+							}
+							v.add(sp);
 						}
-						v.add(sp);
 					}
 				}
 			}
 
-			for(StatementPattern sp : magicProperties) {
-				URI magicPropUri = (URI) sp.getPredicateVar().getValue();
-				String magicProp = magicPropUri.stringValue();
-				if(!serviceResolver.hasService(magicProp)) {
-					TupleFunction func = tupleFunctionRegistry.get(magicProp);
-					FederatedService fs = new TupleFunctionFederatedService(func, tripleSource.getValueFactory());
-					serviceResolver.registerService(magicProp, fs);
+			if(!magicProperties.isEmpty()) {
+				if(!serviceResolver.hasService(SPIN_SERVICE)) {
+					serviceResolver.registerService(SPIN_SERVICE, new TupleFunctionFederatedService(tupleFunctionRegistry, tripleSource.getValueFactory()));
 				}
 
-				SingletonSet stub = new SingletonSet();
-				sp.replaceWith(stub);
-				TupleExpr magicPropNode = sp;
+				for(StatementPattern sp : magicProperties) {
+					Union union = new Union();
+					sp.replaceWith(union);
+					TupleExpr stmts = sp;
 
-				TupleExpr subjList = list(sp.getSubjectVar().getName(), spIndex);
-				if(subjList != null) {
-					magicPropNode = new Join(magicPropNode, subjList);
-				}
+					List<ValueExpr> subjList = new ArrayList<ValueExpr>(4);
+					TupleExpr subjNodes = addList(subjList, sp.getSubjectVar(), spIndex);
+					if(subjNodes != null) {
+						stmts = new Join(stmts, subjNodes);
+					}
+					else {
+						subjList = Collections.<ValueExpr>singletonList(sp.getSubjectVar());
+					}
 
-				TupleExpr objList = list(sp.getObjectVar().getName(), spIndex);
-				if(objList != null) {
-					magicPropNode = new Join(magicPropNode, objList);
-				}
+					List<Var> objList = new ArrayList<Var>(4);
+					TupleExpr objNodes = addList(objList, sp.getObjectVar(), spIndex);
+					if(objNodes != null) {
+						stmts = new Join(stmts, objNodes);
+					}
+					else {
+						objList = Collections.singletonList(sp.getObjectVar());
+					}
+					union.setLeftArg(stmts);
 
-				Var serviceRef = TupleExprs.createConstVar(magicPropUri);
-				String exprString;
-				try {
-					exprString = new SPARQLQueryRenderer().render(new ParsedTupleQuery(magicPropNode));
-					exprString = exprString.substring(exprString.indexOf('{')+1, exprString.lastIndexOf('}'));
+					TupleFunctionCall funcCall = new TupleFunctionCall();
+					funcCall.setURI(sp.getPredicateVar().getValue().stringValue());
+					funcCall.setArgs(subjList);
+					funcCall.setResultVars(objList);
+
+					Var serviceRef = TupleExprs.createConstVar(spinServiceUri);
+					String exprString;
+					try {
+						exprString = new SPARQLQueryRenderer().render(new ParsedTupleQuery(stmts));
+						exprString = exprString.substring(exprString.indexOf('{')+1, exprString.lastIndexOf('}'));
+					}
+					catch(Exception e) {
+						throw new MalformedQueryException(e);
+					}
+					Map<String,String> prefixDecls = new HashMap<String,String>(8);
+					prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
+					prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
+					prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
+					Service service = new Service(serviceRef, funcCall, exprString, prefixDecls, null, false);
+					union.setRightArg(service);
 				}
-				catch(Exception e) {
-					throw new RuntimeException(e);
-				}
-				Map<String,String> prefixDecls = new HashMap<String,String>(8);
-				prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
-				prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
-				prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
-				Service service = new Service(serviceRef, magicPropNode, exprString, prefixDecls, null, false);
-				stub.replaceWith(service);
 			}
 		}
 
@@ -170,49 +203,63 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 			return node;
 		}
 
-		private TupleExpr list(String subj, Map<String,Map<URI,List<StatementPattern>>> spIndex) {
+		private TupleExpr addList(List<? super Var> list, Var subj, Map<String,Map<URI,List<StatementPattern>>> spIndex) {
 			TupleExpr node = null;
 			do
 			{
-				Map<URI,List<StatementPattern>> predMap = spIndex.get(subj);
-				subj = null;
-				if(predMap != null) {
-					List<StatementPattern> firstStmts = predMap.get(RDF.FIRST);
-					List<StatementPattern> restStmts = predMap.get(RDF.REST);
-					if(firstStmts != null && restStmts != null) {
-						for(StatementPattern sp : firstStmts) {
+				Map<URI,List<StatementPattern>> predMap = spIndex.get(subj.getName());
+				if(predMap == null) {
+					return null;
+				}
+
+				List<StatementPattern> firstStmts = predMap.get(RDF.FIRST);
+				if(firstStmts == null) {
+					return null;
+				}
+				if(firstStmts.size() != 1) {
+					return null;
+				}
+
+				List<StatementPattern> restStmts = predMap.get(RDF.REST);
+				if(restStmts == null) {
+					return null;
+				}
+				if(restStmts.size() != 1) {
+					return null;
+				}
+
+				StatementPattern firstStmt = firstStmts.get(0);
+				list.add(firstStmt.getObjectVar());
+				node = join(node, firstStmt);
+
+				StatementPattern restStmt = restStmts.get(0);
+				subj = restStmt.getObjectVar();
+				node = join(node, restStmt);
+
+				List<StatementPattern> typeStmts = predMap.get(RDF.TYPE);
+				if(typeStmts != null) {
+					for(StatementPattern sp : firstStmts) {
+						Value type = sp.getObjectVar().getValue();
+						if(RDFS.RESOURCE.equals(type) || RDF.LIST.equals(type)) {
 							node = join(node, sp);
-						}
-						for(StatementPattern sp : restStmts) {
-							subj = sp.getObjectVar().getName();
-							node = join(node, sp);
-						}
-						List<StatementPattern> typeStmts = predMap.get(RDF.TYPE);
-						if(typeStmts != null) {
-							for(StatementPattern sp : firstStmts) {
-								Value type = sp.getObjectVar().getValue();
-								if(RDFS.RESOURCE.equals(type) || RDF.LIST.equals(type)) {
-									sp.replaceWith(new SingletonSet());
-								}
-							}
 						}
 					}
 				}
 			}
-			while(subj != null);
+			while(!RDF.NIL.equals(subj.getValue()));
 			return node;
 		}
 
 		@Override
-		public void meet(Join node)
+		public void meet(Join node) throws OpenRDFException
 		{
-			BGPCollector<RuntimeException> collector = new BGPCollector<RuntimeException>(this);
+			BGPCollector<OpenRDFException> collector = new BGPCollector<OpenRDFException>(this);
 			node.visit(collector);
 			processGraphPattern(collector.getStatementPatterns());
 		}
 
 		@Override
-		public void meet(StatementPattern node)
+		public void meet(StatementPattern node) throws OpenRDFException
 		{
 			processGraphPattern(Collections.singletonList(node));
 		}
