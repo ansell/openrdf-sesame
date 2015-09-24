@@ -19,6 +19,7 @@ package org.openrdf.query.algebra.evaluation.federation;
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.DistinctIteration;
 import info.aduna.iteration.EmptyIteration;
+import info.aduna.iteration.SingletonIteration;
 import info.aduna.iteration.UnionIteration;
 
 import java.util.ArrayList;
@@ -35,10 +36,12 @@ import org.openrdf.query.algebra.TupleFunctionCall;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
+import org.openrdf.query.algebra.evaluation.QueryBindingSet;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.query.algebra.evaluation.impl.TupleFunctionEvaluationStrategy;
+import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
  * A federated service that knows how to evaluate {@link TupleFunction}s.
@@ -75,15 +78,66 @@ public class TupleFunctionFederatedService implements FederatedService {
 	public boolean ask(Service service, BindingSet bindings, String baseUri)
 		throws QueryEvaluationException
 	{
-		throw new UnsupportedOperationException();
+		final CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(service, new SingletonIteration<BindingSet, QueryEvaluationException>(bindings), baseUri);
+		try {
+			while(iter.hasNext()) {
+				BindingSet bs = iter.next();
+				String firstVar = service.getBindingNames().iterator().next();
+				return QueryEvaluationUtil.getEffectiveBooleanValue(bs.getValue(firstVar));
+			}
+		}
+		finally {
+			iter.close();
+		}
+		return false;
 	}
 
 	@Override
 	public CloseableIteration<BindingSet, QueryEvaluationException> select(Service service,
-			Set<String> projectionVars, BindingSet bindings, String baseUri)
+			final Set<String> projectionVars, BindingSet bindings, String baseUri)
 		throws QueryEvaluationException
 	{
-		throw new UnsupportedOperationException();
+		final CloseableIteration<BindingSet, QueryEvaluationException> iter = evaluate(service, new SingletonIteration<BindingSet, QueryEvaluationException>(bindings), baseUri);
+		if(service.getBindingNames().equals(projectionVars)) {
+			return iter;
+		}
+
+		return new CloseableIteration<BindingSet, QueryEvaluationException>()
+		{
+			@Override
+			public boolean hasNext()
+				throws QueryEvaluationException
+			{
+				return iter.hasNext();
+			}
+
+			@Override
+			public BindingSet next()
+				throws QueryEvaluationException
+			{
+				QueryBindingSet projected = new QueryBindingSet();
+				BindingSet result = iter.next();
+				for(String var : projectionVars) {
+					Value v = result.getValue(var);
+					projected.addBinding(var, v);
+				}
+				return projected;
+			}
+
+			@Override
+			public void remove()
+				throws QueryEvaluationException
+			{
+				iter.remove();
+			}
+
+			@Override
+			public void close()
+				throws QueryEvaluationException
+			{
+				iter.close();
+			}
+		};
 	}
 
 	@Override

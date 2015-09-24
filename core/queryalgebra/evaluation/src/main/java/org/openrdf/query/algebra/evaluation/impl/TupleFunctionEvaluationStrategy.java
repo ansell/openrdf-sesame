@@ -132,7 +132,7 @@ public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 			{
 				QueryBindingSet resultBindings;
 				if(iter.hasNext()) {
-					resultBindings = new QueryBindingSet();
+					resultBindings = new QueryBindingSet(bindings);
 					List<? extends Value> values = iter.next();
 					if(resultVars.size() != values.size()) {
 						throw new QueryEvaluationException("Incorrect number of result vars: require "+values.size());
