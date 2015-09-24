@@ -22,36 +22,35 @@ import info.aduna.iteration.EmptyIteration;
 import info.aduna.iteration.UnionIteration;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Service;
-import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.TupleFunctionCall;
+import org.openrdf.query.algebra.ValueConstant;
+import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
+import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.query.algebra.evaluation.impl.TupleFunctionEvaluationStrategy;
-import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 
-
+/**
+ * A federated service that knows how to evaluate {@link TupleFunction}s.
+ */
 public class TupleFunctionFederatedService implements FederatedService {
-	private final TupleFunction func;
+	private final TupleFunctionRegistry tupleFunctionRegistry;
 	private final ValueFactory vf;
 
 	private volatile boolean isInitialized;
 
-	public TupleFunctionFederatedService(TupleFunction func, ValueFactory vf) {
-		this.func = func;
+	public TupleFunctionFederatedService(TupleFunctionRegistry tupleFunctionRegistry, ValueFactory vf) {
+		this.tupleFunctionRegistry = tupleFunctionRegistry;
 		this.vf = vf;
 	}
 
@@ -97,20 +96,38 @@ public class TupleFunctionFederatedService implements FederatedService {
 		}
 
 		TupleExpr expr = service.getArg();
-		ListIndexer visitor = new ListIndexer(vf.createURI(func.getURI()));
-		expr.visit(visitor);
+		if(!(expr instanceof TupleFunctionCall)) {
+			return new EmptyIteration<BindingSet, QueryEvaluationException>();
+		}
 
-		List<Var> args = readList(visitor.subj, visitor.listEntries, visitor.listNexts);
-		List<Var> resultVars = readList(visitor.obj, visitor.listEntries, visitor.listNexts);
+		TupleFunctionCall funcCall = (TupleFunctionCall) expr;
+		TupleFunction func = tupleFunctionRegistry.get(funcCall.getURI());
+
+		if(func == null) {
+			throw new QueryEvaluationException("Unknown tuple function '" + funcCall.getURI() + "'");
+		}
+
+		List<ValueExpr> argExprs = funcCall.getArgs();
 
 		List<CloseableIteration<BindingSet,QueryEvaluationException>> resultIters = new ArrayList<CloseableIteration<BindingSet,QueryEvaluationException>>();
 		while(bindings.hasNext()) {
 			BindingSet bs = bindings.next();
-			Value[] argValues = new Value[args.size()];
-			for (int i = 0; i < args.size(); i++) {
-				argValues[i] = getValue(args.get(i), bs);
+			Value[] argValues = new Value[argExprs.size()];
+			for (int i = 0; i < argExprs.size(); i++) {
+				ValueExpr argExpr = argExprs.get(i);
+				Value argValue;
+				if(argExpr instanceof Var) {
+					argValue = getValue((Var) argExpr, bs);
+				}
+				else if(argExpr instanceof ValueConstant) {
+					argValue = ((ValueConstant) argExpr).getValue();
+				}
+				else {
+					throw new ValueExprEvaluationException("Unsupported ValueExpr for argument "+i+": "+argExpr.getClass().getSimpleName());
+				}
+				argValues[i] = argValue;
 			}
-			resultIters.add(TupleFunctionEvaluationStrategy.evaluate(func, resultVars, bs, vf, argValues));
+			resultIters.add(TupleFunctionEvaluationStrategy.evaluate(func, funcCall.getResultVars(), bs, vf, argValues));
 		}
 		return (resultIters.size() > 1) ? new DistinctIteration<BindingSet, QueryEvaluationException>(new UnionIteration<BindingSet, QueryEvaluationException>(resultIters)) : resultIters.get(0);
 	}
@@ -126,54 +143,5 @@ public class TupleFunctionFederatedService implements FederatedService {
 			throw new ValueExprEvaluationException("No value for binding "+var.getName());
 		}
 		return v;
-	}
-
-	private static List<Var> readList(Var var, Map<String,Var> listEntries, Map<String,Var> listNexts) {
-		List<Var> arr = null;
-		Var next = var;
-		do {
-			String name = next.getName();
-			Var entry = listEntries.get(name);
-			if(entry != null) {
-				if(arr == null) {
-					arr = new ArrayList<Var>(4);
-				}
-				arr.add(entry);
-			}
-			next = listNexts.get(name);
-		} while(next != null && !RDF.NIL.equals(next.getValue()));
-		if(arr == null) {
-			arr = Collections.singletonList(var);
-		}
-		return arr;
-	}
-
-
-
-	static class ListIndexer extends QueryModelVisitorBase<RuntimeException> {
-		final URI property;
-		final Map<String,Var> listEntries = new HashMap<String,Var>();
-		final Map<String,Var> listNexts = new HashMap<String,Var>();
-		Var subj;
-		Var obj;
-
-		ListIndexer(URI property) {
-			this.property = property;
-		}
-
-		@Override
-		public void meet(StatementPattern node) {
-			URI pred = (URI) node.getPredicateVar().getValue();
-			if(property.equals(pred)) {
-				subj = node.getSubjectVar();
-				obj = node.getObjectVar();
-			}
-			else if(RDF.FIRST.equals(pred)) {
-				listEntries.put(node.getSubjectVar().getName(), node.getObjectVar());
-			}
-			else if(RDF.REST.equals(pred)) {
-				listNexts.put(node.getSubjectVar().getName(), node.getObjectVar());
-			}
-		}
 	}
 }

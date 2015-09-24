@@ -60,6 +60,8 @@ import org.slf4j.LoggerFactory;
 public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 	private static final Logger logger = LoggerFactory.getLogger(SpinMagicPropertyInterpreter.class);
 
+	private static final String SPIN_SERVICE = "spin:/";
+
 	private final TripleSource tripleSource;
 	private final SpinParser parser;
 	private final TupleFunctionRegistry tupleFunctionRegistry;

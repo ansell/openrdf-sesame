@@ -89,7 +89,7 @@ public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 		TupleFunction func = tupleFuncRegistry.get(expr.getURI());
 
 		if(func == null) {
-			throw new QueryEvaluationException("Unknown function '" + expr.getURI() + "'");
+			throw new QueryEvaluationException("Unknown tuple function '" + expr.getURI() + "'");
 		}
 
 		List<ValueExpr> args = expr.getArgs();
