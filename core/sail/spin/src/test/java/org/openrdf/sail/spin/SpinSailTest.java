@@ -118,6 +118,12 @@ public class SpinSailTest {
 	}
 
 	@Test
+	public void testMagicPropertyFunction() throws Exception {
+		loadStatements("testMagicPropertyFunction.ttl");
+		assertStatements("testMagicPropertyFunction-expected.ttl");
+	}
+
+	@Test
 	public void testSpinxRule() throws Exception {
 		loadStatements("testSpinxRule.ttl");
 		assertStatements("testSpinxRule-expected.ttl");

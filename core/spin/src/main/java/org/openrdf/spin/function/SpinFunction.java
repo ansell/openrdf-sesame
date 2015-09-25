@@ -19,18 +19,15 @@ package org.openrdf.spin.function;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.BooleanQueryResultHandler;
 import org.openrdf.query.Query;
-import org.openrdf.query.QueryResultHandlerException;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.Function;
@@ -78,15 +75,15 @@ public class SpinFunction extends AbstractSpinFunction implements Function {
 		throws ValueExprEvaluationException
 	{
 		QueryPreparer qp = getCurrentQueryPreparer();
-		ResultHandler handler = new ResultHandler();
+		Value result;
 		if(parsedQuery instanceof ParsedBooleanQuery) {
 			ParsedBooleanQuery askQuery = (ParsedBooleanQuery) parsedQuery;
 			BooleanQuery queryOp = qp.prepare(askQuery);
 			addBindings(queryOp, arguments, args);
 			try {
-				handler.handleBoolean(queryOp.evaluate());
+				result = BooleanLiteralImpl.valueOf(queryOp.evaluate());
 			}
-			catch (OpenRDFException e) {
+			catch (QueryEvaluationException e) {
 				throw new ValueExprEvaluationException(e);
 			}
 		}
@@ -95,16 +92,26 @@ public class SpinFunction extends AbstractSpinFunction implements Function {
 			TupleQuery queryOp = qp.prepare(selectQuery);
 			addBindings(queryOp, arguments, args);
 			try {
-				queryOp.evaluate(handler);
+				TupleQueryResult queryResult = queryOp.evaluate();
+				if(queryResult.hasNext()) {
+					BindingSet bs = queryResult.next();
+					if(bs.size() != 1) {
+						throw new ValueExprEvaluationException("Only a single result variables is supported: "+bs);
+					}
+					result = bs.iterator().next().getValue();
+				}
+				else {
+					result = null;
+				}
 			}
-			catch (OpenRDFException e) {
+			catch (QueryEvaluationException e) {
 				throw new ValueExprEvaluationException(e);
 			}
 		}
 		else {
 			throw new IllegalStateException("Unexpected query: "+parsedQuery);
 		}
-		return handler.getResult();
+		return result;
 	}
 
 	private static void addBindings(Query query, List<Argument> arguments, Value... args)
@@ -112,53 +119,6 @@ public class SpinFunction extends AbstractSpinFunction implements Function {
 		for(int i=0; i<args.length; i++) {
 			Argument argument = arguments.get(i);
 			query.setBinding(argument.getPredicate().getLocalName(), args[i]);
-		}
-	}
-
-
-	static class ResultHandler implements BooleanQueryResultHandler, TupleQueryResultHandler {
-		Value result;
-
-		Value getResult() {
-			return result;
-		}
-
-		@Override
-		public void handleBoolean(boolean value)
-			throws QueryResultHandlerException
-		{
-			result = BooleanLiteralImpl.valueOf(value);
-		}
-
-		@Override
-		public void handleLinks(List<String> linkUrls)
-			throws QueryResultHandlerException
-		{
-		}
-
-		@Override
-		public void startQueryResult(List<String> bindingNames)
-			throws TupleQueryResultHandlerException
-		{
-			result = null;
-		}
-
-		@Override
-		public void handleSolution(BindingSet bindingSet)
-			throws TupleQueryResultHandlerException
-		{
-			if(result == null) {
-				if(bindingSet.size() != 1) {
-					throw new TupleQueryResultHandlerException("Only a single result variables is supported: "+bindingSet);
-				}
-				result = bindingSet.iterator().next().getValue();
-			}
-		}
-
-		@Override
-		public void endQueryResult()
-			throws TupleQueryResultHandlerException
-		{
 		}
 	}
 }

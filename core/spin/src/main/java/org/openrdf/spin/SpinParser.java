@@ -139,6 +139,7 @@ import org.openrdf.spin.function.FunctionParser;
 import org.openrdf.spin.function.KnownFunctionParser;
 import org.openrdf.spin.function.KnownTupleFunctionParser;
 import org.openrdf.spin.function.SpinFunctionParser;
+import org.openrdf.spin.function.SpinTupleFunctionAsFunctionParser;
 import org.openrdf.spin.function.SpinTupleFunctionParser;
 import org.openrdf.spin.function.SpinxFunctionParser;
 import org.openrdf.spin.function.TupleFunctionParser;
@@ -217,13 +218,14 @@ public class SpinParser {
 		this.wellKnownVars = wellKnownVarsMapper;
 		this.wellKnownFunctions = wellKnownFuncMapper;
 		this.functionParsers = Arrays.<FunctionParser>asList(
+				new KnownFunctionParser(FunctionRegistry.getInstance()),
+				new SpinTupleFunctionAsFunctionParser(this),
 				new SpinFunctionParser(this),
-				new SpinxFunctionParser(this),
-				new KnownFunctionParser(FunctionRegistry.getInstance())
+				new SpinxFunctionParser(this)
 			);
 		this.tupleFunctionParsers = Arrays.<TupleFunctionParser>asList(
-			new SpinTupleFunctionParser(this),
-			new KnownTupleFunctionParser(TupleFunctionRegistry.getInstance())
+			new KnownTupleFunctionParser(TupleFunctionRegistry.getInstance()),
+			new SpinTupleFunctionParser(this)
 		);
 	}
 	
@@ -233,6 +235,14 @@ public class SpinParser {
 
 	public void setFunctionParsers(List<FunctionParser> functionParsers) {
 		this.functionParsers = functionParsers;
+	}
+	
+	public List<TupleFunctionParser> getTupleFunctionParsers() {
+		return tupleFunctionParsers;
+	}
+
+	public void setTupleFunctionParsers(List<TupleFunctionParser> tupleFunctionParsers) {
+		this.tupleFunctionParsers = tupleFunctionParsers;
 	}
 
 	public boolean isStrictFunctionChecking() {
