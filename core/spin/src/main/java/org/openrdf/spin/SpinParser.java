@@ -222,7 +222,7 @@ public class SpinParser {
 		this.wellKnownVars = wellKnownVarsMapper;
 		this.wellKnownFunctions = wellKnownFuncMapper;
 		this.functionParsers = Arrays.<FunctionParser>asList(
-				new KnownFunctionParser(FunctionRegistry.getInstance()),
+				new KnownFunctionParser(FunctionRegistry.getInstance(), wellKnownFunctions),
 				new SpinTupleFunctionAsFunctionParser(this),
 				new SpinFunctionParser(this),
 				new SpinxFunctionParser(this)

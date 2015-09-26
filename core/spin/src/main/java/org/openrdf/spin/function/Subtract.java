@@ -16,26 +16,30 @@
  */
 package org.openrdf.spin.function;
 
+import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.SP;
-import org.openrdf.query.algebra.Compare.CompareOp;
+import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.BinaryFunction;
-import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
+import org.openrdf.query.algebra.evaluation.util.MathUtil;
 
-public class GreaterThan extends BinaryFunction {
+public class Subtract extends BinaryFunction {
 
 	@Override
 	public String getURI() {
-		return SP.GT.toString();
+		return SP.SUB.toString();
 	}
 
 	@Override
 	protected Value evaluate(ValueFactory valueFactory, Value arg1, Value arg2)
 		throws ValueExprEvaluationException
 	{
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.compare(arg1, arg2, CompareOp.GT));
+		if (arg1 instanceof Literal && arg2 instanceof Literal) {
+			return MathUtil.compute((Literal)arg1, (Literal)arg2, MathOp.MINUS);
+		}
+
+		throw new ValueExprEvaluationException("Both arguments must be numeric literals");
 	}
 }

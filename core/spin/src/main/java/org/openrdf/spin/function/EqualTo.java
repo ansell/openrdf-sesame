@@ -25,17 +25,17 @@ import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.function.BinaryFunction;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
-public class GreaterThan extends BinaryFunction {
+public class EqualTo extends BinaryFunction {
 
 	@Override
 	public String getURI() {
-		return SP.GT.toString();
+		return SP.EQ.toString();
 	}
 
 	@Override
 	protected Value evaluate(ValueFactory valueFactory, Value arg1, Value arg2)
 		throws ValueExprEvaluationException
 	{
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.compare(arg1, arg2, CompareOp.GT));
+		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.compare(arg1, arg2, CompareOp.EQ));
 	}
 }

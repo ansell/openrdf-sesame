@@ -14,28 +14,25 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.spin.function;
+package org.openrdf.query.algebra.evaluation.function;
 
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.BooleanLiteralImpl;
-import org.openrdf.model.vocabulary.SP;
-import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.function.BinaryFunction;
-import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
-public class GreaterThan extends BinaryFunction {
+public abstract class UnaryFunction implements Function {
 
 	@Override
-	public String getURI() {
-		return SP.GT.toString();
-	}
-
-	@Override
-	protected Value evaluate(ValueFactory valueFactory, Value arg1, Value arg2)
+	public Value evaluate(ValueFactory valueFactory, Value... args)
 		throws ValueExprEvaluationException
 	{
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.compare(arg1, arg2, CompareOp.GT));
+		if (args.length != 1) {
+			throw new ValueExprEvaluationException(String.format("%s requires 1 argument, got %d", getURI(), args.length));
+		}
+
+		return evaluate(valueFactory, args[0]);
 	}
+
+	protected abstract Value evaluate(ValueFactory valueFactory, Value arg)
+			throws ValueExprEvaluationException;
 }

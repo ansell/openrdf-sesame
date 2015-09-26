@@ -20,22 +20,23 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.vocabulary.SP;
-import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.function.BinaryFunction;
+import org.openrdf.query.algebra.evaluation.function.UnaryFunction;
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
-public class GreaterThan extends BinaryFunction {
+public class Not extends UnaryFunction {
 
 	@Override
 	public String getURI() {
-		return SP.GT.toString();
+		return SP.AND.toString();
 	}
 
 	@Override
-	protected Value evaluate(ValueFactory valueFactory, Value arg1, Value arg2)
+	protected Value evaluate(ValueFactory valueFactory, Value arg)
 		throws ValueExprEvaluationException
 	{
-		return BooleanLiteralImpl.valueOf(QueryEvaluationUtil.compare(arg1, arg2, CompareOp.GT));
+		return BooleanLiteralImpl.valueOf(
+				!QueryEvaluationUtil.getEffectiveBooleanValue(arg)
+		);
 	}
 }
