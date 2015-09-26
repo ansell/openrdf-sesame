@@ -25,7 +25,6 @@ import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
-import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
@@ -37,18 +36,25 @@ import org.openrdf.spin.SpinParser;
 
 public class SpinSail extends AbstractForwardChainingInferencer {
 
+	public enum EvaluationMode {
+		SERVICE,
+		NATIVE,
+		TRIPLE_SOURCE
+	}
+
 	private FunctionRegistry functionRegistry = FunctionRegistry.getInstance();
 	private TupleFunctionRegistry tupleFunctionRegistry = TupleFunctionRegistry.getInstance();
-	private FederatedServiceResolverBase serviceRegistry = new FederatedServiceResolverImpl();
+	private FederatedServiceResolver serviceResolver = new FederatedServiceResolverImpl();
 	private SpinParser parser = new SpinParser();
+	private EvaluationMode evaluationMode = EvaluationMode.SERVICE;
 
 	public SpinSail() {
-		super.setFederatedServiceResolver(serviceRegistry);
+		super.setFederatedServiceResolver(serviceResolver);
 	}
 
 	public SpinSail(NotifyingSail baseSail) {
 		super(baseSail);
-		super.setFederatedServiceResolver(serviceRegistry);
+		super.setFederatedServiceResolver(serviceResolver);
 	}
 
 	public FunctionRegistry getFunctionRegistry() {
@@ -68,16 +74,21 @@ public class SpinSail extends AbstractForwardChainingInferencer {
 	}
 
 	public FederatedServiceResolver getFederatedServiceResolver() {
-		return serviceRegistry;
+		return serviceResolver;
 	}
 
 	@Override
 	public void setFederatedServiceResolver(FederatedServiceResolver resolver) {
-		if(!(resolver instanceof FederatedServiceResolverBase)) {
-			throw new IllegalArgumentException("Required to be an instance of "+FederatedServiceResolverBase.class.getName());
-		}
-		serviceRegistry = (FederatedServiceResolverBase) resolver;
+		serviceResolver = resolver;
 		super.setFederatedServiceResolver(resolver);
+	}
+
+	public void setEvaluationMode(EvaluationMode mode) {
+		this.evaluationMode = mode;
+	}
+
+	public EvaluationMode getEvaluationMode() {
+		return evaluationMode;
 	}
 
 	public SpinParser getSpinParser() {

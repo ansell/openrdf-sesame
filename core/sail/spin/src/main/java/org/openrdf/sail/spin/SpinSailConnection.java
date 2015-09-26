@@ -53,10 +53,26 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.Update;
 import org.openrdf.query.algebra.QueryRoot;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
+import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
+import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.ConjunctiveConstraintSplitter;
+import org.openrdf.query.algebra.evaluation.impl.ConstantOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.DisjunctiveConstraintOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.EvaluationStatistics;
+import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
+import org.openrdf.query.algebra.evaluation.impl.FilterOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.IterativeEvaluationOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.OrderLimitOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.QueryJoinOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.QueryModelNormalizer;
+import org.openrdf.query.algebra.evaluation.impl.SameTermFilterOptimizer;
+import org.openrdf.query.algebra.evaluation.impl.TupleFunctionEvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.util.Statements;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
@@ -70,9 +86,11 @@ import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailConnectionQueryPreparer;
 import org.openrdf.sail.SailException;
+import org.openrdf.sail.SailTripleSource;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnection;
 import org.openrdf.sail.inferencer.util.RDFInferencerInserter;
+import org.openrdf.sail.spin.SpinSail.EvaluationMode;
 import org.openrdf.spin.ConstraintViolation;
 import org.openrdf.spin.ConstraintViolationRDFHandler;
 import org.openrdf.spin.MalformedSpinException;
@@ -92,6 +110,8 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private static final Marker constraintViolationMarker = MarkerFactory.getMarker("ConstraintViolation");
 
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "Constraint violation: {}: {} {} {}";
+
+	private final EvaluationMode evaluationMode;
 
 	private final FunctionRegistry functionRegistry;
 
@@ -115,13 +135,25 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	public SpinSailConnection(SpinSail sail, InferencerConnection con) {
 		super(sail, con);
+		this.evaluationMode = sail.getEvaluationMode();
 		this.functionRegistry = sail.getFunctionRegistry();
 		this.tupleFunctionRegistry = sail.getTupleFunctionRegistry();
-		this.serviceResolver = (FederatedServiceResolverBase) sail.getFederatedServiceResolver();
 		this.vf = sail.getValueFactory();
 		this.parser = sail.getSpinParser();
 		this.queryPreparer = new SailConnectionQueryPreparer(this, true, vf);
 		this.tripleSource = queryPreparer.getTripleSource();
+
+		if(evaluationMode == EvaluationMode.SERVICE) {
+			FederatedServiceResolver resolver = sail.getFederatedServiceResolver();
+			if(!(resolver instanceof FederatedServiceResolverBase)) {
+				throw new IllegalArgumentException("SERVICE EvaluationMode requires a FederatedServiceResolver that is an instance of "+FederatedServiceResolverBase.class.getName());
+			}
+			this.serviceResolver = (FederatedServiceResolverBase) resolver;
+		}
+		else {
+			this.serviceResolver = null;
+		}
+
 		con.addConnectionListener(new SailConnectionListener() {
 
 			@Override
@@ -181,9 +213,40 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		new SpinFunctionInterpreter(parser, tripleSource, functionRegistry).optimize(tupleExpr, dataset, bindings);
 		new SpinMagicPropertyInterpreter(parser, tripleSource, tupleFunctionRegistry, serviceResolver).optimize(tupleExpr, dataset, bindings);
 
-		logger.trace("Optimized query model:\n{}", tupleExpr);
+		logger.trace("SPIN query model:\n{}", tupleExpr);
 
-		return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
+		if(evaluationMode == EvaluationMode.TRIPLE_SOURCE) {
+			EvaluationStrategy strategy = new TupleFunctionEvaluationStrategy(
+					new EvaluationStrategyImpl(new SailTripleSource(this, includeInferred, vf), dataset, serviceResolver),
+					vf,
+					tupleFunctionRegistry);
+
+			// do standard optimizations
+			new BindingAssigner().optimize(tupleExpr, dataset, bindings);
+			new ConstantOptimizer(strategy).optimize(tupleExpr, dataset, bindings);
+			new CompareOptimizer().optimize(tupleExpr, dataset, bindings);
+			new ConjunctiveConstraintSplitter().optimize(tupleExpr, dataset, bindings);
+			new DisjunctiveConstraintOptimizer().optimize(tupleExpr, dataset, bindings);
+			new SameTermFilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new QueryModelNormalizer().optimize(tupleExpr, dataset, bindings);
+			new QueryJoinOptimizer(new EvaluationStatistics()).optimize(tupleExpr, dataset, bindings);
+			// new SubSelectJoinOptimizer().optimize(tupleExpr, dataset, bindings);
+			new IterativeEvaluationOptimizer().optimize(tupleExpr, dataset, bindings);
+			new FilterOptimizer().optimize(tupleExpr, dataset, bindings);
+			new OrderLimitOptimizer().optimize(tupleExpr, dataset, bindings);
+
+			logger.trace("Optimized query model:\n{}", tupleExpr);
+
+			try {
+				return strategy.evaluate(tupleExpr, bindings);
+			}
+			catch(QueryEvaluationException e) {
+				throw new SailException(e);
+			}
+		}
+		else {
+			return super.evaluate(tupleExpr, dataset, bindings, includeInferred);
+		}
 	}
 
 	@Override

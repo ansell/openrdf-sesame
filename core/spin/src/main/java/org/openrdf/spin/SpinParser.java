@@ -602,7 +602,7 @@ public class SpinParser {
 	}
 
 	private Map<URI,Argument> parseTemplateArguments(URI tmplUri, Set<URI> abstractTmpls, TripleSource store)
-			throws OpenRDFException
+		throws OpenRDFException
 	{
 		Map<URI,Argument> args = new HashMap<URI,Argument>();
 		for(URI abstractTmpl : abstractTmpls) {
@@ -755,6 +755,8 @@ public class SpinParser {
 			return ValueFactoryImpl.getInstance().createURI(SP.NAMESPACE, "arg"+i);
 		}
 	}
+
+
 
 
 	class SpinVisitor {

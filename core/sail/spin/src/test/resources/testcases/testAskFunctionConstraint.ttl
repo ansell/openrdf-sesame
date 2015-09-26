@@ -23,5 +23,4 @@ ex:testSubj1 a ex:testClass ;
 								?this ex:prop ?x
 								FILTER(?x > 0)
 							}""" ;
-				rdfs:label """Test constraint"""
 		] .
