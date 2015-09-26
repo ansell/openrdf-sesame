@@ -89,14 +89,14 @@ public class SpinSailTest {
 	}
 
 	@Test
-	public void testAskFunctionConstraint() throws Exception {
-		loadStatements("testAskFunctionConstraint.ttl");
-	}
-
-	@Test
 	public void testConstructRule() throws Exception {
 		loadStatements("testConstructRule.ttl");
 		assertStatements("testConstructRule-expected.ttl");
+	}
+
+	@Test
+	public void testEvalFunctionConstraint() throws Exception {
+		loadStatements("testEvalFunctionConstraint.ttl");
 	}
 
 	@Test

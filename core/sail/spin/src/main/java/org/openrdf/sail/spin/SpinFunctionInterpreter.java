@@ -50,8 +50,8 @@ public class SpinFunctionInterpreter implements QueryOptimizer {
 		this.parser = parser;
 		this.tripleSource = tripleSource;
 		this.functionRegistry = functionRegistry;
-		if(!(functionRegistry.get(FN.CONCAT.toString()) instanceof org.openrdf.sail.spin.function.Concat)) {
-			functionRegistry.add(new org.openrdf.sail.spin.function.Concat());
+		if(!(functionRegistry.get(FN.CONCAT.toString()) instanceof org.openrdf.spin.function.Concat)) {
+			functionRegistry.add(new org.openrdf.spin.function.Concat());
 		}
 		if(!functionRegistry.has(SPIN.EVAL_FUNCTION.toString())) {
 			functionRegistry.add(new EvalFunction(parser));
