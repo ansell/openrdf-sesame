@@ -11,3 +11,4 @@ org.openrdf.spin.function.LessThan
 org.openrdf.spin.function.LessThanOrEqualTo
 org.openrdf.spin.function.GreaterThan
 org.openrdf.spin.function.GreaterThanOrEqualTo
+org.openrdf.spin.function.Localname

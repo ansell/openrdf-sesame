@@ -44,7 +44,7 @@ import org.openrdf.query.algebra.evaluation.impl.TupleFunctionEvaluationStrategy
 import org.openrdf.query.algebra.evaluation.util.QueryEvaluationUtil;
 
 /**
- * A federated service that knows how to evaluate {@link TupleFunction}s.
+ * A federated service that can evaluate {@link TupleFunction}s.
  */
 public class TupleFunctionFederatedService implements FederatedService {
 	private final TupleFunctionRegistry tupleFunctionRegistry;

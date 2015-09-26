@@ -37,6 +37,10 @@ import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 
 
+/**
+ * An {@link EvaluationStrategy} that adds support for {@link TupleFunction}s
+ * to an existing EvaluationStrategy.
+ */
 public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 
 	private final EvaluationStrategy delegate;
