@@ -55,6 +55,10 @@ public class ParsedUpdate extends ParsedOperation {
 		super();
 	}
 
+	public ParsedUpdate(String sourceString) {
+		super(sourceString);
+	}
+
 	/**
 	 * Creates a new update sequence. To complete this update sequence, one or
 	 * update expressions need to be supplied to it using

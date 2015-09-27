@@ -93,6 +93,7 @@ import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
+import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
@@ -115,6 +116,7 @@ import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -719,8 +721,12 @@ public class SpinParser {
 			visitor.visitDescribe(queryResource);
 			return new ParsedDescribeQuery(visitor.getTupleExpr());
 		}
-		else if (UPDATE_TYPES.contains(queryType)) {
-			return new ParsedUpdate();
+		else if (SP.MODIFY_CLASS.equals(queryType)) {
+			SpinVisitor visitor = new SpinVisitor(store);
+			visitor.visitModify(queryResource);
+			ParsedUpdate parsedUpdate = new ParsedUpdate();
+			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
+			return parsedUpdate;
 		}
 		else {
 			throw new MalformedSpinException(String.format("Unrecognised command type: %s", queryType));
@@ -767,8 +773,9 @@ public class SpinParser {
 
 	class SpinVisitor {
 		final TripleSource store;
-		TupleExpr root;
-		TupleExpr node;
+		TupleExpr tupleRoot;
+		TupleExpr tupleNode;
+		UpdateExpr updateRoot;
 		Var namedGraph;
 		Map<String,ProjectionElem> projElems;
 		Group group;
@@ -780,7 +787,11 @@ public class SpinParser {
 		}
 
 		public TupleExpr getTupleExpr() {
-			return root;
+			return tupleRoot;
+		}
+
+		public UpdateExpr getUpdateExpr() {
+			return updateRoot;
 		}
 
 		public void visitConstruct(Resource construct)
@@ -849,7 +860,7 @@ public class SpinParser {
 
 			boolean distinct = Statements.booleanValue(select, SP.DISTINCT_PROPERTY, store);
 			if(distinct) {
-				root = new Distinct(root);
+				tupleRoot = new Distinct(tupleRoot);
 			}
 
 			long offset = -1L;
@@ -863,22 +874,22 @@ public class SpinParser {
 				limit = ((Literal)limitValue).longValue();
 			}
 			if(offset > 0L || limit >= 0L) {
-				Slice slice = new Slice(root);
+				Slice slice = new Slice(tupleRoot);
 				if(offset > 0L) {
 					slice.setOffset(offset);
 				}
 				if(limit >= 0L) {
 					slice.setLimit(limit);
 				}
-				root = slice;
+				tupleRoot = slice;
 			}
 		}
 
 		public void visitAsk(Resource ask)
 				throws OpenRDFException
 		{
-			node = new SingletonSet();
-			root = new Slice(node, 0, 1);
+			tupleNode = new SingletonSet();
+			tupleRoot = new Slice(tupleNode, 0, 1);
 			visitWhere(ask);
 		}
 
@@ -921,10 +932,10 @@ public class SpinParser {
 
 			Reduced reduced = new Reduced();
 			reduced.setArg(expr);
-			root = reduced;
+			tupleRoot = reduced;
 			SingletonSet stub = new SingletonSet();
 			expr.setArg(stub);
-			node = stub;
+			tupleNode = stub;
 			return expr;
 		}
 
@@ -955,10 +966,10 @@ public class SpinParser {
 			Projection proj = new Projection();
 			proj.setProjectionElemList(projElemList);
 
-			root = new DescribeOperator(proj);
+			tupleRoot = new DescribeOperator(proj);
 			SingletonSet stub = new SingletonSet();
 			proj.setArg(stub);
-			node = stub;
+			tupleNode = stub;
 			return proj;
 		}
 
@@ -982,10 +993,10 @@ public class SpinParser {
 			Projection proj = new Projection();
 			proj.setProjectionElemList(projElemList);
 
-			root = proj;
+			tupleRoot = proj;
 			SingletonSet stub = new SingletonSet();
 			proj.setArg(stub);
-			node = stub;
+			tupleNode = stub;
 			return proj;
 		}
 
@@ -1113,8 +1124,51 @@ public class SpinParser {
 			return projElem;
 		}
 
+		public void visitModify(Resource query)
+			throws OpenRDFException
+		{
+			SingletonSet stub = new SingletonSet();
+			tupleRoot = new QueryRoot(stub);
+			tupleNode = stub;
+			TupleExpr deleteExpr;
+			Value delete = Statements.singleValue(query, SP.DELETE_PATTERN_PROPERTY, store);
+			if(delete != null) {
+				visitDelete((Resource) delete);
+				deleteExpr = tupleNode;
+			}
+			else {
+				deleteExpr = null;
+			}
+
+			tupleRoot = new QueryRoot(stub);
+			tupleNode = stub;
+			TupleExpr insertExpr;
+			Value insert = Statements.singleValue(query, SP.INSERT_PATTERN_PROPERTY, store);
+			if(insert != null) {
+				visitInsert((Resource) insert);
+				insertExpr = tupleNode;
+			}
+			else {
+				insertExpr = null;
+			}
+
+			tupleRoot = new QueryRoot(stub);
+			tupleNode = stub;
+			TupleExpr whereExpr;
+			Value where = Statements.singleValue(query, SP.WHERE_PROPERTY, store);
+			if(where != null) {
+				visitGroupGraphPattern((Resource) where);
+				whereExpr = tupleNode;
+			}
+			else {
+				whereExpr = null;
+			}
+
+			updateRoot = new Modify(deleteExpr, insertExpr, whereExpr);
+		}
+
 		public void visitWhere(Resource query)
-				throws OpenRDFException
+			throws OpenRDFException
 		{
 			Value where = Statements.singleValue(query, SP.WHERE_PROPERTY, store);
 			if(!(where instanceof Resource)) {
@@ -1134,9 +1188,9 @@ public class SpinParser {
 			}
 
 			// first process filters
-			TupleExpr currentNode = node;
+			TupleExpr currentNode = tupleNode;
 			SingletonSet nextNode = new SingletonSet();
-			node = nextNode;
+			tupleNode = nextNode;
 			for(Iterator<Map.Entry<Resource,Set<URI>>> iter = patternTypes.entrySet().iterator(); iter.hasNext(); ) {
 				Map.Entry<Resource,Set<URI>> entry = iter.next();
 				if(entry.getValue().contains(SP.FILTER_CLASS)) {
@@ -1144,13 +1198,13 @@ public class SpinParser {
 					iter.remove();
 				}
 			}
-			currentNode.replaceWith(node);
-			node = nextNode;
+			currentNode.replaceWith(tupleNode);
+			tupleNode = nextNode;
 
 			// then binds
-			currentNode = node;
+			currentNode = tupleNode;
 			nextNode = new SingletonSet();
-			node = nextNode;
+			tupleNode = nextNode;
 			for(Iterator<Map.Entry<Resource,Set<URI>>> iter = patternTypes.entrySet().iterator(); iter.hasNext(); ) {
 				Map.Entry<Resource,Set<URI>> entry = iter.next();
 				if(entry.getValue().contains(SP.BIND_CLASS)) {
@@ -1158,8 +1212,8 @@ public class SpinParser {
 					iter.remove();
 				}
 			}
-			currentNode.replaceWith(node);
-			node = nextNode;
+			currentNode.replaceWith(tupleNode);
+			tupleNode = nextNode;
 
 			// then anything else
 			for(Iterator<Map.Entry<Resource,Set<URI>>> iter = patternTypes.entrySet().iterator(); iter.hasNext(); ) {
@@ -1168,17 +1222,39 @@ public class SpinParser {
 			}
 		}
 
+		private void visitInsert(Resource insert)
+			throws OpenRDFException
+		{
+			Iteration<? extends Resource, QueryEvaluationException> groupIter = Statements.listResources(insert, store);
+			while(groupIter.hasNext()) {
+				Resource r = groupIter.next();
+				Value type = Statements.singleValue(r, RDF.TYPE, store);
+				visitPattern(r, (type != null) ? Collections.singleton((URI)type) : Collections.<URI>emptySet());
+			}
+		}
+
+		private void visitDelete(Resource delete)
+			throws OpenRDFException
+		{
+			Iteration<? extends Resource, QueryEvaluationException> groupIter = Statements.listResources(delete, store);
+			while(groupIter.hasNext()) {
+				Resource r = groupIter.next();
+				Value type = Statements.singleValue(r, RDF.TYPE, store);
+				visitPattern(r, (type != null) ? Collections.singleton((URI)type) : Collections.<URI>emptySet());
+			}
+		}
+
 		private void visitPattern(Resource r, Set<URI> types)
 			throws OpenRDFException
 		{
-			TupleExpr currentNode = node;
+			TupleExpr currentNode = tupleNode;
 			Value pred = Statements.singleValue(r, SP.PREDICATE_PROPERTY, store);
 			if(pred != null) {
 				// only triple patterns have sp:predicate
 				Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
 				Value obj = Statements.singleValue(r, SP.OBJECT_PROPERTY, store);
 				Scope stmtScope = (namedGraph != null) ? Scope.NAMED_CONTEXTS : Scope.DEFAULT_CONTEXTS;
-				node = new StatementPattern(stmtScope, getVar(subj), getVar(pred), getVar(obj), namedGraph);
+				tupleNode = new StatementPattern(stmtScope, getVar(subj), getVar(pred), getVar(obj), namedGraph);
 			}
 			else {
 				if(types.contains(SP.NAMED_GRAPH_CLASS)) {
@@ -1189,10 +1265,10 @@ public class SpinParser {
 					if(!(elements instanceof Resource)) {
 						throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.ELEMENTS_PROPERTY));
 					}
-					node = new SingletonSet();
-					QueryRoot group = new QueryRoot(node);
+					tupleNode = new SingletonSet();
+					QueryRoot group = new QueryRoot(tupleNode);
 					visitGroupGraphPattern((Resource) elements);
-					node = group.getArg();
+					tupleNode = group.getArg();
 					namedGraph = oldGraph;
 				}
 				else if(types.contains(SP.UNION_CLASS)) {
@@ -1205,12 +1281,12 @@ public class SpinParser {
 					TupleExpr prev = null;
 					while(iter.hasNext()) {
 						Resource entry = iter.next();
-						node = new SingletonSet();
-						QueryRoot groupRoot = new QueryRoot(node);
+						tupleNode = new SingletonSet();
+						QueryRoot groupRoot = new QueryRoot(tupleNode);
 						visitGroupGraphPattern(entry);
 						TupleExpr groupExpr = groupRoot.getArg();
 						if(prev != null) {
-							node = new Union(prev, groupExpr);
+							tupleNode = new Union(prev, groupExpr);
 						}
 						prev = groupExpr;
 					}
@@ -1220,14 +1296,14 @@ public class SpinParser {
 					if(!(elements instanceof Resource)) {
 						throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.ELEMENTS_PROPERTY));
 					}
-					node = new SingletonSet();
-					QueryRoot groupRoot = new QueryRoot(node);
+					tupleNode = new SingletonSet();
+					QueryRoot groupRoot = new QueryRoot(tupleNode);
 					visitGroupGraphPattern((Resource) elements);
 					LeftJoin leftJoin = new LeftJoin();
 					currentNode.replaceWith(leftJoin);
 					leftJoin.setLeftArg(currentNode);
 					leftJoin.setRightArg(groupRoot.getArg());
-					node = leftJoin;
+					tupleNode = leftJoin;
 					currentNode = null;
 				}
 				else if(types.contains(SP.MINUS_CLASS)) {
@@ -1235,22 +1311,22 @@ public class SpinParser {
 					if(!(elements instanceof Resource)) {
 						throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.ELEMENTS_PROPERTY));
 					}
-					node = new SingletonSet();
-					QueryRoot groupRoot = new QueryRoot(node);
+					tupleNode = new SingletonSet();
+					QueryRoot groupRoot = new QueryRoot(tupleNode);
 					visitGroupGraphPattern((Resource) elements);
 					Difference difference = new Difference();
 					currentNode.replaceWith(difference);
 					difference.setLeftArg(currentNode);
 					difference.setRightArg(groupRoot.getArg());
-					node = difference;
+					tupleNode = difference;
 					currentNode = null;
 				}
 				else if(types.contains(SP.SUB_QUERY_CLASS)) {
 					Value q = Statements.singleValue(r, SP.QUERY_PROPERTY, store);
-					TupleExpr oldRoot = root;
+					TupleExpr oldRoot = tupleRoot;
 					visitSelect((Resource) q);
-					node = root;
-					root = oldRoot;
+					tupleNode = tupleRoot;
+					tupleRoot = oldRoot;
 				}
 				else if(types.contains(SP.VALUES_CLASS)) {
 					BindingSetAssignment bsa = new BindingSetAssignment();
@@ -1280,13 +1356,13 @@ public class SpinParser {
 						bindingSets.add(bs);
 					}
 					bsa.setBindingSets(bindingSets);
-					node = bsa;
+					tupleNode = bsa;
 				}
 				else if(types.contains(RDF.LIST) || (Statements.singleValue(r, RDF.FIRST, store) != null)) {
-					node = new SingletonSet();
-					QueryRoot group = new QueryRoot(node);
+					tupleNode = new SingletonSet();
+					QueryRoot group = new QueryRoot(tupleNode);
 					visitGroupGraphPattern(r);
-					node = group.getArg();
+					tupleNode = group.getArg();
 				}
 				else if(types.contains(SP.TRIPLE_PATH_CLASS)) {
 					Value subj = Statements.singleValue(r, SP.SUBJECT_PROPERTY, store);
@@ -1302,7 +1378,7 @@ public class SpinParser {
 						}
 						Var subjVar = getVar(subj);
 						Var objVar = getVar(obj);
-						node = new ArbitraryLengthPath(subjVar, new StatementPattern(subjVar, getVar(subPath), objVar), objVar, minPath.longValue());
+						tupleNode = new ArbitraryLengthPath(subjVar, new StatementPattern(subjVar, getVar(subPath), objVar), objVar, minPath.longValue());
 					}
 					else {
 						throw new UnsupportedOperationException(types.toString());
@@ -1310,8 +1386,8 @@ public class SpinParser {
 				}
 				else if(types.contains(SP.SERVICE_CLASS)) {
 					Value serviceUri = Statements.singleValue(r, SP.SERVICE_URI_PROPERTY, store);
-					node = new SingletonSet();
-					QueryRoot tempRoot = new QueryRoot(node);
+					tupleNode = new SingletonSet();
+					QueryRoot tempRoot = new QueryRoot(tupleNode);
 
 					Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 					if(!(elements instanceof Resource)) {
@@ -1332,8 +1408,8 @@ public class SpinParser {
 					prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
 					prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
 					prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
-					Service service = new Service(getVar(serviceUri), node, exprString, prefixDecls, null, isSilent);
-					node = service;
+					Service service = new Service(getVar(serviceUri), tupleNode, exprString, prefixDecls, null, isSilent);
+					tupleNode = service;
 				}
 				else {
 					throw new UnsupportedOperationException(types.toString());
@@ -1341,14 +1417,14 @@ public class SpinParser {
 			}
 
 			if(currentNode instanceof SingletonSet) {
-				currentNode.replaceWith(node);
+				currentNode.replaceWith(tupleNode);
 			}
 			else if(currentNode != null) {
 				Join join = new Join();
 				currentNode.replaceWith(join);
 				join.setLeftArg(currentNode);
-				join.setRightArg(node);
-				node = join;
+				join.setRightArg(tupleNode);
+				tupleNode = join;
 			}
 		}
 
@@ -1357,7 +1433,7 @@ public class SpinParser {
 		{
 			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 			ValueExpr valueExpr = visitExpression(expr);
-			node = new Filter(node, valueExpr);
+			tupleNode = new Filter(tupleNode, valueExpr);
 		}
 
 		private void visitBind(Resource r)
@@ -1370,7 +1446,7 @@ public class SpinParser {
 				throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.VARIABLE_PROPERTY));
 			}
 			String varName = getVarName((Resource)varValue);
-			node = new Extension(node, new ExtensionElem(valueExpr, varName));
+			tupleNode = new Extension(tupleNode, new ExtensionElem(valueExpr, varName));
 		}
 
 		private ValueExpr visitExpression(Value v)
@@ -1526,22 +1602,22 @@ public class SpinParser {
 				if(!(elements instanceof Resource)) {
 					throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.ELEMENTS_PROPERTY));
 				}
-				TupleExpr currentNode = node;
-				node = new SingletonSet();
-				expr = new Exists(node);
+				TupleExpr currentNode = tupleNode;
+				tupleNode = new SingletonSet();
+				expr = new Exists(tupleNode);
 				visitGroupGraphPattern((Resource) elements);
-				node = currentNode;
+				tupleNode = currentNode;
 			}
 			else if(SP.NOT_EXISTS.equals(func)) {
 				Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 				if(!(elements instanceof Resource)) {
 					throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.ELEMENTS_PROPERTY));
 				}
-				TupleExpr currentNode = node;
-				node = new SingletonSet();
-				expr = new Not(new Exists(node));
+				TupleExpr currentNode = tupleNode;
+				tupleNode = new SingletonSet();
+				expr = new Not(new Exists(tupleNode));
 				visitGroupGraphPattern((Resource) elements);
-				node = currentNode;
+				tupleNode = currentNode;
 			}
 			else if(SP.BOUND.equals(func)) {
 				List<ValueExpr> args = getArgs(r);

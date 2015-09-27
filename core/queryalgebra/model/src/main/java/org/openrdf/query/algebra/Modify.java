@@ -37,6 +37,7 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 		setWhereExpr(whereExpr);
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -70,6 +71,32 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if(other instanceof Modify) {
+			Modify o = (Modify)other;
+			return nullEquals(deleteExpr, o.deleteExpr)
+					&& nullEquals(insertExpr, o.insertExpr)
+					&& nullEquals(whereExpr, o.whereExpr);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 0;
+		if(deleteExpr != null) {
+			result ^= deleteExpr.hashCode();
+		}
+		if(insertExpr != null) {
+			result ^= insertExpr.hashCode();
+		}
+		if(whereExpr != null) {
+			result ^= whereExpr.hashCode();
+		}
+		return result;
 	}
 
 	@Override
@@ -125,6 +152,7 @@ public class Modify extends QueryModelNodeBase implements UpdateExpr {
 		return whereExpr;
 	}
 
+	@Override
 	public boolean isSilent() {
 		// TODO Auto-generated method stub
 		return false;

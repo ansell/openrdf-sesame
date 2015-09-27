@@ -36,6 +36,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.Dataset;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
@@ -69,6 +70,7 @@ import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.Max;
 import org.openrdf.query.algebra.Min;
+import org.openrdf.query.algebra.Modify;
 import org.openrdf.query.algebra.MultiProjection;
 import org.openrdf.query.algebra.Not;
 import org.openrdf.query.algebra.Or;
@@ -88,6 +90,7 @@ import org.openrdf.query.algebra.Str;
 import org.openrdf.query.algebra.Sum;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.Union;
+import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
@@ -95,8 +98,10 @@ import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedDescribeQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
+import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
 
@@ -150,6 +155,19 @@ public class SpinRenderer {
 		this.valueFactory = vf;
 	}
 
+	public void render(ParsedOperation operation, RDFHandler handler) throws RDFHandlerException
+	{
+		if(operation instanceof ParsedQuery) {
+			render((ParsedQuery)operation, handler);
+		}
+		else if(operation instanceof ParsedUpdate) {
+			render((ParsedUpdate)operation, handler);
+		}
+		else {
+			throw new AssertionError("Unrecognised ParsedOperation: "+operation.getClass());
+		}
+	}
+
 	public void render(ParsedQuery query, RDFHandler handler) throws RDFHandlerException
 	{
 		if(query instanceof ParsedBooleanQuery) {
@@ -181,7 +199,7 @@ public class SpinRenderer {
 			Resource whereBNode = valueFactory.createBNode();
 			handler.handleStatement(valueFactory.createStatement(querySubj, SP.WHERE_PROPERTY, whereBNode));
 			TupleExpr expr = query.getTupleExpr();
-			SpinVisitor visitor = new AskVisitor(handler, whereBNode);
+			SpinVisitor visitor = new AskVisitor(handler, whereBNode, query.getDataset());
 			expr.visit(visitor);
 			visitor.end();
 		}
@@ -197,7 +215,7 @@ public class SpinRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SpinVisitor visitor = new SpinVisitor(handler, null, querySubj);
+			SpinVisitor visitor = new SpinVisitor(handler, null, querySubj, query.getDataset());
 			expr.visit(visitor);
 			visitor.end();
 		}
@@ -213,7 +231,7 @@ public class SpinRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SpinVisitor visitor = new DescribeVisitor(handler, querySubj);
+			SpinVisitor visitor = new DescribeVisitor(handler, querySubj, query.getDataset());
 			expr.visit(visitor);
 			visitor.end();
 		}
@@ -229,18 +247,48 @@ public class SpinRenderer {
 		}
 		if(output.rdf) {
 			TupleExpr expr = query.getTupleExpr();
-			SpinVisitor visitor = new ConstructVisitor(handler, querySubj);
+			SpinVisitor visitor = new ConstructVisitor(handler, querySubj, query.getDataset());
 			expr.visit(visitor);
 			visitor.end();
 		}
 		handler.endRDF();
 	}
 
+	public void render(ParsedUpdate update, RDFHandler handler) throws RDFHandlerException {
+		handler.startRDF();
+
+		for(Map.Entry<String,String> entry : update.getNamespaces().entrySet()) {
+			handler.handleNamespace(entry.getKey(), entry.getValue());
+		}
+
+		String[] sourceStrings = update.getSourceString().split("\\s*;\\s*");
+		List<UpdateExpr> updateExprs = update.getUpdateExprs();
+		Map<UpdateExpr,Dataset> datasets = update.getDatasetMapping();
+		for(int i=0; i<updateExprs.size(); i++) {
+			UpdateExpr updateExpr = updateExprs.get(i);
+			Resource updateSubj = valueFactory.createBNode();
+			Dataset dataset = datasets.get(updateExpr);
+			if(updateExpr instanceof Modify) {
+				handler.handleStatement(valueFactory.createStatement(updateSubj, RDF.TYPE, SP.MODIFY_CLASS));
+				if(output.text) {
+					handler.handleStatement(valueFactory.createStatement(updateSubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(sourceStrings[i])));
+				}
+				if(output.rdf) {
+					SpinVisitor visitor = new SpinVisitor(handler, null, updateSubj, dataset);
+					updateExpr.visit(visitor);
+					visitor.end();
+				}
+			}
+		}
+		handler.endRDF();
+	}
+
+
 
 	class AskVisitor extends SpinVisitor
 	{
-		AskVisitor(RDFHandler handler, Resource list) {
-			super(handler, list, null);
+		AskVisitor(RDFHandler handler, Resource list, Dataset dataset) {
+			super(handler, list, null, dataset);
 		}
 
 		@Override
@@ -257,8 +305,8 @@ public class SpinRenderer {
 
 	class DescribeVisitor extends SpinVisitor
 	{
-		DescribeVisitor(RDFHandler handler, Resource subject) {
-			super(handler, null, subject);
+		DescribeVisitor(RDFHandler handler, Resource subject, Dataset dataset) {
+			super(handler, null, subject, dataset);
 		}
 
 		@Override
@@ -279,8 +327,8 @@ public class SpinRenderer {
 
 	class ConstructVisitor extends SpinVisitor
 	{
-		ConstructVisitor(RDFHandler handler, Resource subject) {
-			super(handler, null, subject);
+		ConstructVisitor(RDFHandler handler, Resource subject, Dataset dataset) {
+			super(handler, null, subject, dataset);
 		}
 
 		@Override
@@ -342,6 +390,7 @@ public class SpinRenderer {
 	class SpinVisitor extends QueryModelVisitorBase<RDFHandlerException>
 	{
 		final RDFHandler handler;
+		final Dataset dataset;
 		final Map<String,BNode> varBNodes = new HashMap<String,BNode>();
 		final Map<String,ListContext> namedGraphLists = new HashMap<String,ListContext>();
 		ExtensionContext inlineBindings;
@@ -353,10 +402,11 @@ public class SpinRenderer {
 		boolean isSubQuery;
 		boolean hasGroup;
 
-		SpinVisitor(RDFHandler handler, Resource list, Resource subject) {
+		SpinVisitor(RDFHandler handler, Resource list, Resource subject, Dataset dataset) {
 			this.handler = handler;
 			this.list = list;
 			this.subject = subject;
+			this.dataset = dataset;
 		}
 
 		private ExtensionContext meetExtension(TupleExpr expr) {
@@ -605,12 +655,9 @@ public class SpinRenderer {
 
 		@Override
 		public void meet(StatementPattern node) throws RDFHandlerException {
-			ListContext ctx;
+			ListContext ctxList = null;
 			if(StatementPattern.Scope.NAMED_CONTEXTS == node.getScope()) {
-				ctx = getNamedGraph(node.getContextVar());
-			}
-			else {
-				ctx = null;
+				ctxList = getNamedGraph(node.getContextVar());
 			}
 			listEntry();
 			predicate = SP.SUBJECT_PROPERTY;
@@ -620,8 +667,8 @@ public class SpinRenderer {
 			predicate = SP.OBJECT_PROPERTY;
 			node.getObjectVar().visit(this);
 			predicate = null;
-			if(ctx != null) {
-				restoreNamedGraph(ctx);
+			if(ctxList != null) {
+				restoreNamedGraph(ctxList);
 			}
 		}
 
@@ -1103,6 +1150,35 @@ public class SpinRenderer {
 			}
 			endList(varnameCtx);
 		}
+
+		@Override
+		public void meet(Modify node) throws RDFHandlerException {
+			TupleExpr insertExpr = node.getInsertExpr();
+			if(insertExpr != null) {
+				Resource insertList = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.INSERT_PATTERN_PROPERTY, insertList));
+				ListContext insertCtx = newList(insertList);
+				insertExpr.visit(this);
+				endList(insertCtx);
+			}
+			TupleExpr deleteExpr = node.getDeleteExpr();
+			if(deleteExpr != null) {
+				Resource deleteList = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.DELETE_PATTERN_PROPERTY, deleteList));
+				ListContext deleteCtx = newList(deleteList);
+				deleteExpr.visit(this);
+				endList(deleteCtx);
+			}
+			TupleExpr whereExpr = node.getWhereExpr();
+			if(whereExpr != null) {
+				Resource whereList = valueFactory.createBNode();
+				handler.handleStatement(valueFactory.createStatement(subject, SP.WHERE_PROPERTY, whereList));
+				ListContext whereCtx = newList(whereList);
+				whereExpr.visit(this);
+				endList(whereCtx);
+			}
+		}
+
 
 
 		final class ExtensionVisitor extends QueryModelVisitorBase<RDFHandlerException>

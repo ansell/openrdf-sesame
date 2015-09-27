@@ -20,7 +20,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser;
 import org.openrdf.rio.Rio;
@@ -72,9 +74,14 @@ public class SpinParserTest {
 		assertNotNull(queryResource);
 
 		TripleSource store = new ModelTripleSource(new TreeModel(expected.getStatements()));
-		ParsedQuery textPq = textParser.parseQuery(queryResource, store);
-		ParsedQuery rdfPq = rdfParser.parseQuery(queryResource, store);
+		ParsedOperation textParsedOp = textParser.parse(queryResource, store);
+		ParsedOperation rdfParsedOp = rdfParser.parse(queryResource, store);
 
-		assertEquals(textPq.getTupleExpr(), rdfPq.getTupleExpr());
+		if(textParsedOp instanceof ParsedQuery) {
+			assertEquals(((ParsedQuery)textParsedOp).getTupleExpr(), ((ParsedQuery)rdfParsedOp).getTupleExpr());
+		}
+		else {
+			assertEquals(((ParsedUpdate)textParsedOp).getUpdateExprs(), ((ParsedUpdate)rdfParsedOp).getUpdateExprs());
+		}
 	}
 }

@@ -59,12 +59,13 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 public class SPARQLParser implements QueryParser {
 
+	@Override
 	public ParsedUpdate parseUpdate(String updateStr, String baseURI)
 		throws MalformedQueryException
 	{
 		try {
 
-			ParsedUpdate update = new ParsedUpdate();
+			ParsedUpdate update = new ParsedUpdate(updateStr);
 
 			ASTUpdateSequence updateSequence = SyntaxTreeBuilder.parseUpdateSequence(updateStr);
 
@@ -147,6 +148,7 @@ public class SPARQLParser implements QueryParser {
 
 	}
 
+	@Override
 	public ParsedQuery parseQuery(String queryStr, String baseURI)
 		throws MalformedQueryException
 	{

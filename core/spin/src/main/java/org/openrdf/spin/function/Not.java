@@ -28,7 +28,7 @@ public class Not extends UnaryFunction {
 
 	@Override
 	public String getURI() {
-		return SP.AND.toString();
+		return SP.NOT.toString();
 	}
 
 	@Override
