@@ -1127,6 +1127,11 @@ public class SpinParser {
 		public void visitModify(Resource query)
 			throws OpenRDFException
 		{
+			Value with = Statements.singleValue(query, SP.WITH_PROPERTY, store);
+			if(with != null) {
+				namedGraph = TupleExprs.createConstVar(with);
+			}
+
 			SingletonSet stub = new SingletonSet();
 			tupleRoot = new QueryRoot(stub);
 			tupleNode = stub;
