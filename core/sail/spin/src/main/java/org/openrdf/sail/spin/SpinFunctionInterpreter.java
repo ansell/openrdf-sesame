@@ -32,6 +32,7 @@ import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.spin.SpinParser;
 import org.openrdf.spin.function.AskFunction;
+import org.openrdf.spin.function.EvalFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +50,11 @@ public class SpinFunctionInterpreter implements QueryOptimizer {
 		this.parser = parser;
 		this.tripleSource = tripleSource;
 		this.functionRegistry = functionRegistry;
-		if(!(functionRegistry.get(FN.CONCAT.toString()) instanceof org.openrdf.sail.spin.function.Concat)) {
-			functionRegistry.add(new org.openrdf.sail.spin.function.Concat());
+		if(!(functionRegistry.get(FN.CONCAT.toString()) instanceof org.openrdf.spin.function.Concat)) {
+			functionRegistry.add(new org.openrdf.spin.function.Concat());
+		}
+		if(!functionRegistry.has(SPIN.EVAL_FUNCTION.toString())) {
+			functionRegistry.add(new EvalFunction(parser));
 		}
 		if(!functionRegistry.has(SPIN.ASK_FUNCTION.toString())) {
 			functionRegistry.add(new AskFunction(parser));

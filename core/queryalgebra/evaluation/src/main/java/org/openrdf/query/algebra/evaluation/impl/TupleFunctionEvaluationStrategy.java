@@ -32,25 +32,28 @@ import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.QueryBindingSet;
-import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedService;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 
 
+/**
+ * An {@link EvaluationStrategy} that adds support for {@link TupleFunction}s
+ * to an existing EvaluationStrategy.
+ */
 public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 
 	private final EvaluationStrategy delegate;
-	private final TripleSource tripleSource;
+	private final ValueFactory valueFactory;
 	private final TupleFunctionRegistry tupleFuncRegistry;
 
-	public TupleFunctionEvaluationStrategy(EvaluationStrategy delegate, TripleSource tripleSource) {
-		this(delegate, tripleSource, TupleFunctionRegistry.getInstance());
+	public TupleFunctionEvaluationStrategy(EvaluationStrategy delegate, ValueFactory valueFactory) {
+		this(delegate, valueFactory, TupleFunctionRegistry.getInstance());
 	}
 
-	public TupleFunctionEvaluationStrategy(EvaluationStrategy delegate, TripleSource tripleSource, TupleFunctionRegistry tupleFuncRegistry) {
+	public TupleFunctionEvaluationStrategy(EvaluationStrategy delegate, ValueFactory valueFactory, TupleFunctionRegistry tupleFuncRegistry) {
 		this.delegate = delegate;
-		this.tripleSource = tripleSource;
+		this.valueFactory = valueFactory;
 		this.tupleFuncRegistry = tupleFuncRegistry;
 	}
 
@@ -99,7 +102,7 @@ public class TupleFunctionEvaluationStrategy implements EvaluationStrategy {
 			argValues[i] = evaluate(args.get(i), bindings);
 		}
 
-		return evaluate(func, expr.getResultVars(), bindings, tripleSource.getValueFactory(), argValues);
+		return evaluate(func, expr.getResultVars(), bindings, valueFactory, argValues);
 	}
 
 	@Override

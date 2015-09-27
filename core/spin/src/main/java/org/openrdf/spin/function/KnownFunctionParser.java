@@ -19,23 +19,33 @@ package org.openrdf.spin.function;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.URI;
 import org.openrdf.query.algebra.evaluation.TripleSource;
-import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+
+import com.google.common.base.Function;
 
 
 public class KnownFunctionParser implements FunctionParser
 {
 	private final FunctionRegistry functionRegistry;
+	private final Function<URI,String> wellKnownFunctions;
 
-	public KnownFunctionParser(FunctionRegistry functionRegistry)
+	public KnownFunctionParser(FunctionRegistry functionRegistry, Function<URI,String> wellKnownFunctions)
 	{
 		this.functionRegistry = functionRegistry;
+		this.wellKnownFunctions = wellKnownFunctions;
 	}
 
 	@Override
-	public Function parse(URI funcUri, TripleSource store)
+	public org.openrdf.query.algebra.evaluation.function.Function parse(URI funcUri, TripleSource store)
 		throws OpenRDFException
 	{
-		return functionRegistry.get(funcUri.stringValue());
+		String name = null;
+		if(wellKnownFunctions != null) {
+			name = wellKnownFunctions.apply(funcUri);
+		}
+		if(name == null) {
+			name = funcUri.stringValue();
+		}
+		return functionRegistry.get(name);
 	}
 }

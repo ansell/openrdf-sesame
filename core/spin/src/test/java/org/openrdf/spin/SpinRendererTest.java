@@ -21,7 +21,9 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.util.Models;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.query.parser.QueryParserUtil;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
@@ -76,12 +78,13 @@ public class SpinRendererTest {
 		}
 		assertNotNull(query);
 
-		ParsedQuery pq = QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, testURL.toString());
+		ParsedOperation parsedOp = QueryParserUtil.parseOperation(QueryLanguage.SPARQL, query, testURL.toString());
 
 		StatementCollector actual = new StatementCollector();
-		renderer.render(pq, actual);
+		renderer.render(parsedOp, actual);
 
-		assertTrue("Query was\n"+pq.getTupleExpr()+"\nExpected\n"+toRDF(expected)+"\nbut was\n"+toRDF(actual), Models.isomorphic(actual.getStatements(), expected.getStatements()));
+		Object operation = (parsedOp instanceof ParsedQuery) ? ((ParsedQuery)parsedOp).getTupleExpr() : ((ParsedUpdate)parsedOp).getUpdateExprs();
+		assertTrue("Operation was\n"+operation+"\nExpected\n"+toRDF(expected)+"\nbut was\n"+toRDF(actual), Models.isomorphic(actual.getStatements(), expected.getStatements()));
 	}
 
 	private static String toRDF(StatementCollector stmts) throws RDFHandlerException

@@ -89,14 +89,20 @@ public class SpinSailTest {
 	}
 
 	@Test
-	public void testAskFunctionConstraint() throws Exception {
-		loadStatements("testAskFunctionConstraint.ttl");
-	}
-
-	@Test
 	public void testConstructRule() throws Exception {
 		loadStatements("testConstructRule.ttl");
 		assertStatements("testConstructRule-expected.ttl");
+	}
+
+	@Test
+	public void testUpdateTemplateRule() throws Exception {
+		loadStatements("testUpdateTemplateRule.ttl");
+		assertStatements("testUpdateTemplateRule-expected.ttl");
+	}
+
+	@Test
+	public void testEvalFunctionConstraint() throws Exception {
+		loadStatements("testEvalFunctionConstraint.ttl");
 	}
 
 	@Test
@@ -115,6 +121,12 @@ public class SpinSailTest {
 	public void testMagicProperty() throws Exception {
 		loadStatements("testMagicProperty.ttl");
 		assertStatements("testMagicProperty-expected.ttl");
+	}
+
+	@Test
+	public void testMagicPropertyFunction() throws Exception {
+		loadStatements("testMagicPropertyFunction.ttl");
+		assertStatements("testMagicPropertyFunction-expected.ttl");
 	}
 
 	@Test

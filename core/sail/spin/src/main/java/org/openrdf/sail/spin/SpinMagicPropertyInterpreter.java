@@ -140,10 +140,6 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 			}
 
 			if(!magicProperties.isEmpty()) {
-				if(!serviceResolver.hasService(SPIN_SERVICE)) {
-					serviceResolver.registerService(SPIN_SERVICE, new TupleFunctionFederatedService(tupleFunctionRegistry, tripleSource.getValueFactory()));
-				}
-
 				for(StatementPattern sp : magicProperties) {
 					Union union = new Union();
 					sp.replaceWith(union);
@@ -173,21 +169,33 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 					funcCall.setArgs(subjList);
 					funcCall.setResultVars(objList);
 
-					Var serviceRef = TupleExprs.createConstVar(spinServiceUri);
-					String exprString;
-					try {
-						exprString = new SPARQLQueryRenderer().render(new ParsedTupleQuery(stmts));
-						exprString = exprString.substring(exprString.indexOf('{')+1, exprString.lastIndexOf('}'));
+					TupleExpr magicPropertyNode;
+					if(serviceResolver != null) {
+						// use SERVICE evaluation
+						if(!serviceResolver.hasService(SPIN_SERVICE)) {
+							serviceResolver.registerService(SPIN_SERVICE, new TupleFunctionFederatedService(tupleFunctionRegistry, tripleSource.getValueFactory()));
+						}
+	
+						Var serviceRef = TupleExprs.createConstVar(spinServiceUri);
+						String exprString;
+						try {
+							exprString = new SPARQLQueryRenderer().render(new ParsedTupleQuery(stmts));
+							exprString = exprString.substring(exprString.indexOf('{')+1, exprString.lastIndexOf('}'));
+						}
+						catch(Exception e) {
+							throw new MalformedQueryException(e);
+						}
+						Map<String,String> prefixDecls = new HashMap<String,String>(8);
+						prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
+						prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
+						prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
+						magicPropertyNode = new Service(serviceRef, funcCall, exprString, prefixDecls, null, false);
 					}
-					catch(Exception e) {
-						throw new MalformedQueryException(e);
+					else {
+						magicPropertyNode = funcCall;
 					}
-					Map<String,String> prefixDecls = new HashMap<String,String>(8);
-					prefixDecls.put(SP.PREFIX, SP.NAMESPACE);
-					prefixDecls.put(SPIN.PREFIX, SPIN.NAMESPACE);
-					prefixDecls.put(SPL.PREFIX, SPL.NAMESPACE);
-					Service service = new Service(serviceRef, funcCall, exprString, prefixDecls, null, false);
-					union.setRightArg(service);
+
+					union.setRightArg(magicPropertyNode);
 				}
 			}
 		}
