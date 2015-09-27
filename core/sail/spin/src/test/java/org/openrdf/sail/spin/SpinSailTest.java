@@ -95,6 +95,12 @@ public class SpinSailTest {
 	}
 
 	@Test
+	public void testUpdateTemplateRule() throws Exception {
+		loadStatements("testUpdateTemplateRule.ttl");
+		assertStatements("testUpdateTemplateRule-expected.ttl");
+	}
+
+	@Test
 	public void testEvalFunctionConstraint() throws Exception {
 		loadStatements("testEvalFunctionConstraint.ttl");
 	}

@@ -103,7 +103,8 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 
 		if (statementsRemoved) {
 			logger.debug("statements removed, starting inferencing from scratch");
-			resetInferred();
+			clearInferred();
+			addAxiomStatements();
 			super.flushUpdates();
 			newStatements = new SailModel(getWrappedConnection(), true);
 
@@ -149,13 +150,6 @@ public abstract class AbstractForwardChainingInferencerConnection extends Infere
 
 		statementsRemoved = false;
 		newStatements = null;
-	}
-
-	protected void resetInferred()
-		throws SailException
-	{
-		clearInferred();
-		addAxiomStatements();
 	}
 
 	/**

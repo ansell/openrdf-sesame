@@ -496,8 +496,14 @@ public class SpinParser {
 			if(tmplOp instanceof ParsedBooleanQuery) {
 				parsedOp = new ParsedBooleanTemplate(tmpl, args);
 			}
+			else if(tmplOp instanceof ParsedTupleQuery) {
+				parsedOp = new ParsedTupleTemplate(tmpl, args);
+			}
 			else if(tmplOp instanceof ParsedGraphQuery) {
 				parsedOp = new ParsedGraphTemplate(tmpl, args);
+			}
+			else if(tmplOp instanceof ParsedUpdate) {
+				parsedOp = new ParsedUpdateTemplate(tmpl, args);
 			}
 			else {
 				throw new AssertionError("Unrecognised ParsedOperation: "+tmplOp.getClass());
