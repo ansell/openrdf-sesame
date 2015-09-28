@@ -18,10 +18,12 @@ package org.openrdf.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -242,6 +244,15 @@ public abstract class AbstractModelTest {
 		return model;
 	}
 
+	protected Model getNewModelTwoContexts() {
+		Model model = getNewEmptyModel();
+		model.add(uri1, RDFS.LABEL, bnode1, uri1);
+		model.add(uri1, RDFS.LABEL, literal1, uri1);
+		model.add(uri1, RDFS.LABEL, literal2, uri2);
+		assertEquals(3, model.size());
+		return model;
+	}
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -297,37 +308,85 @@ public abstract class AbstractModelTest {
 	/**
 	 * Test method for {@link org.openrdf.model.Model#subjects()}.
 	 */
-	@Ignore("TODO: Implement me!")
 	@Test
 	public final void testSubjects() {
-		fail("Not yet implemented"); // TODO
+		Model m = getNewModelObjectDoubleLiteral();
+
+		final int modelSizeBefore = m.size();
+
+		Set<Resource> subjects = m.subjects();
+		assertNotNull(subjects);
+
+		final int setSizeBefore = subjects.size();
+
+		Value predicate = subjects.iterator().next();
+		subjects.remove(predicate);
+
+		assertEquals(setSizeBefore - 1, subjects.size());
+		assertTrue(m.size() < modelSizeBefore);
 	}
 
 	/**
 	 * Test method for {@link org.openrdf.model.Model#predicates()}.
 	 */
-	@Ignore("TODO: Implement me!")
 	@Test
 	public final void testPredicates() {
-		fail("Not yet implemented"); // TODO
+		Model m = getNewModelObjectDoubleLiteral();
+
+		final int modelSizeBefore = m.size();
+
+		Set<IRI> predicates = m.predicates();
+		assertNotNull(predicates);
+
+		final int setSizeBefore = predicates.size();
+
+		Value predicate = predicates.iterator().next();
+		predicates.remove(predicate);
+
+		assertEquals(setSizeBefore - 1, predicates.size());
+		assertTrue(m.size() < modelSizeBefore);
 	}
 
 	/**
 	 * Test method for {@link org.openrdf.model.Model#objects()}.
 	 */
-	@Ignore("TODO: Implement me!")
 	@Test
 	public final void testObjects() {
-		fail("Not yet implemented"); // TODO
+		Model m = getNewModelObjectDoubleLiteral();
+
+		final int modelSizeBefore = m.size();
+
+		Set<Value> objects = m.objects();
+		assertNotNull(objects);
+
+		final int setSizeBefore = objects.size();
+
+		Value object = objects.iterator().next();
+		objects.remove(object);
+
+		assertEquals(setSizeBefore - 1, objects.size());
+		assertTrue(m.size() < modelSizeBefore);
 	}
 
 	/**
 	 * Test method for {@link org.openrdf.model.Model#contexts()}.
 	 */
-	@Ignore("TODO: Implement me!")
 	@Test
 	public final void testContexts() {
-		fail("Not yet implemented"); // TODO
+		Model m = getNewModelTwoContexts();
+
+		final int modelSizeBefore = m.size();
+
+		Set<Resource> contexts = m.contexts();
+		assertNotNull(contexts);
+
+		final int setSizeBefore = contexts.size();
+
+		Value predicate = contexts.iterator().next();
+		contexts.remove(predicate);
+
+		assertEquals(setSizeBefore - 1, contexts.size());
+		assertTrue(m.size() < modelSizeBefore);
 	}
 
 	/**

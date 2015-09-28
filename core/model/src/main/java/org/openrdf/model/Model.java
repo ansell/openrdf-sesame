@@ -122,15 +122,15 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * statements without an associated context, specify the value {@code null}
 	 * and explicitly cast it to type {@code Resource}.
 	 * <p>
-	 * Examples: {@code model.contains(s1, null, null)} is true if any
-	 * statements in this model have subject {@code s1},<br>
+	 * Examples: {@code model.contains(s1, null, null)} is true if any statements
+	 * in this model have subject {@code s1},<br>
 	 * {@code model.contains(null, null, null, c1)} is true if any statements in
 	 * this model have context {@code c1},<br>
 	 * {@code model.contains(null, null, null, (Resource)null)} is true if any
 	 * statements in this model have no associated context,<br>
 	 * {@code model.contains(null, null, null, c1, c2, c3)} is true if any
-	 * statements in this model have context {@code c1}, {@code c2} or
-	 * {@code c3}.
+	 * statements in this model have context {@code c1}, {@code c2} or {@code c3}
+	 * .
 	 * 
 	 * @param subj
 	 *        The subject of the statements to match, {@code null} to match
@@ -265,16 +265,15 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * The returned model is backed by this Model, so changes to this Model are
 	 * reflected in the returned model, and vice-versa. If this Model is modified
 	 * while an iteration over the returned model is in progress (except through
-	 * the iterator's own {@code remove} operation), the results of the
-	 * iteration are undefined. The model supports element removal, which removes
-	 * the corresponding statement from this Model, via the
-	 * {@code Iterator.remove}, {@code Set.remove}, {@code removeAll},
-	 * {@code retainAll}, and {@code clear} operations. The statements passed
-	 * to the {@code add} and {@code addAll} operations must match the
-	 * parameter pattern.
+	 * the iterator's own {@code remove} operation), the results of the iteration
+	 * are undefined. The model supports element removal, which removes the
+	 * corresponding statement from this Model, via the {@code Iterator.remove},
+	 * {@code Set.remove}, {@code removeAll}, {@code retainAll}, and
+	 * {@code clear} operations. The statements passed to the {@code add} and
+	 * {@code addAll} operations must match the parameter pattern.
 	 * <p>
-	 * Examples: {@code model.filter(s1, null, null)} matches all statements
-	 * that have subject {@code s1},<br>
+	 * Examples: {@code model.filter(s1, null, null)} matches all statements that
+	 * have subject {@code s1},<br>
 	 * {@code model.filter(null, null, null, c1)} matches all statements that
 	 * have context {@code c1},<br>
 	 * {@code model.filter(null, null, null, (Resource)null)} matches all
@@ -311,11 +310,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * set, and vice-versa. If the model is modified while an iteration over the
 	 * set is in progress (except through the iterator's own {@code remove}
 	 * operation), the results of the iteration are undefined. The set supports
-	 * element removal, which removes the corresponding statement from the model,
-	 * via the {@code Iterator.remove}, {@code Set.remove}, {@code removeAll},
-	 * {@code retainAll}, and {@code clear} operations. It does not support the
-	 * {@code add} or {@code addAll} operations if the parameters {@code pred}
-	 * or {@code obj} are null.
+	 * element removal, which removes all statements from the model for which
+	 * that element is a subject value, via the {@code Iterator.remove},
+	 * {@code Set.remove}, {@code removeAll}, {@code retainAll}, and
+	 * {@code clear} operations. It does not support the {@code add} or
+	 * {@code addAll} operations if the parameters {@code pred} or {@code obj}
+	 * are null.
 	 * 
 	 * @return a set view of the subjects contained in this model
 	 */
@@ -439,11 +439,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * set, and vice-versa. If the model is modified while an iteration over the
 	 * set is in progress (except through the iterator's own {@code remove}
 	 * operation), the results of the iteration are undefined. The set supports
-	 * element removal, which removes the corresponding statement from the model,
-	 * via the {@code Iterator.remove}, {@code Set.remove}, {@code removeAll},
-	 * {@code retainAll}, and {@code clear} operations. It does not support the
-	 * {@code add} or {@code addAll} operations if the parameters {@code subj}
-	 * or {@code obj} are null.
+	 * element removal, which removes all statements from the model for which
+	 * that element is a predicate value, via the {@code Iterator.remove},
+	 * {@code Set.remove}, {@code removeAll}, {@code retainAll}, and
+	 * {@code clear} operations. It does not support the {@code add} or
+	 * {@code addAll} operations if the parameters {@code subj} or {@code obj}
+	 * are null.
 	 * 
 	 * @return a set view of the predicates contained in this model
 	 */
@@ -455,11 +456,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * and vice-versa. If the model is modified while an iteration over the set
 	 * is in progress (except through the iterator's own {@code remove}
 	 * operation), the results of the iteration are undefined. The set supports
-	 * element removal, which removes the corresponding statement from the model,
-	 * via the {@code Iterator.remove}, {@code Set.remove}, {@code removeAll},
-	 * {@code retainAll}, and {@code clear} operations. It does not support the
-	 * {@code add} or {@code addAll} operations if the parameters {@code subj}
-	 * or {@code pred} are null.
+	 * element removal, which removes all statements from the model for which
+	 * that element is an object value, via the {@code Iterator.remove},
+	 * {@code Set.remove}, {@code removeAll}, {@code retainAll}, and
+	 * {@code clear} operations. It does not support the {@code add} or
+	 * {@code addAll} operations if the parameters {@code subj} or {@code pred}
+	 * are null.
 	 * 
 	 * @return a set view of the objects contained in this model
 	 */
@@ -471,11 +473,12 @@ public interface Model extends Graph, Set<Statement>, Serializable {
 	 * set, and vice-versa. If the model is modified while an iteration over the
 	 * set is in progress (except through the iterator's own {@code remove}
 	 * operation), the results of the iteration are undefined. The set supports
-	 * element removal, which removes the corresponding statement from the model,
-	 * via the {@code Iterator.remove}, {@code Set.remove}, {@code removeAll},
-	 * {@code retainAll}, and {@code clear} operations. It does not support the
-	 * {@code add} or {@code addAll} operations if the parameters {@code subj}
-	 * , {@code pred} or {@code obj} are null.
+	 * element removal, which removes all statements from the model for which
+	 * that element is a context value, via the {@code Iterator.remove},
+	 * {@code Set.remove}, {@code removeAll}, {@code retainAll}, and
+	 * {@code clear} operations. It does not support the {@code add} or
+	 * {@code addAll} operations if the parameters {@code subj} , {@code pred} or
+	 * {@code obj} are null.
 	 * 
 	 * @return a set view of the contexts contained in this model
 	 */
