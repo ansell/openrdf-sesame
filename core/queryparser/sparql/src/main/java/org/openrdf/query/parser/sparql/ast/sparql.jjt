@@ -508,6 +508,7 @@ void AskQuery() :
 	<ASK>
 	( DatasetClause() )*
 	WhereClause()
+	SolutionModifier()
 	[BindingsClause()]
 }
 

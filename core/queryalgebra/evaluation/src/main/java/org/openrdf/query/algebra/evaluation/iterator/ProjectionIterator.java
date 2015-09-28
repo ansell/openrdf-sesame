@@ -66,12 +66,14 @@ public class ProjectionIterator extends ConvertingIteration<BindingSet, BindingS
 	public static BindingSet project(ProjectionElemList projElemList, BindingSet sourceBindings,
 			BindingSet parentBindings)
 	{
-		QueryBindingSet resultBindings = new QueryBindingSet(parentBindings);
+		QueryBindingSet resultBindings = new QueryBindingSet();
 
 		for (ProjectionElem pe : projElemList.getElements()) {
 			Value targetValue = sourceBindings.getValue(pe.getSourceName());
+			if (targetValue == null) {
+				targetValue = parentBindings.getValue(pe.getSourceName());
+			}
 			if (targetValue != null) {
-				// Potentially overwrites bindings from super
 				resultBindings.setBinding(pe.getTargetName(), targetValue);
 			}
 		}

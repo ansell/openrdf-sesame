@@ -20,8 +20,11 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Test;
+import java.io.IOException;
 
+import info.aduna.io.ResourceUtil;
+
+import org.junit.Test;
 import org.openrdf.query.QueryLanguage;
 
 /**
@@ -34,7 +37,26 @@ public class TestPagedQuery {
 
 	@Test
 	public final void testSES1895regression() {
-		PagedQuery pagedQuery = new PagedQuery("select * {?s ?p ?o } LIMIT 10", QueryLanguage.SPARQL, 100, 0);
-		assertThat(pagedQuery.toString().toLowerCase(), is(equalTo("select * {?s ?p ?o } limit 10")));
+		PagedQuery pagedQuery = new PagedQuery(
+				"select * {?s ?p ?o } LIMIT 10",
+				QueryLanguage.SPARQL,
+				100,
+				0);
+		assertThat(pagedQuery.toString().toLowerCase(),
+				is(equalTo("select * {?s ?p ?o } limit 10")));
+	}
+	
+	/**
+	 * Check that inner query limits do not affect the paging parameters.
+	 * @throws IOException 
+	 */
+	@Test
+	public final void testSES2307regression() throws IOException{
+		PagedQuery pagedQuery = new PagedQuery(
+				ResourceUtil.getString("ses2307.rq"),
+				QueryLanguage.SPARQL,
+				100,
+				0);
+		assertThat(pagedQuery.getLimit(), is(equalTo(100)));
 	}
 }

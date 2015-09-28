@@ -791,6 +791,7 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
         DatasetClause();
       }
       WhereClause();
+      SolutionModifier();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case BINDINGS:
       case VALUES:
@@ -8339,11 +8340,6 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     return false;
   }
 
-  private boolean jj_3_1() {
-    if (jj_3R_33()) return true;
-    return false;
-  }
-
   private boolean jj_3R_75() {
     Token xsp;
     xsp = jj_scanpos;
@@ -8354,6 +8350,11 @@ public class SyntaxTreeBuilder/*@bgen(jjtree)*/implements SyntaxTreeBuilderTreeC
     if (jj_3R_81()) return true;
     }
     }
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_3R_33()) return true;
     return false;
   }
 
