@@ -16,7 +16,10 @@
  */
 package org.openrdf.query.algebra.evaluation.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +32,16 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.And;
 import org.openrdf.query.algebra.BinaryValueOperator;
 import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Extension;
+import org.openrdf.query.algebra.ExtensionElem;
 import org.openrdf.query.algebra.FunctionCall;
 import org.openrdf.query.algebra.If;
 import org.openrdf.query.algebra.Or;
+import org.openrdf.query.algebra.ProjectionElem;
+import org.openrdf.query.algebra.ProjectionElemList;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.TupleExpr;
+import org.openrdf.query.algebra.UnaryTupleOperator;
 import org.openrdf.query.algebra.UnaryValueOperator;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.ValueExpr;
@@ -69,11 +77,46 @@ public class ConstantOptimizer implements QueryOptimizer {
 	 * Applies generally applicable optimizations to the supplied query: variable
 	 * assignments are inlined.
 	 */
+	@Override
 	public void optimize(TupleExpr tupleExpr, Dataset dataset, BindingSet bindings) {
-		tupleExpr.visit(new ConstantVisitor());
+		ConstantVisitor visitor = new ConstantVisitor();
+		tupleExpr.visit(visitor);
+		Set<String> varsBefore = visitor.varNames;
+
+		VarNameCollector varCollector = new VarNameCollector();
+		tupleExpr.visit(varCollector);
+		Set<String> varsAfter = varCollector.varNames;
+
+		if (varsAfter.size() < varsBefore.size()) {
+			varsBefore.removeAll(varsAfter);
+			for (ProjectionElemList projElems : visitor.projElemLists) {
+				for (ProjectionElem projElem : projElems.getElements()) {
+					String name = projElem.getSourceName();
+					if (varsBefore.contains(name)) {
+						UnaryTupleOperator proj = (UnaryTupleOperator)projElems.getParentNode();
+						Extension ext = new Extension(proj.getArg());
+						proj.setArg(ext);
+						Var lostVar = new Var(name);
+						Value value = bindings.getValue(name);
+						if (value != null) {
+							lostVar.setValue(value);
+						}
+						ext.addElement(new ExtensionElem(lostVar, name));
+					}
+				}
+			}
+		}
 	}
 
-	protected class ConstantVisitor extends AbstractQueryModelVisitor<RuntimeException> {
+	protected class ConstantVisitor extends VarNameCollector {
+
+		final List<ProjectionElemList> projElemLists = new ArrayList<ProjectionElemList>();
+
+		@Override
+		public void meet(ProjectionElemList projElems) {
+			super.meet(projElems);
+			projElemLists.add(projElems);
+		}
 
 		@Override
 		public void meet(Or or) {
@@ -242,8 +285,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 		 */
 		private boolean isConstantZeroArgFunction(FunctionCall functionCall) {
 			Function function = FunctionRegistry.getInstance().get(functionCall.getURI()).orElseThrow(
-					() -> new QueryEvaluationException("Unable to find function with the URI: "
-							+ functionCall.getURI()));
+					() -> new QueryEvaluationException(
+							"Unable to find function with the URI: " + functionCall.getURI()));
 
 			// we treat constant functions as the 'regular case' and make
 			// exceptions for specific SPARQL built-in functions that require
@@ -294,7 +337,8 @@ public class ConstantOptimizer implements QueryOptimizer {
 		public void meet(Regex node) {
 			super.meetNode(node);
 
-			if (isConstant(node.getArg()) && isConstant(node.getPatternArg()) && isConstant(node.getFlagsArg()))
+			if (isConstant(node.getArg()) && isConstant(node.getPatternArg())
+					&& isConstant(node.getFlagsArg()))
 			{
 				try {
 					Value value = strategy.evaluate(node, EmptyBindingSet.getInstance());
@@ -311,6 +355,18 @@ public class ConstantOptimizer implements QueryOptimizer {
 
 		private boolean isConstant(ValueExpr expr) {
 			return expr instanceof ValueConstant || expr instanceof Var && ((Var)expr).hasValue();
+		}
+	}
+
+	protected class VarNameCollector extends AbstractQueryModelVisitor<RuntimeException> {
+
+		final Set<String> varNames = new HashSet<String>();
+
+		@Override
+		public void meet(Var var) {
+			if (!var.isAnonymous()) {
+				varNames.add(var.getName());
+			}
 		}
 	}
 }

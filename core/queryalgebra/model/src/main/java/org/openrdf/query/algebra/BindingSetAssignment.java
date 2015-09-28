@@ -25,13 +25,23 @@ import org.openrdf.query.BindingSet;
  */
 public class BindingSetAssignment extends AbstractQueryModelNode implements TupleExpr {
 
+	private Set<String> bindingNames;
 	private Iterable<BindingSet> bindingSets;
 	
+	@Override
 	public Set<String> getBindingNames() {
 		return getAssuredBindingNames();
 	}
 
+	@Override
 	public Set<String> getAssuredBindingNames() {
+		if(bindingNames == null) {
+			bindingNames = findBindingNames();
+		}
+		return bindingNames;
+	}
+
+	private Set<String> findBindingNames() {
 		Set<String> result = new HashSet<String>();
 		if (bindingSets != null) {
 			for (BindingSet set: bindingSets) {
@@ -41,6 +51,7 @@ public class BindingSetAssignment extends AbstractQueryModelNode implements Tupl
 		return result;
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -60,6 +71,13 @@ public class BindingSetAssignment extends AbstractQueryModelNode implements Tupl
 	@Override
 	public BindingSetAssignment clone() {
 		return (BindingSetAssignment)super.clone();
+	}
+
+	/**
+	 * @param bindingNames The bindingNames to set if known.
+	 */
+	public void setBindingNames(Set<String> bindingNames) {
+		this.bindingNames = bindingNames;
 	}
 
 	/**
