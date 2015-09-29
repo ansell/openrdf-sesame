@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -61,12 +62,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Value> object(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			return Optional.of(objects.iterator().next());
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getObject()).findAny();
 	}
 
 	/**
@@ -89,16 +85,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Literal> objectLiteral(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof Literal) {
-					return Optional.of((Literal)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Literal).map(l -> (Literal)l).findAny();
 	}
 
 	/**
@@ -122,16 +109,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Resource> objectResource(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof Resource) {
-					return Optional.of((Resource)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Resource).map(r -> (Resource)r).findAny();
 	}
 
 	/**
@@ -154,16 +132,22 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<IRI> objectIRI(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof IRI) {
-					return Optional.of((IRI)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof IRI).map(r -> (IRI)r).findAny();
+	}
+	
+	/**
+	 * Retrieves an object value as a String from the statements in the given
+	 * model. If more than one possible object value exists, any one value is picked
+	 * and returned. 
+	 * 
+	 * @param m
+	 *        the model from which to retrieve an object String value.
+	 * @return an {@link Optional} object String value from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @since 4.0
+	 */
+	public static Optional<String> objectString(Model m) {
+		return m.stream().map(st -> st.getObject().stringValue()).findAny();
 	}
 
 	/**
@@ -186,12 +170,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Resource> subject(Model m) {
-		final Set<Resource> subjects = m.subjects();
-		if (subjects != null && !subjects.isEmpty()) {
-			return Optional.of(subjects.iterator().next());
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getSubject()).findAny();
 	}
 
 	/**
@@ -213,16 +192,7 @@ public class Models {
 	 *         will be {@link Optional#empty() empty} if no such value exists.
 	 */
 	public static Optional<IRI> subjectIRI(Model m) {
-		final Set<Resource> objects = m.subjects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof IRI) {
-					return Optional.of((IRI)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof IRI).map(s -> (IRI)s).findAny();
 	}
 
 	/**
@@ -246,16 +216,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<BNode> subjectBNode(Model m) {
-		final Set<Resource> objects = m.subjects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof BNode) {
-					return Optional.of((BNode)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof BNode).map(s -> (BNode)s).findAny();
 	}
 
 	/**
@@ -277,11 +238,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<IRI> predicate(Model m) {
-		final Set<IRI> predicates = m.predicates();
-		if (predicates != null && !predicates.isEmpty()) {
-			return Optional.of(predicates.iterator().next());
-		}
-		return Optional.empty();
+		return m.stream().map(st -> st.getPredicate()).findAny();
 	}
 
 	/**
