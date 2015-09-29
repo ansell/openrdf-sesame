@@ -10,7 +10,7 @@
 
 	<groupId>org.openrdf.sesame</groupId>
 	<artifactId>sesame</artifactId>
-	<version>4.0.0-RC1</version>
+	<version>4.0.0-RC2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>OpenRDF Sesame</name>
