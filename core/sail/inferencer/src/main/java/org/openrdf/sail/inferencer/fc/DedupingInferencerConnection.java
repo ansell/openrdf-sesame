@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 public class DedupingInferencerConnection extends InferencerConnectionWrapper {
 
-	private static final int INITIAL_CAPACITY = 1024;
+	private static final int INITIAL_CAPACITY = 2048;
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -63,6 +63,23 @@ public class DedupingInferencerConnection extends InferencerConnectionWrapper {
 		else {
 			return super.addInferredStatement(subj, pred, obj, contexts);
 		}
+	}
+
+	@Override
+	public boolean removeInferredStatement(Resource subj, URI pred, Value obj, Resource... contexts)
+		throws SailException
+	{
+		Statement stmt = valueFactory.createStatement(subj, pred, obj);
+		addedStmts.remove(stmt);
+		return super.removeInferredStatement(subj, pred, obj, contexts);
+	}
+
+	@Override
+	public void clearInferred(Resource... contexts)
+		throws SailException
+	{
+		resetDedupBuffer();
+		super.clearInferred(contexts);
 	}
 
 	@Override
