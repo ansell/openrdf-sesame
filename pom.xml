@@ -15,12 +15,12 @@
 
 	<name>RDF4J</name>
 	<description>An extensible framework for RDF and RDF Schema data.</description>
-	<url>http://www.openrdf.org/</url>
-	<inceptionYear>2001</inceptionYear>
+	<url>http://www.rdf4j.org/</url>
+	<inceptionYear>2015</inceptionYear>
 
 	<organization>
-		<name>Aduna</name>
-		<url>http://www.aduna-software.com/</url>
+		<name>Eclipse Foundation</name>
+		<url>http://www.eclipse.org/</url>
 	</organization>
 
 	<developers>
@@ -28,11 +28,7 @@
 			<id>jeenbroekstra</id>
 			<name>Jeen Broekstra</name>
 			<email>jeen.broekstra@gmail.com</email>
-		</developer>
-		<developer>
-			<id>arjohn</id>
-			<name>Arjohn Kampman</name>
-			<email>arjohn.kampman@vound-software.com</email>
+			<timezone>GMT+12</timezone>
 		</developer>
 		<developer>
 			<id>james_leigh</id>
@@ -50,8 +46,8 @@
 
 	<licenses>
 		<license>
-			<name>Aduna BSD license</name>
-			<url>https://bitbucket.org/openrdf/sesame/src/master/core/LICENSE.txt</url>
+			<name>Eclipse Distribution License v1.0</name>
+			<url>https://eclipse.org/org/documents/edl-v10.php</url>
 			<distribution>repo</distribution>
 			<comments>A BSD-style OSS license</comments>
 		</license>

@@ -43,7 +43,6 @@ import org.eclipse.rdf4j.query.algebra.StatementPattern;
 import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParser;
-import org.eclipse.rdf4j.query.parser.sparql.org;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

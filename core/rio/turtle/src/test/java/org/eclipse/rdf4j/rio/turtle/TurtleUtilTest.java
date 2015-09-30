@@ -28,10 +28,8 @@
  *******************************************************************************/
 package org.eclipse.rdf4j.rio.turtle;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
-import org.eclipse.rdf4j.rio.turtle.TurtleUtil;
-import org.eclipse.rdf4j.rio.turtle.org;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;

@@ -38,7 +38,6 @@ import org.eclipse.rdf4j.query.algebra.ValueExpr;
 import org.eclipse.rdf4j.query.algebra.evaluation.federation.FederatedService;
 import org.eclipse.rdf4j.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.eclipse.rdf4j.query.algebra.evaluation.federation.SPARQLFederatedService;
-import org.eclipse.rdf4j.query.algebra.evaluation.federation.org;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 /**

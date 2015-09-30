@@ -26,7 +26,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-package org.openrdf.repository.http;
+package org.eclipse.rdf4j.repository.http;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
