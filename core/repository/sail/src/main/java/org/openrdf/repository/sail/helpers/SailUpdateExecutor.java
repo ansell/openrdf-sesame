@@ -16,8 +16,8 @@
  */
 package org.openrdf.repository.sail.helpers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
@@ -120,7 +120,7 @@ public class SailUpdateExecutor {
 
 	public void executeUpdate(UpdateExpr updateExpr, Dataset dataset, BindingSet bindings,
 			boolean includeInferred, int maxExecutionTime)
-		throws SailException, RDFParseException, IOException
+				throws SailException, RDFParseException, IOException
 	{
 		UpdateContext uc = new UpdateContext(updateExpr, dataset, bindings, includeInferred);
 		logger.trace("Incoming update expression:\n{}", uc);
@@ -446,7 +446,7 @@ public class SailUpdateExecutor {
 		parser.getParserConfig().addNonFatalError(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES);
 		try {
 			// TODO process update context somehow? dataset, base URI, etc.
-			parser.parse(new ByteArrayInputStream(insertDataExpr.getDataBlock().getBytes("UTF-8")), "");
+			parser.parse(new StringReader(insertDataExpr.getDataBlock()), "");
 		}
 		catch (RDFParseException e) {
 			throw new SailException(e);
@@ -477,7 +477,7 @@ public class SailUpdateExecutor {
 
 		try {
 			// TODO process update context somehow? dataset, base URI, etc.
-			parser.parse(new ByteArrayInputStream(deleteDataExpr.getDataBlock().getBytes()), "");
+			parser.parse(new StringReader(deleteDataExpr.getDataBlock()), "");
 		}
 		catch (RDFParseException e) {
 			throw new SailException(e);
@@ -530,7 +530,7 @@ public class SailUpdateExecutor {
 
 	private CloseableIteration<? extends BindingSet, QueryEvaluationException> evaluateWhereClause(
 			final TupleExpr whereClause, final UpdateContext uc, final int maxExecutionTime)
-		throws SailException, QueryEvaluationException
+				throws SailException, QueryEvaluationException
 	{
 		CloseableIteration<? extends BindingSet, QueryEvaluationException> sourceBindings;
 		sourceBindings = con.evaluate(whereClause, uc.getDataset(), uc.getBindingSet(), uc.isIncludeInferred());
@@ -660,7 +660,7 @@ public class SailUpdateExecutor {
 
 	private Statement createStatementFromPattern(StatementPattern pattern, BindingSet sourceBinding,
 			MapBindingSet bnodeMapping)
-		throws SailException
+				throws SailException
 	{
 
 		Resource subject = null;
