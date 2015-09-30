@@ -601,6 +601,7 @@ public class Rio {
 	{
 		if (args.length < 2) {
 			System.out.println("Usage: java org.openrdf.rio.Rio <inputFile> <outputFile>");
+			System.exit(1);
 			return;
 		}
 
