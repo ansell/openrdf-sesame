@@ -80,6 +80,8 @@ public class RioConfig implements Serializable {
 	 *        The value for the parser setting, or null to reset the parser
 	 *        setting to use the default value.
 	 * @since 2.7.0
+	 * @return Either a copy of this config, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Object> RioConfig set(RioSetting<T> setting, T value) {
@@ -120,6 +122,8 @@ public class RioConfig implements Serializable {
 	 * Resets all settings back to their default values.
 	 * 
 	 * @since 2.7.0
+	 * @return Either a copy of this config, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
 	public RioConfig useDefaults() {
 		settings.clear();
