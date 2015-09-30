@@ -3,7 +3,7 @@
 	xmlns="http://www.w3.org/1999/XSL/Transform">
 
 	<!-- Titles -->
-	<variable name="workbench.title">OpenRDF Workbench</variable>
+	<variable name="workbench.title">RDF4J Workbench</variable>
 	<variable name="information.title">System Information</variable>
 	<variable name="detail-information.title">
 		Detail System Information
@@ -47,7 +47,7 @@
 	<variable name="sub-properties.title">Sub Properties</variable>
 
 	<!-- Labels -->
-	<variable name="workbench.label">OpenRDF Workbench</variable>
+	<variable name="workbench.label">RDF4J Workbench</variable>
 	<variable name="repository-list.label">Repositories</variable>
 	<variable name="system.label">System</variable>
 	<variable name="information.label">Information</variable>
@@ -79,13 +79,13 @@
 	<variable name="execute.label">Execute</variable>
 	<variable name="change-server.label">Change Server</variable>
 	<variable name="change.label">Change</variable>
-	<variable name="server.label">Sesame server</variable>
+	<variable name="server.label">RDF4J Server</variable>
 	<variable name="server-user.label">User (optional)</variable>
 	<variable name="server-password.label">Password (optional)</variable>
 	<variable name="repository.label">Repository</variable>
 	<variable name="download.label">Download</variable>
 	<variable name="download-format.label">Download format</variable>
-	<variable name="change-server.desc">i.e. http://localhost:8080/openrdf-sesame</variable>
+	<variable name="change-server.desc">i.e. http://localhost:8080/rdf4j-server</variable>
 	<variable name="repository-create.label">New repository</variable>
 	<variable name="repository-delete.label">
 		Delete repository
@@ -94,9 +94,8 @@
 
 	<!-- General labels -->
 	<variable name="copyright.label">
-		Copyright © Aduna 1997-2011
+		Copyright © 2015 Eclipse Foundation
 	</variable>
-	<variable name="aduna.label">Aduna - Semantic Power</variable>
 	<variable name="true.label">Yes</variable>
 	<variable name="false.label">No</variable>
 	<variable name="none.label">None</variable>
@@ -171,7 +170,7 @@
 	<variable name="repository-sync-delay.label">Sync delay</variable>
 	<variable name="repository-indexes.label">Triple indexes</variable>
 	<variable name="remote-repository-server.label">
-		Sesame server locations
+		RDF4J Server locations
 	</variable>
 	<variable name="remote-repository-id.label">
 		Remote repository ID
