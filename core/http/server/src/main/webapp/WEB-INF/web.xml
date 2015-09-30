@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
     version="2.4">
 
-	<display-name>OpenRDF Sesame</display-name>
-	<description>OpenRDF Sesame</description>
+	<display-name>RDF4J Server</display-name>
+	<description>RDF4J Server</description>
 
 	<filter>
 		<filter-name>CompressingFilter</filter-name>
@@ -22,7 +22,7 @@
 	<filter>
 		<filter-name>PathFilter</filter-name>
 		<filter-class>
-			info.aduna.webapp.filters.PathFilter
+			org.eclipse.rdf4j.common.webapp.filters.PathFilter
 		</filter-class>
 	</filter>
 
@@ -58,32 +58,32 @@
 	</filter-mapping>
 
 	<servlet>
-	    <servlet-name>openrdf-http-server</servlet-name>
+	    <servlet-name>rdf4j-http-server</servlet-name>
     	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 	    <init-param>
 			<param-name>contextConfigLocation</param-name>
-			<param-value>/WEB-INF/aduna-webapp-servlet.xml, /WEB-INF/aduna-webapp-system-servlet.xml, /WEB-INF/openrdf-http-server-servlet.xml</param-value>
+			<param-value>/WEB-INF/common-webapp-servlet.xml, /WEB-INF/common-webapp-system-servlet.xml, /WEB-INF/rdf4j-http-server-servlet.xml</param-value>
 		</init-param>
 	    <load-on-startup>100</load-on-startup>
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>openrdf-http-server</servlet-name>
+		<servlet-name>rdf4j-http-server</servlet-name>
 		<url-pattern>/protocol/*</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
-		<servlet-name>openrdf-http-server</servlet-name>
+		<servlet-name>rdf4j-http-server</servlet-name>
 		<url-pattern>/repositories/*</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
-		<servlet-name>openrdf-http-server</servlet-name>
+		<servlet-name>rdf4j-http-server</servlet-name>
 		<url-pattern>*.view</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
-		<servlet-name>openrdf-http-server</servlet-name>
+		<servlet-name>rdf4j-http-server</servlet-name>
 		<url-pattern>*.form</url-pattern>
 	</servlet-mapping>
 
@@ -95,20 +95,20 @@
 			<url-pattern>/repositories/SYSTEM/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
-			<role-name>sesame-admin</role-name>
+			<role-name>rdf4j-admin</role-name>
 		</auth-constraint>
 	</security-constraint>
 
 	<login-config>
 		<auth-method>BASIC</auth-method>
-		<realm-name>Sesame server configuration</realm-name>
+		<realm-name>RDF4J Server configuration</realm-name>
 	</login-config>
 
 	<security-role>
 		<description>
-			The role that is required to access the Sesame server configuration
+			The role that is required to access the RDF4J server configuration
 		</description>
-		<role-name>sesame-admin</role-name>
+		<role-name>rdf4j-admin</role-name>
 	</security-role>
 -->
 

@@ -7,22 +7,22 @@
     <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basenames">
 			<list>
-				<value>info.aduna.webapp.messages</value>
+				<value>org.eclipse.rdf4j.common.webapp.messages</value>
 			</list>
 		</property>
     </bean>
     
     <!-- Version information for the application. Intended to be overriden by webapps based on this one. -->
-    <bean id="adunaAppVersion" class="info.aduna.app.AppVersion">
+    <bean id="commonAppVersion" class="org.eclipse.rdf4j.common.app.AppVersion">
     	<property name="major" value="3" />
     	<property name="minor" value="2" />
     	<property name="modifier" value="SNAPSHOT" />
     </bean>
     
     <!-- Configuration information for the application. Intended to be overridden by webapps based on this one. -->
-    <bean id="adunaAppConfig" class="info.aduna.app.AppConfiguration" init-method="init" destroy-method="destroy">
+    <bean id="commonAppConfig" class="org.eclipse.rdf4j.common.app.AppConfiguration" init-method="init" destroy-method="destroy">
     	<property name="applicationId" value="webapp-base" />
-    	<property name="version" ref="adunaAppVersion" />
+    	<property name="version" ref="commonAppVersion" />
     </bean>
 
 	<!--
@@ -30,22 +30,22 @@
 		To do so, add the navigation models from the list below at the end of the list of navigation models
 		of the extending webapp.
 	-->
-	<bean id="adunaWebappNavigation" class="info.aduna.webapp.navigation.NavigationModel">
+	<bean id="commonWebappNavigation" class="org.eclipse.rdf4j.common.webapp.navigation.NavigationModel">
 		<property name="navigationModels">
 			<list>
-				<value>/info/aduna/webapp/navigation.xml</value>
+				<value>/org/eclipse/rdf4j/common/webapp/navigation.xml</value>
 			</list>
 		</property>
 	</bean>
 
 	<!-- INTERCEPTORS -->
 	<!-- Inserts common values into the request for convenience. -->
-	<bean id="adunaWebappCommonValuesInserter" class="info.aduna.webapp.CommonValuesHandlerInterceptor" />
-	<bean id="adunaWebappMessageInserter" class="info.aduna.webapp.MessageHandlerInterceptor" />
+	<bean id="commonWebappCommonValuesInserter" class="org.eclipse.rdf4j.common.webapp.CommonValuesHandlerInterceptor" />
+	<bean id="commonWebappMessageInserter" class="org.eclipse.rdf4j.common.webapp.MessageHandlerInterceptor" />
 
 	<!-- Inserts the navigation model into the request. -->
-	<bean id="adunaWebappNavigationInserter" class="info.aduna.webapp.navigation.NavigationHandlerInterceptor">
-		<property name="navigationModel" ref="adunaWebappNavigation" />
+	<bean id="commonWebappNavigationInserter" class="org.eclipse.rdf4j.common.webapp.navigation.NavigationHandlerInterceptor">
+		<property name="navigationModel" ref="commonWebappNavigation" />
 	</bean>
     
 	<!-- CONTROLLERS -->
