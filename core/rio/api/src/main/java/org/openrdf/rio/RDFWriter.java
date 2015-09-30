@@ -67,6 +67,7 @@ public interface RDFWriter extends RDFHandler {
 	 * @param value The value to change.
 	 * @return Either a copy of this writer, if it is immutable, or this object,
 	 *         to allow chaining of method calls.
+	 * @since 4.0.0
 	 */
 	public <T> RDFWriter set(RioSetting<T> setting, T value);
 	
