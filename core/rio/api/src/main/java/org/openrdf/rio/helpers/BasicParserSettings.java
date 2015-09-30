@@ -283,7 +283,7 @@ public class BasicParserSettings {
 			"org.openrdf.rio.namespaces", "Collection of default namespaces to use for parsing", _DEFAULT_PREFIX);
 
 	static {
-		List<DatatypeHandler> defaultDatatypeHandlers = new ArrayList<DatatypeHandler>(4);
+		List<DatatypeHandler> defaultDatatypeHandlers = new ArrayList<DatatypeHandler>(5);
 		try {
 			DatatypeHandlerRegistry registry = DatatypeHandlerRegistry.getInstance();
 			for (String nextHandler : Arrays.asList(DatatypeHandler.XMLSCHEMA, DatatypeHandler.RDFDATATYPES,
