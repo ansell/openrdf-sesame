@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-queryresultio-compliance</artifactId>
 
-	<name>OpenRDF Query Result IO compliance tests</name>
+	<name>RDF4J Query Result IO compliance tests</name>
 	<description>Tests for parsers and writers of various Query Results file formats.</description>
 
 	<dependencies>

@@ -13,7 +13,7 @@
 	<packaging>bundle</packaging>
 
 	<name>RDF4J: Runtime - OSGi</name>
-	<description>OSGi Runtime dependencies for an OpenRDF application</description>
+	<description>OSGi Runtime dependencies for an RDF4J application</description>
 
 	<dependencies>
 		<dependency>

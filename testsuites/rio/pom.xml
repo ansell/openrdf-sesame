@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-rio-testsuite</artifactId>
 
-	<name>OpenRDF Rio compliance test suite</name>
+	<name>RDF4J Rio compliance test suite</name>
 	<description>Test suite for Rio</description>
 
 	<dependencies>

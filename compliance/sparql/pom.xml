@@ -12,7 +12,7 @@
 	<artifactId>rdf4j-sparql-compliance</artifactId>
 	<packaging>war</packaging>
 
-	<name>OpenRDF SPARQL query parser compliance tests</name>
+	<name>RDF4J SPARQL query parser compliance tests</name>
 	<description>Tests for the SPARQL query language implementation</description>
 
 	<dependencies>

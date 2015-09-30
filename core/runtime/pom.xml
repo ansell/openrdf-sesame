@@ -12,7 +12,7 @@
 	<artifactId>rdf4j-runtime</artifactId>
 
 	<name>RDF4J: Runtime</name>
-	<description>Runtime dependencies for an OpenRDF application</description>
+	<description>Runtime dependencies for an RDF4J application</description>
 
 	<dependencies>
 

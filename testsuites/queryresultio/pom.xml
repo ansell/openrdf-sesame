@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-queryresultio-testsuite</artifactId>
 
-	<name>OpenRDF Query Result IO compliance test suite</name>
+	<name>RDF4J Query Result IO compliance test suite</name>
 	<description>Test suite for Query Result IO</description>
 
 	<dependencies>

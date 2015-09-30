@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-lucene-testsuite</artifactId>
 
-	<name>OpenRDF Lucene Sail Tests</name>
+	<name>RDF4J Lucene Sail Tests</name>
 	<description>Generic tests for Lucene Sail implementations.</description>
 
 	<dependencies>

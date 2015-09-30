@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-rio-compliance</artifactId>
 
-	<name>OpenRDF Rio compliance tests</name>
+	<name>RDF4J Rio compliance tests</name>
 	<description>Tests for parsers and writers of various RDF file formats.</description>
 
 	<dependencies>

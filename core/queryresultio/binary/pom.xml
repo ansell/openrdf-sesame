@@ -11,7 +11,7 @@
 	<artifactId>rdf4j-queryresultio-binary</artifactId>
 
 	<name>RDF4J: Query result IO - binary</name>
-	<description>Query result parser and writer implementation for OpenRDF's binary query results format.</description>
+	<description>Query result parser and writer implementation for RDF4J's binary query results format.</description>
 
 	<dependencies>
 		<dependency>

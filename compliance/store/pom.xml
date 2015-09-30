@@ -11,7 +11,7 @@
 	<artifactId>rdf4j-store-compliance</artifactId>
 	<packaging>war</packaging>
 
-	<name>OpenRDF SAIL and Repository compliance test</name>
+	<name>RDF4J SAIL and Repository compliance test</name>
 	<description>Tests for the core SAILs and Repositories</description>
 
 	<dependencies>

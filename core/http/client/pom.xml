@@ -11,7 +11,7 @@
 	<artifactId>rdf4j-http-client</artifactId>
 
 	<name>RDF4J: HTTP client</name>
-	<description>Client functionality for communicating with an OpenRDF server over HTTP.</description>
+	<description>Client functionality for communicating with an RDF4J server over HTTP.</description>
 
 	<dependencies>
 		<dependency>

@@ -11,7 +11,7 @@
 	<artifactId>rdf4j-http-compliance</artifactId>
 	<packaging>war</packaging>
 
-	<name>OpenRDF HTTP server compliance tests</name>
+	<name>RDF4J HTTP server compliance tests</name>
 	<description>Tests for the HTTP server.</description>
 
 	<dependencies>

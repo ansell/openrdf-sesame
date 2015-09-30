@@ -10,8 +10,8 @@
 
 	<artifactId>rdf4j-model-compliance</artifactId>
 
-	<name>OpenRDF Model compliance test</name>
-	<description>Tests for OpenRDF Model</description>
+	<name>RDF4J Model compliance test</name>
+	<description>Tests for RDF4J Model</description>
 
 	<dependencies>
 		<dependency>

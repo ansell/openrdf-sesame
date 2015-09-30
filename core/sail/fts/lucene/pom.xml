@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-sail-lucene</artifactId>
 
-	<name>OpenRDF Lucene Sail Index</name>
+	<name>RDF4J Lucene Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Apache Lucene.</description>
 
 	<properties>

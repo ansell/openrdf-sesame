@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-serql-testsuite</artifactId>
 
-	<name>OpenRDF SeRQL test suite</name>
+	<name>RDF4J SeRQL test suite</name>
 	<description>Test suite for the SeRQL query language</description>
 
 	<dependencies>

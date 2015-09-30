@@ -91,7 +91,7 @@
 										</group>
 
 										<group>
-											<title>OpenRDF Web Client</title>
+											<title>RDF4J Web Client</title>
 											<packages>org.openrdf.http.webclient*</packages>
 										</group>
 

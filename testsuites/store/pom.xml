@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-store-testsuite</artifactId>
 
-	<name>OpenRDF SAIL and Repository API compliance test suite</name>
+	<name>RDF4J SAIL and Repository API compliance test suite</name>
 	<description>Test suite for SAIL and Repository API</description>
 
 	<dependencies>

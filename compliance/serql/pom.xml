@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-serql-compliance</artifactId>
 
-	<name>OpenRDF SeRQL query parser compliance tests</name>
+	<name>RDF4J SeRQL query parser compliance tests</name>
 	<description>Tests for the SeRQL query language implementation</description>
 
 	<dependencies>

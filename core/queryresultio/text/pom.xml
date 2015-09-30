@@ -11,7 +11,7 @@
 	<artifactId>rdf4j-queryresultio-text</artifactId>
 
 	<name>RDF4J: Query result IO - plain text booleans</name>
-	<description>Query result parser and writer implementation for OpenRDF's plain text boolean query results format.</description>
+	<description>Query result parser and writer implementation for RDF4J's plain text boolean query results format.</description>
 
 	<dependencies>
 		<dependency>

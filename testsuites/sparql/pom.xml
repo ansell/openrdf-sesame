@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-sparql-testsuite</artifactId>
 
-	<name>OpenRDF SPARQL compliance test suite</name>
+	<name>RDF4J SPARQL compliance test suite</name>
 	<description>Test suite for the SPARQL query language</description>
 
 	<dependencies>

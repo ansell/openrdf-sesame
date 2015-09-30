@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-model-testsuite</artifactId>
 
-	<name>OpenRDF Model API compliance test suite</name>
+	<name>RDF4J Model API compliance test suite</name>
 	<description>Test suite for Model API</description>
 
 	<dependencies>

@@ -11,7 +11,7 @@
 
 	<artifactId>rdf4j-geosparql-compliance</artifactId>
 
-	<name>OpenRDF GeoSPARQL compliance tests</name>
+	<name>RDF4J GeoSPARQL compliance tests</name>
 	<description>Tests for the GeoSPARQL query language implementation</description>
 
 	<dependencies>

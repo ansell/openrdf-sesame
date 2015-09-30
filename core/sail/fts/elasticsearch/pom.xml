@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-sail-elasticsearch</artifactId>
 
-	<name>OpenRDF Elastic Search Sail Index</name>
+	<name>RDF4J Elastic Search Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Elastic Search.</description>
 
 	<properties>

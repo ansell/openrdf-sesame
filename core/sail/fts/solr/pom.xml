@@ -10,7 +10,7 @@
 
 	<artifactId>rdf4j-sail-solr</artifactId>
 
-	<name>OpenRDF Solr Sail Index</name>
+	<name>RDF4J Solr Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Solr.</description>
 
 	<properties>
