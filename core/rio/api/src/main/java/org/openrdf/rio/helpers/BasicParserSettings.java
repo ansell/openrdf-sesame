@@ -305,7 +305,7 @@ public class BasicParserSettings {
 		}
 
 		DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>("org.openrdf.rio.datatypehandlers",
-				"Datatype Handlers", defaultDatatypeHandlers);
+				"Datatype Handlers", Collections.unmodifiableList(defaultDatatypeHandlers));
 
 		List<LanguageHandler> defaultLanguageHandlers = new ArrayList<LanguageHandler>(1);
 		try {
@@ -327,7 +327,7 @@ public class BasicParserSettings {
 		}
 
 		LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>("org.openrdf.rio.languagehandlers",
-				"Language Handlers", defaultLanguageHandlers);
+				"Language Handlers", Collections.unmodifiableList(defaultLanguageHandlers));
 	}
 
 	/**
