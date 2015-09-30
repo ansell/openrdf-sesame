@@ -1,0 +1,186 @@
+/*******************************************************************************
+ * Copyright (c) 2015, Eclipse Foundation, Inc. and its licensors.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ * - Neither the name of the Eclipse Foundation, Inc. nor the names of its
+ *   contributors may be used to endorse or promote products derived from this
+ *   software without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************/
+package org.eclipse.rdf4j.query.parser.serql;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.rdf4j.query.algebra.BNodeGenerator;
+import org.eclipse.rdf4j.query.algebra.Distinct;
+import org.eclipse.rdf4j.query.algebra.EmptySet;
+import org.eclipse.rdf4j.query.algebra.Extension;
+import org.eclipse.rdf4j.query.algebra.ExtensionElem;
+import org.eclipse.rdf4j.query.algebra.MultiProjection;
+import org.eclipse.rdf4j.query.algebra.Projection;
+import org.eclipse.rdf4j.query.algebra.ProjectionElem;
+import org.eclipse.rdf4j.query.algebra.ProjectionElemList;
+import org.eclipse.rdf4j.query.algebra.Reduced;
+import org.eclipse.rdf4j.query.algebra.StatementPattern;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
+import org.eclipse.rdf4j.query.algebra.ValueConstant;
+import org.eclipse.rdf4j.query.algebra.ValueExpr;
+import org.eclipse.rdf4j.query.algebra.Var;
+import org.eclipse.rdf4j.query.algebra.helpers.StatementPatternCollector;
+
+class ConstructorBuilder {
+
+	public TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr, boolean distinct,
+			boolean reduced)
+	{
+		return buildConstructor(bodyExpr, constructExpr, true, distinct, reduced);
+	}
+
+	public TupleExpr buildConstructor(TupleExpr bodyExpr, boolean distinct, boolean reduced) {
+		return buildConstructor(bodyExpr, bodyExpr, false, distinct, reduced);
+	}
+
+	private TupleExpr buildConstructor(TupleExpr bodyExpr, TupleExpr constructExpr,
+			boolean explicitConstructor, boolean distinct, boolean reduced)
+	{
+		TupleExpr result = bodyExpr;
+
+		// Retrieve all StatementPattern's from the construct expression
+		List<StatementPattern> statementPatterns = StatementPatternCollector.process(constructExpr);
+
+		Set<Var> constructVars = getConstructVars(statementPatterns);
+
+		// Note: duplicate elimination is a two-step process. The first step
+		// removes duplicates from the set of constructor variables. After this
+		// step, any bnodes that need to be generated are added to each solution
+		// and these solutions are projected to subject-predicate-object bindings.
+		// Finally, the spo-bindings are again filtered for duplicates.
+		if (distinct || reduced) {
+			// Create projection that removes all bindings that are not used in the
+			// constructor
+			ProjectionElemList projElemList = new ProjectionElemList();
+
+			for (Var var : constructVars) {
+				// Ignore anonymous and constant vars, these will be handled after
+				// the distinct
+				if (!var.isAnonymous() && !var.hasValue()) {
+					projElemList.addElement(new ProjectionElem(var.getName()));
+				}
+			}
+
+			result = new Projection(result, projElemList);
+
+			// Filter the duplicates from these projected bindings
+			if (distinct) {
+				result = new Distinct(result);
+			}
+			else {
+				result = new Reduced(result);
+			}
+		}
+
+		// Create BNodeGenerator's for all anonymous variables
+		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
+
+		for (Var var : constructVars) {
+			if (var.isAnonymous() && !extElemMap.containsKey(var)) {
+				ValueExpr valueExpr = null;
+
+				if (var.hasValue()) {
+					valueExpr = new ValueConstant(var.getValue());
+				}
+				else if (explicitConstructor) {
+					// only generate bnodes in case of an explicit constructor
+					valueExpr = new BNodeGenerator();
+				}
+
+				if (valueExpr != null) {
+					extElemMap.put(var, new ExtensionElem(valueExpr, var.getName()));
+				}
+			}
+		}
+
+		if (!extElemMap.isEmpty()) {
+			result = new Extension(result, extElemMap.values());
+		}
+
+		// Create a Projection for each StatementPattern in the constructor
+		List<ProjectionElemList> projections = new ArrayList<ProjectionElemList>();
+
+		for (StatementPattern sp : statementPatterns) {
+			ProjectionElemList projElemList = new ProjectionElemList();
+
+			projElemList.addElement(new ProjectionElem(sp.getSubjectVar().getName(), "subject"));
+			projElemList.addElement(new ProjectionElem(sp.getPredicateVar().getName(), "predicate"));
+			projElemList.addElement(new ProjectionElem(sp.getObjectVar().getName(), "object"));
+
+			projections.add(projElemList);
+		}
+
+		if (projections.size() == 1) {
+			result = new Projection(result, projections.get(0));
+
+			// Note: no need to apply the second duplicate elimination step if
+			// there's just one projection
+		}
+		else if (projections.size() > 1) {
+			result = new MultiProjection(result, projections);
+
+			if (distinct) {
+				// Add another distinct to filter duplicate statements
+				result = new Distinct(result);
+			}
+			else if (reduced) {
+				result = new Reduced(result);
+			}
+		}
+		else {
+			// Empty constructor
+			result = new EmptySet();
+		}
+
+		return result;
+	}
+
+	/**
+	 * Gets the set of variables that are relevant for the constructor. This
+	 * method accumulates all subject, predicate and object variables from the
+	 * supplied statement patterns, but ignores any context variables.
+	 */
+	private Set<Var> getConstructVars(Collection<StatementPattern> statementPatterns) {
+		Set<Var> vars = new LinkedHashSet<Var>(statementPatterns.size() * 2);
+
+		for (StatementPattern sp : statementPatterns) {
+			vars.add(sp.getSubjectVar());
+			vars.add(sp.getPredicateVar());
+			vars.add(sp.getObjectVar());
+		}
+
+		return vars;
+	}
+}
