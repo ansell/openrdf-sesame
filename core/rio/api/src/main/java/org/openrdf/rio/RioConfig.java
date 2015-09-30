@@ -82,7 +82,7 @@ public class RioConfig implements Serializable {
 	 * @since 2.7.0
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Object> void set(RioSetting<T> setting, T value) {
+	public <T extends Object> RioConfig set(RioSetting<T> setting, T value) {
 
 		if (value == null) {
 			settings.remove(setting);
@@ -99,6 +99,8 @@ public class RioConfig implements Serializable {
 				// setting.getKey());
 			}
 		}
+		
+		return this;
 	}
 
 	/**
@@ -119,7 +121,9 @@ public class RioConfig implements Serializable {
 	 * 
 	 * @since 2.7.0
 	 */
-	public void useDefaults() {
+	public RioConfig useDefaults() {
 		settings.clear();
+		
+		return this;
 	}
 }

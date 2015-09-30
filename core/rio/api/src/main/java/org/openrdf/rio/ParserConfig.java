@@ -215,8 +215,9 @@ public class ParserConfig extends RioConfig implements Serializable {
 	}
 
 	@Override
-	public void useDefaults() {
+	public ParserConfig useDefaults() {
 		super.useDefaults();
 		this.nonFatalErrors.clear();
+		return this;
 	}
 }

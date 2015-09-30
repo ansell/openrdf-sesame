@@ -38,4 +38,10 @@ public class WriterConfig extends RioConfig implements Serializable {
 	public WriterConfig() {
 		super();
 	}
+	
+	@Override
+	public WriterConfig useDefaults() {
+		super.useDefaults();
+		return this;
+	}
 }
