@@ -264,10 +264,10 @@ public class BasicParserSettings {
 
 	/**
 	 * <p>
-	 * </p>
 	 * Setting to provide a collection of {@link Namespace} objects which will be
 	 * used when parsing RDF as the basis for the default set of namespaces of
-	 * the document.</p>
+	 * the document.
+	 * </p>
 	 * <p>
 	 * Namespaces specified within the RDF document being parsed will override
 	 * these defaults
