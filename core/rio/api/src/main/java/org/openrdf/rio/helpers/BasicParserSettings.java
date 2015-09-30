@@ -99,7 +99,7 @@ public class BasicParserSettings {
 		_DEFAULT_PREFIX = Collections.unmodifiableSet(aNamespaces);
 	}
 
-	private final static Logger log = LoggerFactory.getLogger(BasicParserSettings.class);
+	private final static Logger _LOG = LoggerFactory.getLogger(BasicParserSettings.class);
 
 	/**
 	 * Boolean setting for parser to determine whether values for recognised
@@ -294,14 +294,14 @@ public class BasicParserSettings {
 					defaultDatatypeHandlers.add(nextdt.get());
 				}
 				else {
-					log.warn("Could not find DatatypeHandler : {}", nextHandler);
+					_LOG.warn("Could not find DatatypeHandler : {}", nextHandler);
 				}
 			}
 		}
 		catch (Exception e) {
 			// Ignore exceptions so that service loading failures do not cause
 			// class initialization errors.
-			log.warn("Found an error loading DatatypeHandler services", e);
+			_LOG.warn("Found an error loading DatatypeHandler services", e);
 		}
 
 		DATATYPE_HANDLERS = new RioSettingImpl<List<DatatypeHandler>>("org.openrdf.rio.datatypehandlers",
@@ -316,14 +316,14 @@ public class BasicParserSettings {
 					defaultLanguageHandlers.add(nextlang.get());
 				}
 				else {
-					log.warn("Could not find LanguageHandler : {}", nextHandler);
+					_LOG.warn("Could not find LanguageHandler : {}", nextHandler);
 				}
 			}
 		}
 		catch (Exception e) {
 			// Ignore exceptions so that service loading failures do not cause
 			// class initialization errors.
-			log.warn("Found an error loading LanguageHandler services", e);
+			_LOG.warn("Found an error loading LanguageHandler services", e);
 		}
 
 		LANGUAGE_HANDLERS = new RioSettingImpl<List<LanguageHandler>>("org.openrdf.rio.languagehandlers",
