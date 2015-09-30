@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -44,6 +45,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ContentType;
@@ -694,43 +696,59 @@ public class SesameSession extends SparqlSession {
 	protected HttpUriRequest getQueryMethod(QueryLanguage ql, String query, String baseURI, Dataset dataset,
 			boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
-		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.QUERY) : getQueryURL();
+		RequestBuilder builder = null;
+		if (transactionURL != null) {
+			builder = RequestBuilder.put(transactionURL);
+			builder.setHeader("Content-Type", Protocol.SPARQL_QUERY_MIME_TYPE + "; charset=utf-8");
+			builder.addParameter(Protocol.ACTION_PARAM_NAME, Action.QUERY.toString());
+			for (NameValuePair nvp : getQueryMethodParameters(ql, null, baseURI, dataset, includeInferred,
+					maxQueryTime, bindings))
+			{
+				builder.addParameter(nvp);
+			}
+			// in a PUT request, we carry the actual query string as the entity
+			// body rather than a parameter.
+			builder.setEntity(new StringEntity(query, UTF8));
+		}
+		else {
+			builder = RequestBuilder.post(getQueryURL());
+			builder.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
-		final HttpPost method = new HttpPost(requestURL);
+			builder.setEntity(new UrlEncodedFormEntity(
+					getQueryMethodParameters(ql, query, baseURI, dataset, includeInferred, maxQueryTime, bindings),
+					UTF8));
+		}
 
-		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
-
-		List<NameValuePair> queryParams = getQueryMethodParameters(ql, query, baseURI, dataset, includeInferred,
-				maxQueryTime, bindings);
-
-		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
-
-		return (HttpUriRequest)method;
+		return builder.build();
 	}
 
 	@Override
 	protected HttpUriRequest getUpdateMethod(QueryLanguage ql, String update, String baseURI, Dataset dataset,
 			boolean includeInferred, Binding... bindings)
 	{
-		String requestURL = transactionURL != null ? appendAction(transactionURL, Action.UPDATE)
-				: getUpdateURL();
-
-		HttpEntityEnclosingRequest method = null;
+		RequestBuilder builder = null;
 		if (transactionURL != null) {
-			method = new HttpPut(requestURL);
+			builder = RequestBuilder.put(transactionURL);
+			builder.addHeader("Content-Type", Protocol.SPARQL_UPDATE_MIME_TYPE + "; charset=utf-8");
+			builder.addParameter(Protocol.ACTION_PARAM_NAME, Action.UPDATE.toString());
+			for (NameValuePair nvp : getUpdateMethodParameters(ql, null, baseURI, dataset, includeInferred,
+					bindings))
+			{
+				builder.addParameter(nvp);
+			}
+			// in a PUT request, we carry the only actual update string as the
+			// request body - the rest is sent as request parameters
+			builder.setEntity(new StringEntity(update, UTF8));
 		}
 		else {
-			method = new HttpPost(requestURL);
+			builder = RequestBuilder.post(getUpdateURL());
+			builder.addHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
+
+			builder.setEntity(new UrlEncodedFormEntity(
+					getUpdateMethodParameters(ql, update, baseURI, dataset, includeInferred, bindings), UTF8));
 		}
-		
-		method.setHeader("Content-Type", Protocol.FORM_MIME_TYPE + "; charset=utf-8");
 
-		List<NameValuePair> queryParams = getUpdateMethodParameters(ql, update, baseURI, dataset,
-				includeInferred, bindings);
-
-		method.setEntity(new UrlEncodedFormEntity(queryParams, UTF8));
-
-		return (HttpUriRequest)method;
+		return builder.build();
 	}
 
 	protected void upload(final Reader contents, String baseURI, final RDFFormat dataFormat, boolean overwrite,

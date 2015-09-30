@@ -22,14 +22,7 @@ import static org.junit.Assert.fail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import info.aduna.iteration.CloseableIteration;
-import info.aduna.iteration.EmptyIteration;
-
 import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -38,9 +31,9 @@ import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.Regex;
 import org.openrdf.query.algebra.ValueExpr;
 import org.openrdf.query.algebra.Var;
-import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverImpl;
+import org.openrdf.query.algebra.evaluation.impl.EmptyTripleSource;
 import org.openrdf.query.algebra.evaluation.impl.EvaluationStrategyImpl;
 import org.openrdf.query.impl.EmptyBindingSet;
 
@@ -160,18 +153,7 @@ public class RegexTest {
 	}
 
 	private Literal evaluate(Value... args) throws ValueExprEvaluationException, QueryEvaluationException {
-		EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(new TripleSource() {
-			public ValueFactory getValueFactory() {
-				return vf;
-			}
-			
-			public CloseableIteration<? extends Statement, QueryEvaluationException> getStatements(Resource subj,
-					URI pred, Value obj, Resource... contexts)
-				throws QueryEvaluationException
-			{
-				return new EmptyIteration<Statement, QueryEvaluationException>();
-			}
-		}, serviceResolver);
+		EvaluationStrategyImpl strategy = new EvaluationStrategyImpl(new EmptyTripleSource(vf), serviceResolver);
 		ValueExpr expr = new Var("expr", args[0]);
 		ValueExpr pattern = new Var("pattern", args[1]);
 		ValueExpr flags = null;

@@ -43,9 +43,25 @@ import org.openrdf.repository.RepositoryException;
  */
 public enum ActiveTransactionRegistry {
 
+	/**
+	 * Singleton instance
+	 */
 	INSTANCE;
 
-	private static final Logger logger = LoggerFactory.getLogger(ActiveTransactionRegistry.class);
+	private final Logger logger = LoggerFactory.getLogger(ActiveTransactionRegistry.class);
+
+	/**
+	 * Configurable system property {@code sesame.server.txn.registry.timeout}
+	 * for specifying the transaction cache timeout (in seconds).
+	 */
+	public static final String CACHE_TIMEOUT_PROPERTY = "sesame.server.txn.registry.timeout";
+
+	/**
+	 * Default timeout setting for transaction cache entries (in seconds).
+	 */
+	public final static int DEFAULT_TIMEOUT = 60;
+
+	private final Cache<UUID, CacheEntry> activeConnections;
 
 	static class CacheEntry {
 
@@ -73,27 +89,48 @@ public enum ActiveTransactionRegistry {
 
 	}
 
-	private final Cache<UUID, CacheEntry> activeConnections = CacheBuilder.newBuilder().removalListener(
-			new RemovalListener<UUID, CacheEntry>() {
+	/**
+	 * private constructor. Access via {@link ActiveTransactionRegistry#INSTANCE}
+	 */
+	private ActiveTransactionRegistry() {
+		int timeout = DEFAULT_TIMEOUT;
 
-				@Override
-				public void onRemoval(RemovalNotification<UUID, CacheEntry> notification) {
-					if (RemovalCause.EXPIRED.equals(notification.getCause())) {
-						logger.warn("transaction registry item {} removed after expiry", notification.getKey());
-						CacheEntry entry = notification.getValue();
-						try {
-							entry.getConnection().close();
-						}
-						catch (RepositoryException e) {
-							// fall through
-						}
+		final String configuredValue = System.getProperty(CACHE_TIMEOUT_PROPERTY);
+		if (configuredValue != null) {
+			try {
+				timeout = Integer.parseInt(configuredValue);
+			}
+			catch (NumberFormatException e) {
+				logger.warn("Expected integer value for property {}. Timeout will default to {} seconds. ",
+						CACHE_TIMEOUT_PROPERTY, DEFAULT_TIMEOUT);
+			}
+		}
+
+		activeConnections = initializeCache(timeout, TimeUnit.SECONDS);
+	}
+
+	private final Cache<UUID, CacheEntry> initializeCache(int timeout, TimeUnit unit) {
+		return CacheBuilder.newBuilder().removalListener(new RemovalListener<UUID, CacheEntry>() {
+
+			@Override
+			public void onRemoval(RemovalNotification<UUID, CacheEntry> notification) {
+				if (RemovalCause.EXPIRED.equals(notification.getCause())) {
+					logger.warn("transaction registry item {} removed after expiry", notification.getKey());
+					CacheEntry entry = notification.getValue();
+					try {
+						entry.getConnection().close();
 					}
-					else {
-						logger.debug("transaction {} removed from registry. cause: {}", notification.getKey(),
-								notification.getCause());
+					catch (RepositoryException e) {
+						// fall through
 					}
 				}
-			}).expireAfterAccess(60, TimeUnit.SECONDS).build();
+				else {
+					logger.debug("transaction {} removed from registry. cause: {}", notification.getKey(),
+							notification.getCause());
+				}
+			}
+		}).expireAfterAccess(timeout, unit).build();
+	}
 
 	/**
 	 * Register a new transaction with the given id and connection.
@@ -117,8 +154,8 @@ public enum ActiveTransactionRegistry {
 			}
 			else {
 				logger.error("transaction already registered: {}", transactionId);
-				throw new RepositoryException("transaction with id " + transactionId.toString()
-						+ " already registered.");
+				throw new RepositoryException(
+						"transaction with id " + transactionId.toString() + " already registered.");
 			}
 		}
 	}
@@ -137,8 +174,8 @@ public enum ActiveTransactionRegistry {
 		synchronized (activeConnections) {
 			CacheEntry entry = activeConnections.getIfPresent(transactionId);
 			if (entry == null) {
-				throw new RepositoryException("transaction with id " + transactionId.toString()
-						+ " not registered.");
+				throw new RepositoryException(
+						"transaction with id " + transactionId.toString() + " not registered.");
 			}
 			else {
 				activeConnections.invalidate(transactionId);
@@ -170,8 +207,8 @@ public enum ActiveTransactionRegistry {
 		synchronized (activeConnections) {
 			CacheEntry entry = activeConnections.getIfPresent(transactionId);
 			if (entry == null) {
-				throw new RepositoryException("transaction with id " + transactionId.toString()
-						+ " not registered.");
+				throw new RepositoryException(
+						"transaction with id " + transactionId.toString() + " not registered.");
 			}
 
 			txnLock = entry.getLock();

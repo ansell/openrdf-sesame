@@ -73,9 +73,9 @@ public class PagedQuery {
 	public PagedQuery(final String query, final QueryLanguage language, final int requestLimit,
 			final int requestOffset)
 	{
-		LOGGER.info("Query Language: {}, requestLimit: " + requestLimit + ", requestOffset: " + requestOffset,
+		LOGGER.debug("Query Language: {}, requestLimit: " + requestLimit + ", requestOffset: " + requestOffset,
 				language);
-		LOGGER.info("Query: {}", query);
+		LOGGER.debug("Query: {}", query);
 
 		String rval = query;
 
@@ -92,7 +92,9 @@ public class PagedQuery {
 				final String clause = matcher.group().toLowerCase();
 				final int value = Integer.parseInt(SPLITTER.split(clause)[1]);
 				if (clause.startsWith("limit")) {
-					queryLimit = value;
+				    if (query.indexOf('}', matcher.end()) < 0) {
+				    	queryLimit = value;
+				    }
 				}
 				else {
 					queryOffset = value;
@@ -110,7 +112,7 @@ public class PagedQuery {
 			offsetSubstitute = queryOffsetExists ? queryOffset + offset : offset;
 			rval = modifyLimit(language, rval, queryLimit, queryLimitExists, queryOffsetExists, limitSubstitute);
 			rval = modifyOffset(language, offset, rval, queryOffsetExists);
-			LOGGER.info("Modified Query: {}", rval);
+			LOGGER.debug("Modified Query: {}", rval);
 		}
 
 		this.modifiedQuery = rval;
