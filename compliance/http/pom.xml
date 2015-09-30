@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-compliance</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-compliance</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-http-compliance</artifactId>
+	<artifactId>rdf4j-http-compliance</artifactId>
 	<packaging>war</packaging>
 
 	<name>OpenRDF HTTP server compliance tests</name>
@@ -17,46 +17,46 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryparser-api</artifactId>
+			<artifactId>rdf4j-queryparser-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-api</artifactId>
+			<artifactId>rdf4j-queryresultio-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-binary</artifactId>
-			<version>${project.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-sparqljson</artifactId>
+			<artifactId>rdf4j-queryresultio-binary</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+			<artifactId>rdf4j-queryresultio-sparqljson</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-api</artifactId>
+			<artifactId>rdf4j-queryresultio-sparqlxml</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>rdf4j-rio-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-rdfxml</artifactId>
+			<artifactId>rdf4j-rio-rdfxml</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
@@ -69,32 +69,32 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-server</artifactId>
+			<artifactId>rdf4j-http-server</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-protocol</artifactId>
+			<artifactId>rdf4j-http-protocol</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-http</artifactId>
+			<artifactId>rdf4j-repository-http</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-manager</artifactId>
+			<artifactId>rdf4j-repository-manager</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-config</artifactId>
+			<artifactId>rdf4j-config</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

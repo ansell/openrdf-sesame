@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-compliance</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-compliance</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-store-compliance</artifactId>
+	<artifactId>rdf4j-store-compliance</artifactId>
 	<packaging>war</packaging>
 
 	<name>OpenRDF SAIL and Repository compliance test</name>
@@ -17,61 +17,61 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-store-testsuite</artifactId>
+			<artifactId>rdf4j-store-testsuite</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-serql-testsuite</artifactId>
+			<artifactId>rdf4j-serql-testsuite</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sparql-testsuite</artifactId>
+			<artifactId>rdf4j-sparql-testsuite</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-http</artifactId>
+			<artifactId>rdf4j-repository-http</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-sail</artifactId>
+			<artifactId>rdf4j-repository-sail</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-sparql</artifactId>
+			<artifactId>rdf4j-repository-sparql</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-memory</artifactId>
+			<artifactId>rdf4j-sail-memory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-nativerdf</artifactId>
+			<artifactId>rdf4j-sail-nativerdf</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-federation</artifactId>
+			<artifactId>rdf4j-sail-federation</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-server</artifactId>
+			<artifactId>rdf4j-http-server</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
 		</dependency>
@@ -100,13 +100,13 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-protocol</artifactId>
+			<artifactId>rdf4j-http-protocol</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-manager</artifactId>
+			<artifactId>rdf4j-repository-manager</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

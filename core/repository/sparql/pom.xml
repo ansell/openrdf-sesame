@@ -3,43 +3,43 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-repository</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-repository</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-repository-sparql</artifactId>
+	<artifactId>rdf4j-repository-sparql</artifactId>
 
-	<name>OpenRDF Sesame: SPARQL Repository</name>
+	<name>RDF4J: SPARQL Repository</name>
 	<description><![CDATA[
-The SPARQL Repository provides a Sesame Repository interface to any SPARQL end-point.
+The SPARQL Repository provides a RDF4J Repository interface to any SPARQL end-point.
 ]]>
 	</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-api</artifactId>
+			<artifactId>rdf4j-repository-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-client</artifactId>
+			<artifactId>rdf4j-http-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryparser-api</artifactId>
+			<artifactId>rdf4j-queryparser-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 				<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryparser-sparql</artifactId>
+			<artifactId>rdf4j-queryparser-sparql</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+			<artifactId>rdf4j-queryresultio-sparqlxml</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

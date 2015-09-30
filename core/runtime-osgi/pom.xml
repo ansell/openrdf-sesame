@@ -4,31 +4,31 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-core</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-core</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-runtime-osgi</artifactId>
+	<artifactId>rdf4j-runtime-osgi</artifactId>
 	<packaging>bundle</packaging>
 
-	<name>OpenRDF Sesame: Runtime - OSGi</name>
+	<name>RDF4J: Runtime - OSGi</name>
 	<description>OSGi Runtime dependencies for an OpenRDF application</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-client</artifactId>
+			<artifactId>rdf4j-http-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-server-spring</artifactId>
+			<artifactId>rdf4j-http-server-spring</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	<dependency>
 	    <groupId>${project.groupId}</groupId>
-	    <artifactId>sesame-queryalgebra-geosparql</artifactId>
+	    <artifactId>rdf4j-queryalgebra-geosparql</artifactId>
 	    <version>${project.version}</version>
 	</dependency>
 	</dependencies>
@@ -60,7 +60,7 @@
 				<configuration>
 					<remoteOBR>NONE</remoteOBR>
 					<instructions>
-						<Bundle-SymbolicName>org.openrdf.sesame2</Bundle-SymbolicName>
+						<Bundle-SymbolicName>org.eclipse.rdf4j2</Bundle-SymbolicName>
 						<Export-Package>!*text-base,!*prop-base,org.openrdf.*,info.aduna.*</Export-Package>
 						<Import-Package>
 							org.slf4j.*,

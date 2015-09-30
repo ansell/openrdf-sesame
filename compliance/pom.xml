@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-compliance</artifactId>
+	<artifactId>rdf4j-compliance</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -22,44 +22,44 @@
 		<module>geosparql</module>
 	</modules>
 
-	<name>OpenRDF Sesame compliance tests</name>
-	<description>OpenRDF Sesame compliance tests</description>
+	<name>RDF4J compliance tests</name>
+	<description>RDF4J compliance tests</description>
 	
 	<dependencyManagement>
 		<dependencies>		
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sesame-http-compliance</artifactId>
+				<artifactId>rdf4j-http-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sesame-rio-testsuite</artifactId>
+				<artifactId>rdf4j-rio-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sesame-store-testsuite</artifactId>
+				<artifactId>rdf4j-store-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sesame-serql-testsuite</artifactId>
+				<artifactId>rdf4j-serql-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sesame-sparql-testsuite</artifactId>
+				<artifactId>rdf4j-sparql-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>sesame-queryparser-sparql-compliance</artifactId>
+				<artifactId>rdf4j-queryparser-sparql-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

@@ -4,14 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-core</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-core</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-runtime</artifactId>
+	<artifactId>rdf4j-runtime</artifactId>
 
-	<name>OpenRDF Sesame: Runtime</name>
+	<name>RDF4J: Runtime</name>
 	<description>Runtime dependencies for an OpenRDF application</description>
 
 	<dependencies>
@@ -20,52 +20,52 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-model</artifactId>
+			<artifactId>rdf4j-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-api</artifactId>
+			<artifactId>rdf4j-repository-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-manager</artifactId>
+			<artifactId>rdf4j-repository-manager</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-http</artifactId>
+			<artifactId>rdf4j-repository-http</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-sparql</artifactId>
+			<artifactId>rdf4j-repository-sparql</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-contextaware</artifactId>
+			<artifactId>rdf4j-repository-contextaware</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-sail</artifactId>
+			<artifactId>rdf4j-repository-sail</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-client</artifactId>
+			<artifactId>rdf4j-http-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-api</artifactId>
+			<artifactId>rdf4j-sail-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-federation</artifactId>
+			<artifactId>rdf4j-sail-federation</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -80,163 +80,163 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryparser-api</artifactId>
+			<artifactId>rdf4j-queryparser-api</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryparser-serql</artifactId>
+			<artifactId>rdf4j-queryparser-serql</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryparser-sparql</artifactId>
+			<artifactId>rdf4j-queryparser-sparql</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-api</artifactId>
+			<artifactId>rdf4j-queryresultio-api</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-binary</artifactId>
+			<artifactId>rdf4j-queryresultio-binary</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-sparqljson</artifactId>
+			<artifactId>rdf4j-queryresultio-sparqljson</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+			<artifactId>rdf4j-queryresultio-sparqlxml</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-text</artifactId>
+			<artifactId>rdf4j-queryresultio-text</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-dataset</artifactId>
+			<artifactId>rdf4j-repository-dataset</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-protocol</artifactId>
+			<artifactId>rdf4j-http-protocol</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-api</artifactId>
+			<artifactId>rdf4j-rio-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-datatypes</artifactId>
-			<version>${project.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-languages</artifactId>
+			<artifactId>rdf4j-rio-datatypes</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-binary</artifactId>
+			<artifactId>rdf4j-rio-languages</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-jsonld</artifactId>
+			<artifactId>rdf4j-rio-binary</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-ntriples</artifactId>
+			<artifactId>rdf4j-rio-jsonld</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-nquads</artifactId>
+			<artifactId>rdf4j-rio-ntriples</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-n3</artifactId>
+			<artifactId>rdf4j-rio-nquads</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-rdfjson</artifactId>
+			<artifactId>rdf4j-rio-n3</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-rdfxml</artifactId>
+			<artifactId>rdf4j-rio-rdfjson</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-trix</artifactId>
+			<artifactId>rdf4j-rio-rdfxml</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-turtle</artifactId>
+			<artifactId>rdf4j-rio-trix</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-trig</artifactId>
+			<artifactId>rdf4j-rio-turtle</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-inferencer</artifactId>
+			<artifactId>rdf4j-rio-trig</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-lucene</artifactId>
+			<artifactId>rdf4j-sail-inferencer</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-memory</artifactId>
+			<artifactId>rdf4j-sail-lucene</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-nativerdf</artifactId>
+			<artifactId>rdf4j-sail-memory</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>rdf4j-sail-nativerdf</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>

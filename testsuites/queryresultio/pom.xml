@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-testsuites</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-testsuites</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-queryresultio-testsuite</artifactId>
+	<artifactId>rdf4j-queryresultio-testsuite</artifactId>
 
 	<name>OpenRDF Query Result IO compliance test suite</name>
 	<description>Test suite for Query Result IO</description>
@@ -16,27 +16,27 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-runtime</artifactId>
+			<artifactId>rdf4j-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-sail</artifactId>
+			<artifactId>rdf4j-repository-sail</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-memory</artifactId>
+			<artifactId>rdf4j-sail-memory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-api</artifactId>
+			<artifactId>rdf4j-queryresultio-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-util</artifactId>
+			<artifactId>rdf4j-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

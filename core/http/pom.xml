@@ -3,15 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-core</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-core</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-http</artifactId>
+	<artifactId>rdf4j-http</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF Sesame: HTTP</name>
+	<name>RDF4J: HTTP</name>
 	<description>Client and server for repository communication over HTTP.</description>
 
 	<modules>

@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-sail-fts</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-sail-fts</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-sail-lucenesail</artifactId>
+	<artifactId>rdf4j-sail-lucenesail</artifactId>
 
 	<name>OpenRDF Lucene 3 Sail Index</name>
 	<description>StackableSail implementation offering full-text search on literals, based on Apache Lucene.</description>
@@ -20,7 +20,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-lucene-api</artifactId>
+			<artifactId>rdf4j-sail-lucene-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -56,13 +56,13 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-rdfxml</artifactId>
+			<artifactId>rdf4j-rio-rdfxml</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-lucene-testsuite</artifactId>
+			<artifactId>rdf4j-lucene-testsuite</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

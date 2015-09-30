@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-testsuites</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-testsuites</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-lucene-testsuite</artifactId>
+	<artifactId>rdf4j-lucene-testsuite</artifactId>
 
 	<name>OpenRDF Lucene Sail Tests</name>
 	<description>Generic tests for Lucene Sail implementations.</description>
@@ -16,7 +16,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-lucene-api</artifactId>
+			<artifactId>rdf4j-sail-lucene-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -26,12 +26,12 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryparser-serql</artifactId>
+			<artifactId>rdf4j-queryparser-serql</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-memory</artifactId>
+			<artifactId>rdf4j-sail-memory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

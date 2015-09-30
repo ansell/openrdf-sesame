@@ -3,16 +3,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-bom</artifactId>
+	<artifactId>rdf4j-bom</artifactId>
 	<packaging>pom</packaging>
 
-	<name>OpenRDF Sesame BOM</name>
-	<description>Sesame Bill of Materials (BOM)</description>
+	<name>RDF4J BOM</name>
+	<description>RDF4J Bill of Materials (BOM)</description>
 
 	<dependencyManagement>
 		<dependencies>
@@ -20,369 +20,369 @@
 			<!-- Core modules -->
 
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-config</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-config</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-console</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-console</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-client</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-http-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-protocol</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-http-protocol</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-server</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-http-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-server-spring</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-http-server-spring</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-workbench</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-http-workbench</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-model</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-model</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-query</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-query</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryalgebra-evaluation</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryalgebra-evaluation</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryalgebra-model</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryalgebra-model</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryalgebra-geosparql</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryalgebra-geosparql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryparser-api</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryparser-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryparser-serql</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryparser-serql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryparser-sparql</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryparser-sparql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryrender</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryrender</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryresultio-api</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryresultio-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryresultio-binary</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryresultio-binary</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryresultio-sparqljson</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryresultio-sparqljson</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryresultio-sparqlxml</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryresultio-sparqlxml</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryresultio-text</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryresultio-text</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-api</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-contextaware</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-contextaware</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-dataset</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-dataset</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-event</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-event</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-http</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-http</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-manager</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-manager</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-sail</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-sail</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-sparql</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-sparql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-api</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-binary</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-binary</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-datatypes</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-datatypes</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-languages</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-languages</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-n3</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-n3</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-nquads</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-nquads</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-ntriples</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-ntriples</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-rdfjson</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-rdfjson</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-rdfxml</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-rdfxml</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-trig</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-trig</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-trix</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-trix</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-turtle</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-turtle</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-runtime</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-runtime</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-runtime-osgi</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-runtime-osgi</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-api</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-federation</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-federation</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-inferencer</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-inferencer</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-elasticsearch</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-elasticsearch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-lucene</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-lucene</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-lucene-api</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-lucene-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-lucene-test</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-lucene-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-lucene4</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-lucene4</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-lucenesail</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-lucenesail</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-solr</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-solr</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-memory</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-memory</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-nativerdf</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-nativerdf</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-rdbms</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-rdbms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-util</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-util</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Compliance/integration test modules -->
 
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-http-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-http-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-model-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-model-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryresultio-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryresultio-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-serql-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-serql-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sparql-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sparql-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-geosparql-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-geosparql-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-store-compliance</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-store-compliance</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<!-- reusable test suites -->
 
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-model-testsuite</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-model-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-queryresultio-testsuite</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-queryresultio-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-testsuite</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-serql-testsuite</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-serql-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sparql-testsuite</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sparql-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-geosparql-testsuite</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-geosparql-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-store-testsuite</artifactId>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-store-testsuite</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

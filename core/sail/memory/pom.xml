@@ -3,56 +3,56 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-sail</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-sail</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-sail-memory</artifactId>
+	<artifactId>rdf4j-sail-memory</artifactId>
 
-	<name>OpenRDF Sesame: MemoryStore</name>
+	<name>RDF4J: MemoryStore</name>
 	<description>Sail implementation that stores data in main memory, optionally using a dump-restore file for persistence.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-base</artifactId>
+			<artifactId>rdf4j-sail-base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-inferencer</artifactId>
+			<artifactId>rdf4j-sail-inferencer</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryalgebra-evaluation</artifactId>
+			<artifactId>rdf4j-queryalgebra-evaluation</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryalgebra-model</artifactId>
+			<artifactId>rdf4j-queryalgebra-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-query</artifactId>
+			<artifactId>rdf4j-query</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-model</artifactId>
+			<artifactId>rdf4j-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-util</artifactId>
+			<artifactId>rdf4j-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-turtle</artifactId>
+			<artifactId>rdf4j-rio-turtle</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -3,50 +3,50 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-http</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-http</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-http-client</artifactId>
+	<artifactId>rdf4j-http-client</artifactId>
 
-	<name>OpenRDF Sesame: HTTP client</name>
+	<name>RDF4J: HTTP client</name>
 	<description>Client functionality for communicating with an OpenRDF server over HTTP.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-http-protocol</artifactId>
+			<artifactId>rdf4j-http-protocol</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-query</artifactId>
+			<artifactId>rdf4j-query</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-api</artifactId>
+			<artifactId>rdf4j-queryresultio-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-rio-api</artifactId>
+			<artifactId>rdf4j-rio-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-model</artifactId>
+			<artifactId>rdf4j-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-repository-api</artifactId>
+			<artifactId>rdf4j-repository-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-util</artifactId>
+			<artifactId>rdf4j-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

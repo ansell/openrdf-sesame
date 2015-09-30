@@ -3,30 +3,30 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.openrdf.sesame</groupId>
-		<artifactId>sesame-queryresultio</artifactId>
+		<groupId>org.eclipse.rdf4j</groupId>
+		<artifactId>rdf4j-queryresultio</artifactId>
 		<version>4.0.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sesame-queryresultio-binary</artifactId>
+	<artifactId>rdf4j-queryresultio-binary</artifactId>
 
-	<name>OpenRDF Sesame: Query result IO - binary</name>
+	<name>RDF4J: Query result IO - binary</name>
 	<description>Query result parser and writer implementation for OpenRDF's binary query results format.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-queryresultio-api</artifactId>
+			<artifactId>rdf4j-queryresultio-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-query</artifactId>
+			<artifactId>rdf4j-query</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-model</artifactId>
+			<artifactId>rdf4j-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
