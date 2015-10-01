@@ -31,6 +31,7 @@ public class Load extends QueryModelNodeBase implements UpdateExpr {
 		setSource(source);
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -64,8 +65,32 @@ public class Load extends QueryModelNodeBase implements UpdateExpr {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if(other instanceof Load) {
+			Load o = (Load)other;
+			return silent == o.silent
+					&& nullEquals(source, o.source)
+					&& nullEquals(graph, o.graph);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = silent ? 1 :0;
+		if(source != null) {
+			result ^= source.hashCode();
+		}
+		if(graph != null) {
+			result ^= graph.hashCode();
+		}
+		return result;
+	}
+
+	@Override
 	public Load clone() {
 		Load clone = new Load(source.clone());
+		clone.setSilent(isSilent());
 		if (getGraph() != null) {
 			clone.setGraph(getGraph().clone());
 		}
@@ -112,6 +137,7 @@ public class Load extends QueryModelNodeBase implements UpdateExpr {
 	/**
 	 * @return Returns the silent.
 	 */
+	@Override
 	public boolean isSilent() {
 		return silent;
 	}

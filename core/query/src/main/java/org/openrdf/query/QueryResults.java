@@ -202,13 +202,17 @@ public class QueryResults extends Iterations {
 	}
 
 	/**
-	 * Compares the two query results by converting them to graphs and returns
-	 * true if they are equal. QueryResults are equal if they contain the same
-	 * set of BindingSet and have the headers. Blank nodes identifiers are not
-	 * relevant for equality, they are mapped from one model to the other by
-	 * using the attached properties. Note that the method consumes both query
+	 * Compares two tuple query results and returns {@code true} if they are
+	 * equal. Tuple query results are equal if they contain the same set of
+	 * {@link BindingSet}s and have the same headers. Blank nodes identifiers are
+	 * not relevant for equality, they are matched by trying to find compatible
+	 * mappings between BindingSets. Note that the method consumes both query
 	 * results fully.
 	 * 
+	 * @param tqr1
+	 *        the first {@link TupleQueryResult} to compare.
+	 * @param tqr2
+	 *        the second {@link TupleQueryResult} to compare.
 	 * @throws QueryEvaluationException
 	 */
 	public static boolean equals(TupleQueryResult tqr1, TupleQueryResult tqr2)
@@ -239,11 +243,25 @@ public class QueryResults extends Iterations {
 		return matchBindingSets(list1, list2);
 	}
 
+	/**
+	 * Compares two graph query results and returns {@code true} if they are
+	 * equal. Two graph query results are considered equal if they are isomorphic
+	 * graphs. Note that the method consumes both query results fully.
+	 * 
+	 * @param result1
+	 *        the first query result to compare
+	 * @param result2
+	 *        the second query result to compare.
+	 * @return {@code true} iff the supplied graph query results are isomorphic
+	 *         graphs, {@code false} otherwise.
+	 * @throws QueryEvaluationException
+	 * @see {@link Models#isomorphic(Iterable, Iterable)}
+	 */
 	public static boolean equals(GraphQueryResult result1, GraphQueryResult result2)
 		throws QueryEvaluationException
 	{
 		Set<? extends Statement> graph1 = Iterations.asSet(result1);
-		Set<? extends Statement> graph2 = Iterations.asSet(result1);
+		Set<? extends Statement> graph2 = Iterations.asSet(result2);
 
 		return Models.isomorphic(graph1, graph2);
 	}
