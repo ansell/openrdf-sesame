@@ -358,7 +358,9 @@ public class ConstantOptimizer implements QueryOptimizer {
 
 		@Override
 		public void meet(Var var) {
-			varNames.add(var.getName());
+			if(!var.isAnonymous()) {
+				varNames.add(var.getName());
+			}
 		}
 	}
 }

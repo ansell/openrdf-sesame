@@ -86,10 +86,6 @@ public class TupleExprs {
 	 * @return an (anonymous) Var representing a constant value.
 	 */
 	public static Var createConstVar(Value value) {
-		if (value == null) {
-			throw new IllegalArgumentException("value can not be null");
-		}
-
 		String varName = getConstVarName(value);
 		Var var = new Var(varName);
 		var.setConstant(true);
@@ -99,6 +95,10 @@ public class TupleExprs {
 	}
 
 	public static String getConstVarName(Value value) {
+		if (value == null) {
+			throw new IllegalArgumentException("value can not be null");
+		}
+
 		// We use toHexString to get a more compact stringrep.
 		String uniqueStringForValue = Integer.toHexString(value.stringValue().hashCode());
 
@@ -109,18 +109,19 @@ public class TupleExprs {
 			// var name (see SES-1927)
 			Literal lit = (Literal)value;
 			if (lit.getDatatype() != null) {
-				uniqueStringForValue += "-" + lit.getDatatype().stringValue();
+				uniqueStringForValue += "_" + Integer.toHexString(lit.getDatatype().hashCode());
 			}
 			if (lit.getLanguage() != null) {
-				uniqueStringForValue += "-" + lit.getLanguage();
+				uniqueStringForValue += "_" + Integer.toHexString(lit.getLanguage().hashCode());
 			}
 		}
 		else if (value instanceof BNode) {
-			uniqueStringForValue += "-node";
+			uniqueStringForValue += "_node";
 		}
 		else {
-			uniqueStringForValue += "-uri";
+			uniqueStringForValue += "_uri";
 		}
-		return "_const-" + uniqueStringForValue;
+
+		return "_const_" + uniqueStringForValue;
 	}
 }
