@@ -36,6 +36,7 @@ public class Copy extends QueryModelNodeBase implements UpdateExpr {
 		setSourceGraph(graph);
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -66,6 +67,29 @@ public class Copy extends QueryModelNodeBase implements UpdateExpr {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if(other instanceof Copy) {
+			Copy o = (Copy)other;
+			return silent == o.silent
+					&& nullEquals(sourceGraph, o.sourceGraph)
+					&& nullEquals(destinationGraph, o.destinationGraph);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = silent ? 1 :0;
+		if(sourceGraph != null) {
+			result ^= sourceGraph.hashCode();
+		}
+		if(destinationGraph != null) {
+			result ^= destinationGraph.hashCode();
+		}
+		return result;
 	}
 
 	@Override
@@ -107,6 +131,7 @@ public class Copy extends QueryModelNodeBase implements UpdateExpr {
 	/**
 	 * @return Returns the silent.
 	 */
+	@Override
 	public boolean isSilent() {
 		return silent;
 	}

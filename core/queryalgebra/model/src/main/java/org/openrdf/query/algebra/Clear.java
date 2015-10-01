@@ -38,6 +38,7 @@ public class Clear extends QueryModelNodeBase implements UpdateExpr {
 		setGraph(graph);
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -65,8 +66,32 @@ public class Clear extends QueryModelNodeBase implements UpdateExpr {
 	}
 
 	@Override
+	public boolean equals(Object other) {
+		if(other instanceof Clear) {
+			Clear o = (Clear)other;
+			return silent == o.silent
+					&& nullEquals(graph, o.graph)
+					&& nullEquals(scope, o.scope);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = silent ? 1 :0;
+		if(graph != null) {
+			result ^= graph.hashCode();
+		}
+		if(scope != null) {
+			result ^= scope.hashCode();
+		}
+		return result;
+	}
+
+	@Override
 	public Clear clone() {
 		Clear clone = new Clear();
+		clone.setSilent(isSilent());
 		if (getGraph() != null) {
 			clone.setGraph(getGraph().clone());
 		}
@@ -98,6 +123,7 @@ public class Clear extends QueryModelNodeBase implements UpdateExpr {
 	/**
 	 * @return Returns the silent.
 	 */
+	@Override
 	public boolean isSilent() {
 		return silent;
 	}
