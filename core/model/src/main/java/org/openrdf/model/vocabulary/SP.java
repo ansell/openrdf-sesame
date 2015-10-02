@@ -527,6 +527,8 @@ public class SP {
 
 	public static final URI USING_NAMED_PROPERTY;
 
+	public static final URI DATA_PROPERTY;
+
 	/**
 	 * http://spinrdf.org/sp#arg3 The third argument of a function call.
 	 */
@@ -778,6 +780,7 @@ public class SP {
 		GRAPH_IRI_PROPERTY = factory.createURI(NAMESPACE, "graphIRI");
 		LIMIT_PROPERTY = factory.createURI(NAMESPACE, "limit");
 		USING_PROPERTY = factory.createURI(NAMESPACE, "using");
+		DATA_PROPERTY = factory.createURI(NAMESPACE, "data");
 		TEMPLATES_PROPERTY = factory.createURI(NAMESPACE, "templates");
 		RESULT_NODES_PROPERTY = factory.createURI(NAMESPACE, "resultNodes");
 		USING_NAMED_PROPERTY = factory.createURI(NAMESPACE, "usingNamed");
