@@ -18,8 +18,8 @@ package org.openrdf.query.parser.sparql;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -689,7 +689,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		result.visit(whereClauseVarCollector);
 
 		// Create BNodeGenerators for all anonymous variables
-		Map<Var, ExtensionElem> extElemMap = new HashMap<Var, ExtensionElem>();
+		// NB: preserve order for a deterministic output
+		Map<Var, ExtensionElem> extElemMap = new LinkedHashMap<Var, ExtensionElem>();
 
 		for (Var var : constructVars) {
 			if (var.isAnonymous() && !extElemMap.containsKey(var)) {

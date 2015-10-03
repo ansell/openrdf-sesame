@@ -4,13 +4,12 @@
 
 [ a       sp:InsertData ;
 	sp:text """
-PREFIX ex: <ex:>
 INSERT DATA {
-	GRAPH ex:g {
-		ex:subj ex:pred ex:obj .
+	GRAPH <ex:g> {
+		<ex:subj> <ex:pred> <ex:obj> .
 	}
-	GRAPH ex:h {
-		ex:subj ex:pred ex:obj .
+	GRAPH <ex:h> {
+		<ex:subj> <ex:pred> <ex:obj> .
 	}
 }
 """;
