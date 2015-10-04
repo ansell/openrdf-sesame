@@ -47,8 +47,11 @@ import org.openrdf.model.Value;
 import org.openrdf.model.impl.BooleanLiteralImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.AFN;
+import org.openrdf.model.vocabulary.FN;
+import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.model.vocabulary.SPIN;
 import org.openrdf.model.vocabulary.SPL;
@@ -63,11 +66,14 @@ import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Clear;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
+import org.openrdf.query.algebra.Create;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.DescribeOperator;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
@@ -81,6 +87,7 @@ import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.GroupElem;
 import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.If;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -88,6 +95,7 @@ import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
@@ -126,6 +134,7 @@ import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
 import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.query.algebra.evaluation.util.Statements;
+import org.openrdf.query.algebra.helpers.QueryModelVisitorBase;
 import org.openrdf.query.algebra.helpers.TupleExprs;
 import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.ParsedBooleanQuery;
@@ -160,8 +169,8 @@ public class SpinParser {
 	private static final Set<URI> QUERY_TYPES = Sets.newHashSet(SP.SELECT_CLASS, SP.CONSTRUCT_CLASS,
 			SP.ASK_CLASS, SP.DESCRIBE_CLASS);
 
-	private static final Set<URI> UPDATE_TYPES = Sets.newHashSet(SP.MODIFY_CLASS, SP.INSERT_DATA_CLASS,
-			SP.DELETE_DATA_CLASS, SP.LOAD_CLASS, SP.CLEAR_CLASS, SP.CREATE_CLASS, SP.DROP_CLASS);
+	private static final Set<URI> UPDATE_TYPES = Sets.newHashSet(SP.MODIFY_CLASS, SP.DELETE_WHERE_CLASS,
+			SP.INSERT_DATA_CLASS, SP.DELETE_DATA_CLASS, SP.LOAD_CLASS, SP.CLEAR_CLASS, SP.CREATE_CLASS, SP.DROP_CLASS);
 
 	private static final Set<URI> COMMAND_TYPES = Sets.union(QUERY_TYPES, UPDATE_TYPES);
 
@@ -389,6 +398,12 @@ public class SpinParser {
 		throws OpenRDFException
 	{
 		return (ParsedDescribeQuery)parse(queryResource, SP.DESCRIBE_CLASS, store);
+	}
+
+	public ParsedUpdate parseUpdate(Resource queryResource, TripleSource store)
+		throws OpenRDFException
+	{
+		return (ParsedUpdate)parse(queryResource, SP.UPDATE_CLASS, store);
 	}
 
 	protected ParsedOperation parse(Resource queryResource, URI queryClass, TripleSource store)
@@ -734,6 +749,48 @@ public class SpinParser {
 			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
 			return parsedUpdate;
 		}
+		else if (SP.DELETE_WHERE_CLASS.equals(queryType)) {
+			SpinVisitor visitor = new SpinVisitor(store);
+			visitor.visitDeleteWhere(queryResource);
+			ParsedUpdate parsedUpdate = new ParsedUpdate();
+			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
+			return parsedUpdate;
+		}
+		else if (SP.INSERT_DATA_CLASS.equals(queryType)) {
+			SpinVisitor visitor = new SpinVisitor(store);
+			visitor.visitInsertData(queryResource);
+			ParsedUpdate parsedUpdate = new ParsedUpdate();
+			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
+			return parsedUpdate;
+		}
+		else if (SP.DELETE_DATA_CLASS.equals(queryType)) {
+			SpinVisitor visitor = new SpinVisitor(store);
+			visitor.visitDeleteData(queryResource);
+			ParsedUpdate parsedUpdate = new ParsedUpdate();
+			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
+			return parsedUpdate;
+		}
+		else if (SP.LOAD_CLASS.equals(queryType)) {
+			SpinVisitor visitor = new SpinVisitor(store);
+			visitor.visitLoad(queryResource);
+			ParsedUpdate parsedUpdate = new ParsedUpdate();
+			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
+			return parsedUpdate;
+		}
+		else if (SP.CLEAR_CLASS.equals(queryType)) {
+			SpinVisitor visitor = new SpinVisitor(store);
+			visitor.visitClear(queryResource);
+			ParsedUpdate parsedUpdate = new ParsedUpdate();
+			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
+			return parsedUpdate;
+		}
+		else if (SP.CREATE_CLASS.equals(queryType)) {
+			SpinVisitor visitor = new SpinVisitor(store);
+			visitor.visitCreate(queryResource);
+			ParsedUpdate parsedUpdate = new ParsedUpdate();
+			parsedUpdate.addUpdateExpr(visitor.getUpdateExpr());
+			return parsedUpdate;
+		}
 		else {
 			throw new MalformedSpinException(String.format("Unrecognised command type: %s", queryType));
 		}
@@ -1066,7 +1123,7 @@ public class SpinParser {
 			Value expr = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
 			ValueExpr valueExpr = visitExpression(expr);
 			Statement descStmt = Statements.single(r, RDF.TYPE, SP.DESC_CLASS, store);
-			boolean asc = descStmt == null;
+			boolean asc = (descStmt == null);
 			return new OrderElem(valueExpr, asc);
 		}
 
@@ -1146,6 +1203,7 @@ public class SpinParser {
 			if(delete != null) {
 				visitDelete((Resource) delete);
 				deleteExpr = tupleNode;
+				deleteExpr.setParentNode(null);
 			}
 			else {
 				deleteExpr = null;
@@ -1158,6 +1216,7 @@ public class SpinParser {
 			if(insert != null) {
 				visitInsert((Resource) insert);
 				insertExpr = tupleNode;
+				insertExpr.setParentNode(null);
 			}
 			else {
 				insertExpr = null;
@@ -1170,12 +1229,96 @@ public class SpinParser {
 			if(where != null) {
 				visitGroupGraphPattern((Resource) where);
 				whereExpr = tupleNode;
+				whereExpr.setParentNode(null);
 			}
 			else {
 				whereExpr = null;
 			}
 
 			updateRoot = new Modify(deleteExpr, insertExpr, whereExpr);
+		}
+
+		public void visitDeleteWhere(Resource query)
+			throws OpenRDFException
+		{
+			SingletonSet stub = new SingletonSet();
+			tupleRoot = new QueryRoot(stub);
+			tupleNode = stub;
+			visitWhere(query);
+			tupleNode.setParentNode(null);
+			updateRoot = new Modify(tupleNode, null, tupleNode.clone());
+		}
+
+		public void visitInsertData(Resource query)
+			throws OpenRDFException
+		{
+			SingletonSet stub = new SingletonSet();
+			tupleRoot = new QueryRoot(stub);
+			tupleNode = stub;
+			TupleExpr insertExpr;
+			Value insert = Statements.singleValue(query, SP.DATA_PROPERTY, store);
+			if(!(insert instanceof Resource)) {
+				throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.DATA_PROPERTY));
+			}
+			visitInsert((Resource) insert);
+			insertExpr = tupleNode;
+			insertExpr.setParentNode(null);
+
+			DataVisitor visitor = new DataVisitor();
+			insertExpr.visit(visitor);
+			updateRoot = new InsertData(visitor.getData());
+		}
+
+		public void visitDeleteData(Resource query)
+			throws OpenRDFException
+		{
+			SingletonSet stub = new SingletonSet();
+			tupleRoot = new QueryRoot(stub);
+			tupleNode = stub;
+			TupleExpr deleteExpr;
+			Value delete = Statements.singleValue(query, SP.DATA_PROPERTY, store);
+			if(!(delete instanceof Resource)) {
+				throw new MalformedSpinException(String.format("Value of %s is not a resource", SP.DATA_PROPERTY));
+			}
+			visitDelete((Resource) delete);
+			deleteExpr = tupleNode;
+			deleteExpr.setParentNode(null);
+
+			DataVisitor visitor = new DataVisitor();
+			deleteExpr.visit(visitor);
+			updateRoot = new DeleteData(visitor.getData());
+		}
+
+		public void visitLoad(Resource query)
+			throws OpenRDFException
+		{
+			Value document = Statements.singleValue(query, SP.DOCUMENT_PROPERTY, store);
+			Value into = Statements.singleValue(query, SP.INTO_PROPERTY, store);
+			Load load = new Load(new ValueConstant(document));
+			load.setGraph(new ValueConstant(into));
+			boolean isSilent = Statements.booleanValue(query, SP.SILENT_PROPERTY, store);
+			load.setSilent(isSilent);
+			updateRoot = load;
+		}
+
+		public void visitClear(Resource query)
+			throws OpenRDFException
+		{
+			Value graph = Statements.singleValue(query, SP.GRAPH_IRI_PROPERTY, store);
+			Clear clear = new Clear(new ValueConstant(graph));
+			boolean isSilent = Statements.booleanValue(query, SP.SILENT_PROPERTY, store);
+			clear.setSilent(isSilent);
+			updateRoot = clear;
+		}
+
+		public void visitCreate(Resource query)
+			throws OpenRDFException
+		{
+			Value graph = Statements.singleValue(query, SP.GRAPH_IRI_PROPERTY, store);
+			Create create = new Create(new ValueConstant(graph));
+			boolean isSilent = Statements.booleanValue(query, SP.SILENT_PROPERTY, store);
+			create.setSilent(isSilent);
+			updateRoot = create;
 		}
 
 		public void visitWhere(Resource query)
@@ -1878,6 +2021,46 @@ public class SpinParser {
 				}
 			}
 			return new Var(varName);
+		}
+	}
+
+
+	static class DataVisitor extends QueryModelVisitorBase<RuntimeException>
+	{
+		final StringBuilder buf = new StringBuilder(1024);
+
+		DataVisitor() {
+			appendPrefix(RDF.PREFIX, RDF.NAMESPACE);
+			appendPrefix(RDFS.PREFIX, RDFS.NAMESPACE);
+			appendPrefix(SESAME.PREFIX, SESAME.NAMESPACE);
+			appendPrefix(OWL.PREFIX, OWL.NAMESPACE);
+			appendPrefix(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
+			appendPrefix(FN.PREFIX, FN.NAMESPACE);
+			buf.append(" ");
+		}
+
+		void appendPrefix(String prefix, String namespace) {
+			buf.append("PREFIX ").append(prefix).append(": <").append(namespace).append("> \n");
+		}
+
+		String getData() {
+			return buf.toString();
+		}
+
+		@Override
+		public void meet(StatementPattern node)
+			throws RuntimeException
+		{
+			if(node.getContextVar() != null) {
+				buf.append("GRAPH <").append(node.getContextVar().getValue()).append("> { ");
+			}
+			buf.append("<").append(node.getSubjectVar().getValue())
+			.append("> <").append(node.getPredicateVar().getValue())
+			.append("> <").append(node.getObjectVar().getValue())
+			.append("> .");
+			if(node.getContextVar() != null) {
+				buf.append(" } ");
+			}
 		}
 	}
 }

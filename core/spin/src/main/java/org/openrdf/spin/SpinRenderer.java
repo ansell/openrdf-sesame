@@ -16,6 +16,8 @@
  */
 package org.openrdf.spin;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.Set;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
@@ -42,11 +45,14 @@ import org.openrdf.query.algebra.Avg;
 import org.openrdf.query.algebra.BNodeGenerator;
 import org.openrdf.query.algebra.BindingSetAssignment;
 import org.openrdf.query.algebra.Bound;
+import org.openrdf.query.algebra.Clear;
 import org.openrdf.query.algebra.Coalesce;
 import org.openrdf.query.algebra.Compare;
 import org.openrdf.query.algebra.Compare.CompareOp;
 import org.openrdf.query.algebra.Count;
+import org.openrdf.query.algebra.Create;
 import org.openrdf.query.algebra.Datatype;
+import org.openrdf.query.algebra.DeleteData;
 import org.openrdf.query.algebra.Difference;
 import org.openrdf.query.algebra.Distinct;
 import org.openrdf.query.algebra.Exists;
@@ -58,6 +64,7 @@ import org.openrdf.query.algebra.Group;
 import org.openrdf.query.algebra.GroupConcat;
 import org.openrdf.query.algebra.IRIFunction;
 import org.openrdf.query.algebra.If;
+import org.openrdf.query.algebra.InsertData;
 import org.openrdf.query.algebra.IsBNode;
 import org.openrdf.query.algebra.IsLiteral;
 import org.openrdf.query.algebra.IsNumeric;
@@ -65,6 +72,7 @@ import org.openrdf.query.algebra.IsURI;
 import org.openrdf.query.algebra.Join;
 import org.openrdf.query.algebra.Lang;
 import org.openrdf.query.algebra.LeftJoin;
+import org.openrdf.query.algebra.Load;
 import org.openrdf.query.algebra.LocalName;
 import org.openrdf.query.algebra.MathExpr;
 import org.openrdf.query.algebra.MathExpr.MathOp;
@@ -102,8 +110,11 @@ import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
+import org.openrdf.repository.sail.helpers.SPARQLUpdateDataBlockParser;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.helpers.RDFHandlerBase;
 
 import com.google.common.base.Function;
 
@@ -268,16 +279,42 @@ public class SpinRenderer {
 			UpdateExpr updateExpr = updateExprs.get(i);
 			Resource updateSubj = valueFactory.createBNode();
 			Dataset dataset = datasets.get(updateExpr);
+			URI updateClass;
 			if(updateExpr instanceof Modify) {
-				handler.handleStatement(valueFactory.createStatement(updateSubj, RDF.TYPE, SP.MODIFY_CLASS));
-				if(output.text) {
-					handler.handleStatement(valueFactory.createStatement(updateSubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(sourceStrings[i])));
+				Modify modify = (Modify) updateExpr;
+				if(modify.getInsertExpr() == null && modify.getWhereExpr().equals(modify.getDeleteExpr())) {
+					updateClass = SP.DELETE_WHERE_CLASS;
 				}
-				if(output.rdf) {
-					SpinVisitor visitor = new SpinVisitor(handler, null, updateSubj, dataset);
-					updateExpr.visit(visitor);
-					visitor.end();
+				else {
+					updateClass = SP.MODIFY_CLASS;
 				}
+			}
+			else if(updateExpr instanceof InsertData) {
+				updateClass = SP.INSERT_DATA_CLASS;
+			}
+			else if(updateExpr instanceof DeleteData) {
+				updateClass = SP.DELETE_DATA_CLASS;
+			}
+			else if(updateExpr instanceof Load) {
+				updateClass = SP.LOAD_CLASS;
+			}
+			else if(updateExpr instanceof Clear) {
+				updateClass = SP.CLEAR_CLASS;
+			}
+			else if(updateExpr instanceof Create) {
+				updateClass = SP.CREATE_CLASS;
+			}
+			else {
+				throw new RDFHandlerException("Unrecognised UpdateExpr: "+updateExpr.getClass());
+			}
+			handler.handleStatement(valueFactory.createStatement(updateSubj, RDF.TYPE, updateClass));
+			if(output.text) {
+				handler.handleStatement(valueFactory.createStatement(updateSubj, SP.TEXT_PROPERTY, valueFactory.createLiteral(sourceStrings[i])));
+			}
+			if(output.rdf) {
+				SpinVisitor visitor = new SpinVisitor(handler, null, updateSubj, dataset);
+				updateExpr.visit(visitor);
+				visitor.end();
 			}
 		}
 		handler.endRDF();
@@ -1154,28 +1191,161 @@ public class SpinRenderer {
 		@Override
 		public void meet(Modify node) throws RDFHandlerException {
 			TupleExpr insertExpr = node.getInsertExpr();
-			if(insertExpr != null) {
-				Resource insertList = valueFactory.createBNode();
-				handler.handleStatement(valueFactory.createStatement(subject, SP.INSERT_PATTERN_PROPERTY, insertList));
-				ListContext insertCtx = newList(insertList);
-				insertExpr.visit(this);
-				endList(insertCtx);
-			}
 			TupleExpr deleteExpr = node.getDeleteExpr();
-			if(deleteExpr != null) {
-				Resource deleteList = valueFactory.createBNode();
-				handler.handleStatement(valueFactory.createStatement(subject, SP.DELETE_PATTERN_PROPERTY, deleteList));
-				ListContext deleteCtx = newList(deleteList);
-				deleteExpr.visit(this);
-				endList(deleteCtx);
-			}
 			TupleExpr whereExpr = node.getWhereExpr();
-			if(whereExpr != null) {
-				Resource whereList = valueFactory.createBNode();
-				handler.handleStatement(valueFactory.createStatement(subject, SP.WHERE_PROPERTY, whereList));
-				ListContext whereCtx = newList(whereList);
-				whereExpr.visit(this);
-				endList(whereCtx);
+			if(insertExpr == null && whereExpr.equals(deleteExpr)) {
+				// DELETE WHERE
+				visitWhere(whereExpr);
+			}
+			else {
+				if(insertExpr != null) {
+					Resource insertList = valueFactory.createBNode();
+					handler.handleStatement(valueFactory.createStatement(subject, SP.INSERT_PATTERN_PROPERTY, insertList));
+					ListContext insertCtx = newList(insertList);
+					insertExpr.visit(this);
+					endList(insertCtx);
+				}
+				if(deleteExpr != null) {
+					Resource deleteList = valueFactory.createBNode();
+					handler.handleStatement(valueFactory.createStatement(subject, SP.DELETE_PATTERN_PROPERTY, deleteList));
+					ListContext deleteCtx = newList(deleteList);
+					deleteExpr.visit(this);
+					endList(deleteCtx);
+				}
+				if(whereExpr != null) {
+					Resource whereList = valueFactory.createBNode();
+					handler.handleStatement(valueFactory.createStatement(subject, SP.WHERE_PROPERTY, whereList));
+					ListContext whereCtx = newList(whereList);
+					whereExpr.visit(this);
+					endList(whereCtx);
+				}
+			}
+		}
+
+		@Override
+		public void meet(InsertData node) throws RDFHandlerException {
+			Resource dataList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.DATA_PROPERTY, dataList));
+			ListContext dataCtx = newList(dataList);
+			renderDataBlock(node.getDataBlock());
+			endList(dataCtx);
+		}
+
+		@Override
+		public void meet(DeleteData node) throws RDFHandlerException {
+			Resource dataList = valueFactory.createBNode();
+			handler.handleStatement(valueFactory.createStatement(subject, SP.DATA_PROPERTY, dataList));
+			ListContext dataCtx = newList(dataList);
+			renderDataBlock(node.getDataBlock());
+			endList(dataCtx);
+		}
+
+		private void renderDataBlock(String data) throws RDFHandlerException {
+			SPARQLUpdateDataBlockParser parser = new SPARQLUpdateDataBlockParser(valueFactory);
+			parser.setAllowBlankNodes(false); // no blank nodes allowed
+			parser.setRDFHandler(new RDFHandlerBase() {
+				final Map<Resource,ListContext> namedGraphLists = new HashMap<Resource,ListContext>();
+				ListContext namedGraphContext;
+
+				@Override
+				public void handleStatement(Statement st)
+					throws RDFHandlerException
+				{
+					ListContext ctxList = null;
+					if(st.getContext() != null) {
+						ctxList = getNamedGraph(st.getContext());
+					}
+					listEntry();
+					handler.handleStatement(valueFactory.createStatement(subject, SP.SUBJECT_PROPERTY, st.getSubject()));
+					handler.handleStatement(valueFactory.createStatement(subject, SP.PREDICATE_PROPERTY, st.getPredicate()));
+					handler.handleStatement(valueFactory.createStatement(subject, SP.OBJECT_PROPERTY, st.getObject()));
+					if(ctxList != null) {
+						restoreNamedGraph(ctxList);
+					}
+				}
+
+				@Override
+				public void endRDF() throws RDFHandlerException {
+					for(ListContext ctxList : namedGraphLists.values()) {
+						endList(ctxList);
+					}
+				}
+
+				private ListContext getNamedGraph(Resource context) throws RDFHandlerException {
+					ListContext currentCtx;
+					namedGraphContext = namedGraphLists.get(context);
+					if(namedGraphContext == null) {
+						listEntry();
+						handler.handleStatement(valueFactory.createStatement(subject, RDF.TYPE, SP.NAMED_GRAPH_CLASS));
+						handler.handleStatement(valueFactory.createStatement(subject, SP.GRAPH_NAME_NODE_PROPERTY, context));
+						Resource elementsList = valueFactory.createBNode();
+						handler.handleStatement(valueFactory.createStatement(subject, SP.ELEMENTS_PROPERTY, elementsList));
+						currentCtx = newList(elementsList);
+						namedGraphContext = save();
+						namedGraphLists.put(context, namedGraphContext);
+					}
+					else {
+						currentCtx = save();
+						restore(namedGraphContext);
+					}
+					return currentCtx;
+				}
+
+				private void restoreNamedGraph(ListContext ctx) {
+					update(namedGraphContext);
+					restore(ctx);
+				}
+			});
+			try {
+				parser.parse(new StringReader(data), "");
+			}
+			catch (RDFParseException e) {
+				throw new RDFHandlerException(e);
+			}
+			catch (IOException e) {
+				throw new RDFHandlerException(e);
+			}
+		}
+
+		@Override
+		public void meet(Load node) throws RDFHandlerException {
+			handler.handleStatement(valueFactory.createStatement(subject, SP.DOCUMENT_PROPERTY, node.getSource().getValue()));
+			handler.handleStatement(valueFactory.createStatement(subject, SP.INTO_PROPERTY, node.getGraph().getValue()));
+		}
+
+		@Override
+		public void meet(Clear node) throws RDFHandlerException {
+			if(node.isSilent()) {
+				handler.handleStatement(valueFactory.createStatement(subject, SP.SILENT_PROPERTY, BooleanLiteralImpl.TRUE));
+			}
+
+			if(node.getGraph() != null) {
+				handler.handleStatement(valueFactory.createStatement(subject, SP.GRAPH_IRI_PROPERTY, node.getGraph().getValue()));
+			}
+			else if(node.getScope() != null) {
+				switch(node.getScope())
+				{
+					case DEFAULT_CONTEXTS:
+						handler.handleStatement(valueFactory.createStatement(subject, SP.DEFAULT_PROPERTY, BooleanLiteralImpl.TRUE));
+						break;
+					case NAMED_CONTEXTS:
+						handler.handleStatement(valueFactory.createStatement(subject, SP.NAMED_PROPERTY, BooleanLiteralImpl.TRUE));
+						break;
+				}
+			}
+			else {
+				handler.handleStatement(valueFactory.createStatement(subject, SP.ALL_PROPERTY, BooleanLiteralImpl.TRUE));
+			}
+		}
+
+		@Override
+		public void meet(Create node) throws RDFHandlerException {
+			if(node.isSilent()) {
+				handler.handleStatement(valueFactory.createStatement(subject, SP.SILENT_PROPERTY, BooleanLiteralImpl.TRUE));
+			}
+
+			if(node.getGraph() != null) {
+				handler.handleStatement(valueFactory.createStatement(subject, SP.GRAPH_IRI_PROPERTY, node.getGraph().getValue()));
 			}
 		}
 
