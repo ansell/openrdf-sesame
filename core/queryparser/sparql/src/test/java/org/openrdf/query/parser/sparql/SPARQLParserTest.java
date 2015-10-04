@@ -35,6 +35,7 @@ import org.openrdf.query.algebra.Slice;
 import org.openrdf.query.algebra.StatementPattern;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 
@@ -132,6 +133,21 @@ public class SPARQLParserTest {
 		qb.append("SELECT *  {?a <foo:bar> \"test\"}");
 
 		ParsedTupleQuery q = (ParsedTupleQuery)parser.parseQuery(qb.toString(), null);
+		TupleExpr te = q.getTupleExpr();
+
+		assertNotNull(te);
+		assertTrue(te instanceof Projection);
+		assertNull(te.getParentNode());
+	}
+	
+	@Test
+	public void testParsedGraphQueryRootNode()
+		throws Exception
+	{
+		StringBuilder qb = new StringBuilder();
+		qb.append("CONSTRUCT WHERE {?a <foo:bar> \"test\"}");
+
+		ParsedGraphQuery q = (ParsedGraphQuery)parser.parseQuery(qb.toString(), null);
 		TupleExpr te = q.getTupleExpr();
 
 		assertNotNull(te);
