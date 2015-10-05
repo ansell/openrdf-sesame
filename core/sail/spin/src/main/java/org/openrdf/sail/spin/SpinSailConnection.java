@@ -27,9 +27,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
@@ -40,6 +42,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.TreeModel;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SPIN;
@@ -107,6 +110,8 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final String THIS_VAR = "this";
 
+	private static final URI CONSTRUCTED = ValueFactoryImpl.getInstance().createURI("http://www.openrdf.org/schema/spin#constructed");
+
 	private static final Marker constraintViolationMarker = MarkerFactory.getMarker("ConstraintViolation");
 
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "Constraint violation: {}: {} {} {}";
@@ -124,8 +129,6 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private final TripleSource tripleSource;
 
 	private final SpinParser parser;
-
-	private final Object rulePropertyLock = new Object();
 
 	private List<URI> orderedRuleProperties;
 
@@ -267,32 +270,26 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	}
 
 	private void resetRuleProperties() {
-		synchronized (rulePropertyLock) {
-			orderedRuleProperties = null;
-			rulePropertyMap = null;
-		}
+		orderedRuleProperties = null;
+		rulePropertyMap = null;
 	}
 
 	private List<URI> getRuleProperties()
 		throws OpenRDFException
 	{
-		synchronized (rulePropertyLock) {
-			if (orderedRuleProperties == null) {
-				initRuleProperties();
-			}
-			return orderedRuleProperties;
+		if (orderedRuleProperties == null) {
+			initRuleProperties();
 		}
+		return orderedRuleProperties;
 	}
 
 	private RuleProperty getRuleProperty(URI ruleProp)
 		throws OpenRDFException
 	{
-		synchronized (rulePropertyLock) {
-			if (rulePropertyMap == null) {
-				initRuleProperties();
-			}
-			return rulePropertyMap.get(ruleProp);
+		if (rulePropertyMap == null) {
+			initRuleProperties();
 		}
+		return rulePropertyMap.get(ruleProp);
 	}
 
 	@Override
@@ -364,6 +361,7 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 			List<Resource> classHierarchy = classes;
 
 			nofInferred += executeRules(subj, classHierarchy);
+			nofInferred += executeConstructors(subj, classHierarchy);
 			checkConstraints(subj, classHierarchy);
 		}
 		return nofInferred;
@@ -379,28 +377,52 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		return classes;
 	}
 
-	private int executeRules(Resource subj, List<Resource> classHierarchy)
+	private int executeConstructors(Resource subj, List<Resource> classHierarchy)
 		throws OpenRDFException
 	{
 		int nofInferred = 0;
-		// get rule properties
-		List<URI> ruleProps = getRuleProperties();
-		Map<Resource, Map<URI, List<Resource>>> rulesByClass = getRulesForSubject(subj, classHierarchy,
-				ruleProps);
-		// execute rules
-		for (Map.Entry<Resource, Map<URI, List<Resource>>> clsEntry : rulesByClass.entrySet()) {
-			Map<URI, List<Resource>> rules = clsEntry.getValue();
-			for (Map.Entry<URI, List<Resource>> ruleEntry : rules.entrySet()) {
-				RuleProperty ruleProperty = getRuleProperty(ruleEntry.getKey());
-				for (Resource rule : ruleEntry.getValue()) {
-					nofInferred += executeRule(subj, rule, ruleProperty);
+		Set<Resource> constructed = new HashSet<Resource>(classHierarchy.size());
+		CloseableIteration<? extends Resource, QueryEvaluationException> classIter = Statements.getObjectResources(subj,
+				CONSTRUCTED, tripleSource);
+		Iterations.addAll(classIter, constructed);
+
+		for(Resource cls : classHierarchy) {
+			List<Resource> constructors = getConstructorsForClass(cls);
+			for(Resource constructor : constructors) {
+				if(constructed.add(constructor)) {
+					nofInferred += executeRule(subj, constructor);
+					addInferredStatement(subj, CONSTRUCTED, constructor);
 				}
 			}
 		}
 		return nofInferred;
 	}
 
-	private int executeRule(Resource subj, Resource rule, RuleProperty ruleProp)
+	private int executeRules(Resource subj, List<Resource> classHierarchy)
+		throws OpenRDFException
+	{
+		int nofInferred = 0;
+		// get rule properties
+		List<URI> ruleProps = getRuleProperties();
+
+		// check each class of subj for rule properties
+		for (Resource cls : classHierarchy) {
+			Map<URI, List<Resource>> classRulesByProperty = getRulesForClass(cls, ruleProps);
+			if (!classRulesByProperty.isEmpty()) {
+				// execute rules
+				for (Map.Entry<URI, List<Resource>> ruleEntry : classRulesByProperty.entrySet()) {
+					RuleProperty ruleProperty = getRuleProperty(ruleEntry.getKey());
+					for (Resource rule : ruleEntry.getValue()) {
+						// TODO check iteration count for rule
+						nofInferred += executeRule(subj, rule);
+					}
+				}
+			}
+		}
+		return nofInferred;
+	}
+
+	private int executeRule(Resource subj, Resource rule)
 		throws OpenRDFException
 	{
 		int nofInferred;
@@ -429,22 +451,6 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 
 		return nofInferred;
-	}
-
-	private Map<Resource, Map<URI, List<Resource>>> getRulesForSubject(Resource subj,
-			List<Resource> classHierarchy, List<URI> ruleProps)
-		throws QueryEvaluationException
-	{
-		Map<Resource, Map<URI, List<Resource>>> rulesByClass = new LinkedHashMap<Resource, Map<URI, List<Resource>>>(
-				classHierarchy.size());
-		// check each class of subj for rule properties
-		for (Resource cls : classHierarchy) {
-			Map<URI, List<Resource>> classRulesByProperty = getRulesForClass(cls, ruleProps);
-			if (!classRulesByProperty.isEmpty()) {
-				rulesByClass.put(cls, classRulesByProperty);
-			}
-		}
-		return rulesByClass;
 	}
 
 	/**
