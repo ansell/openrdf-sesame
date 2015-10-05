@@ -543,6 +543,7 @@
 						<artifactId>java16</artifactId>
 						<version>1.0</version>
 					</signature>
+					<ignoreDependencies>false</ignoreDependencies>
 				</configuration>
 			</plugin>
 		</plugins>
