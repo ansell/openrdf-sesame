@@ -110,7 +110,7 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final String THIS_VAR = "this";
 
-	private static final URI CONSTRUCTED = ValueFactoryImpl.getInstance().createURI("http://www.openrdf.org/schema/spin#constructed");
+	private static final URI EXECUTED = ValueFactoryImpl.getInstance().createURI("http://www.openrdf.org/schema/spin#executed");
 
 	private static final Marker constraintViolationMarker = MarkerFactory.getMarker("ConstraintViolation");
 
@@ -383,7 +383,7 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		int nofInferred = 0;
 		Set<Resource> constructed = new HashSet<Resource>(classHierarchy.size());
 		CloseableIteration<? extends Resource, QueryEvaluationException> classIter = Statements.getObjectResources(subj,
-				CONSTRUCTED, tripleSource);
+				EXECUTED, tripleSource);
 		Iterations.addAll(classIter, constructed);
 
 		for(Resource cls : classHierarchy) {
@@ -391,7 +391,7 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 			for(Resource constructor : constructors) {
 				if(constructed.add(constructor)) {
 					nofInferred += executeRule(subj, constructor);
-					addInferredStatement(subj, CONSTRUCTED, constructor);
+					addInferredStatement(subj, EXECUTED, constructor);
 				}
 			}
 		}
