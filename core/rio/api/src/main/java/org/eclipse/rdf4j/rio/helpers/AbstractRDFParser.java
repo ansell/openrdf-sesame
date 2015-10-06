@@ -57,6 +57,7 @@ import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.RioSetting;
+import org.openrdf.rio.RDFWriter;
 
 /**
  * Base class for {@link RDFParser}s offering common functionality for RDF
@@ -153,13 +154,15 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 *---------*/
 
 	@Override
-	public void setValueFactory(ValueFactory valueFactory) {
+	public RDFParser setValueFactory(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
+		return this;
 	}
 
 	@Override
-	public void setRDFHandler(RDFHandler handler) {
+	public RDFParser setRDFHandler(RDFHandler handler) {
 		rdfHandler = handler;
+		return this;
 	}
 
 	public RDFHandler getRDFHandler() {
@@ -167,8 +170,9 @@ public abstract class AbstractRDFParser implements RDFParser {
 	}
 
 	@Override
-	public void setParseErrorListener(ParseErrorListener el) {
+	public RDFParser setParseErrorListener(ParseErrorListener el) {
 		errListener = el;
+		return this;
 	}
 
 	public ParseErrorListener getParseErrorListener() {
@@ -176,8 +180,9 @@ public abstract class AbstractRDFParser implements RDFParser {
 	}
 
 	@Override
-	public void setParseLocationListener(ParseLocationListener el) {
+	public RDFParser setParseLocationListener(ParseLocationListener el) {
 		locationListener = el;
+		return this;
 	}
 
 	public ParseLocationListener getParseLocationListener() {
@@ -185,9 +190,10 @@ public abstract class AbstractRDFParser implements RDFParser {
 	}
 
 	@Override
-	public void setParserConfig(ParserConfig config) {
+	public RDFParser setParserConfig(ParserConfig config) {
 		this.parserConfig = config;
 		initializeNamespaceTableFromConfiguration();
+		return this;
 	}
 
 	@Override
@@ -225,6 +231,12 @@ public abstract class AbstractRDFParser implements RDFParser {
 		return result;
 	}
 
+	@Override
+	public <T> RDFParser set(RioSetting<T> setting, T value) {
+		getParserConfig().set(setting, value);
+		return this;
+	}
+	
 	@Override
 	public void setVerifyData(boolean verifyData) {
 		this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, verifyData);

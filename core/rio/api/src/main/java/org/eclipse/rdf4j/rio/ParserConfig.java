@@ -127,9 +127,12 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 * @param nonFatalErrors
 	 *        The set of parser errors that are relevant to
 	 * @since 2.7.0
+	 * @return Either a copy of this config, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void setNonFatalErrors(Set<RioSetting<?>> nonFatalErrors) {
+	public ParserConfig setNonFatalErrors(Set<RioSetting<?>> nonFatalErrors) {
 		this.nonFatalErrors = new HashSet<RioSetting<?>>(nonFatalErrors);
+		return this;
 	}
 
 	/**
@@ -138,9 +141,12 @@ public class ParserConfig extends RioConfig implements Serializable {
 	 * 
 	 * @param nextNonFatalError
 	 *        A non-fatal error that a parser should attempt to recover from.
+	 * @return Either a copy of this config, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void addNonFatalError(RioSetting<?> nextNonFatalError) {
+	public ParserConfig addNonFatalError(RioSetting<?> nextNonFatalError) {
 		this.nonFatalErrors.add(nextNonFatalError);
+		return this;
 	}
 
 	/**
@@ -227,8 +233,15 @@ public class ParserConfig extends RioConfig implements Serializable {
 	}
 
 	@Override
-	public void useDefaults() {
+	public ParserConfig useDefaults() {
 		super.useDefaults();
 		this.nonFatalErrors.clear();
+		return this;
+	}
+	
+	@Override
+	public <T extends Object> ParserConfig set(RioSetting<T> setting, T value) {
+		super.set(setting, value);
+		return this;
 	}
 }

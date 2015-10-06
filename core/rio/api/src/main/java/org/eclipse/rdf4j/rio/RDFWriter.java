@@ -51,8 +51,10 @@ public interface RDFWriter extends RDFHandler {
 	 * @param config
 	 *        a writer configuration object.
 	 * @since 2.7.0
+	 * @return Either a copy of this writer, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void setWriterConfig(WriterConfig config);
+	public RDFWriter setWriterConfig(WriterConfig config);
 
 	/**
 	 * Retrieves the current writer configuration as a single object.
@@ -70,4 +72,15 @@ public interface RDFWriter extends RDFHandler {
 	 */
 	public Collection<RioSetting<?>> getSupportedSettings();
 
+	/**
+	 * Set a setting on the writer, and return this writer object to allow chaining.
+	 * 
+	 * @param setting The setting to change.
+	 * @param value The value to change.
+	 * @return Either a copy of this writer, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
+	 * @since 4.0.0
+	 */
+	public <T> RDFWriter set(RioSetting<T> setting, T value);
+	
 }

@@ -87,33 +87,53 @@ public interface RDFParser {
 	 * 
 	 * @param valueFactory
 	 *        The value factory that the parser should use.
+	 * @return Either a copy of this parser, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void setValueFactory(ValueFactory valueFactory);
+	public RDFParser setValueFactory(ValueFactory valueFactory);
 
 	/**
 	 * Sets the RDFHandler that will handle the parsed RDF data.
+	 * 
+	 * @param handler
+	 *        The RDFHandler to handle the parsed data.
+	 * @return Either a copy of this parser, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void setRDFHandler(RDFHandler handler);
+	public RDFParser setRDFHandler(RDFHandler handler);
 
 	/**
 	 * Sets the ParseErrorListener that will be notified of any errors that this
 	 * parser finds during parsing.
+	 * 
+	 * @param el
+	 *        The ParseErrorListener that will be notified of errors or warnings.
+	 * @return Either a copy of this parser, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void setParseErrorListener(ParseErrorListener el);
+	public RDFParser setParseErrorListener(ParseErrorListener el);
 
 	/**
 	 * Sets the ParseLocationListener that will be notified of the parser's
 	 * progress during the parse process.
+	 * 
+	 * @param ll
+	 *        The ParseLocationListener that will be notified of the parser's
+	 *        progress.
+	 * @return Either a copy of this parser, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void setParseLocationListener(ParseLocationListener ll);
+	public RDFParser setParseLocationListener(ParseLocationListener ll);
 
 	/**
 	 * Sets all supplied parser configuration options.
 	 * 
 	 * @param config
 	 *        a parser configuration object.
+	 * @return Either a copy of this parser, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
 	 */
-	public void setParserConfig(ParserConfig config);
+	public RDFParser setParserConfig(ParserConfig config);
 
 	/**
 	 * Retrieves the current parser configuration as a single object.
@@ -129,6 +149,20 @@ public interface RDFParser {
 	 * @since 2.7.0
 	 */
 	public Collection<RioSetting<?>> getSupportedSettings();
+
+	/**
+	 * Set a setting on the parser, and return this parser object to allow
+	 * chaining.
+	 * 
+	 * @param setting
+	 *        The setting to change.
+	 * @param value
+	 *        The value to change.
+	 * @return Either a copy of this parser, if it is immutable, or this object,
+	 *         to allow chaining of method calls.
+	 * @since 4.0.0
+	 */
+	public <T> RDFParser set(RioSetting<T> setting, T value);
 
 	/**
 	 * Sets whether the parser should verify the data it parses (default value is

@@ -613,24 +613,18 @@ public class Rio {
 	{
 		if (args.length < 2) {
 			System.out.println("Usage: java org.eclipse.rdf4j.rio.Rio <inputFile> <outputFile>");
+			System.exit(1);
 			return;
 		}
 
 		String inputFile = args[0];
 		String outputFile = args[1];
 
-		// Create writer for output file
-		try (FileOutputStream outStream = new FileOutputStream(outputFile);) {
-			RDFFormat outputFormat = getWriterFormatForFileName(outputFile).orElse(RDFFormat.RDFXML);
-			RDFWriter rdfWriter = createWriter(outputFormat, outStream);
-
-			// Create parser for input file
-			RDFFormat inputFormat = getParserFormatForFileName(inputFile).orElse(RDFFormat.RDFXML);
-			RDFParser rdfParser = createParser(inputFormat);
-			rdfParser.setRDFHandler(rdfWriter);
-			try (FileInputStream inStream = new FileInputStream(inputFile);) {
-				rdfParser.parse(inStream, "file:" + inputFile);
-			}
+		try (FileOutputStream outStream = new FileOutputStream(outputFile);
+				FileInputStream inStream = new FileInputStream(inputFile);) {
+			createParser(getParserFormatForFileName(inputFile).orElse(RDFFormat.RDFXML)).setRDFHandler(
+					createWriter(getWriterFormatForFileName(outputFile).orElse(RDFFormat.RDFXML), outStream)).parse(
+					inStream, "file:" + inputFile);
 		}
 	}
 

@@ -69,8 +69,9 @@ public abstract class AbstractRDFWriter implements RDFWriter {
 	}
 
 	@Override
-	public void setWriterConfig(WriterConfig config) {
+	public RDFWriter setWriterConfig(WriterConfig config) {
 		this.writerConfig = config;
+		return this;
 	}
 
 	@Override
@@ -86,4 +87,9 @@ public abstract class AbstractRDFWriter implements RDFWriter {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public <T> RDFWriter set(RioSetting<T> setting, T value) {
+		getWriterConfig().set(setting, value);
+		return this;
+	}
 }
