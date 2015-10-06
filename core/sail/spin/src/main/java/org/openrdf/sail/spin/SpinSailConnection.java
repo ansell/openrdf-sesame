@@ -116,6 +116,8 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "Constraint violation: {}: {} {} {}";
 
+	private final Map<Resource,Executions> ruleExecutions = new HashMap<Resource,Executions>();
+
 	private final EvaluationMode evaluationMode;
 
 	private final FunctionRegistry functionRegistry;
@@ -398,6 +400,16 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		return nofInferred;
 	}
 
+	private List<Resource> getConstructorsForClass(Resource cls)
+		throws OpenRDFException
+	{
+		List<Resource> constructors = new ArrayList<Resource>(2);
+		CloseableIteration<? extends Resource, QueryEvaluationException> constructorIter = Statements.getObjectResources(cls,
+				SPIN.CONSTRUCTOR_PROPERTY, tripleSource);
+		Iterations.addAll(constructorIter, constructors);
+		return constructors;
+	}
+
 	private int executeRules(Resource subj, List<Resource> classHierarchy)
 		throws OpenRDFException
 	{
@@ -412,9 +424,23 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 				// execute rules
 				for (Map.Entry<URI, List<Resource>> ruleEntry : classRulesByProperty.entrySet()) {
 					RuleProperty ruleProperty = getRuleProperty(ruleEntry.getKey());
+					int maxCount = ruleProperty.getMaxIterationCount();
 					for (Resource rule : ruleEntry.getValue()) {
-						// TODO check iteration count for rule
+						Executions executions = null;
+						if(maxCount != -1) {
+							executions = ruleExecutions.get(rule);
+							if(executions == null) {
+								executions = new Executions();
+								ruleExecutions.put(rule, executions);
+							}
+							if(executions.count >= maxCount) {
+								continue;
+							}
+						}
 						nofInferred += executeRule(subj, rule);
+						if(executions != null) {
+							executions.count++;
+						}
 					}
 				}
 			}
@@ -633,6 +659,10 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	}
 
 
+
+	static class Executions {
+		int count;
+	}
 
 	static class UpdateCountListener implements SailConnectionListener {
 
