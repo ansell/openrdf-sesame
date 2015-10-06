@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,7 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
@@ -115,8 +117,6 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private static final Marker constraintViolationMarker = MarkerFactory.getMarker("ConstraintViolation");
 
 	private static final String CONSTRAINT_VIOLATION_MESSAGE = "Constraint violation: {}: {} {} {}";
-
-	private final Map<Resource,Executions> ruleExecutions = new HashMap<Resource,Executions>();
 
 	private final EvaluationMode evaluationMode;
 
@@ -135,6 +135,8 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private List<URI> orderedRuleProperties;
 
 	private Map<URI, RuleProperty> rulePropertyMap;
+
+	private Map<Resource,Executions> ruleExecutions;
 
 	private SailConnectionQueryPreparer queryPreparer;
 
@@ -267,8 +269,29 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	{
 		rulePropertyMap = parser.parseRuleProperties(tripleSource);
 		// order rules
-		// TODO
-		orderedRuleProperties = new ArrayList<URI>(rulePropertyMap.keySet());
+		Set<URI> remainingRules = new HashSet<URI>(rulePropertyMap.keySet());
+		List<URI> reverseOrder = new ArrayList<URI>(remainingRules.size());
+		while(!remainingRules.isEmpty()) {
+			for(Iterator<URI> ruleIter = remainingRules.iterator(); ruleIter.hasNext(); ) {
+				URI rule = ruleIter.next();
+				boolean isTerminal = true;
+				RuleProperty ruleProperty = rulePropertyMap.get(rule);
+				if(ruleProperty != null) {
+					List<URI> nextRules = ruleProperty.getNextRules();
+					for(URI nextRule : nextRules) {
+						if(!nextRule.equals(rule) && remainingRules.contains(nextRule)) {
+							isTerminal = false;
+							break;
+						}
+					}
+				}
+				if(isTerminal) {
+					reverseOrder.add(rule);
+					ruleIter.remove();
+				}
+			}
+		}
+		orderedRuleProperties = Lists.reverse(reverseOrder);
 	}
 
 	private void resetRuleProperties() {
@@ -333,6 +356,15 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	}
 
 	@Override
+	protected void doInferencing()
+		throws SailException
+	{
+		ruleExecutions = new HashMap<Resource,Executions>();
+		super.doInferencing();
+		ruleExecutions = null;
+	}
+
+	@Override
 	protected int applyRules(Model iteration)
 		throws SailException
 	{
@@ -355,12 +387,51 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private int applyRulesInternal(Model iteration)
 		throws OpenRDFException
 	{
+		// get class tree
+		Map<Resource,Set<Resource>> parentToChildMap = new HashMap<Resource,Set<Resource>>();
+		CloseableIteration<? extends Statement, QueryEvaluationException> stmtIter = tripleSource.getStatements(null, RDFS.SUBCLASSOF, null);
+		try {
+			while(stmtIter.hasNext()) {
+				Statement stmt = stmtIter.next();
+				if(stmt.getObject() instanceof Resource) {
+					Resource child = stmt.getSubject();
+					Resource parent = (Resource) stmt.getObject();
+					Set<Resource> children = parentToChildMap.get(parent);
+					if(children == null) {
+						children = new HashSet<Resource>(64);
+						parentToChildMap.put(parent, children);
+					}
+					children.add(child);
+				}
+			}
+		}
+		finally {
+			stmtIter.close();
+		}
+
 		int nofInferred = 0;
 		for (Resource subj : iteration.subjects()) {
 			List<Resource> classes = getClasses(subj);
 			// build class hierarchy
-			// TODO
-			List<Resource> classHierarchy = classes;
+			Set<Resource> remainingClasses = new HashSet<Resource>(classes);
+			List<Resource> classHierarchy = new ArrayList<Resource>(remainingClasses.size());
+			while(!remainingClasses.isEmpty()) {
+				for(Iterator<Resource> clsIter = remainingClasses.iterator(); clsIter.hasNext(); ) {
+					Resource cls = clsIter.next();
+					Set<Resource> children = parentToChildMap.get(cls);
+					boolean isTerminal = true;
+					for(Resource child : remainingClasses) {
+						if(!child.equals(cls) && children.contains(child)) {
+							isTerminal = false;
+							break;
+						}
+					}
+					if(isTerminal) {
+						classHierarchy.add(cls);
+						clsIter.remove();
+					}
+				}
+			}
 
 			nofInferred += executeRules(subj, classHierarchy);
 			nofInferred += executeConstructors(subj, classHierarchy);

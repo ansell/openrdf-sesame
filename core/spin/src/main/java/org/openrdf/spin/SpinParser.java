@@ -182,8 +182,6 @@ public class SpinParser {
 	private static final Set<URI> TEMPLATE_TYPES = Sets.newHashSet(SPIN.ASK_TEMPLATE_CLASS,
 			SPIN.SELECT_TEMPLATE_CLASS, SPIN.CONSTRUCT_TEMPLATE_CLASS, SPIN.UPDATE_TEMPLATE_CLASS);
 
-	private static final Set<URI> NON_ARG_PROPERTIES = Sets.newHashSet(RDF.TYPE, SP.ARG_PROPERTY, SP.ELEMENTS_PROPERTY);
-
 	public enum Input {
 		TEXT_FIRST(true, true),
 		TEXT_ONLY(true, false),
@@ -1668,32 +1666,39 @@ public class SpinParser {
 			CompareOp compareOp;
 			MathOp mathOp;
 			if((compareOp = toCompareOp(func)) != null) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY, SP.ARG2_PROPERTY);
 				if(args.size() != 2) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new Compare(args.get(0), args.get(1), compareOp);
 			}
 			else if((mathOp = toMathOp(func)) != null) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY, SP.ARG2_PROPERTY);
 				if(args.size() != 2) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new MathExpr(args.get(0), args.get(1), mathOp);
 			}
 			else if(SP.AND.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY, SP.ARG2_PROPERTY);
 				if(args.size() != 2) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new And(args.get(0), args.get(1));
 			}
 			else if(SP.OR.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY, SP.ARG2_PROPERTY);
 				if(args.size() != 2) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new Or(args.get(0), args.get(1));
+			}
+			else if(SP.NOT.equals(func)) {
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
+				if(args.size() != 1) {
+					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
+				}
+				expr = new Not(args.get(0));
 			}
 			else if(SP.COUNT_CLASS.equals(func)) {
 				Value arg = Statements.singleValue(r, SP.EXPRESSION_PROPERTY, store);
@@ -1744,13 +1749,6 @@ public class SpinParser {
 				aggregates.add(sample);
 				expr = sample;
 			}
-			else if(SP.NOT.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
-				if(args.size() != 1) {
-					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
-				}
-				expr = new Not(args.get(0));
-			}
 			else if(SP.EXISTS.equals(func)) {
 				Value elements = Statements.singleValue(r, SP.ELEMENTS_PROPERTY, store);
 				if(!(elements instanceof Resource)) {
@@ -1774,86 +1772,86 @@ public class SpinParser {
 				tupleNode = currentNode;
 			}
 			else if(SP.BOUND.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new Bound((Var)args.get(0));
 			}
 			else if(SP.IF.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY, SP.ARG2_PROPERTY, SP.ARG3_PROPERTY);
 				if(args.size() != 3) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new If(args.get(0), args.get(1), args.get(2));
 			}
 			else if(SP.COALESCE.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func);
 				expr = new Coalesce(args);
 			}
 			else if(SP.IS_IRI.equals(func) || SP.IS_URI.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new IsURI(args.get(0));
 			}
 			else if(SP.IS_BLANK.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new IsBNode(args.get(0));
 			}
 			else if(SP.IS_LITERAL.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new IsLiteral(args.get(0));
 			}
 			else if(SP.IS_NUMERIC.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new IsNumeric(args.get(0));
 			}
 			else if(SP.STR.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new Str(args.get(0));
 			}
 			else if(SP.LANG.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new Lang(args.get(0));
 			}
 			else if(SP.DATATYPE.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new Datatype(args.get(0));
 			}
 			else if(SP.IRI.equals(func) || SP.URI.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
 				expr = new IRIFunction(args.get(0));
 			}
 			else if(SP.BNODE.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				ValueExpr arg = (args.size() == 1) ? args.get(0) : null;
 				expr = new BNodeGenerator(arg);
 			}
 			else if(SP.REGEX.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY, SP.ARG2_PROPERTY, SP.ARG3_PROPERTY);
 				if(args.size() < 2) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
@@ -1861,7 +1859,7 @@ public class SpinParser {
 				expr = new Regex(args.get(0), args.get(1), flagsArg);
 			}
 			else if(AFN.LOCALNAME.equals(func)) {
-				List<ValueExpr> args = getArgs(r);
+				List<ValueExpr> args = getArgs(r, func, SP.ARG1_PROPERTY);
 				if(args.size() != 1) {
 					throw new MalformedSpinException(String.format("Invalid number of arguments for function: %s", func));
 				}
@@ -1883,7 +1881,7 @@ public class SpinParser {
 					funcName = func.stringValue();
 				}
 				if (funcName != null) {
-					List<ValueExpr> args = getArgs(r);
+					List<ValueExpr> args = getArgs(r, func, (URI[]) null);
 					expr = new FunctionCall(funcName, args);
 				}
 				else {
@@ -1935,32 +1933,49 @@ public class SpinParser {
 			}
 		}
 
-		private List<ValueExpr> getArgs(Resource r)
+		/**
+		 * @param knownArgs empty for vararg, null for unknown.
+		 */
+		private List<ValueExpr> getArgs(Resource r, URI func, URI... knownArgs)
 			throws OpenRDFException
 		{
-			Map<URI, ValueExpr> argValues = new HashMap<URI, ValueExpr>();
-			CloseableIteration<? extends Statement, QueryEvaluationException> iter = store.getStatements(r, null, null);
-			try {
-				while(iter.hasNext()) {
-					Statement stmt = iter.next();
-					URI argName = stmt.getPredicate();
-					if(!NON_ARG_PROPERTIES.contains(argName)) {
-						ValueExpr argValue = visitExpression(stmt.getObject());
-						argValues.put(argName, argValue);
+			Collection<URI> args;
+			if(knownArgs != null) {
+				args = Arrays.asList(knownArgs);
+			}
+			else {
+				args = parseArguments(func, store).keySet();
+			}
+			Map<URI, ValueExpr> argBindings = new HashMap<URI, ValueExpr>();
+			if(!args.isEmpty()) {
+				for(URI arg : args) {
+					Value value = Statements.singleValue(r, arg, store);
+					if(value != null) {
+						ValueExpr argValue = visitExpression(value);
+						argBindings.put(arg, argValue);
 					}
 				}
 			}
-			finally {
-				iter.close();
+			else {
+				Value value;
+				int i = 1;
+				do {
+					URI arg = toArgProperty(i++);
+					value = Statements.singleValue(r, arg, store);
+					if(value != null) {
+						ValueExpr argValue = visitExpression(value);
+						argBindings.put(arg, argValue);
+					}
+				} while(value != null);
 			}
 
-			List<ValueExpr> args = new ArrayList<ValueExpr>(argValues.size());
-			List<URI> orderedArgs = orderArguments(argValues.keySet());
+			List<ValueExpr> argValues = new ArrayList<ValueExpr>(argBindings.size());
+			List<URI> orderedArgs = orderArguments(argBindings.keySet());
 			for(URI uri : orderedArgs) {
-				ValueExpr argExpr = argValues.get(uri);
-				args.add(argExpr);
+				ValueExpr argExpr = argBindings.get(uri);
+				argValues.add(argExpr);
 			}
-			return args;
+			return argValues;
 		}
 
 		private String getVarName(Resource r)
