@@ -55,7 +55,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 
 /**
- * The Sesame Console is a command-line application for interacting with Sesame.
+ * The RDF4J Console is a command-line application for interacting with RDF4J.
  * It reads commands from standard input and prints feedback to standard output.
  * Available options include loading and querying of data in repositories,
  * repository creation and verification of RDF files.
@@ -71,7 +71,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 
 	private static final AppVersion VERSION = AppVersion.parse(Sesame.getVersion());
 
-	private static final String APP_NAME = "OpenRDF Sesame console";
+	private static final String APP_NAME = "RDF4J Console";
 
 	private static boolean exitOnError;
 
@@ -113,7 +113,7 @@ public class Console implements ConsoleState, ConsoleParameters {
 		final Option versionOption = new Option("v", "version", false, "print version information");
 		final Option serverURLOption = new Option("s", "serverURL", true,
 				"URL of Sesame server to connect to, e.g. http://localhost/openrdf-sesame/");
-		final Option dirOption = new Option("d", "dataDir", true, "Sesame data dir to 'connect' to");
+		final Option dirOption = new Option("d", "dataDir", true, "data dir to 'connect' to");
 		Option echoOption = new Option("e", "echo", false,
 				"echoes input back to stdout, useful for logging script sessions");
 		Option quietOption = new Option("q", "quiet", false, "suppresses prompts, useful for scripting");
