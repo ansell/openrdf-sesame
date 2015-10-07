@@ -205,6 +205,7 @@ public class SpinParser {
 	private List<TupleFunctionParser> tupleFunctionParsers;
 	private boolean strictFunctionChecking = true;
 	private final Cache<URI,Template> templateCache = CacheBuilder.newBuilder().maximumSize(100).build();
+	private final Cache<URI,Map<URI,Argument>> argumentCache = CacheBuilder.newBuilder().maximumSize(100).build();
 
 	public SpinParser() {
 		this(Input.TEXT_FIRST);
@@ -665,12 +666,33 @@ public class SpinParser {
 		throw new MalformedSpinException(String.format("No TupleFunctionParser for magic property: %s", propUri));
 	}
 
-	public Map<URI,Argument> parseArguments(URI moduleUri, TripleSource store)
+	public Map<URI,Argument> parseArguments(final URI moduleUri, final TripleSource store)
 		throws OpenRDFException
 	{
-		Map<URI,Argument> args = new HashMap<URI,Argument>();
-		parseArguments(moduleUri, store, args);
-		return args;
+		try {
+			return argumentCache.get(moduleUri, new Callable<Map<URI,Argument>>()
+			{
+				@Override
+				public Map<URI,Argument> call()
+					throws OpenRDFException
+				{
+					Map<URI,Argument> args = new HashMap<URI,Argument>();
+					parseArguments(moduleUri, store, args);
+					return Collections.unmodifiableMap(args);
+				}
+			});
+		}
+		catch (ExecutionException e) {
+			if(e.getCause() instanceof OpenRDFException) {
+				throw (OpenRDFException) e.getCause();
+			}
+			else if(e.getCause() instanceof RuntimeException) {
+				throw (RuntimeException) e.getCause();
+			}
+			else {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	private void parseArguments(URI moduleUri, TripleSource store, Map<URI,Argument> args)
@@ -791,6 +813,22 @@ public class SpinParser {
 		}
 		else {
 			throw new MalformedSpinException(String.format("Unrecognised command type: %s", queryType));
+		}
+	}
+
+	/**
+	 * Resets/clears any cached information about the given URIs.
+	 * @param uris if none are specified all cached information is cleared.
+	 */
+	public void reset(URI... uris) {
+		if(uris != null && uris.length > 0) {
+			Iterable<?> uriList = Arrays.asList(uris);
+			templateCache.invalidateAll(uriList);
+			argumentCache.invalidateAll(uriList);
+		}
+		else {
+			templateCache.invalidateAll();
+			argumentCache.invalidateAll();
 		}
 	}
 
