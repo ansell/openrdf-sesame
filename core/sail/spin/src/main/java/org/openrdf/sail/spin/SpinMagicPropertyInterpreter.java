@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
@@ -101,9 +100,7 @@ public class SpinMagicPropertyInterpreter implements QueryOptimizer {
 
 
 
-	class PropertyScanner extends QueryModelVisitorBase<OpenRDFException> {
-		Map<Resource,StatementPattern> joins;
-
+	private class PropertyScanner extends QueryModelVisitorBase<OpenRDFException> {
 		private void processGraphPattern(List<StatementPattern> sps) throws OpenRDFException {
 			List<StatementPattern> magicProperties = new ArrayList<StatementPattern>();
 			Map<String,Map<URI,List<StatementPattern>>> spIndex = new HashMap<String,Map<URI,List<StatementPattern>>>();

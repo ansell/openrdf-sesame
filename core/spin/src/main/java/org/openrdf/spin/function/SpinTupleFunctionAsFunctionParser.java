@@ -60,7 +60,7 @@ public class SpinTupleFunctionAsFunctionParser implements FunctionParser
 			return null;
 		}
 		final TupleFunction tupleFunc = parser.parseMagicProperty(funcUri, store);
-		return new Function()
+		return new TransientFunction()
 		{
 			@Override
 			public String getURI() {

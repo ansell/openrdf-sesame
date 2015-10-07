@@ -47,6 +47,9 @@ public class TupleExprs {
 	public static boolean containsProjection(TupleExpr t) {
 		@SuppressWarnings("serial")
 		class VisitException extends Exception {
+			VisitException() {
+				super(null, null, false, false);
+			}
 		}
 		final boolean[] result = new boolean[1];
 		try {

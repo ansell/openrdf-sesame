@@ -101,6 +101,12 @@ public class SpinSailTest {
 	}
 
 	@Test
+	public void testConstructor() throws Exception {
+		loadStatements("testConstructor.ttl");
+		assertStatements("testConstructor-expected.ttl");
+	}
+
+	@Test
 	public void testEvalFunctionConstraint() throws Exception {
 		loadStatements("testEvalFunctionConstraint.ttl");
 	}

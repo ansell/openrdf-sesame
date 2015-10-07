@@ -16,7 +16,9 @@
  */
 package org.openrdf.sail.inferencer.fc;
 
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.openrdf.model.Resource;
@@ -32,17 +34,22 @@ import org.slf4j.LoggerFactory;
 
 public class DedupingInferencerConnection extends InferencerConnectionWrapper {
 
-	private static final int INITIAL_CAPACITY = 2048;
+	private static final int MAX_SIZE = 10000;
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final ValueFactory valueFactory;
-	private Set<Statement> addedStmts = new HashSet<Statement>(INITIAL_CAPACITY);
+	private Set<Statement> addedStmts;
 	private int dedupCount;
 
 	public DedupingInferencerConnection(InferencerConnection con, ValueFactory vf) {
 		super(con);
 		this.valueFactory = vf;
+		this.addedStmts = createDedupBuffer();
+	}
+
+	private Set<Statement> createDedupBuffer() {
+		return Collections.newSetFromMap(new LRUMap<Statement,Boolean>(MAX_SIZE));
 	}
 
 	@Override
@@ -102,7 +109,24 @@ public class DedupingInferencerConnection extends InferencerConnectionWrapper {
 	private void resetDedupBuffer()
 	{
 		addedStmts = null; // allow gc before alloc
-		addedStmts = new HashSet<Statement>(INITIAL_CAPACITY);
+		addedStmts = createDedupBuffer();
 		dedupCount = 0;
+	}
+
+
+
+	static class LRUMap<K,V> extends LinkedHashMap<K,V>
+	{
+		final int maxSize;
+
+		LRUMap(int maxSize) {
+			super(maxSize, 0.75f, true);
+			this.maxSize = maxSize;
+		}
+
+		@Override
+		protected boolean removeEldestEntry(Entry<K, V> entry) {
+			return size() > maxSize;
+		}
 	}
 }

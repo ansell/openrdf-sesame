@@ -73,7 +73,7 @@ public class SpinFunctionInterpreter implements QueryOptimizer {
 
 
 
-	class FunctionScanner extends QueryModelVisitorBase<OpenRDFException> {
+	private class FunctionScanner extends QueryModelVisitorBase<OpenRDFException> {
 		ValueFactory vf = tripleSource.getValueFactory();
 
 		@Override
