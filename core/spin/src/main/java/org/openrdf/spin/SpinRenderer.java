@@ -19,7 +19,6 @@ package org.openrdf.spin;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -322,7 +321,7 @@ public class SpinRenderer {
 
 
 
-	class AskVisitor extends SpinVisitor
+	private class AskVisitor extends SpinVisitor
 	{
 		AskVisitor(RDFHandler handler, Resource list, Dataset dataset) {
 			super(handler, list, null, dataset);
@@ -340,7 +339,7 @@ public class SpinRenderer {
 	}
 
 
-	class DescribeVisitor extends SpinVisitor
+	private class DescribeVisitor extends SpinVisitor
 	{
 		DescribeVisitor(RDFHandler handler, Resource subject, Dataset dataset) {
 			super(handler, null, subject, dataset);
@@ -362,7 +361,7 @@ public class SpinRenderer {
 	}
 
 
-	class ConstructVisitor extends SpinVisitor
+	private class ConstructVisitor extends SpinVisitor
 	{
 		ConstructVisitor(RDFHandler handler, Resource subject, Dataset dataset) {
 			super(handler, null, subject, dataset);
@@ -424,7 +423,7 @@ public class SpinRenderer {
 	}
 
 
-	class SpinVisitor extends QueryModelVisitorBase<RDFHandlerException>
+	private class SpinVisitor extends QueryModelVisitorBase<RDFHandlerException>
 	{
 		final RDFHandler handler;
 		final Dataset dataset;
@@ -1351,7 +1350,7 @@ public class SpinRenderer {
 
 
 
-		final class ExtensionVisitor extends QueryModelVisitorBase<RDFHandlerException>
+		private final class ExtensionVisitor extends QueryModelVisitorBase<RDFHandlerException>
 		{
 			@Override
 			public void meet(Count node) throws RDFHandlerException {
@@ -1443,7 +1442,7 @@ public class SpinRenderer {
 			}
 		}
 
-		final class GroupVisitor extends QueryModelVisitorBase<RDFHandlerException>
+		private final class GroupVisitor extends QueryModelVisitorBase<RDFHandlerException>
 		{
 			Group group;
 
@@ -1492,7 +1491,7 @@ public class SpinRenderer {
 			}
 		}
 
-		final class OrderVisitor extends QueryModelVisitorBase<RDFHandlerException>
+		private final class OrderVisitor extends QueryModelVisitorBase<RDFHandlerException>
 		{
 			@Override
 			public void meet(Order node) throws RDFHandlerException {
@@ -1521,17 +1520,13 @@ public class SpinRenderer {
 	}
 
 
-	static final class ExtensionContext extends QueryModelVisitorBase<RuntimeException>
+	private static final class ExtensionContext extends QueryModelVisitorBase<RuntimeException>
 	{
 		Extension extension;
 		Map<String,ValueExpr> extensionExprs;
 
 		public ValueExpr getValueExpr(String name) {
 			return extensionExprs.get(name);
-		}
-
-		public Collection<ValueExpr> getValueExprs() {
-			return extensionExprs.values();
 		}
 
 		@Override
@@ -1557,7 +1552,7 @@ public class SpinRenderer {
 	}
 
 
-	static final class ListContext
+	private static final class ListContext
 	{
 		Resource list;
 		Resource subject;

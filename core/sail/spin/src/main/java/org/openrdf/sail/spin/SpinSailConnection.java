@@ -61,7 +61,9 @@ import org.openrdf.query.algebra.evaluation.EvaluationStrategy;
 import org.openrdf.query.algebra.evaluation.TripleSource;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolver;
 import org.openrdf.query.algebra.evaluation.federation.FederatedServiceResolverBase;
+import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.algebra.evaluation.function.FunctionRegistry;
+import org.openrdf.query.algebra.evaluation.function.TupleFunction;
 import org.openrdf.query.algebra.evaluation.function.TupleFunctionRegistry;
 import org.openrdf.query.algebra.evaluation.impl.BindingAssigner;
 import org.openrdf.query.algebra.evaluation.impl.CompareOptimizer;
@@ -102,6 +104,8 @@ import org.openrdf.spin.ParsedTemplate;
 import org.openrdf.spin.QueryContext;
 import org.openrdf.spin.RuleProperty;
 import org.openrdf.spin.SpinParser;
+import org.openrdf.spin.function.TransientFunction;
+import org.openrdf.spin.function.TransientTupleFunction;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
@@ -163,52 +167,9 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 			this.serviceResolver = null;
 		}
 
-		con.addConnectionListener(new SailConnectionListener() {
-
-			@Override
-			public void statementAdded(Statement st) {
-				updateRuleProperties(st);
-			}
-
-			@Override
-			public void statementRemoved(Statement st) {
-				updateRuleProperties(st);
-			}
-
-			private void updateRuleProperties(Statement st) {
-				boolean changed = false;
-				URI pred = st.getPredicate();
-				if (RDFS.SUBPROPERTYOF.equals(pred) && SPIN.RULE_PROPERTY.equals(st.getObject())) {
-					changed = true;
-				}
-				else if (SPIN.NEXT_RULE_PROPERTY_PROPERTY.equals(pred)) {
-					changed = true;
-				}
-				else if (SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY.equals(pred)) {
-					changed = true;
-				}
-				if (changed) {
-					resetRuleProperties();
-				}
-			}
-		});
-
-		con.addConnectionListener(new SailConnectionListener()
-		{
-			@Override
-			public void statementAdded(Statement st) {
-				if(RDFS.SUBCLASSOF.equals(st.getPredicate()) && st.getObject() instanceof Resource) {
-					resetSubclasses();
-				}
-			}
-
-			@Override
-			public void statementRemoved(Statement st) {
-				if(RDFS.SUBCLASSOF.equals(st.getPredicate())) {
-					resetSubclasses();
-				}
-			}
-		});
+		con.addConnectionListener(new SubclassListener());
+		con.addConnectionListener(new RulePropertyListener());
+		con.addConnectionListener(new InvalidationListener());
 
 		QueryContext.begin(queryPreparer);
 	}
@@ -771,11 +732,88 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 
 
-	static class Executions {
+	private class SubclassListener implements SailConnectionListener {
+
+		@Override
+		public void statementAdded(Statement st) {
+			if(RDFS.SUBCLASSOF.equals(st.getPredicate()) && st.getObject() instanceof Resource) {
+				resetSubclasses();
+			}
+		}
+
+		@Override
+		public void statementRemoved(Statement st) {
+			if(RDFS.SUBCLASSOF.equals(st.getPredicate())) {
+				resetSubclasses();
+			}
+		}
+	}
+
+	private class RulePropertyListener implements SailConnectionListener {
+
+		@Override
+		public void statementAdded(Statement st) {
+			updateRuleProperties(st);
+		}
+
+		@Override
+		public void statementRemoved(Statement st) {
+			updateRuleProperties(st);
+		}
+
+		private void updateRuleProperties(Statement st) {
+			boolean changed = false;
+			URI pred = st.getPredicate();
+			if (RDFS.SUBPROPERTYOF.equals(pred) && SPIN.RULE_PROPERTY.equals(st.getObject())) {
+				changed = true;
+			}
+			else if (SPIN.NEXT_RULE_PROPERTY_PROPERTY.equals(pred)) {
+				changed = true;
+			}
+			else if (SPIN.RULE_PROPERTY_MAX_ITERATION_COUNT_PROPERTY.equals(pred)) {
+				changed = true;
+			}
+			if (changed) {
+				resetRuleProperties();
+			}
+		}
+	}
+
+	private class InvalidationListener implements SailConnectionListener {
+
+		@Override
+		public void statementAdded(Statement st) {
+			invalidate(st.getSubject());
+		}
+
+		@Override
+		public void statementRemoved(Statement st) {
+			invalidate(st.getSubject());
+		}
+
+		private void invalidate(Resource subj) {
+			if(subj instanceof URI) {
+				parser.reset((URI) subj);
+				String key = subj.stringValue();
+				Function func = functionRegistry.get(key);
+				if(func instanceof TransientFunction) {
+					functionRegistry.remove(func);
+				}
+				TupleFunction tupleFunc = tupleFunctionRegistry.get(key);
+				if(tupleFunc instanceof TransientTupleFunction) {
+					tupleFunctionRegistry.remove(tupleFunc);
+				}
+			}
+		}
+	}
+
+
+
+	private static final class Executions {
 		int count;
 	}
 
-	static class UpdateCountListener implements SailConnectionListener {
+	private static class UpdateCountListener implements SailConnectionListener {
 
 		private int addedCount;
 
@@ -800,7 +838,7 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 	}
 
-	static class CountingRDFInferencerInserter extends RDFInferencerInserter {
+	private static class CountingRDFInferencerInserter extends RDFInferencerInserter {
 
 		private int stmtCount;
 

@@ -30,7 +30,6 @@ import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.algebra.evaluation.QueryPreparer;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
@@ -39,7 +38,7 @@ import org.openrdf.spin.Argument;
 import com.google.common.base.Joiner;
 
 
-public class SpinFunction extends AbstractSpinFunction implements Function {
+public class SpinFunction extends AbstractSpinFunction implements TransientFunction {
 
 	private ParsedQuery parsedQuery;
 

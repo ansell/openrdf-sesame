@@ -870,7 +870,7 @@ public class SpinParser {
 
 
 
-	class SpinVisitor {
+	private class SpinVisitor {
 		final TripleSource store;
 		TupleExpr tupleRoot;
 		TupleExpr tupleNode;
@@ -2078,7 +2078,7 @@ public class SpinParser {
 	}
 
 
-	static class DataVisitor extends QueryModelVisitorBase<RuntimeException>
+	private static class DataVisitor extends QueryModelVisitorBase<RuntimeException>
 	{
 		final StringBuilder buf = new StringBuilder(1024);
 

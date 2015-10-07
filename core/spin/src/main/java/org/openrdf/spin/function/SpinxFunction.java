@@ -32,13 +32,12 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
-import org.openrdf.query.algebra.evaluation.function.Function;
 import org.openrdf.spin.Argument;
 
 import com.google.common.base.Joiner;
 
 
-public class SpinxFunction implements Function {
+public class SpinxFunction implements TransientFunction {
 	private final String uri;
 
 	private final List<Argument> arguments = new ArrayList<Argument>(4);
