@@ -51,6 +51,13 @@ public class SailConnectionQueryPreparer implements QueryPreparer {
 		this.source = new SailTripleSource(con, includeInferred, vf);
 	}
 
+	public SailConnectionQueryPreparer(SailConnection con, boolean includeInferred, TripleSource source) {
+		this.con = con;
+		this.includeInferred = includeInferred;
+		this.source = source;
+		this.vf = source.getValueFactory();
+	}
+
 	public void setParserConfig(ParserConfig parserConfig) {
 		this.parserConfig = parserConfig;
 	}

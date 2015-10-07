@@ -205,7 +205,7 @@ public class SpinParser {
 	private List<TupleFunctionParser> tupleFunctionParsers;
 	private boolean strictFunctionChecking = true;
 	private final Cache<URI,Template> templateCache = CacheBuilder.newBuilder().maximumSize(100).build();
-	private final Cache<URI,Map<URI,Argument>> argumentCache = CacheBuilder.newBuilder().maximumSize(100).build();
+	private final Cache<URI,Map<URI,Argument>> argumentCache = CacheBuilder.newBuilder().maximumSize(100).recordStats().build();
 
 	public SpinParser() {
 		this(Input.TEXT_FIRST);

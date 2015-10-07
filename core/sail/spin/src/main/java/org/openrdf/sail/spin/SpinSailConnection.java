@@ -138,6 +138,8 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private Map<Resource,Executions> ruleExecutions;
 
+	private Map<Resource,Set<Resource>> classToSubclassMap;
+	
 	private SailConnectionQueryPreparer queryPreparer;
 
 	public SpinSailConnection(SpinSail sail, InferencerConnection con) {
@@ -147,8 +149,8 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		this.tupleFunctionRegistry = sail.getTupleFunctionRegistry();
 		this.vf = sail.getValueFactory();
 		this.parser = sail.getSpinParser();
-		this.queryPreparer = new SailConnectionQueryPreparer(this, true, vf);
-		this.tripleSource = queryPreparer.getTripleSource();
+		this.tripleSource = new SailTripleSource(getWrappedConnection(), true, vf);
+		this.queryPreparer = new SailConnectionQueryPreparer(this, true, tripleSource);
 
 		if(evaluationMode == EvaluationMode.SERVICE) {
 			FederatedServiceResolver resolver = sail.getFederatedServiceResolver();
@@ -190,6 +192,24 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 				}
 			}
 		});
+
+		con.addConnectionListener(new SailConnectionListener()
+		{
+			@Override
+			public void statementAdded(Statement st) {
+				if(RDFS.SUBCLASSOF.equals(st.getPredicate()) && st.getObject() instanceof Resource) {
+					resetSubclasses();
+				}
+			}
+
+			@Override
+			public void statementRemoved(Statement st) {
+				if(RDFS.SUBCLASSOF.equals(st.getPredicate())) {
+					resetSubclasses();
+				}
+			}
+		});
+
 		QueryContext.begin(queryPreparer);
 	}
 
@@ -267,6 +287,10 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private void initRuleProperties()
 		throws OpenRDFException
 	{
+		if(rulePropertyMap != null) {
+			return;
+		}
+
 		rulePropertyMap = parser.parseRuleProperties(tripleSource);
 		// order rules
 		Set<URI> remainingRules = new HashSet<URI>(rulePropertyMap.keySet());
@@ -302,19 +326,55 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private List<URI> getRuleProperties()
 		throws OpenRDFException
 	{
-		if (orderedRuleProperties == null) {
-			initRuleProperties();
-		}
+		initRuleProperties();
 		return orderedRuleProperties;
 	}
 
 	private RuleProperty getRuleProperty(URI ruleProp)
 		throws OpenRDFException
 	{
-		if (rulePropertyMap == null) {
-			initRuleProperties();
-		}
+		initRuleProperties();
 		return rulePropertyMap.get(ruleProp);
+	}
+
+	private void initSubclasses()
+		throws OpenRDFException
+	{
+		if(classToSubclassMap != null) {
+			return;
+		}
+
+		classToSubclassMap = new HashMap<Resource,Set<Resource>>();
+		CloseableIteration<? extends Statement, QueryEvaluationException> stmtIter = tripleSource.getStatements(null, RDFS.SUBCLASSOF, null);
+		try {
+			while(stmtIter.hasNext()) {
+				Statement stmt = stmtIter.next();
+				if(stmt.getObject() instanceof Resource) {
+					Resource child = stmt.getSubject();
+					Resource parent = (Resource) stmt.getObject();
+					Set<Resource> children = getSubclasses(parent);
+					if(children == null) {
+						children = new HashSet<Resource>(64);
+						classToSubclassMap.put(parent, children);
+					}
+					children.add(child);
+				}
+			}
+		}
+		finally {
+			stmtIter.close();
+		}
+	}
+
+	private void resetSubclasses() {
+		classToSubclassMap = null;
+	}
+
+	private Set<Resource> getSubclasses(Resource cls)
+		throws OpenRDFException
+	{
+		initSubclasses();
+		return classToSubclassMap.get(cls);
 	}
 
 	@Override
@@ -387,43 +447,23 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 	private int applyRulesInternal(Model iteration)
 		throws OpenRDFException
 	{
-		// get class tree
-		Map<Resource,Set<Resource>> parentToChildMap = new HashMap<Resource,Set<Resource>>();
-		CloseableIteration<? extends Statement, QueryEvaluationException> stmtIter = tripleSource.getStatements(null, RDFS.SUBCLASSOF, null);
-		try {
-			while(stmtIter.hasNext()) {
-				Statement stmt = stmtIter.next();
-				if(stmt.getObject() instanceof Resource) {
-					Resource child = stmt.getSubject();
-					Resource parent = (Resource) stmt.getObject();
-					Set<Resource> children = parentToChildMap.get(parent);
-					if(children == null) {
-						children = new HashSet<Resource>(64);
-						parentToChildMap.put(parent, children);
-					}
-					children.add(child);
-				}
-			}
-		}
-		finally {
-			stmtIter.close();
-		}
-
 		int nofInferred = 0;
 		for (Resource subj : iteration.subjects()) {
 			List<Resource> classes = getClasses(subj);
-			// build class hierarchy
+			// build local class hierarchy
 			Set<Resource> remainingClasses = new HashSet<Resource>(classes);
 			List<Resource> classHierarchy = new ArrayList<Resource>(remainingClasses.size());
 			while(!remainingClasses.isEmpty()) {
 				for(Iterator<Resource> clsIter = remainingClasses.iterator(); clsIter.hasNext(); ) {
 					Resource cls = clsIter.next();
-					Set<Resource> children = parentToChildMap.get(cls);
+					Set<Resource> children = getSubclasses(cls);
 					boolean isTerminal = true;
-					for(Resource child : remainingClasses) {
-						if(!child.equals(cls) && children.contains(child)) {
-							isTerminal = false;
-							break;
+					if(children != null) {
+						for(Resource child : remainingClasses) {
+							if(!child.equals(cls) && children.contains(child)) {
+								isTerminal = false;
+								break;
+							}
 						}
 					}
 					if(isTerminal) {
