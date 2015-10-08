@@ -329,7 +329,7 @@ public class SpinRenderer {
 
 		@Override
 		public void meet(Slice node) throws RDFHandlerException {
-			if(node.getParentNode() == null) { // ignore root slice
+			if(!isSubQuery) { // ignore root slice
 				node.getArg().visit(this);
 			}
 			else {
@@ -369,7 +369,7 @@ public class SpinRenderer {
 
 		@Override
 		public void meet(Reduced node) throws RDFHandlerException {
-			if(node.getParentNode() == null) { // ignore root reduced
+			if(!isSubQuery) { // ignore root reduced
 				node.getArg().visit(this);
 			}
 			else {
