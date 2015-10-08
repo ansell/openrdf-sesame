@@ -142,7 +142,7 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 
 	private Map<Resource,Executions> ruleExecutions;
 
-	private Map<Resource,Set<Resource>> classToSubclassMap;
+	private Map<Resource,Set<Resource>> classToSuperclassMap;
 	
 	private SailConnectionQueryPreparer queryPreparer;
 
@@ -298,27 +298,27 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		return rulePropertyMap.get(ruleProp);
 	}
 
-	private void initSubclasses()
+	private void initClasses()
 		throws OpenRDFException
 	{
-		if(classToSubclassMap != null) {
+		if(classToSuperclassMap != null) {
 			return;
 		}
 
-		classToSubclassMap = new HashMap<Resource,Set<Resource>>();
+		classToSuperclassMap = new HashMap<Resource,Set<Resource>>();
 		CloseableIteration<? extends Statement, QueryEvaluationException> stmtIter = tripleSource.getStatements(null, RDFS.SUBCLASSOF, null);
 		try {
 			while(stmtIter.hasNext()) {
 				Statement stmt = stmtIter.next();
 				if(stmt.getObject() instanceof Resource) {
-					Resource child = stmt.getSubject();
-					Resource parent = (Resource) stmt.getObject();
-					Set<Resource> children = getSubclasses(parent);
-					if(children == null) {
-						children = new HashSet<Resource>(64);
-						classToSubclassMap.put(parent, children);
+					Resource cls = stmt.getSubject();
+					Resource superclass = (Resource) stmt.getObject();
+					Set<Resource> superclasses = getSuperclasses(cls);
+					if(superclasses == null) {
+						superclasses = new HashSet<Resource>(64);
+						classToSuperclassMap.put(cls, superclasses);
 					}
-					children.add(child);
+					superclasses.add(superclass);
 				}
 			}
 		}
@@ -327,15 +327,15 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		}
 	}
 
-	private void resetSubclasses() {
-		classToSubclassMap = null;
+	private void resetClasses() {
+		classToSuperclassMap = null;
 	}
 
-	private Set<Resource> getSubclasses(Resource cls)
+	private Set<Resource> getSuperclasses(Resource cls)
 		throws OpenRDFException
 	{
-		initSubclasses();
-		return classToSubclassMap.get(cls);
+		initClasses();
+		return classToSuperclassMap.get(cls);
 	}
 
 	@Override
@@ -417,11 +417,11 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 			while(!remainingClasses.isEmpty()) {
 				for(Iterator<Resource> clsIter = remainingClasses.iterator(); clsIter.hasNext(); ) {
 					Resource cls = clsIter.next();
-					Set<Resource> children = getSubclasses(cls);
+					Set<Resource> superclasses = getSuperclasses(cls);
 					boolean isTerminal = true;
-					if(children != null) {
-						for(Resource child : remainingClasses) {
-							if(!child.equals(cls) && children.contains(child)) {
+					if(superclasses != null) {
+						for(Resource superclass : remainingClasses) {
+							if(!superclass.equals(cls) && superclasses.contains(superclass)) {
 								isTerminal = false;
 								break;
 							}
@@ -737,14 +737,14 @@ class SpinSailConnection extends AbstractForwardChainingInferencerConnection {
 		@Override
 		public void statementAdded(Statement st) {
 			if(RDFS.SUBCLASSOF.equals(st.getPredicate()) && st.getObject() instanceof Resource) {
-				resetSubclasses();
+				resetClasses();
 			}
 		}
 
 		@Override
 		public void statementRemoved(Statement st) {
 			if(RDFS.SUBCLASSOF.equals(st.getPredicate())) {
-				resetSubclasses();
+				resetClasses();
 			}
 		}
 	}
