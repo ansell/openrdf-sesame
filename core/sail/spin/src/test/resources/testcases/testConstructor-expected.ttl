@@ -5,4 +5,5 @@
 ex:testSubj1 a ex:TestClass .
 ex:testSubj2 a ex:TestClass ;
 	ex:prop 5 ;
-	ex:newProp 6 .
+	ex:parentProp 6 ;
+	ex:childProp 7 .
