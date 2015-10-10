@@ -224,7 +224,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sesame-sail-lucene</artifactId>
+			<artifactId>sesame-sail-lucene4</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>

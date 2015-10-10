@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.openrdf.util.iterators.EmptyIterator;
 import org.openrdf.util.iterators.Iterators;
 
 /**
@@ -56,7 +57,7 @@ public class UnionIterator<E> extends LookAheadIterator<E> {
 		argIter = args.iterator();
 
 		// Initialize with empty iteration so that var is never null
-		currentIter = Collections.emptyIterator();
+		currentIter = new EmptyIterator<E>();
 	}
 
 	/*--------------*

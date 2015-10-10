@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -276,14 +277,20 @@
 				<version>3.1</version>
 			</dependency>
 			<dependency>
-			    <groupId>com.google.guava</groupId>
-			    <artifactId>guava</artifactId>
-			    <version>18.0</version>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>18.0</version>
 			</dependency>
 			<dependency>
-			    <groupId>org.mapdb</groupId>
-			    <artifactId>mapdb</artifactId>
-			    <version>1.0.7</version>
+				<groupId>org.mapdb</groupId>
+				<artifactId>mapdb</artifactId>
+				<version>1.0.7</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>animal-sniffer-annotations</artifactId>
+				<version>1.14</version>
 			</dependency>
 
 			<!-- Logging: SLF4J and logback -->
@@ -521,28 +528,74 @@
 						</execution>
 					</executions>
 				</plugin>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>animal-sniffer-maven-plugin</artifactId>
-					<version>1.13</version>
-					<executions>
-						<execution>
-							<phase>test</phase>
-							<goals>
-								<goal>check</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<signature>
-							<groupId>org.codehaus.mojo.signature</groupId>
-							<artifactId>java16</artifactId>
-							<version>1.0</version>
-						</signature>
-					</configuration>
-				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<!-- verify our codebase uses Java 6 features only -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>animal-sniffer-maven-plugin</artifactId>
+				<version>1.14</version>
+				<executions>
+					<execution>
+						<phase>test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<signature>
+						<groupId>org.codehaus.mojo.signature</groupId>
+						<artifactId>java16</artifactId>
+						<version>1.1</version>
+					</signature>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!-- verify all bytecode (including third party libs) is Java 6 -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.3.1</version>
+				<executions>
+					<execution>
+						<id>enforce-bytecode-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<enforceBytecodeVersion>
+									<maxJdkVersion>1.6</maxJdkVersion>
+									<excludes>
+										<!-- lucene/solr/elasticsearch versions can
+											 not be easily downgraded, we accept 
+											 a Java 7 runtime is needed for them -->
+										<exclude>org.apache.lucene:*</exclude>
+										<exclude>org.apache.solr:*</exclude>
+										<exclude>org.elasticsearch:*</exclude>
+										<!-- opencsv can not be downgraded due to SES-2173 -->
+										<exclude>com.opencsv:opencsv:jar:3.2</exclude>
+										<!-- system-provided jar that we have no influence over -->
+										<exclude>jdk.tools:jdk.tools:jar:1.6</exclude>
+									</excludes>
+								</enforceBytecodeVersion>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>extra-enforcer-rules</artifactId>
+						<version>1.0-beta-3</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+		</plugins>
 
 
 		<extensions>
@@ -554,6 +607,14 @@
 		</extensions>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.org</url>
+		</repository>
+	</repositories>
+	
 	<scm>
 		<connection>scm:git:git@bitbucket.org:openrdf/sesame.git</connection>
 		<developerConnection>scm:git:git@bitbucket.org:openrdf/sesame.git</developerConnection>
