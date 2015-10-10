@@ -27,6 +27,7 @@ public class InsertData extends AbstractQueryModelNode implements UpdateExpr {
 		this.dataBlock = dataBlock;
 	}
 	
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -39,10 +40,25 @@ public class InsertData extends AbstractQueryModelNode implements UpdateExpr {
 
 
 	@Override
+	public boolean equals(Object other) {
+		if(other instanceof InsertData) {
+			InsertData o = (InsertData)other;
+			return dataBlock.equals(o.dataBlock);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return dataBlock.hashCode();
+	}
+
+	@Override
 	public InsertData clone() {
 		return new InsertData(dataBlock);
 	}
 
+	@Override
 	public boolean isSilent() {
 		return false;
 	}

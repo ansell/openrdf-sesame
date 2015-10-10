@@ -27,6 +27,7 @@ public class DeleteData extends AbstractQueryModelNode implements UpdateExpr {
 		this.dataBlock = dataBlock;
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -36,12 +37,27 @@ public class DeleteData extends AbstractQueryModelNode implements UpdateExpr {
 	public String getDataBlock() {
 		return dataBlock;
 	}
-	
+
+	@Override
+	public boolean equals(Object other) {
+		if(other instanceof DeleteData) {
+			DeleteData o = (DeleteData)other;
+			return dataBlock.equals(o.dataBlock);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return dataBlock.hashCode();
+	}
+
 	@Override
 	public DeleteData clone() {
 		return new DeleteData(dataBlock);
 	}
 
+	@Override
 	public boolean isSilent() {
 		return false;
 	}
