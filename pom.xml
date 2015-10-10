@@ -577,6 +577,8 @@
 										<exclude>org.elasticsearch:*</exclude>
 										<!-- opencsv can not be downgraded due to SES-2173 -->
 										<exclude>com.opencsv:opencsv:jar:3.2</exclude>
+										<!-- system-provided jar that we have no influence over -->
+										<exclude>jdk.tools:jdk.tools:jar:1.6</exclude>
 									</excludes>
 								</enforceBytecodeVersion>
 							</rules>
@@ -605,6 +607,14 @@
 		</extensions>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.org</url>
+		</repository>
+	</repositories>
+	
 	<scm>
 		<connection>scm:git:git@bitbucket.org:openrdf/sesame.git</connection>
 		<developerConnection>scm:git:git@bitbucket.org:openrdf/sesame.git</developerConnection>
