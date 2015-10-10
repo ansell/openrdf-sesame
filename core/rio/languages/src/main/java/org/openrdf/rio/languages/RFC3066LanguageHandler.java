@@ -84,7 +84,7 @@ public class RFC3066LanguageHandler implements LanguageHandler {
 			}
 
 			// TODO Implement normalisation more effectively than this
-			return valueFactory.createLiteral(literalValue, languageTag.toLowerCase());
+			return valueFactory.createLiteral(literalValue, languageTag.toLowerCase().intern());
 		}
 
 		throw new LiteralUtilException("Could not normalize RFC3066 language tag");
