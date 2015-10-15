@@ -34,12 +34,6 @@
 			<artifactId>solr-core</artifactId>
 			<version>${solr.version}</version>
 			<optional>true</optional>
-			<exclusions>
-				<exclusion>
-					<groupId>jdk.tools</groupId>
-					<artifactId>jdk.tools</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
