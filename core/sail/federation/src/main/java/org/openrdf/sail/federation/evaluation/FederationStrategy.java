@@ -143,7 +143,7 @@ public class FederationStrategy extends EvaluationStrategyImpl {
 	{
 		CloseableIteration<BindingSet, QueryEvaluationException> result = expr.evaluate(dataset, bindings);
 		if (result == null) {
-			TripleSource source = new RepositoryTripleSource(expr.getOwner());
+			TripleSource source = new org.openrdf.repository.evaluation.RepositoryTripleSource(expr.getOwner());
 			EvaluationStrategy eval = new FederationStrategy(executor, source, dataset, serviceResolver);
 			result = eval.evaluate(expr.getArg(), bindings);
 		}

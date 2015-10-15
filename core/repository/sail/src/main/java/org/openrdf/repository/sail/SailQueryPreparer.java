@@ -26,7 +26,7 @@ import org.openrdf.query.parser.ParsedBooleanQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
-import org.openrdf.repository.RepositoryTripleSource;
+import org.openrdf.repository.evaluation.RepositoryTripleSource;
 
 /**
  * QueryPreparer for use with SailRepository.

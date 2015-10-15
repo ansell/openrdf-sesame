@@ -92,7 +92,7 @@ import org.openrdf.rio.Rio;
 import org.openrdf.sail.SailConnectionListener;
 import org.openrdf.sail.SailConnectionQueryPreparer;
 import org.openrdf.sail.SailException;
-import org.openrdf.sail.SailTripleSource;
+import org.openrdf.sail.evaluation.SailTripleSource;
 import org.openrdf.sail.inferencer.InferencerConnection;
 import org.openrdf.sail.inferencer.fc.AbstractForwardChainingInferencerConnection;
 import org.openrdf.sail.inferencer.util.RDFInferencerInserter;

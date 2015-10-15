@@ -1,4 +1,4 @@
-package org.openrdf.spin;
+package org.openrdf.model.evaluation;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.CloseableIteratorIteration;

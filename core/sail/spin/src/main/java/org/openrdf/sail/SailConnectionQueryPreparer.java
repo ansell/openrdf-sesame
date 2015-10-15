@@ -28,6 +28,7 @@ import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.rio.ParserConfig;
+import org.openrdf.sail.evaluation.SailTripleSource;
 
 /**
  * QueryPreparer for use with Sails.

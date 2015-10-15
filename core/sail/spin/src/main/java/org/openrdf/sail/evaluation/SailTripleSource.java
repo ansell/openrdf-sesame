@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository;
+package org.openrdf.sail.evaluation;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
@@ -26,16 +26,21 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 
-public class RepositoryTripleSource implements TripleSource {
+public class SailTripleSource implements TripleSource {
 
-	private final RepositoryConnection repo;
+	private final SailConnection conn;
 
 	private final boolean includeInferred;
 
-	public RepositoryTripleSource(RepositoryConnection repo, boolean includeInferred) {
-		this.repo = repo;
+	private final ValueFactory vf;
+
+	public SailTripleSource(SailConnection conn, boolean includeInferred, ValueFactory valueFactory) {
+		this.conn = conn;
 		this.includeInferred = includeInferred;
+		this.vf = valueFactory;
 	}
 
 	@Override
@@ -43,25 +48,24 @@ public class RepositoryTripleSource implements TripleSource {
 			URI pred, Value obj, Resource... contexts)
 		throws QueryEvaluationException
 	{
-		RepositoryResult<Statement> result;
+		CloseableIteration<? extends Statement, SailException> iter;
 		try {
-			result = repo.getStatements(subj, pred, obj, includeInferred, contexts);
+			iter = conn.getStatements(subj, pred, obj, includeInferred, contexts);
+			return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(iter) {
+
+				@Override
+				protected QueryEvaluationException convert(Exception e) {
+					return new QueryEvaluationException(e);
+				}
+			};
 		}
-		catch (RepositoryException e) {
+		catch (SailException e) {
 			throw new QueryEvaluationException(e);
 		}
-		return new ExceptionConvertingIteration<Statement, QueryEvaluationException>(result) {
-
-			@Override
-			protected QueryEvaluationException convert(Exception exception) {
-				return new QueryEvaluationException(exception);
-			}
-		};
 	}
 
 	@Override
 	public ValueFactory getValueFactory() {
-		return repo.getValueFactory();
+		return vf;
 	}
-
 }
