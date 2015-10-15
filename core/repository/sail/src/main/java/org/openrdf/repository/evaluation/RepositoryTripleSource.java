@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.repository;
+package org.openrdf.repository.evaluation;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
@@ -26,12 +26,19 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.RepositoryResult;
 
 public class RepositoryTripleSource implements TripleSource {
 
 	private final RepositoryConnection repo;
 
 	private final boolean includeInferred;
+
+	public RepositoryTripleSource(RepositoryConnection repo) {
+		this(repo, true);
+	}
 
 	public RepositoryTripleSource(RepositoryConnection repo, boolean includeInferred) {
 		this.repo = repo;

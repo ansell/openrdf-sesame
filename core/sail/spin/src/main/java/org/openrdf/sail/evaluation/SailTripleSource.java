@@ -14,7 +14,7 @@
  * implied. See the License for the specific language governing permissions
  * and limitations under the License.
  */
-package org.openrdf.sail;
+package org.openrdf.sail.evaluation;
 
 import info.aduna.iteration.CloseableIteration;
 import info.aduna.iteration.ExceptionConvertingIteration;
@@ -26,6 +26,8 @@ import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.algebra.evaluation.TripleSource;
+import org.openrdf.sail.SailConnection;
+import org.openrdf.sail.SailException;
 
 public class SailTripleSource implements TripleSource {
 

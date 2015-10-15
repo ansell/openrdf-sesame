@@ -17,6 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.evaluation.ModelTripleSource;
 import org.openrdf.model.impl.TreeModel;
 import org.openrdf.model.vocabulary.SP;
 import org.openrdf.query.algebra.evaluation.TripleSource;
