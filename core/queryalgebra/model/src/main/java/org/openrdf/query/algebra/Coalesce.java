@@ -16,6 +16,8 @@
  */
 package org.openrdf.query.algebra;
 
+import java.util.List;
+
 
 /**
  *
@@ -23,6 +25,14 @@ package org.openrdf.query.algebra;
  */
 public class Coalesce extends NAryValueOperator {
 
+	public Coalesce() {
+	}
+
+	public Coalesce(List<ValueExpr> args) {
+		super(args);
+	}
+
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{

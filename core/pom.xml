@@ -24,6 +24,7 @@
 		<module>queryrender</module>
 		<module>sail</module>
 		<module>repository</module>
+		<module>spin</module>
 		<module>config</module>
 		<module>console</module>
 		<module>http</module>

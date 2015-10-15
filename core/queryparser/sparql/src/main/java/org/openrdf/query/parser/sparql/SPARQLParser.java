@@ -32,6 +32,7 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.algebra.UpdateExpr;
 import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedDescribeQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedOperation;
 import org.openrdf.query.parser.ParsedQuery;
@@ -58,12 +59,13 @@ import org.openrdf.query.parser.sparql.ast.VisitorException;
 
 public class SPARQLParser implements QueryParser {
 
+	@Override
 	public ParsedUpdate parseUpdate(String updateStr, String baseURI)
 		throws MalformedQueryException
 	{
 		try {
 
-			ParsedUpdate update = new ParsedUpdate();
+			ParsedUpdate update = new ParsedUpdate(updateStr);
 
 			ASTUpdateSequence updateSequence = SyntaxTreeBuilder.parseUpdateSequence(updateStr);
 
@@ -146,6 +148,7 @@ public class SPARQLParser implements QueryParser {
 
 	}
 
+	@Override
 	public ParsedQuery parseQuery(String queryStr, String baseURI)
 		throws MalformedQueryException
 	{
@@ -176,7 +179,7 @@ public class SPARQLParser implements QueryParser {
 					query = new ParsedBooleanQuery(queryStr, tupleExpr);
 				}
 				else if (queryNode instanceof ASTDescribeQuery) {
-					query = new ParsedGraphQuery(queryStr, tupleExpr, prefixes);
+					query = new ParsedDescribeQuery(queryStr, tupleExpr, prefixes);
 				}
 				else {
 					throw new RuntimeException("Unexpected query type: " + queryNode.getClass());

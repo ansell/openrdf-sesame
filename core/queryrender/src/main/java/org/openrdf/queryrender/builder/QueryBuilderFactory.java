@@ -21,6 +21,7 @@ import org.openrdf.query.algebra.SameTerm;
 import org.openrdf.query.algebra.ValueConstant;
 import org.openrdf.query.algebra.Var;
 import org.openrdf.query.parser.ParsedBooleanQuery;
+import org.openrdf.query.parser.ParsedDescribeQuery;
 import org.openrdf.query.parser.ParsedGraphQuery;
 import org.openrdf.query.parser.ParsedTupleQuery;
 
@@ -99,7 +100,7 @@ public class QueryBuilderFactory {
 	 */
 	public static QueryBuilder<ParsedGraphQuery> describe(String[] theVars, Resource... theValues) {
 		QueryBuilder<ParsedGraphQuery> aBuilder = new AbstractQueryBuilder<ParsedGraphQuery>(
-				new ParsedGraphQuery());
+				new ParsedDescribeQuery());
 
 		aBuilder.reduced();
 		aBuilder.addProjectionVar("descr_subj", "descr_pred", "descr_obj");
