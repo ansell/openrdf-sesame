@@ -503,7 +503,9 @@ public class SpinParser {
 				if(argValue == null) {
 					argValue = arg.getDefaultValue();
 				}
-				args.addBinding(argPred.getLocalName(), argValue);
+				if(argValue != null) {
+					args.addBinding(argPred.getLocalName(), argValue);
+				}
 			}
 
 			ParsedOperation tmplOp = tmpl.getParsedOperation();
