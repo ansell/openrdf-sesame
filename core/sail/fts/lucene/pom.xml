@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail-fts</artifactId>
-		<version>4.0.0-RC2-SNAPSHOT</version>
+		<version>4.0.0</version>
 	</parent>
 
 	<artifactId>sesame-sail-lucene</artifactId>
