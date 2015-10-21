@@ -30,7 +30,7 @@ package org.eclipse.rdf4j.query.parser;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +52,7 @@ public class ParsedUpdate extends ParsedOperation {
 
 	private List<UpdateExpr> updateExprs = new ArrayList<UpdateExpr>();
 
-	private Map<UpdateExpr, Dataset> datasetMapping = new HashMap<UpdateExpr, Dataset>();
+	private Map<UpdateExpr, Dataset> datasetMapping = new IdentityHashMap<UpdateExpr, Dataset>();
 
 	/*--------------*
 	 * Constructors *
@@ -65,6 +65,15 @@ public class ParsedUpdate extends ParsedOperation {
 	 */
 	public ParsedUpdate() {
 		super();
+	}
+
+	public ParsedUpdate(String sourceString) {
+		super(sourceString);
+	}
+
+	public ParsedUpdate(String sourceString, Map<String, String> namespaces) {
+		super(sourceString);
+		this.namespaces = namespaces;
 	}
 
 	/**

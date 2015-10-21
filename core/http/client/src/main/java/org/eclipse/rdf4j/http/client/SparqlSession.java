@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -579,7 +578,9 @@ public class SparqlSession implements HttpClientDependent {
 	protected List<NameValuePair> getQueryMethodParameters(QueryLanguage ql, String query, String baseURI,
 			Dataset dataset, boolean includeInferred, int maxQueryTime, Binding... bindings)
 	{
-		Objects.requireNonNull(ql);
+		if (ql == null) {
+			throw new NullPointerException("ql may not be null");
+		}
 
 		// TODO there is a bunch of HttpRepository specific parameters here
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
@@ -621,7 +622,9 @@ public class SparqlSession implements HttpClientDependent {
 	protected List<NameValuePair> getUpdateMethodParameters(QueryLanguage ql, String update, String baseURI,
 			Dataset dataset, boolean includeInferred, Binding... bindings)
 	{
-		Objects.requireNonNull(ql);
+		if (ql == null) {
+			throw new NullPointerException("ql may not be null");
+		}
 
 		List<NameValuePair> queryParams = new ArrayList<NameValuePair>(bindings.length + 10);
 

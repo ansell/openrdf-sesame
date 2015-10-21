@@ -263,7 +263,7 @@ public class RDFParserHelper {
 				if (workingLang.isPresent()
 						&& (workingDatatype == null || RDF.LANGSTRING.equals(workingDatatype)))
 				{
-					result = valueFactory.createLiteral(workingLabel, workingLang.get());
+					result = valueFactory.createLiteral(workingLabel, workingLang.get().intern());
 				}
 				// Backup for unnormalised datatype literal creation
 				else if (workingDatatype != null) {

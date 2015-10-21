@@ -29,7 +29,7 @@
 package org.eclipse.rdf4j.query.algebra.evaluation.iterator;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.Arrays;
 
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -86,8 +86,18 @@ public class BindingSetHashKey implements Serializable {
 		}
 
 		for (int i = values.length - 1; i >= 0; i--) {
-			if (!Objects.equals(this.values[i], jk.values[i])) {
-				return false;
+			final Value v1 = this.values[i];
+			final Value v2 = jk.values[i];
+
+			if (v1 == null) {
+				if (v2 != null) {
+					return false;
+				}
+			}
+			else {
+				if (!v1.equals(v2)) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -96,7 +106,7 @@ public class BindingSetHashKey implements Serializable {
 	@Override
 	public int hashCode() {
 		if (hashcode == 0) {
-			hashcode = Objects.hash((Object[])values);
+			hashcode = Arrays.hashCode(values);
 		}
 		return hashcode;
 	}
