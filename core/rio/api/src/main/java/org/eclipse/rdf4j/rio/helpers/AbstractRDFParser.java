@@ -57,7 +57,6 @@ import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.RioSetting;
-import org.openrdf.rio.RDFWriter;
 
 /**
  * Base class for {@link RDFParser}s offering common functionality for RDF
