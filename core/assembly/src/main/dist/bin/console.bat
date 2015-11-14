@@ -1,30 +1,9 @@
 @rem ***************************************************************************
-@rem Copyright (c) 2015, Eclipse Foundation, Inc. and its licensors.
-@rem
-@rem All rights reserved.
-@rem
-@rem Redistribution and use in source and binary forms, with or without
-@rem modification, are permitted provided that the following conditions are met:
-@rem
-@rem - Redistributions of source code must retain the above copyright notice, this
-@rem   list of conditions and the following disclaimer.
-@rem - Redistributions in binary form must reproduce the above copyright notice,
-@rem   this list of conditions and the following disclaimer in the documentation
-@rem   and/or other materials provided with the distribution.
-@rem - Neither the name of the Eclipse Foundation, Inc. nor the names of its
-@rem   contributors may be used to endorse or promote products derived from this
-@rem   software without specific prior written permission. 
-@rem
-@rem THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-@rem ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-@rem WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-@rem DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-@rem ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-@rem (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-@rem LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-@rem ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-@rem (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-@rem SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@rem Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+@rem All rights reserved. This program and the accompanying materials
+@rem are made available under the terms of the Eclipse Distribution License v1.0
+@rem which accompanies this distribution, and is available at
+@rem http://www.eclipse.org/org/documents/edl-v10.php.
 @rem ***************************************************************************
 @echo off
 
