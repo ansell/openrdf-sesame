@@ -73,6 +73,9 @@ public class ValueFactoryImpl extends ValueFactoryBase {
 
 	@Override
 	public Literal createLiteral(String value, String language) {
+		if (language == null) {
+			return createLiteral(value);
+		}
 		return new LiteralImpl(value, language);
 	}
 

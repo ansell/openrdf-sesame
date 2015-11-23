@@ -50,32 +50,39 @@
 			</goals>
 		    </execution>
 		</executions>
-	    </plugin>
-	    <plugin>   
-		<groupId>org.apache.felix</groupId>
-		<artifactId>maven-bundle-plugin</artifactId>
-		<version>2.3.7</version>
-		<extensions>true</extensions>
-		<configuration>
-		    <remoteOBR>NONE</remoteOBR>
-		    <instructions>
-			<Bundle-SymbolicName>org.openrdf.sesame2</Bundle-SymbolicName>
-			<Export-Package>!*text-base,!*prop-base,org.openrdf.*,info.aduna.*</Export-Package>
-			<Import-Package>
-			    org.slf4j.*, 
-			    info.aduna.*;version=0,
-			    javax.*;resolution:=optional, 
-			    org.apache.*;resolution:=optional,
-			    org.springframework.*;resolution:=optional,
-			    *
-			</Import-Package>
-			<Include-Resource>
-			    {maven-resources},
-			    META-INF/services=target/services/META-INF/services
-			</Include-Resource>
-		    </instructions>
-		</configuration>
-	    </plugin>
+		</plugin>
+		<plugin>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>maven-bundle-plugin</artifactId>
+			<extensions>true</extensions>
+			<configuration>
+				<remoteOBR>NONE</remoteOBR>
+				<instructions>
+					<Bundle-SymbolicName>org.openrdf.sesame2</Bundle-SymbolicName>
+					<Export-Package>!*text-base,!*prop-base,org.openrdf.*,info.aduna.*</Export-Package>
+					<Import-Package>
+						org.slf4j.*,
+						info.aduna.*;version=0,
+						javax.*;resolution:=optional,
+						org.apache.*;resolution:=optional,
+						org.springframework.*;resolution:=optional,
+						*
+					</Import-Package>
+					<Include-Resource>
+						{maven-resources},
+						META-INF/services=target/services/META-INF/services
+					</Include-Resource>
+					<Embed-Dependency>
+						*;
+						groupId=org.openrdf.*|info.aduna.*;
+						scope=compile|runtime;
+						type=!pom;
+						inline=true
+					</Embed-Dependency>
+					<Embed-Transitive>true</Embed-Transitive>
+				</instructions>
+			</configuration>
+		</plugin>
 	</plugins>
     </build>
 
