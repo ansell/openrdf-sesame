@@ -102,10 +102,7 @@ public abstract class AbstractParserHandlingTest {
 	 */
 	private static final String KNOWN_LANGUAGE_TAG = "en-AU";
 
-	/**
-	 * Fixed new instance of {@link SimpleValueFactory} to isolate tests.
-	 */
-	private final ValueFactory vf = new SimpleValueFactory();
+	private final ValueFactory vf = SimpleValueFactory.getInstance();
 
 	private RDFParser testParser;
 

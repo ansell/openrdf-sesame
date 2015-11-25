@@ -74,7 +74,7 @@ public class DAWGTestResultSetWriter implements TupleQueryResultHandler {
 	 *--------------*/
 
 	public DAWGTestResultSetWriter(RDFHandler rdfHandler) {
-		this(rdfHandler, new SimpleValueFactory());
+		this(rdfHandler, SimpleValueFactory.getInstance());
 	}
 
 	public DAWGTestResultSetWriter(RDFHandler rdfHandler, ValueFactory vf) {

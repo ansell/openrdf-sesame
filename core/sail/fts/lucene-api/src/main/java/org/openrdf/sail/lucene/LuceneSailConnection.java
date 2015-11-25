@@ -21,6 +21,7 @@ import info.aduna.iteration.CloseableIteration;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -358,7 +359,12 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 			// found something?
 			if (hasResult) {
 				// add bindings to the query tree
-				addBindingSets(query, bindingSets);
+				BindingSetAssignment bsa = new BindingSetAssignment();
+				bsa.setBindingSets(bindingSets);
+				if(bindingSets instanceof BindingSetCollection) {
+					bsa.setBindingNames(((BindingSetCollection)bindingSets).getBindingNames());
+				}
+				addBindingSets(query, bsa);
 			}
 
 			// remove the evaluated lucene query from the query tree
@@ -376,7 +382,7 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 * @param query
 	 *        the search query to which the bindings belong
 	 */
-	private void addBindingSets(SearchQueryEvaluator query, Iterable<BindingSet> bindingSets) {
+	private void addBindingSets(SearchQueryEvaluator query, BindingSetAssignment bindingSets) {
 
 		// find projection for the given query
 		QueryModelNode principalNode = query.getParentQueryModelNode();
@@ -404,20 +410,18 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 		projection.visit(assignmentVisitor);
 
 		// construct a list of binding sets
-		List<Iterable<BindingSet>> bindingSetsList = new ArrayList<Iterable<BindingSet>>();
+		List<BindingSetAssignment> bindingSetsList = new ArrayList<BindingSetAssignment>();
 		bindingSetsList.add(bindingSets);
 
 		// add existing bindings to the list of binding sets and remove them from
 		// the query tree
 		for (BindingSetAssignment assignment : assignments) {
-			bindingSetsList.add(assignment.getBindingSets());
+			bindingSetsList.add(assignment);
 			assignment.replaceWith(new SingletonSet());
 		}
 
 		// join binding sets
-		Iterable<BindingSet> joinedBindingSets = joinBindingSets(bindingSetsList.iterator());
-		BindingSetAssignment bindings = new BindingSetAssignment();
-		bindings.setBindingSets(joinedBindingSets);
+		BindingSetAssignment bindings = joinBindingSets(bindingSetsList.iterator());
 
 		// add bindings to the projection
 		TupleExpr arg = projection.getArg();
@@ -455,10 +459,10 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 *        for the binding sets to join
 	 * @return joined binding sets
 	 */
-	private Iterable<BindingSet> joinBindingSets(Iterator<Iterable<BindingSet>> iterator) {
+	private BindingSetAssignment joinBindingSets(Iterator<BindingSetAssignment> iterator) {
 		if (iterator.hasNext()) {
-			Iterable<BindingSet> left = iterator.next();
-			Iterable<BindingSet> right = joinBindingSets(iterator);
+			BindingSetAssignment left = iterator.next();
+			BindingSetAssignment right = joinBindingSets(iterator);
 			if (right != null) {
 				return crossJoin(left, right);
 			}
@@ -480,11 +484,15 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 	 *        binding sets
 	 * @return Cartesian product TODO: implement as sort-merge join
 	 */
-	private Iterable<BindingSet> crossJoin(Iterable<BindingSet> left, Iterable<BindingSet> right) {
-		List<BindingSet> output = new ArrayList<BindingSet>();
+	private BindingSetAssignment crossJoin(BindingSetAssignment left, BindingSetAssignment right) {
+		Iterable<BindingSet> leftIter = left.getBindingSets();
+		Iterable<BindingSet> rightIter = right.getBindingSets();
+		int leftSize = size(leftIter, 16);
+		int rightSize = size(rightIter, 16);
+		List<BindingSet> output = new ArrayList<BindingSet>(leftSize*rightSize);
 
-		for (BindingSet l : left) {
-			for (BindingSet r : right) {
+		for (BindingSet l : leftIter) {
+			for (BindingSet r : rightIter) {
 				QueryBindingSet bs = new QueryBindingSet();
 				bs.addAll(l);
 				bs.addAll(r);
@@ -492,7 +500,17 @@ public class LuceneSailConnection extends NotifyingSailConnectionWrapper {
 			}
 		}
 
-		return output;
+		Set<String> bindingNames = new HashSet<String>(left.getBindingNames());
+		bindingNames.addAll(right.getBindingNames());
+
+		BindingSetAssignment bindings = new BindingSetAssignment();
+		bindings.setBindingSets(output);
+		bindings.setBindingNames(bindingNames);
+		return bindings;
+	}
+
+	private static int size(Iterable<?> iter, int defaultSize) {
+		return (iter instanceof Collection<?>) ? ((Collection<?>)iter).size() : defaultSize;
 	}
 
 	@Override

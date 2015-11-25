@@ -40,13 +40,14 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
-import org.openrdf.model.impl.SimpleIRI;
-import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
@@ -63,29 +64,31 @@ import org.openrdf.sail.memory.MemoryStore;
 
 public abstract class AbstractLuceneSailTest {
 
+	protected static final ValueFactory vf = SimpleValueFactory.getInstance();
+	
 	public static final String QUERY_STRING;
 
-	public static final IRI SUBJECT_1 = new SimpleIRI("urn:subject1");
+	public static final IRI SUBJECT_1 = vf.createIRI("urn:subject1");
 
-	public static final IRI SUBJECT_2 = new SimpleIRI("urn:subject2");
+	public static final IRI SUBJECT_2 = vf.createIRI("urn:subject2");
 
-	public static final IRI SUBJECT_3 = new SimpleIRI("urn:subject3");
+	public static final IRI SUBJECT_3 = vf.createIRI("urn:subject3");
 
-	public static final IRI SUBJECT_4 = new SimpleIRI("urn:subject4");
+	public static final IRI SUBJECT_4 = vf.createIRI("urn:subject4");
 
-	public static final IRI SUBJECT_5 = new SimpleIRI("urn:subject5");
+	public static final IRI SUBJECT_5 = vf.createIRI("urn:subject5");
 
-	public static final IRI CONTEXT_1 = new SimpleIRI("urn:context1");
+	public static final IRI CONTEXT_1 = vf.createIRI("urn:context1");
 
-	public static final IRI CONTEXT_2 = new SimpleIRI("urn:context2");
+	public static final IRI CONTEXT_2 = vf.createIRI("urn:context2");
 
-	public static final IRI CONTEXT_3 = new SimpleIRI("urn:context3");
+	public static final IRI CONTEXT_3 = vf.createIRI("urn:context3");
 
-	public static final IRI PREDICATE_1 = new SimpleIRI("urn:predicate1");
+	public static final IRI PREDICATE_1 = vf.createIRI("urn:predicate1");
 
-	public static final IRI PREDICATE_2 = new SimpleIRI("urn:predicate2");
+	public static final IRI PREDICATE_2 = vf.createIRI("urn:predicate2");
 
-	public static final IRI PREDICATE_3 = new SimpleIRI("urn:predicate3");
+	public static final IRI PREDICATE_3 = vf.createIRI("urn:predicate3");
 
 	protected LuceneSail sail;
 
@@ -129,13 +132,13 @@ public abstract class AbstractLuceneSailTest {
 		// add some statements to it
 		connection = repository.getConnection();
 		connection.begin();
-		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("one"));
-		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("five"));
-		connection.add(SUBJECT_1, PREDICATE_2, new SimpleLiteral("two"));
-		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("one"));
-		connection.add(SUBJECT_2, PREDICATE_2, new SimpleLiteral("three"));
-		connection.add(SUBJECT_3, PREDICATE_1, new SimpleLiteral("four"));
-		connection.add(SUBJECT_3, PREDICATE_2, new SimpleLiteral("one"));
+		connection.add(SUBJECT_1, PREDICATE_1, vf.createLiteral("one"));
+		connection.add(SUBJECT_1, PREDICATE_1, vf.createLiteral("five"));
+		connection.add(SUBJECT_1, PREDICATE_2, vf.createLiteral("two"));
+		connection.add(SUBJECT_2, PREDICATE_1, vf.createLiteral("one"));
+		connection.add(SUBJECT_2, PREDICATE_2, vf.createLiteral("three"));
+		connection.add(SUBJECT_3, PREDICATE_1, vf.createLiteral("four"));
+		connection.add(SUBJECT_3, PREDICATE_2, vf.createLiteral("one"));
 		connection.add(SUBJECT_3, PREDICATE_3, SUBJECT_1);
 		connection.add(SUBJECT_3, PREDICATE_3, SUBJECT_2);
 		connection.commit();
@@ -158,13 +161,13 @@ public abstract class AbstractLuceneSailTest {
 		throws Exception
 	{
 		// are the triples stored in the underlying sail?
-		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, new SimpleLiteral("one"), false));
-		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, new SimpleLiteral("five"), false));
-		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_2, new SimpleLiteral("two"), false));
-		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_1, new SimpleLiteral("one"), false));
-		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_2, new SimpleLiteral("three"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_1, new SimpleLiteral("four"), false));
-		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_2, new SimpleLiteral("one"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, vf.createLiteral("one"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_1, vf.createLiteral("five"), false));
+		assertTrue(connection.hasStatement(SUBJECT_1, PREDICATE_2, vf.createLiteral("two"), false));
+		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_1, vf.createLiteral("one"), false));
+		assertTrue(connection.hasStatement(SUBJECT_2, PREDICATE_2, vf.createLiteral("three"), false));
+		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_1, vf.createLiteral("four"), false));
+		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_2, vf.createLiteral("one"), false));
 		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_3, SUBJECT_1, false));
 		assertTrue(connection.hasStatement(SUBJECT_3, PREDICATE_3, SUBJECT_2, false));
 	}
@@ -175,7 +178,7 @@ public abstract class AbstractLuceneSailTest {
 	{
 		// fire a query for all subjects with a given term
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, QUERY_STRING);
-		query.setBinding("Query", new SimpleLiteral("one"));
+		query.setBinding("Query", vf.createLiteral("one"));
 		TupleQueryResult result = query.evaluate();
 
 		// check the results
@@ -623,9 +626,9 @@ public abstract class AbstractLuceneSailTest {
 		// "come" and "unicorn"
 		// and 'poor' should not be returned if we limit on predicate1
 		// and watch http://www.youtube.com/watch?v=Q5im0Ssyyus like 25mio others
-		myconnection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("come charly lets go to candy mountain"));
-		myconnection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("but the unicorn charly said to goaway"));
-		myconnection.add(SUBJECT_1, PREDICATE_2, new SimpleLiteral("there was poor charly without a kidney"));
+		myconnection.add(SUBJECT_1, PREDICATE_1, vf.createLiteral("come charly lets go to candy mountain"));
+		myconnection.add(SUBJECT_1, PREDICATE_1, vf.createLiteral("but the unicorn charly said to goaway"));
+		myconnection.add(SUBJECT_1, PREDICATE_2, vf.createLiteral("there was poor charly without a kidney"));
 		myconnection.commit();
 		myconnection.close();
 
@@ -757,7 +760,7 @@ public abstract class AbstractLuceneSailTest {
 	public void testGraphQuery()
 		throws QueryEvaluationException, MalformedQueryException, RepositoryException
 	{
-		 IRI score = new SimpleIRI(LuceneSailSchema.NAMESPACE + "score");
+		 IRI score = vf.createIRI(LuceneSailSchema.NAMESPACE + "score");
 		 StringBuilder query = new StringBuilder();
 		
 		
@@ -813,7 +816,7 @@ public abstract class AbstractLuceneSailTest {
 		// fire a query with the subject pre-specified
 		TupleQuery query = connection.prepareTupleQuery(QueryLanguage.SERQL, QUERY_STRING);
 		query.setBinding("Subject", SUBJECT_1);
-		query.setBinding("Query", new SimpleLiteral("one"));
+		query.setBinding("Query", vf.createLiteral("one"));
 		TupleQueryResult result = query.evaluate();
 
 		// check that this subject and only this subject is returned
@@ -858,11 +861,11 @@ public abstract class AbstractLuceneSailTest {
 	public void testContextHandling()
 		throws Exception
 	{
-		connection.add(SUBJECT_4, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_4, PREDICATE_2, new SimpleLiteral("sfourptwocone"), CONTEXT_1);
-		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponecone"), CONTEXT_1);
-		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponectwo"), CONTEXT_2);
-		connection.add(SUBJECT_5, PREDICATE_2, new SimpleLiteral("sfiveptwoctwo"), CONTEXT_2);
+		connection.add(SUBJECT_4, PREDICATE_1, vf.createLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_4, PREDICATE_2, vf.createLiteral("sfourptwocone"), CONTEXT_1);
+		connection.add(SUBJECT_5, PREDICATE_1, vf.createLiteral("sfiveponecone"), CONTEXT_1);
+		connection.add(SUBJECT_5, PREDICATE_1, vf.createLiteral("sfiveponectwo"), CONTEXT_2);
+		connection.add(SUBJECT_5, PREDICATE_2, vf.createLiteral("sfiveptwoctwo"), CONTEXT_2);
 		connection.commit();
 		// connection.close();
 		// connection = repository.getConnection();
@@ -890,8 +893,8 @@ public abstract class AbstractLuceneSailTest {
 		throws Exception
 	{
 
-		connection.add(SUBJECT_1, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
-		connection.add(SUBJECT_2, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_1, PREDICATE_1, vf.createLiteral("sfourponecone"), CONTEXT_1);
+		connection.add(SUBJECT_2, PREDICATE_1, vf.createLiteral("sfourponecone"), CONTEXT_1);
 
 		connection.commit();
 		// prepare the query
@@ -907,7 +910,7 @@ public abstract class AbstractLuceneSailTest {
 			@SuppressWarnings("unused")
 			BindingSet bindings = result.next();
 
-			connection.add(SUBJECT_3, PREDICATE_1, new SimpleLiteral("sfourponecone"), CONTEXT_1);
+			connection.add(SUBJECT_3, PREDICATE_1, vf.createLiteral("sfourponecone"), CONTEXT_1);
 
 			assertTrue(result.hasNext());
 			bindings = result.next();
@@ -925,7 +928,7 @@ public abstract class AbstractLuceneSailTest {
 			@SuppressWarnings("unused")
 			BindingSet bindings = result.next();
 
-			connection.add(SUBJECT_3, PREDICATE_1, new SimpleLiteral("blubbb"), CONTEXT_1);
+			connection.add(SUBJECT_3, PREDICATE_1, vf.createLiteral("blubbb"), CONTEXT_1);
 			connection.commit();
 
 			assertTrue(result.hasNext());
@@ -944,11 +947,11 @@ public abstract class AbstractLuceneSailTest {
 	public void testNullContextHandling()
 		throws Exception
 	{
-		connection.add(SUBJECT_4, PREDICATE_1, new SimpleLiteral("sfourponecone"));
-		connection.add(SUBJECT_4, PREDICATE_2, new SimpleLiteral("sfourptwocone"));
-		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponecone"));
-		connection.add(SUBJECT_5, PREDICATE_1, new SimpleLiteral("sfiveponectwo"), CONTEXT_2);
-		connection.add(SUBJECT_5, PREDICATE_2, new SimpleLiteral("sfiveptwoctwo"), CONTEXT_2);
+		connection.add(SUBJECT_4, PREDICATE_1, vf.createLiteral("sfourponecone"));
+		connection.add(SUBJECT_4, PREDICATE_2, vf.createLiteral("sfourptwocone"));
+		connection.add(SUBJECT_5, PREDICATE_1, vf.createLiteral("sfiveponecone"));
+		connection.add(SUBJECT_5, PREDICATE_1, vf.createLiteral("sfiveponectwo"), CONTEXT_2);
+		connection.add(SUBJECT_5, PREDICATE_2, vf.createLiteral("sfiveptwoctwo"), CONTEXT_2);
 		connection.commit();
 		// connection.close();
 		// connection = repository.getConnection();

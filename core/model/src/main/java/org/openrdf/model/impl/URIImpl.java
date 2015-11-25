@@ -16,16 +16,22 @@
  */
 package org.openrdf.model.impl;
 
+import org.openrdf.model.ValueFactory;
+
 /**
  * @author Jeen Broekstra
- * @deprecated since 4.0. Use {@link SimpleIRI} instead.
+ * @deprecated since 4.0. Use {@link SimpleIRI} instead for extending, and
+ *             {@link ValueFactory} for instantiation.
  */
 @Deprecated
 public class URIImpl extends SimpleIRI {
 
+	/**
+	 * @deprecated since 4.0. Use {@link ValueFactory#createIRI(String)} instead.
+	 */
 	@Deprecated
 	public URIImpl(String uriString) {
 		super(uriString);
 	}
-	
+
 }

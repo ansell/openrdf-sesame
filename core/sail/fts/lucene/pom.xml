@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.openrdf.sesame</groupId>
 		<artifactId>sesame-sail-fts</artifactId>
-		<version>4.0.0-M2-SNAPSHOT</version>
+		<version>4.0.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>sesame-sail-lucene</artifactId>
@@ -53,6 +53,11 @@
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-spatial</artifactId>
 			<version>${lucene.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>animal-sniffer-annotations</artifactId>
 		</dependency>
 
 		<dependency>

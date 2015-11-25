@@ -43,9 +43,9 @@ import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.BooleanLiteral;
-import org.openrdf.model.impl.SimpleIRI;
-import org.openrdf.model.impl.SimpleLiteral;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.GEO;
 import org.openrdf.model.vocabulary.GEOF;
 import org.openrdf.query.BindingSet;
@@ -58,6 +58,8 @@ import org.openrdf.sail.lucene.util.MapOfListMaps;
 public abstract class AbstractSearchIndex implements SearchIndex {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	private final ValueFactory vf = SimpleValueFactory.getInstance();
 
 	private static final Set<String> REJECTED_DATATYPES = new HashSet<String>();
 
@@ -546,6 +548,24 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		// unique.
 		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
 
+		Set<String> bindingNames = new HashSet<String>();
+		final String matchVar = query.getMatchesVariableName();
+		if (matchVar != null) {
+			bindingNames.add(matchVar);
+		}
+		final String scoreVar = query.getScoreVariableName();
+		if (scoreVar != null) {
+			bindingNames.add(scoreVar);
+		}
+		final String snippetVar = query.getSnippetVariableName();
+		if (snippetVar != null) {
+			bindingNames.add(snippetVar);
+		}
+		final String propertyVar = query.getPropertyVariableName();
+		if (propertyVar != null && query.getPropertyURI() == null) {
+			bindingNames.add(propertyVar);
+		}
+
 		if (hits != null) {
 			// for each hit ...
 			for (DocumentScore hit : hits) {
@@ -561,16 +581,15 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				float score = hit.getScore();
 
 				// bind the respective variables
-				String matchVar = query.getMatchesVariableName();
 				if (matchVar != null) {
 					Resource resource = getResource(doc);
 					derivedBindings.addBinding(matchVar, resource);
 				}
 
-				if ((query.getScoreVariableName() != null) && (score > 0.0f))
-					derivedBindings.addBinding(query.getScoreVariableName(), SearchFields.scoreToLiteral(score));
+				if ((scoreVar != null) && (score > 0.0f))
+					derivedBindings.addBinding(scoreVar, SearchFields.scoreToLiteral(score));
 
-				if (query.getSnippetVariableName() != null || query.getPropertyVariableName() != null) {
+				if (snippetVar != null || propertyVar != null) {
 					if (hit.isHighlighted()) {
 						// limit to the queried field, if there was one
 						Collection<String> fields;
@@ -592,14 +611,12 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 										// snippet
 										QueryBindingSet snippetBindings = new QueryBindingSet(derivedBindings);
 
-										if (query.getSnippetVariableName() != null) {
-											snippetBindings.addBinding(query.getSnippetVariableName(),
-													new SimpleLiteral(snippet));
+										if (snippetVar != null) {
+											snippetBindings.addBinding(snippetVar, vf.createLiteral(snippet));
 										}
 
-										if (query.getPropertyVariableName() != null && query.getPropertyURI() == null) {
-											snippetBindings.addBinding(query.getPropertyVariableName(),
-													new SimpleIRI(field));
+										if (propertyVar != null && query.getPropertyURI() == null) {
+											snippetBindings.addBinding(propertyVar, vf.createIRI(field));
 										}
 
 										bindingSets.add(snippetBindings);
@@ -622,7 +639,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		}
 
 		// we succeeded
-		return bindingSets;
+		return new BindingSetCollection(bindingNames, bindingSets);
 	}
 
 	private Iterable<? extends DocumentDistance> evaluateQuery(DistanceQuerySpec query) {
@@ -672,6 +689,24 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		// unique.
 		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
 
+		Set<String> bindingNames = new HashSet<String>();
+		final String subjVar = query.getSubjectVar();
+		if (subjVar != null) {
+			bindingNames.add(subjVar);
+		}
+		final String geoVar = query.getGeoVar();
+		if (geoVar != null) {
+			bindingNames.add(geoVar);
+		}
+		final String distanceVar = query.getDistanceVar();
+		if (distanceVar != null) {
+			bindingNames.add(distanceVar);
+		}
+		final Var contextVar = query.getContextVar();
+		if (contextVar != null && !contextVar.hasValue()) {
+			bindingNames.add(contextVar.getName());
+		}
+
 		if (hits != null) {
 			double maxDistance = query.getDistance();
 			// for each hit ...
@@ -681,10 +716,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				if (doc == null)
 					continue;
 
-				String subjVar = query.getSubjectVar();
-				String geoVar = query.getGeoVar();
-				String distanceVar = query.getDistanceVar();
-				Var contextVar = query.getContextVar();
 				List<String> geometries = doc.getProperty(SearchFields.getPropertyField(query.getGeoProperty()));
 				for (String geometry : geometries) {
 					double distance = hit.getDistance();
@@ -726,7 +757,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		}
 
 		// we succeeded
-		return bindingSets;
+		return new BindingSetCollection(bindingNames, bindingSets);
 	}
 
 	private Iterable<? extends DocumentResult> evaluateQuery(GeoRelationQuerySpec query) {
@@ -761,6 +792,24 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		// unique.
 		LinkedHashSet<BindingSet> bindingSets = new LinkedHashSet<BindingSet>();
 
+		Set<String> bindingNames = new HashSet<String>();
+		final String subjVar = query.getSubjectVar();
+		if (subjVar != null) {
+			bindingNames.add(subjVar);
+		}
+		final String geoVar = query.getGeoVar();
+		if (geoVar != null) {
+			bindingNames.add(geoVar);
+		}
+		final String fVar = query.getFunctionValueVar();
+		if (fVar != null) {
+			bindingNames.add(fVar);
+		}
+		final Var contextVar = query.getContextVar();
+		if (contextVar != null && !contextVar.hasValue()) {
+			bindingNames.add(contextVar.getName());
+		}
+
 		if (hits != null) {
 			// for each hit ...
 			for (DocumentResult hit : hits) {
@@ -769,10 +818,6 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 				if (doc == null)
 					continue;
 
-				String subjVar = query.getSubjectVar();
-				String geoVar = query.getGeoVar();
-				String fVar = query.getFunctionValueVar();
-				Var contextVar = query.getContextVar();
 				List<String> geometries = doc.getProperty(SearchFields.getPropertyField(query.getGeoProperty()));
 				for (String geometry : geometries) {
 					QueryBindingSet derivedBindings = new QueryBindingSet();
@@ -799,7 +844,7 @@ public abstract class AbstractSearchIndex implements SearchIndex {
 		}
 
 		// we succeeded
-		return bindingSets;
+		return new BindingSetCollection(bindingNames, bindingSets);
 	}
 
 	protected Shape parseQueryShape(String property, String value)

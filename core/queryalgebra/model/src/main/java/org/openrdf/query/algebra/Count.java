@@ -50,4 +50,13 @@ public class Count extends AbstractAggregateOperator {
 	public Count clone() {
 		return (Count)super.clone();
 	}
+	
+	@Override
+	public String getSignature() {
+		String signature = super.getSignature();
+		if (isDistinct()) {
+			signature += " (Distinct)";
+		}
+		return signature;
+	}
 }

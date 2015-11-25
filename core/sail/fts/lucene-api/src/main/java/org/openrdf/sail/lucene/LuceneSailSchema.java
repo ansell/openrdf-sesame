@@ -41,7 +41,7 @@ public class LuceneSailSchema {
 	public static final IRI MATCHES;
 
 	static {
-		ValueFactory factory = new SimpleValueFactory(); // compatible with beta4:
+		ValueFactory factory = SimpleValueFactory.getInstance(); // compatible with beta4:
 																		// creating a new factory
 		LUCENE_QUERY = factory.createIRI(NAMESPACE + "LuceneQuery");
 		SCORE = factory.createIRI(NAMESPACE + "score");

@@ -22,10 +22,14 @@ import static org.openrdf.repository.http.config.HTTPRepositorySchema.USERNAME;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.IRI;
 import org.openrdf.model.util.GraphUtil;
 import org.openrdf.model.util.GraphUtilException;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.config.AbstractRepositoryImplConfig;
 
@@ -84,43 +88,42 @@ public class HTTPRepositoryConfig extends AbstractRepositoryImplConfig {
 	}
 
 	@Override
-	public Resource export(Graph graph) {
+	public Resource export(Model graph) {
 		Resource implNode = super.export(graph);
 
 		if (url != null) {
-			graph.add(implNode, REPOSITORYURL, graph.getValueFactory().createIRI(url));
+			graph.add(implNode, REPOSITORYURL, SimpleValueFactory.getInstance().createIRI(url));
 		}
-//		if (username != null) {
-//			graph.add(implNode, USERNAME, graph.getValueFactory().createLiteral(username));
-//		}
-//		if (password != null) {
-//			graph.add(implNode, PASSWORD, graph.getValueFactory().createLiteral(password));
-//		}
+		// if (username != null) {
+		// graph.add(implNode, USERNAME,
+		// graph.getValueFactory().createLiteral(username));
+		// }
+		// if (password != null) {
+		// graph.add(implNode, PASSWORD,
+		// graph.getValueFactory().createLiteral(password));
+		// }
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model model, Resource implNode)
 		throws RepositoryConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(model, implNode);
 
 		try {
-			IRI uri = GraphUtil.getOptionalObjectURI(graph, implNode, REPOSITORYURL);
-			if (uri != null) {
-				setURL(uri.toString());
-			}
-			Literal username = GraphUtil.getOptionalObjectLiteral(graph, implNode, USERNAME);
-			if (username != null) {
-				setUsername(username.getLabel());
-			}
-			Literal password = GraphUtil.getOptionalObjectLiteral(graph, implNode, PASSWORD);
-			if (password != null) {
-				setPassword(password.getLabel());
-			}
+			Models.objectIRI(model.filter(implNode, REPOSITORYURL, null)).ifPresent(
+					iri -> setURL(iri.stringValue()));
+
+			Models.objectLiteral(model.filter(implNode, USERNAME, null)).ifPresent(
+					username -> setUsername(username.getLabel()));
+
+			Models.objectLiteral(model.filter(implNode, PASSWORD, null)).ifPresent(
+					password -> setPassword(password.getLabel()));
+
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

@@ -16,7 +16,10 @@
  */
 package org.openrdf.query.resultio;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,24 +35,27 @@ import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openrdf.model.impl.SimpleBNode;
-import org.openrdf.model.impl.SimpleLiteral;
-import org.openrdf.model.impl.SimpleIRI;
+
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
+import org.openrdf.query.BooleanQueryResultHandler;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryResultHandlerException;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandler;
 import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.impl.IteratingTupleQueryResult;
+import org.openrdf.query.impl.MapBindingSet;
 
 /**
  * @author Peter Ansell
  */
 public abstract class AbstractQueryResultIOTest {
+
+	private static final ValueFactory vf = SimpleValueFactory.getInstance();
 
 	/**
 	 * 
@@ -94,31 +100,31 @@ public abstract class AbstractQueryResultIOTest {
 		List<String> bindingNames = Arrays.asList("a");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
-		solution1.addBinding("a", new SimpleIRI("foo:bar"));
+		solution1.addBinding("a", vf.createIRI("foo:bar"));
 
 		MapBindingSet solution2 = new MapBindingSet(bindingNames.size());
-		solution2.addBinding("a", new SimpleLiteral("2.0", XMLSchema.DOUBLE));
+		solution2.addBinding("a", vf.createLiteral("2.0", XMLSchema.DOUBLE));
 
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
-		solution3.addBinding("a", new SimpleBNode("bnode3"));
+		solution3.addBinding("a", vf.createBNode("bnode3"));
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
-		solution4.addBinding("a", new SimpleLiteral("''single-quoted string", XMLSchema.STRING));
+		solution4.addBinding("a", vf.createLiteral("''single-quoted string", XMLSchema.STRING));
 
 		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
-		solution5.addBinding("a", new SimpleLiteral("\"\"double-quoted string", XMLSchema.STRING));
+		solution5.addBinding("a", vf.createLiteral("\"\"double-quoted string", XMLSchema.STRING));
 
 		MapBindingSet solution6 = new MapBindingSet(bindingNames.size());
-		solution6.addBinding("a", new SimpleLiteral("space at the end         ", XMLSchema.STRING));
+		solution6.addBinding("a", vf.createLiteral("space at the end         ", XMLSchema.STRING));
 
 		MapBindingSet solution7 = new MapBindingSet(bindingNames.size());
-		solution7.addBinding("a", new SimpleLiteral("space at the end         ", XMLSchema.STRING));
+		solution7.addBinding("a", vf.createLiteral("space at the end         ", XMLSchema.STRING));
 
 		MapBindingSet solution8 = new MapBindingSet(bindingNames.size());
-		solution8.addBinding("a", new SimpleLiteral("\"\"double-quoted string with no datatype"));
+		solution8.addBinding("a", vf.createLiteral("\"\"double-quoted string with no datatype"));
 
 		MapBindingSet solution9 = new MapBindingSet(bindingNames.size());
-		solution9.addBinding("a", new SimpleLiteral("newline at the end \n", XMLSchema.STRING));
+		solution9.addBinding("a", vf.createLiteral("newline at the end \n", XMLSchema.STRING));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
 				solution5, solution6, solution7, solution8, solution9);
@@ -132,28 +138,28 @@ public abstract class AbstractQueryResultIOTest {
 		List<String> bindingNames = Arrays.asList("a", "b", "c");
 
 		MapBindingSet solution1 = new MapBindingSet(bindingNames.size());
-		solution1.addBinding("a", new SimpleIRI("foo:bar"));
-		solution1.addBinding("b", new SimpleBNode("bnode"));
-		solution1.addBinding("c", new SimpleLiteral("baz"));
+		solution1.addBinding("a", vf.createIRI("foo:bar"));
+		solution1.addBinding("b", vf.createBNode("bnode"));
+		solution1.addBinding("c", vf.createLiteral("baz"));
 
 		MapBindingSet solution2 = new MapBindingSet(bindingNames.size());
-		solution2.addBinding("a", new SimpleLiteral("1", XMLSchema.INTEGER));
-		solution2.addBinding("c", new SimpleLiteral("Hello World!", "en"));
+		solution2.addBinding("a", vf.createLiteral("1", XMLSchema.INTEGER));
+		solution2.addBinding("c", vf.createLiteral("Hello World!", "en"));
 
 		MapBindingSet solution3 = new MapBindingSet(bindingNames.size());
-		solution3.addBinding("a", new SimpleIRI("http://example.org/test/ns/bindingA"));
-		solution3.addBinding("b", new SimpleLiteral("http://example.com/other/ns/bindingB"));
-		solution3.addBinding("c", new SimpleIRI("http://example.com/other/ns/binding,C"));
+		solution3.addBinding("a", vf.createIRI("http://example.org/test/ns/bindingA"));
+		solution3.addBinding("b", vf.createLiteral("http://example.com/other/ns/bindingB"));
+		solution3.addBinding("c", vf.createIRI("http://example.com/other/ns/binding,C"));
 
 		MapBindingSet solution4 = new MapBindingSet(bindingNames.size());
-		solution4.addBinding("a", new SimpleLiteral("string with newline at the end       \n"));
-		solution4.addBinding("b", new SimpleLiteral("string with space at the end         "));
-		solution4.addBinding("c", new SimpleLiteral("    "));
+		solution4.addBinding("a", vf.createLiteral("string with newline at the end       \n"));
+		solution4.addBinding("b", vf.createLiteral("string with space at the end         "));
+		solution4.addBinding("c", vf.createLiteral("    "));
 
 		MapBindingSet solution5 = new MapBindingSet(bindingNames.size());
-		solution5.addBinding("a", new SimpleLiteral("''single-quoted string"));
-		solution5.addBinding("b", new SimpleLiteral("\"\"double-quoted string"));
-		solution5.addBinding("c", new SimpleLiteral("		unencoded tab characters followed by encoded \t\t"));
+		solution5.addBinding("a", vf.createLiteral("''single-quoted string"));
+		solution5.addBinding("b", vf.createLiteral("\"\"double-quoted string"));
+		solution5.addBinding("c", vf.createLiteral("		unencoded tab characters followed by encoded \t\t"));
 
 		List<? extends BindingSet> bindingSetList = Arrays.asList(solution1, solution2, solution3, solution4,
 				solution5);
@@ -197,8 +203,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doTupleLinks(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected, List<String> links)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -217,8 +223,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doTupleLinksAndStylesheet(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected, List<String> links, String stylesheetUrl)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -239,8 +245,8 @@ public abstract class AbstractQueryResultIOTest {
 	protected void doTupleLinksAndStylesheetAndNamespaces(TupleQueryResultFormat format,
 			TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl,
 			Map<String, String> namespaces)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -267,8 +273,8 @@ public abstract class AbstractQueryResultIOTest {
 	protected void doTupleLinksAndStylesheetAndNamespacesQName(TupleQueryResultFormat format,
 			TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl,
 			Map<String, String> namespaces)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -310,8 +316,8 @@ public abstract class AbstractQueryResultIOTest {
 	 */
 	protected void doTupleJSONPCallback(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -345,8 +351,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doTupleNoLinks(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected)
-		throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
-		QueryEvaluationException, QueryResultHandlerException
+				throws IOException, QueryResultParseException, UnsupportedQueryResultFormatException,
+				QueryEvaluationException, QueryResultHandlerException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.writeTuple(input, format, out);
@@ -362,8 +368,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doTupleStylesheet(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected, String stylesheetUrl)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -380,8 +386,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doTupleLinksAndStylesheetNoStarts(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected, List<String> links, String stylesheetUrl)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -400,8 +406,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doTupleLinksAndStylesheetMultipleEndHeaders(TupleQueryResultFormat format,
 			TupleQueryResult input, TupleQueryResult expected, List<String> links, String stylesheetUrl)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -439,8 +445,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doTupleMissingStartQueryResult(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected, List<String> links, String stylesheetUrl)
-		throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, IOException
+				throws QueryResultHandlerException, QueryEvaluationException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, IOException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		TupleQueryResultWriter writer = QueryResultIO.createTupleWriter(format, out);
@@ -480,8 +486,8 @@ public abstract class AbstractQueryResultIOTest {
 	 */
 	protected void doTupleNoHandler(TupleQueryResultFormat format, TupleQueryResult input,
 			TupleQueryResult expected)
-		throws QueryResultParseException, IOException, TupleQueryResultHandlerException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+				throws QueryResultParseException, IOException, TupleQueryResultHandlerException,
+				UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		QueryResultIO.writeTuple(input, format, out);
@@ -513,7 +519,7 @@ public abstract class AbstractQueryResultIOTest {
 	 */
 	protected void doTupleParseNoHandlerOnBooleanResults(TupleQueryResultFormat format, boolean input,
 			BooleanQueryResultFormat matchingBooleanFormat)
-		throws UnsupportedQueryResultFormatException, QueryResultHandlerException, IOException
+				throws UnsupportedQueryResultFormatException, QueryResultHandlerException, IOException
 	{
 		if (matchingBooleanFormat == null) {
 			// This test is not supported for this boolean format
@@ -571,8 +577,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doInvalidBooleanAfterStartQueryResult(BooleanQueryResultFormat format, boolean input,
 			List<String> links)
-		throws IOException, QueryResultHandlerException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+				throws IOException, QueryResultHandlerException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
@@ -622,8 +628,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doBooleanLinksAndStylesheet(BooleanQueryResultFormat format, boolean input,
 			List<String> links, String stylesheetUrl)
-		throws IOException, QueryResultHandlerException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+				throws IOException, QueryResultHandlerException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
@@ -643,8 +649,8 @@ public abstract class AbstractQueryResultIOTest {
 
 	protected void doBooleanLinksAndStylesheetAndNamespaces(BooleanQueryResultFormat format, boolean input,
 			List<String> links, String stylesheetUrl, Map<String, String> namespaces)
-		throws IOException, QueryResultHandlerException, QueryResultParseException,
-		UnsupportedQueryResultFormatException, QueryEvaluationException
+				throws IOException, QueryResultHandlerException, QueryResultParseException,
+				UnsupportedQueryResultFormatException, QueryEvaluationException
 	{
 		ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
 		BooleanQueryResultWriter writer = QueryResultIO.createBooleanWriter(format, out);
@@ -720,10 +726,10 @@ public abstract class AbstractQueryResultIOTest {
 	 * @throws TupleQueryResultHandlerException
 	 * @see SES-1860
 	 */
-	protected void doBooleanParseNoHandlerOnTupleResults(BooleanQueryResultFormat format,
-			TupleQueryResult tqr, TupleQueryResultFormat matchingTupleFormat)
-		throws TupleQueryResultHandlerException, UnsupportedQueryResultFormatException,
-		QueryEvaluationException, IOException
+	protected void doBooleanParseNoHandlerOnTupleResults(BooleanQueryResultFormat format, TupleQueryResult tqr,
+			TupleQueryResultFormat matchingTupleFormat)
+				throws TupleQueryResultHandlerException, UnsupportedQueryResultFormatException,
+				QueryEvaluationException, IOException
 	{
 		if (matchingTupleFormat == null) {
 			// This test is not supported for this boolean format

@@ -20,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,11 +31,11 @@ import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import info.aduna.net.ParsedURI;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleValueFactory;
@@ -46,6 +45,7 @@ import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFHandler;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RioSetting;
 
 /**
@@ -114,7 +114,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 * create RDF model objects.
 	 */
 	public AbstractRDFParser() {
-		this(new SimpleValueFactory());
+		this(SimpleValueFactory.getInstance());
 	}
 
 	/**
@@ -143,13 +143,15 @@ public abstract class AbstractRDFParser implements RDFParser {
 	 *---------*/
 
 	@Override
-	public void setValueFactory(ValueFactory valueFactory) {
+	public RDFParser setValueFactory(ValueFactory valueFactory) {
 		this.valueFactory = valueFactory;
+		return this;
 	}
 
 	@Override
-	public void setRDFHandler(RDFHandler handler) {
+	public RDFParser setRDFHandler(RDFHandler handler) {
 		rdfHandler = handler;
+		return this;
 	}
 
 	public RDFHandler getRDFHandler() {
@@ -157,8 +159,9 @@ public abstract class AbstractRDFParser implements RDFParser {
 	}
 
 	@Override
-	public void setParseErrorListener(ParseErrorListener el) {
+	public RDFParser setParseErrorListener(ParseErrorListener el) {
 		errListener = el;
+		return this;
 	}
 
 	public ParseErrorListener getParseErrorListener() {
@@ -166,8 +169,9 @@ public abstract class AbstractRDFParser implements RDFParser {
 	}
 
 	@Override
-	public void setParseLocationListener(ParseLocationListener el) {
+	public RDFParser setParseLocationListener(ParseLocationListener el) {
 		locationListener = el;
+		return this;
 	}
 
 	public ParseLocationListener getParseLocationListener() {
@@ -175,9 +179,10 @@ public abstract class AbstractRDFParser implements RDFParser {
 	}
 
 	@Override
-	public void setParserConfig(ParserConfig config) {
+	public RDFParser setParserConfig(ParserConfig config) {
 		this.parserConfig = config;
 		initializeNamespaceTableFromConfiguration();
+		return this;
 	}
 
 	@Override
@@ -215,6 +220,12 @@ public abstract class AbstractRDFParser implements RDFParser {
 		return result;
 	}
 
+	@Override
+	public <T> RDFParser set(RioSetting<T> setting, T value) {
+		getParserConfig().set(setting, value);
+		return this;
+	}
+	
 	@Override
 	public void setVerifyData(boolean verifyData) {
 		this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, verifyData);

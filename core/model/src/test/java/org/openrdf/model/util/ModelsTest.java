@@ -202,7 +202,7 @@ public class ModelsTest {
 		model1.add(foo, bar, lit);
 		model1.add(foo, bar, foo);
 
-		Value result = Models.objectURI(model1).orElse(null);
+		Value result = Models.objectIRI(model1).orElse(null);
 		assertNotNull(result);
 		assertEquals(foo, result);
 	}
@@ -243,7 +243,7 @@ public class ModelsTest {
 		model1.add(baz, foo, foo);
 		model1.add(bar, foo, foo);
 
-		Resource result = Models.subjectURI(model1).orElse(null);
+		Resource result = Models.subjectIRI(model1).orElse(null);
 		assertNotNull(result);
 		assertTrue(result.equals(bar) || result.equals(foo));
 	}

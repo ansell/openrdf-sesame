@@ -23,14 +23,14 @@ import static org.openrdf.sail.nativerdf.config.NativeStoreSchema.TRIPLE_INDEXES
 import static org.openrdf.sail.nativerdf.config.NativeStoreSchema.VALUE_CACHE_SIZE;
 import static org.openrdf.sail.nativerdf.config.NativeStoreSchema.VALUE_ID_CACHE_SIZE;
 
-import org.openrdf.model.Graph;
-import org.openrdf.model.Literal;
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
-import org.openrdf.sail.config.SailConfigException;
+import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.sail.config.AbstractSailImplConfig;
+import org.openrdf.sail.config.SailConfigException;
 
 /**
  * @author Arjohn Kampman
@@ -124,103 +124,93 @@ public class NativeStoreConfig extends AbstractSailImplConfig {
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource implNode = super.export(graph);
-		ValueFactory vf = graph.getValueFactory();
+	public Resource export(Model m) {
+		Resource implNode = super.export(m);
+		ValueFactory vf = SimpleValueFactory.getInstance();
 
 		if (tripleIndexes != null) {
-			graph.add(implNode, TRIPLE_INDEXES, vf.createLiteral(tripleIndexes));
+			m.add(implNode, TRIPLE_INDEXES, vf.createLiteral(tripleIndexes));
 		}
 		if (forceSync) {
-			graph.add(implNode, FORCE_SYNC, vf.createLiteral(forceSync));
+			m.add(implNode, FORCE_SYNC, vf.createLiteral(forceSync));
 		}
 		if (valueCacheSize >= 0) {
-			graph.add(implNode, VALUE_CACHE_SIZE, vf.createLiteral(valueCacheSize));
+			m.add(implNode, VALUE_CACHE_SIZE, vf.createLiteral(valueCacheSize));
 		}
 		if (valueIDCacheSize >= 0) {
-			graph.add(implNode, VALUE_ID_CACHE_SIZE, vf.createLiteral(valueIDCacheSize));
+			m.add(implNode, VALUE_ID_CACHE_SIZE, vf.createLiteral(valueIDCacheSize));
 		}
 		if (namespaceCacheSize >= 0) {
-			graph.add(implNode, NAMESPACE_CACHE_SIZE, vf.createLiteral(namespaceCacheSize));
+			m.add(implNode, NAMESPACE_CACHE_SIZE, vf.createLiteral(namespaceCacheSize));
 		}
 		if (namespaceIDCacheSize >= 0) {
-			graph.add(implNode, NAMESPACE_ID_CACHE_SIZE, vf.createLiteral(namespaceIDCacheSize));
+			m.add(implNode, NAMESPACE_ID_CACHE_SIZE, vf.createLiteral(namespaceIDCacheSize));
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
+	public void parse(Model m, Resource implNode)
 		throws SailConfigException
 	{
-		super.parse(graph, implNode);
+		super.parse(m, implNode);
 
 		try {
-			Literal tripleIndexLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, TRIPLE_INDEXES);
-			if (tripleIndexLit != null) {
-				setTripleIndexes((tripleIndexLit).getLabel());
-			}
-
-			Literal forceSyncLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, FORCE_SYNC);
-			if (forceSyncLit != null) {
+			
+			Models.objectLiteral(m.filter(implNode, TRIPLE_INDEXES, null)).ifPresent(lit -> setTripleIndexes(lit.getLabel()));
+			Models.objectLiteral(m.filter(implNode, FORCE_SYNC, null)).ifPresent(lit -> {
 				try {
-					setForceSync(forceSyncLit.booleanValue());
+					setForceSync(lit.booleanValue());
 				}
 				catch (IllegalArgumentException e) {
 					throw new SailConfigException("Boolean value required for " + FORCE_SYNC + " property, found "
-							+ forceSyncLit);
+							+ lit);
 				}
-			}
+			});
 
-			Literal valueCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode, VALUE_CACHE_SIZE);
-			if (valueCacheSizeLit != null) {
+			Models.objectLiteral(m.filter(implNode, VALUE_CACHE_SIZE, null)).ifPresent(lit -> {
 				try {
-					setValueCacheSize(valueCacheSizeLit.intValue());
+					setValueCacheSize(lit.intValue());
 				}
 				catch (NumberFormatException e) {
 					throw new SailConfigException("Integer value required for " + VALUE_CACHE_SIZE
-							+ " property, found " + valueCacheSizeLit);
+							+ " property, found " + lit);
 				}
-			}
-
-			Literal valueIDCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode,
-					VALUE_ID_CACHE_SIZE);
-			if (valueIDCacheSizeLit != null) {
+			});
+			
+			Models.objectLiteral(m.filter(implNode, VALUE_ID_CACHE_SIZE, null)).ifPresent(lit -> {
 				try {
-					setValueIDCacheSize(valueIDCacheSizeLit.intValue());
+					setValueIDCacheSize(lit.intValue());
 				}
 				catch (NumberFormatException e) {
 					throw new SailConfigException("Integer value required for " + VALUE_ID_CACHE_SIZE
-							+ " property, found " + valueIDCacheSizeLit);
+							+ " property, found " + lit);
 				}
-			}
+			});
+			
 
-			Literal namespaceCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode,
-					NAMESPACE_CACHE_SIZE);
-			if (namespaceCacheSizeLit != null) {
+			Models.objectLiteral(m.filter(implNode, NAMESPACE_CACHE_SIZE, null)).ifPresent(lit -> {
 				try {
-					setNamespaceCacheSize(namespaceCacheSizeLit.intValue());
+					setNamespaceCacheSize(lit.intValue());
 				}
 				catch (NumberFormatException e) {
 					throw new SailConfigException("Integer value required for " + NAMESPACE_CACHE_SIZE
-							+ " property, found " + namespaceCacheSizeLit);
+							+ " property, found " + lit);
 				}
-			}
+			});
 
-			Literal namespaceIDCacheSizeLit = GraphUtil.getOptionalObjectLiteral(graph, implNode,
-					NAMESPACE_ID_CACHE_SIZE);
-			if (namespaceIDCacheSizeLit != null) {
+			Models.objectLiteral(m.filter(implNode, NAMESPACE_ID_CACHE_SIZE, null)).ifPresent(lit -> {
 				try {
-					setNamespaceIDCacheSize(namespaceIDCacheSizeLit.intValue());
+					setNamespaceIDCacheSize(lit.intValue());
 				}
 				catch (NumberFormatException e) {
 					throw new SailConfigException("Integer value required for " + NAMESPACE_ID_CACHE_SIZE
-							+ " property, found " + namespaceIDCacheSizeLit);
+							+ " property, found " + lit);
 				}
-			}
+			});
 		}
-		catch (GraphUtilException e) {
+		catch (ModelException e) {
 			throw new SailConfigException(e.getMessage(), e);
 		}
 	}

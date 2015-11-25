@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
@@ -61,12 +62,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Value> object(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			return Optional.of(objects.iterator().next());
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getObject()).findAny();
 	}
 
 	/**
@@ -89,16 +85,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Literal> objectLiteral(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof Literal) {
-					return Optional.of((Literal)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Literal).map(l -> (Literal)l).findAny();
 	}
 
 	/**
@@ -122,16 +109,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Resource> objectResource(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof Resource) {
-					return Optional.of((Resource)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Resource).map(r -> (Resource)r).findAny();
 	}
 
 	/**
@@ -143,35 +121,41 @@ public class Models {
 	}
 
 	/**
-	 * Retrieves an object {@link URI} value from the statements in the given
-	 * model. If more than one possible URI value exists, any one value is picked
+	 * Retrieves an object {@link IRI} value from the statements in the given
+	 * model. If more than one possible IRI value exists, any one value is picked
 	 * and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve an object IRI value.
-	 * @return an {@link Optional} object URI value from the given model, which
+	 * @return an {@link Optional} object IRI value from the given model, which
 	 *         will be {@link Optional#empty() empty} if no such value exists.
 	 * @since 4.0
 	 */
-	public static Optional<URI> objectURI(Model m) {
-		final Set<Value> objects = m.objects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof IRI) {
-					return Optional.of((URI)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+	public static Optional<IRI> objectIRI(Model m) {
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof IRI).map(r -> (IRI)r).findAny();
+	}
+	
+	/**
+	 * Retrieves an object value as a String from the statements in the given
+	 * model. If more than one possible object value exists, any one value is picked
+	 * and returned. 
+	 * 
+	 * @param m
+	 *        the model from which to retrieve an object String value.
+	 * @return an {@link Optional} object String value from the given model, which
+	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @since 4.0
+	 */
+	public static Optional<String> objectString(Model m) {
+		return m.stream().map(st -> st.getObject().stringValue()).findAny();
 	}
 
 	/**
-	 * @deprecated since 4.0. Use {@link #objectURI(Model)} instead.
+	 * @deprecated since 4.0. Use {@link #objectIRI(Model)} instead.
 	 */
 	@Deprecated
 	public static URI anyObjectURI(Model m) {
-		return objectURI(m).orElse(null);
+		return objectIRI(m).orElse(null);
 	}
 
 	/**
@@ -186,12 +170,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Resource> subject(Model m) {
-		final Set<Resource> subjects = m.subjects();
-		if (subjects != null && !subjects.isEmpty()) {
-			return Optional.of(subjects.iterator().next());
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getSubject()).findAny();
 	}
 
 	/**
@@ -203,34 +182,25 @@ public class Models {
 	}
 
 	/**
-	 * Retrieves a subject {@link URI} from the statements in the given model. If
-	 * more than one possible URI value exists, any one URI value is picked and
+	 * Retrieves a subject {@link IRI} from the statements in the given model. If
+	 * more than one possible IRI value exists, any one IRI value is picked and
 	 * returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve a subject IRI value.
-	 * @return an {@link Optional} subject URI value from the given model, which
+	 * @return an {@link Optional} subject IRI value from the given model, which
 	 *         will be {@link Optional#empty() empty} if no such value exists.
 	 */
-	public static Optional<URI> subjectURI(Model m) {
-		final Set<Resource> objects = m.subjects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof IRI) {
-					return Optional.of((URI)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+	public static Optional<IRI> subjectIRI(Model m) {
+		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof IRI).map(s -> (IRI)s).findAny();
 	}
 
 	/**
-	 * @deprecated since 4.0. Use {@link #subjectURI(Model)} instead.
+	 * @deprecated since 4.0. Use {@link #subjectIRI(Model)} instead.
 	 */
 	@Deprecated
 	public static URI anySubjectURI(Model m) {
-		return subjectURI(m).orElse(null);
+		return subjectIRI(m).orElse(null);
 	}
 
 	/**
@@ -246,16 +216,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<BNode> subjectBNode(Model m) {
-		final Set<Resource> objects = m.subjects();
-		if (objects != null && !objects.isEmpty()) {
-			for (Value v : objects) {
-				if (v instanceof BNode) {
-					return Optional.of((BNode)v);
-				}
-			}
-		}
-
-		return Optional.empty();
+		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof BNode).map(s -> (BNode)s).findAny();
 	}
 
 	/**
@@ -277,11 +238,7 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<IRI> predicate(Model m) {
-		final Set<IRI> predicates = m.predicates();
-		if (predicates != null && !predicates.isEmpty()) {
-			return Optional.of(predicates.iterator().next());
-		}
-		return Optional.empty();
+		return m.stream().map(st -> st.getPredicate()).findAny();
 	}
 
 	/**
@@ -314,7 +271,8 @@ public class Models {
 	 * @return the Model object, containing the updated property value.
 	 * @since 2.8.0
 	 */
-	public static Model setProperty(Model m, Resource subject, IRI property, Value value, Resource... contexts)
+	public static Model setProperty(Model m, Resource subject, IRI property, Value value,
+			Resource... contexts)
 	{
 		Objects.requireNonNull(m, "model may not be null");
 		Objects.requireNonNull(subject, "subject may not be null");
@@ -347,7 +305,8 @@ public class Models {
 	 *      Concepts &amp; Abstract Syntax, section 3.6 (Graph Comparison)</a>
 	 * @since 2.8.0
 	 */
-	public static boolean isomorphic(Iterable<? extends Statement> model1, Iterable<? extends Statement> model2)
+	public static boolean isomorphic(Iterable<? extends Statement> model1,
+			Iterable<? extends Statement> model2)
 	{
 		Set<? extends Statement> set1 = toSet(model1);
 		Set<? extends Statement> set2 = toSet(model2);
@@ -379,7 +338,8 @@ public class Models {
 	 * subset of the second model, using graph isomorphism to map statements
 	 * between models.
 	 */
-	public static boolean isSubset(Iterable<? extends Statement> model1, Iterable<? extends Statement> model2)
+	public static boolean isSubset(Iterable<? extends Statement> model1,
+			Iterable<? extends Statement> model2)
 	{
 		// Filter duplicates
 		Set<? extends Statement> set1 = toSet(model1);

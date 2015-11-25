@@ -25,11 +25,10 @@ import java.lang.reflect.Proxy;
 
 import org.junit.Test;
 
-import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.SimpleStatement;
 import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryLanguage;
@@ -71,6 +70,11 @@ public class NotifyingTest {
 			InvocationHandlerStub handler = new InvocationHandlerStub();
 			Object proxy = Proxy.newProxyInstance(cl, classes, handler);
 			return (RepositoryConnection)proxy;
+		}
+		
+		@Override
+		public ValueFactory getValueFactory() {
+			return SimpleValueFactory.getInstance();
 		}
 	}
 
@@ -148,7 +152,7 @@ public class NotifyingTest {
 
 			protected void removeWithoutCommit(Resource subject, IRI predicate, Value object,
 					Resource... contexts)
-				throws RepositoryException
+						throws RepositoryException
 			{
 			}
 		};
@@ -167,6 +171,6 @@ public class NotifyingTest {
 			}
 
 		});
-		con.remove(new SimpleStatement(uri, uri, uri));
+		con.remove(con.getValueFactory().createStatement(uri, uri, uri));
 	}
 }

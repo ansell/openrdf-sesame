@@ -19,6 +19,7 @@ package org.openrdf.query.parser.sparql;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.query.algebra.Extension;
 import org.openrdf.query.algebra.Order;
 import org.openrdf.query.algebra.Projection;
@@ -34,6 +36,7 @@ import org.openrdf.query.algebra.Service;
 import org.openrdf.query.algebra.SingletonSet;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedQuery;
+import org.openrdf.query.parser.sparql.ast.ASTAskQuery;
 import org.openrdf.query.parser.sparql.ast.ASTQueryContainer;
 import org.openrdf.query.parser.sparql.ast.ASTServiceGraphPattern;
 import org.openrdf.query.parser.sparql.ast.ParseException;
@@ -62,6 +65,25 @@ public class TupleExprBuilderTest {
 	public void tearDown()
 		throws Exception
 	{
+	}
+	
+	
+	@Test 
+	public void testAskQuerySolutionModifiers() {
+		String query = "ASK WHERE { ?foo ?bar ?baz . } ORDER BY ?foo LIMIT 1";
+		
+		try {
+			TupleExprBuilder builder = new TupleExprBuilder(ValueFactoryImpl.getInstance());
+			ASTQueryContainer qc = SyntaxTreeBuilder.parseQuery(query);
+			TupleExpr result = builder.visit(qc, null);
+			assertTrue(result instanceof Order);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail("should parse ask query with solution modifiers");
+		}
+		
+		
 	}
 
 	@Test

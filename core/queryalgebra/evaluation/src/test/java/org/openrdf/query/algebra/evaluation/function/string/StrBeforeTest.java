@@ -39,7 +39,7 @@ public class StrBeforeTest {
 
 	private StrBefore strBeforeFunc;
 
-	private ValueFactory f = new SimpleValueFactory();
+	private ValueFactory f = SimpleValueFactory.getInstance();
 
 	
 	/**

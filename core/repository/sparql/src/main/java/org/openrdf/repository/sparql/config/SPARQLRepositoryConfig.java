@@ -16,15 +16,16 @@
  */
 package org.openrdf.repository.sparql.config;
 
-import org.openrdf.model.Graph;
-import org.openrdf.model.Resource;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Model;
+import org.openrdf.model.Resource;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleIRI;
-import org.openrdf.model.util.GraphUtil;
-import org.openrdf.model.util.GraphUtilException;
-import org.openrdf.repository.config.RepositoryConfigException;
+import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.util.ModelException;
+import org.openrdf.model.util.Models;
 import org.openrdf.repository.config.AbstractRepositoryImplConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 
 /**
  * Configuration for a SPARQL endpoint.
@@ -33,13 +34,16 @@ import org.openrdf.repository.config.AbstractRepositoryImplConfig;
  */
 public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 
-	public static final IRI QUERY_ENDPOINT = new SimpleIRI(
+	private static final ValueFactory vf = SimpleValueFactory.getInstance();
+
+	public static final IRI QUERY_ENDPOINT = vf.createIRI(
 			"http://www.openrdf.org/config/repository/sparql#query-endpoint");
 
-	public static final IRI UPDATE_ENDPOINT = new SimpleIRI(
+	public static final IRI UPDATE_ENDPOINT = vf.createIRI(
 			"http://www.openrdf.org/config/repository/sparql#update-endpoint");
 
 	private String queryEndpointUrl;
+
 	private String updateEndpointUrl;
 
 	public SPARQLRepositoryConfig() {
@@ -49,7 +53,7 @@ public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 	public SPARQLRepositoryConfig(String queryEndpointUrl) {
 		setQueryEndpointUrl(queryEndpointUrl);
 	}
-	
+
 	public SPARQLRepositoryConfig(String queryEndpointUrl, String updateEndpointUrl) {
 		this(queryEndpointUrl);
 		setUpdateEndpointUrl(updateEndpointUrl);
@@ -70,47 +74,44 @@ public class SPARQLRepositoryConfig extends AbstractRepositoryImplConfig {
 	public void setUpdateEndpointUrl(String url) {
 		this.updateEndpointUrl = url;
 	}
-	
+
 	@Override
-	public void validate() throws RepositoryConfigException {
+	public void validate()
+		throws RepositoryConfigException
+	{
 		super.validate();
 		if (getQueryEndpointUrl() == null) {
-			throw new RepositoryConfigException(
-					"No endpoint URL specified for SPARQL repository");
+			throw new RepositoryConfigException("No endpoint URL specified for SPARQL repository");
 		}
 	}
 
 	@Override
-	public Resource export(Graph graph) {
-		Resource implNode = super.export(graph);
+	public Resource export(Model m) {
+		Resource implNode = super.export(m);
 
-		ValueFactory vf = graph.getValueFactory();
 		if (getQueryEndpointUrl() != null) {
-			graph.add(implNode, QUERY_ENDPOINT, vf.createIRI(getQueryEndpointUrl()));
+			m.add(implNode, QUERY_ENDPOINT, vf.createIRI(getQueryEndpointUrl()));
 		}
 		if (getUpdateEndpointUrl() != null) {
-			graph.add(implNode, UPDATE_ENDPOINT, vf.createIRI(getUpdateEndpointUrl()));
+			m.add(implNode, UPDATE_ENDPOINT, vf.createIRI(getUpdateEndpointUrl()));
 		}
 
 		return implNode;
 	}
 
 	@Override
-	public void parse(Graph graph, Resource implNode)
-			throws RepositoryConfigException {
-		super.parse(graph, implNode);
+	public void parse(Model m, Resource implNode)
+		throws RepositoryConfigException
+	{
+		super.parse(m, implNode);
 
 		try {
-			IRI uri = GraphUtil.getOptionalObjectURI(graph, implNode, QUERY_ENDPOINT);
-			if (uri != null) {
-				setQueryEndpointUrl(uri.stringValue());
-			}
-			
-			uri = GraphUtil.getOptionalObjectURI(graph, implNode, UPDATE_ENDPOINT);
-			if (uri != null) {
-				setUpdateEndpointUrl(uri.stringValue());
-			}
-		} catch (GraphUtilException e) {
+			Models.objectIRI(m.filter(implNode, QUERY_ENDPOINT, null)).ifPresent(
+					iri -> setQueryEndpointUrl(iri.stringValue()));
+			Models.objectIRI(m.filter(implNode, UPDATE_ENDPOINT, null)).ifPresent(
+					iri -> setUpdateEndpointUrl(iri.stringValue()));
+		}
+		catch (ModelException e) {
 			throw new RepositoryConfigException(e.getMessage(), e);
 		}
 	}

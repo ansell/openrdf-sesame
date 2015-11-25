@@ -45,7 +45,9 @@ import org.junit.Test;
 import info.aduna.io.IOUtil;
 
 import org.openrdf.http.protocol.Protocol;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.resultio.QueryResultIO;
@@ -56,6 +58,8 @@ import org.openrdf.rio.Rio;
 public class ProtocolTest {
 
 	private static TestServer server;
+
+	private static ValueFactory vf = SimpleValueFactory.getInstance();
 
 	@BeforeClass
 	public static void startServer()
@@ -133,7 +137,7 @@ public class ProtocolTest {
 		throws Exception
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
-		String encContext = Protocol.encodeValue(new SimpleIRI("urn:x-local:graph1"));
+		String encContext = Protocol.encodeValue(vf.createIRI("urn:x-local:graph1"));
 		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		putFile(location, "/testcases/named-graph-1.ttl");
 	}
@@ -147,7 +151,7 @@ public class ProtocolTest {
 		throws Exception
 	{
 		String location = Protocol.getStatementsLocation(TestServer.REPOSITORY_URL);
-		String encContext = Protocol.encodeValue(new SimpleIRI("urn:x-local:graph1"));
+		String encContext = Protocol.encodeValue(vf.createIRI("urn:x-local:graph1"));
 		location += "?" + Protocol.CONTEXT_PARAM_NAME + "=" + encContext;
 		delete(location);
 	}

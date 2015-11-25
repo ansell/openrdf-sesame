@@ -37,14 +37,14 @@ public class IntegerLiteral extends SimpleLiteral {
 	/**
 	 * Creates an xsd:integer literal with the specified value.
 	 */
-	public IntegerLiteral(BigInteger value) {
+	protected IntegerLiteral(BigInteger value) {
 		this(value, XMLSchema.INTEGER);
 	}
 
 	/**
 	 * Creates a literal with the specified value and datatype.
 	 */
-	public IntegerLiteral(BigInteger value, IRI datatype) {
+	protected IntegerLiteral(BigInteger value, IRI datatype) {
 		// TODO: maybe IntegerLiteralImpl should not extend LiteralImpl?
 		super(value.toString(), datatype);
 		this.value = value;

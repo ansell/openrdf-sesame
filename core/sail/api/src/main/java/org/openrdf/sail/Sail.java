@@ -102,7 +102,7 @@ public interface Sail {
 		throws SailException;
 
 	/**
-	 * Gets a ValueFactory object that can be used to create URI-, blank node-,
+	 * Gets a ValueFactory object that can be used to create IRI-, blank node-,
 	 * literal- and statement objects.
 	 * 
 	 * @return a ValueFactory object for this Sail object.

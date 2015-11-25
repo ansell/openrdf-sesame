@@ -16,6 +16,7 @@
  */
 package org.openrdf.query;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -36,6 +37,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.IRI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.impl.EmptyBindingSet;
 import org.openrdf.query.impl.ListBindingSet;
 import org.openrdf.query.impl.MutableTupleQueryResult;
@@ -54,7 +56,7 @@ public class QueryResultsTest {
 	/** a stub GraphQueryResult, containing a number of duplicate statements */
 	private GraphQueryResult gqr;
 
-	private static ValueFactory VF = new SimpleValueFactory();
+	private static ValueFactory VF = SimpleValueFactory.getInstance();
 
 	private List<String> twoBindingNames = Arrays.asList("a", "b");
 
@@ -143,6 +145,19 @@ public class QueryResultsTest {
 		}
 	}
 
+	@Test
+	public void testGraphQueryResultEquals() throws QueryEvaluationException {
+		
+		StubGraphQueryResult toCompare = new StubGraphQueryResult();
+		
+		assertTrue(QueryResults.equals(gqr, toCompare));
+		gqr = new StubGraphQueryResult();
+		toCompare = new StubGraphQueryResult();
+		toCompare.statements.add(VF.createStatement(VF.createURI("urn:test-gqr-equals"), RDF.TYPE, RDF.PROPERTY));
+		
+		assertFalse(QueryResults.equals(gqr, toCompare));
+	}
+	
 	@Test
 	public void testDistinctGraphQueryResults()
 		throws QueryEvaluationException

@@ -75,7 +75,7 @@ public class SimpleIRI implements IRI {
 	 *         If the supplied IRI is not a valid (absolute) IRI.
 	 * @see {@link SimpleValueFactory#createIRI(String)}
 	 */
-	public SimpleIRI(String iriString) {
+	protected SimpleIRI(String iriString) {
 		setIRIString(iriString);
 	}
 

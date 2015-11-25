@@ -193,7 +193,7 @@ public class XMLSchema {
 	public final static IRI UNSIGNED_BYTE;
 
 	static {
-		ValueFactory factory = new SimpleValueFactory();
+		ValueFactory factory = SimpleValueFactory.getInstance();
 
 		DURATION = factory.createIRI(XMLSchema.NAMESPACE, "duration");
 

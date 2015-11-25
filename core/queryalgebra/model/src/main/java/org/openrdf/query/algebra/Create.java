@@ -35,6 +35,7 @@ public class Create extends AbstractQueryModelNode implements UpdateExpr {
 		setGraph(graph);
 	}
 
+	@Override
 	public <X extends Exception> void visit(QueryModelVisitor<X> visitor)
 		throws X
 	{
@@ -59,6 +60,25 @@ public class Create extends AbstractQueryModelNode implements UpdateExpr {
 		else {
 			super.replaceChildNode(current, replacement);
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if(other instanceof Create) {
+			Create o = (Create)other;
+			return silent == o.silent
+					&& nullEquals(graph, o.graph);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = silent ? 1 :0;
+		if(graph != null) {
+			result ^= graph.hashCode();
+		}
+		return result;
 	}
 
 	@Override
@@ -96,6 +116,7 @@ public class Create extends AbstractQueryModelNode implements UpdateExpr {
 	/**
 	 * @return Returns the silent.
 	 */
+	@Override
 	public boolean isSilent() {
 		return silent;
 	}

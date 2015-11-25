@@ -21,12 +21,14 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.IRI;
+import org.openrdf.model.Literal;
+import org.openrdf.model.ValueFactory;
 import org.openrdf.model.datatypes.XMLDatatypeUtil;
 import org.openrdf.model.impl.DecimalLiteral;
 import org.openrdf.model.impl.IntegerLiteral;
 import org.openrdf.model.impl.NumericLiteral;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.algebra.MathExpr.MathOp;
 import org.openrdf.query.algebra.evaluation.ValueExprEvaluationException;
@@ -66,6 +68,8 @@ public class MathUtil {
 	public static Literal compute(Literal leftLit, Literal rightLit, MathOp op)
 		throws ValueExprEvaluationException
 	{
+		final ValueFactory vf = SimpleValueFactory.getInstance();
+		
 		IRI leftDatatype = leftLit.getDatatype();
 		IRI rightDatatype = rightLit.getDatatype();
 
@@ -113,13 +117,13 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new NumericLiteral(left + right);
+						return vf.createLiteral(left + right);
 					case MINUS:
-						return new NumericLiteral(left - right);
+						return vf.createLiteral(left - right);
 					case MULTIPLY:
-						return new NumericLiteral(left * right);
+						return vf.createLiteral(left * right);
 					case DIVIDE:
-						return new NumericLiteral(left / right);
+						return vf.createLiteral(left / right);
 					default:
 						throw new IllegalArgumentException("Unknown operator: " + op);
 				}
@@ -130,13 +134,13 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new NumericLiteral(left + right);
+						return vf.createLiteral(left + right);
 					case MINUS:
-						return new NumericLiteral(left - right);
+						return vf.createLiteral(left - right);
 					case MULTIPLY:
-						return new NumericLiteral(left * right);
+						return vf.createLiteral(left * right);
 					case DIVIDE:
-						return new NumericLiteral(left / right);
+						return vf.createLiteral(left / right);
 					default:
 						throw new IllegalArgumentException("Unknown operator: " + op);
 				}
@@ -147,11 +151,11 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new DecimalLiteral(left.add(right));
+						return vf.createLiteral(left.add(right));
 					case MINUS:
-						return new DecimalLiteral(left.subtract(right));
+						return vf.createLiteral(left.subtract(right));
 					case MULTIPLY:
-						return new DecimalLiteral(left.multiply(right));
+						return vf.createLiteral(left.multiply(right));
 					case DIVIDE:
 						// Divide by zero handled through NumberFormatException
 						BigDecimal result = null;
@@ -166,7 +170,7 @@ public class MathUtil {
 									RoundingMode.HALF_UP);
 						}
 
-						return new DecimalLiteral(result);
+						return vf.createLiteral(result);
 					default:
 						throw new IllegalArgumentException("Unknown operator: " + op);
 				}
@@ -177,11 +181,11 @@ public class MathUtil {
 
 				switch (op) {
 					case PLUS:
-						return new IntegerLiteral(left.add(right));
+						return vf.createLiteral(left.add(right));
 					case MINUS:
-						return new IntegerLiteral(left.subtract(right));
+						return vf.createLiteral(left.subtract(right));
 					case MULTIPLY:
-						return new IntegerLiteral(left.multiply(right));
+						return vf.createLiteral(left.multiply(right));
 					case DIVIDE:
 						throw new RuntimeException("Integer divisions should be processed as decimal divisions");
 					default:

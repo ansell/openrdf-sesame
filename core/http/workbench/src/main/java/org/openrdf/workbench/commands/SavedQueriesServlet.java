@@ -17,7 +17,6 @@
 package org.openrdf.workbench.commands;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 
 import javax.servlet.ServletConfig;
@@ -25,7 +24,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.IRI;
+import org.openrdf.model.impl.SimpleValueFactory;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
 import org.openrdf.workbench.base.TransformationServlet;
@@ -90,7 +90,7 @@ public class SavedQueriesServlet extends TransformationServlet {
 			if (null == userName) {
 				userName = "";
 			}
-			final SimpleIRI queryURI = new SimpleIRI(urn);
+			final IRI queryURI = SimpleValueFactory.getInstance().createIRI(urn);
 			if (storage.canChange(queryURI, userName)) {
 				storage.deleteQuery(queryURI, userName);
 			}
@@ -110,8 +110,8 @@ public class SavedQueriesServlet extends TransformationServlet {
 			user = "";
 		}
 		if (!storage.checkAccess(repo)) {
-			throw new BadRequestException("User '" + user + "' not authorized to access repository '"
-					+ repo.getRepositoryURL() + "'");
+			throw new BadRequestException(
+					"User '" + user + "' not authorized to access repository '" + repo.getRepositoryURL() + "'");
 		}
 		storage.selectSavedQueries(repo, user, builder);
 	}

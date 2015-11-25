@@ -16,6 +16,8 @@
  */
 package org.openrdf.model;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -53,7 +55,7 @@ public interface ValueFactory {
 	public default URI createURI(String uri) {
 		return createIRI(uri);
 	}
-	
+
 	/**
 	 * Creates a new IRI from the supplied namespace and local name. Calling this
 	 * method is funtionally equivalent to calling {@link #createIRI(String)
@@ -74,7 +76,7 @@ public interface ValueFactory {
 	public IRI createIRI(String namespace, String localName);
 
 	/**
-	 * Creates a new URI from the supplied namespace and local name. 
+	 * Creates a new URI from the supplied namespace and local name.
 	 * 
 	 * @param uri
 	 *        A string-representation of a URI.
@@ -87,7 +89,7 @@ public interface ValueFactory {
 	public default URI createURI(String namespace, String localName) {
 		return createIRI(namespace, localName);
 	}
-	
+
 	/**
 	 * Creates a new bNode.
 	 * 
@@ -220,6 +222,22 @@ public interface ValueFactory {
 	public Literal createLiteral(double value);
 
 	/**
+	 * Creates a new literal representing the specified bigDecimal that is typed
+	 * using the appropriate XML Schema date/time datatype.
+	 * 
+	 * @since 4.0
+	 */
+	public Literal createLiteral(BigDecimal bigDecimal);
+
+	/**
+	 * Creates a new literal representing the specified bigInteger that is typed
+	 * using the appropriate XML Schema date/time datatype.
+	 * 
+	 * @since 4.0
+	 */
+	public Literal createLiteral(BigInteger bigInteger);
+
+	/**
 	 * Creates a new literal representing the specified calendar that is typed
 	 * using the appropriate XML Schema date/time datatype.
 	 * 
@@ -260,13 +278,14 @@ public interface ValueFactory {
 	 * @param object
 	 *        The statement's object.
 	 * @return The created statement.
-	 * @deprecated since 4.0. Use {@link #createStatement(Resource, IRI, Value)} instead.
+	 * @deprecated since 4.0. Use {@link #createStatement(Resource, IRI, Value)}
+	 *             instead.
 	 */
 	@Deprecated
 	public default Statement createStatement(Resource subject, URI predicate, Value object) {
 		return createStatement(subject, (IRI)predicate, object);
 	}
-	
+
 	/**
 	 * Creates a new statement with the supplied subject, predicate and object
 	 * and associated context.
@@ -283,9 +302,9 @@ public interface ValueFactory {
 	 */
 	public Statement createStatement(Resource subject, IRI predicate, Value object, Resource context);
 
-
 	/**
-	 * Creates a new statement with the supplied subject, predicate and object and associated context.
+	 * Creates a new statement with the supplied subject, predicate and object
+	 * and associated context.
 	 * 
 	 * @param subject
 	 *        The statement's subject.
@@ -294,7 +313,9 @@ public interface ValueFactory {
 	 * @param object
 	 *        The statement's object.
 	 * @return The created statement.
-	 * @deprecated since 4.0. Use {@link #createStatement(Resource, IRI, Value, Resource)} instead.
+	 * @deprecated since 4.0. Use
+	 *             {@link #createStatement(Resource, IRI, Value, Resource)}
+	 *             instead.
 	 */
 	@Deprecated
 	public default Statement createStatement(Resource subject, URI predicate, Value object, Resource context) {

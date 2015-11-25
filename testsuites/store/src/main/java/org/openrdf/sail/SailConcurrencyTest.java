@@ -28,7 +28,7 @@ import org.junit.Test;
 import info.aduna.iteration.CloseableIteration;
 
 import org.openrdf.model.Resource;
-import org.openrdf.model.impl.SimpleIRI;
+import org.openrdf.model.ValueFactory;
 
 /**
  * Tests concurrent read and write access to a Sail implementation.
@@ -50,6 +50,8 @@ public abstract class SailConcurrencyTest {
 	 *-----------*/
 
 	private Sail store;
+	
+	private ValueFactory vf;
 
 	private boolean m_failed;
 
@@ -65,6 +67,7 @@ public abstract class SailConcurrencyTest {
 	{
 		store = createSail();
 		store.initialize();
+		vf = store.getValueFactory();
 	}
 
 	protected abstract Sail createSail()
@@ -192,15 +195,15 @@ public abstract class SailConcurrencyTest {
 		throws SailException
 	{
 		// System.out.print("+");
-		connection.addStatement(new SimpleIRI("http://test#s" + i), new SimpleIRI("http://test#p" + i),
-				new SimpleIRI("http://test#o" + i), new SimpleIRI("http://test#context_" + i));
+		connection.addStatement(vf.createIRI("http://test#s" + i), vf.createIRI("http://test#p" + i),
+				vf.createIRI("http://test#o" + i), vf.createIRI("http://test#context_" + i));
 	}
 
 	protected void removeTestStatement(SailConnection connection, int i)
 		throws SailException
 	{
 		// System.out.print("-");
-		connection.removeStatements(new SimpleIRI("http://test#s" + i), new SimpleIRI("http://test#p" + i),
-				new SimpleIRI("http://test#o" + i), new SimpleIRI("http://test#context_" + i));
+		connection.removeStatements(vf.createIRI("http://test#s" + i), vf.createIRI("http://test#p" + i),
+				vf.createIRI("http://test#o" + i), vf.createIRI("http://test#context_" + i));
 	}
 }
