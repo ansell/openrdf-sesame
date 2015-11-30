@@ -74,6 +74,14 @@
 							{maven-resources},
 							META-INF/services=target/services/META-INF/services
 						</Include-Resource>
+						<Embed-Dependency>
+							*;
+							groupId=org.openrdf.*|info.aduna.*;
+							scope=compile|runtime;
+							type=!pom;
+							inline=true
+						</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
 					</instructions>
 				</configuration>
 				<dependencies>
