@@ -14,23 +14,28 @@
 package org.openrdf.model.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.SimpleValueFactory;
+import org.openrdf.model.impl.TreeModel;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.util.iterators.Iterators;
 
 /**
@@ -85,7 +90,8 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Literal> objectLiteral(Model m) {
-		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Literal).map(l -> (Literal)l).findAny();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Literal).map(
+				l -> (Literal)l).findAny();
 	}
 
 	/**
@@ -109,7 +115,8 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Resource> objectResource(Model m) {
-		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Resource).map(r -> (Resource)r).findAny();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Resource).map(
+				r -> (Resource)r).findAny();
 	}
 
 	/**
@@ -134,16 +141,17 @@ public class Models {
 	public static Optional<IRI> objectIRI(Model m) {
 		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof IRI).map(r -> (IRI)r).findAny();
 	}
-	
+
 	/**
 	 * Retrieves an object value as a String from the statements in the given
-	 * model. If more than one possible object value exists, any one value is picked
-	 * and returned. 
+	 * model. If more than one possible object value exists, any one value is
+	 * picked and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve an object String value.
-	 * @return an {@link Optional} object String value from the given model, which
-	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @return an {@link Optional} object String value from the given model,
+	 *         which will be {@link Optional#empty() empty} if no such value
+	 *         exists.
 	 * @since 4.0
 	 */
 	public static Optional<String> objectString(Model m) {
@@ -216,7 +224,8 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<BNode> subjectBNode(Model m) {
-		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof BNode).map(s -> (BNode)s).findAny();
+		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof BNode).map(
+				s -> (BNode)s).findAny();
 	}
 
 	/**
@@ -346,6 +355,149 @@ public class Models {
 		Set<? extends Statement> set2 = toSet(model2);
 
 		return isSubset(set1, set2);
+	}
+
+	/**
+	 * Converts the supplied {@link Collection} of {@link Value}s to an
+	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 * Collection</a>. The statements making up the new RDF Collection will be
+	 * added to the supplied {@link Model}
+	 * 
+	 * @param collection
+	 *        a Java {@link Collection} of {@link Value} objects, which will be
+	 *        converted to an RDF Collection.
+	 * @param m
+	 *        the {@link Model} to which the RDF Collection will be added, and
+	 *        which will be returned as the result. May be {@code null}, in which
+	 *        case a new Model is created and returned.
+	 * @return the Model containing the newly created RDF Collection.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static Model asRDFCollection(Iterable<? extends Value> collection, Model m) {
+		return asRDFCollection(collection, m, null);
+	}
+
+	/**
+	 * Converts the supplied {@link Collection} of {@link Value}s to an
+	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 * Collection</a>, using the supplied {@code listStart} resource as the
+	 * starting resource of the Collection. The statements making up the new RDF
+	 * Collection will be added to the supplied {@link Model}
+	 * 
+	 * @param collection
+	 *        a Java {@link Collection} of {@link Value} objects, which will be
+	 *        converted to an RDF Collection. May not be {@code null}.
+	 * @param m
+	 *        the {@link Model} to which the RDF Collection will be added, and
+	 *        which will be returned as the result. May not be {@code null}
+	 * @param listStart
+	 *        a {@link Resource} which will be used as the starting point of the
+	 *        created RDF Collection. May be {@code null}, in which case a new
+	 *        resource is generated to represent the list start.
+	 * @return the Model containing the newly created RDF Collection.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static Model asRDFCollection(Iterable<? extends Value> collection, Model m, Resource listStart) {
+		Objects.requireNonNull(collection, "input collection may not be null");
+		Objects.requireNonNull(m, "model may not be null");
+		final ValueFactory vf = SimpleValueFactory.getInstance();
+
+		Resource current = listStart != null ? listStart : vf.createBNode();
+		m.add(current, RDF.TYPE, RDF.LIST);
+
+		Iterator<? extends Value> iter = collection.iterator();
+		while (iter.hasNext()) {
+			Value v = iter.next();
+			m.add(current, RDF.FIRST, v);
+			if (iter.hasNext()) {
+				Resource next = vf.createBNode();
+				m.add(current, RDF.REST, next);
+			}
+			else {
+				m.add(current, RDF.REST, RDF.NIL);
+			}
+		}
+		return m;
+	}
+
+	/**
+	 * Reads an RDF Collection from the supplied {@link Model} and converts it to
+	 * a Java {@link Collection} of {@link Value}s. If the model contains more
+	 * than one RDF Collection, any one Collection is read and returned. This
+	 * method expects the RDF Collection to be well-formed, and to have a start
+	 * resource of type {@link RDF#LIST}.
+	 * 
+	 * @param m
+	 *        the Model containing the collection to read.
+	 * @param collection
+	 *        the Java {@link Collection} to add the collection items to.
+	 * @return the supplied Java {@link Collection}, filled with the items from
+	 *         the RDF Collection (if any).
+	 * @throws ModelException
+	 *         if a problem occurs reading the RDF Collection, for example if the
+	 *         Collection is not well-formed.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static Collection<Value> readCollection(Model m, Collection<Value> collection) {
+		return readCollection(m, collection, null);
+	}
+
+	/**
+	 * Reads an RDF Collection from the supplied {@link Model} and convert it to
+	 * a Java {@link Collection} of {@link Value}s. If the model contains more
+	 * than one RDF Collection, any one Collection is read and returned. This
+	 * method expects the RDF Collection to be well-formed, and to have a start
+	 * resource of type {@link RDF#LIST}.
+	 * 
+	 * @param m
+	 *        the Model containing the collection to read.
+	 * @param collection
+	 *        the Java {@link Collection} to add the collection items to.
+	 * @param listStart
+	 *        the {@link Resource} that represents the start resource of the RDF
+	 *        Collection to be read. May be {@code null} in which case the method
+	 *        attempts to find the start node.
+	 * @return the supplied Java {@link Collection}, filled with the items from
+	 *         the RDF Collection (if any).
+	 * @throws ModelException
+	 *         if a problem occurs reading the RDF Collection, for example if the
+	 *         Collection is not well-formed.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static Collection<Value> readCollection(Model m, Collection<Value> collection, Resource listStart) {
+		Objects.requireNonNull(collection, "collection may not be null");
+		Objects.requireNonNull(m, "input model may not be null");
+
+		if (listStart == null) {
+			Optional<Statement> startStatement = m.filter(null, RDF.FIRST, null).stream().filter(st -> {
+				return !m.contains(null, RDF.REST, st.getSubject());
+			}).findAny();
+			if (startStatement.isPresent()) {
+				listStart = startStatement.get().getSubject();
+			}
+			else {
+				throw new ModelException("could not determine start of collection");
+			}
+		}
+
+		Resource current = listStart;
+		List<Resource> visited = new ArrayList<>();
+
+		while (!RDF.NIL.equals(current)) {
+			if (visited.contains(current)) {
+				// cycle detected, RDF Collection is not well-formed
+				throw new ModelException("RDF Collection not well-formed: contains cyclical reference");
+			}
+			collection.add(Models.object(m.filter(current, RDF.FIRST, null)).orElse(null));
+			visited.add(current);
+			current = Models.objectResource(m.filter(current, RDF.REST, null)).orElse(RDF.NIL);
+		}
+
+		return collection;
 	}
 
 	/**
