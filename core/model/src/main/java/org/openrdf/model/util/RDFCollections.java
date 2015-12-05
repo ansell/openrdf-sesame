@@ -140,21 +140,19 @@ public class RDFCollections {
 	}
 
 	/**
-	 * Reads an RDF Collection from the supplied {@link Model} and convert it to
-	 * a Java {@link Collection} of {@link Value}s. If the model contains more
-	 * than one RDF Collection, any one Collection is read and returned. This
-	 * method expects the RDF Collection to be well-formed. If the collection is
-	 * not well-formed the results depend on the nature of the
-	 * non-wellformedness: the method may return part of the collection, or may
-	 * throw a {@link ModelException}.
+	 * Reads an RDF Collection starting with the supplied list head from the
+	 * supplied {@link Model} and convert it to a Java {@link Collection} of
+	 * {@link Value}s. This method expects the RDF Collection to be well-formed.
+	 * If the collection is not well-formed the results depend on the nature of
+	 * the non-wellformedness: the method may return part of the collection, or
+	 * may throw a {@link ModelException}.
 	 * 
 	 * @param m
 	 *        the Model containing the collection to read.
 	 * @param head
 	 *        the {@link Resource} that represents the list head, that is the
 	 *        start resource of the RDF Collection to be read. May be
-	 *        {@code null} in which case the method attempts to find the list
-	 *        head.
+	 *        {@code null} in which case the method attempts to find a list head.
 	 * @param collection
 	 *        the Java {@link Collection} to add the collection items to.
 	 * @return the supplied Java {@link Collection}, filled with the items from
