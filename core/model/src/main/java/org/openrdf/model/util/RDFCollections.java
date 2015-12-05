@@ -61,7 +61,7 @@ public class RDFCollections {
 	 * @return the Model containing the newly created RDF Collection.
 	 */
 	public static Model asRDFCollection(Iterable<? extends Value> collection, Model m, Resource... contexts) {
-		return asRDFCollection(collection, m, null, contexts);
+		return asRDFCollection(collection, null, m, contexts);
 	}
 
 	/**
@@ -74,19 +74,19 @@ public class RDFCollections {
 	 * @param collection
 	 *        a Java {@link Collection} of {@link Value} objects, which will be
 	 *        converted to an RDF Collection. May not be {@code null}.
-	 * @param m
-	 *        the {@link Model} to which the RDF Collection will be added, and
-	 *        which will be returned as the result. May not be {@code null}.
 	 * @param head
 	 *        a {@link Resource} which will be used as the head of the list, that
 	 *        is, the starting point of the created RDF Collection. May be
 	 *        {@code null}, in which case a new resource is generated to
 	 *        represent the list head.
+	 * @param m
+	 *        the {@link Model} to which the RDF Collection will be added, and
+	 *        which will be returned as the result. May not be {@code null}.
 	 * @return the Model containing the newly created RDF Collection.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 */
-	public static Model asRDFCollection(Iterable<? extends Value> collection, Model m, Resource head,
+	public static Model asRDFCollection(Iterable<? extends Value> collection, Resource head, Model m,
 			Resource... contexts)
 	{
 		Objects.requireNonNull(collection, "input collection may not be null");
@@ -116,7 +116,10 @@ public class RDFCollections {
 	 * Reads an RDF Collection from the supplied {@link Model} and converts it to
 	 * a Java {@link Collection} of {@link Value}s. If the model contains more
 	 * than one RDF Collection, any one Collection is read and returned. This
-	 * method expects the RDF Collection to be well-formed.
+	 * method expects the RDF Collection to be well-formed. If the collection is
+	 * not well-formed the results depend on the nature of the
+	 * non-wellformedness: the method may return part of the collection, or may
+	 * throw a {@link ModelException}.
 	 * 
 	 * @param m
 	 *        the Model containing the collection to read.
@@ -130,27 +133,30 @@ public class RDFCollections {
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 */
-	public static Collection<Value> readCollection(Model m, Collection<Value> collection, Resource... contexts)
+	public static <C extends Collection<Value>> C readCollection(Model m, C collection, Resource... contexts)
 		throws ModelException
 	{
-		return readCollection(m, collection, null, contexts);
+		return readCollection(m, null, collection, contexts);
 	}
 
 	/**
 	 * Reads an RDF Collection from the supplied {@link Model} and convert it to
 	 * a Java {@link Collection} of {@link Value}s. If the model contains more
 	 * than one RDF Collection, any one Collection is read and returned. This
-	 * method expects the RDF Collection to be well-formed.
+	 * method expects the RDF Collection to be well-formed. If the collection is
+	 * not well-formed the results depend on the nature of the
+	 * non-wellformedness: the method may return part of the collection, or may
+	 * throw a {@link ModelException}.
 	 * 
 	 * @param m
 	 *        the Model containing the collection to read.
-	 * @param collection
-	 *        the Java {@link Collection} to add the collection items to.
 	 * @param head
 	 *        the {@link Resource} that represents the list head, that is the
 	 *        start resource of the RDF Collection to be read. May be
 	 *        {@code null} in which case the method attempts to find the list
 	 *        head.
+	 * @param collection
+	 *        the Java {@link Collection} to add the collection items to.
 	 * @return the supplied Java {@link Collection}, filled with the items from
 	 *         the RDF Collection (if any).
 	 * @throws ModelException
@@ -159,7 +165,7 @@ public class RDFCollections {
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 */
-	public static Collection<Value> readCollection(final Model m, Collection<Value> collection, Resource head,
+	public static <C extends Collection<Value>> C readCollection(final Model m, Resource head, C collection,
 			Resource... contexts)
 				throws ModelException
 	{
@@ -187,7 +193,7 @@ public class RDFCollections {
 				// cycle detected, RDF Collection is not well-formed
 				throw new ModelException("RDF Collection not well-formed: contains cyclical reference");
 			}
-			collection.add(Models.object(m.filter(current, RDF.FIRST, null, contexts)).orElse(null));
+			Models.object(m.filter(current, RDF.FIRST, null, contexts)).ifPresent(o -> collection.add(o));
 			visited.add(current);
 			current = Models.objectResource(m.filter(current, RDF.REST, null, contexts)).orElse(RDF.NIL);
 		}
