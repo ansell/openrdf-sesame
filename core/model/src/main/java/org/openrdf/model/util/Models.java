@@ -390,7 +390,7 @@ public class Models {
 	 *        converted to an RDF Collection. May not be {@code null}.
 	 * @param m
 	 *        the {@link Model} to which the RDF Collection will be added, and
-	 *        which will be returned as the result. May not be {@code null}
+	 *        which will be returned as the result. May not be {@code null}.
 	 * @param listStart
 	 *        a {@link Resource} which will be used as the starting point of the
 	 *        created RDF Collection. May be {@code null}, in which case a new
@@ -414,6 +414,7 @@ public class Models {
 			if (iter.hasNext()) {
 				Resource next = vf.createBNode();
 				m.add(current, RDF.REST, next);
+				current = next;
 			}
 			else {
 				m.add(current, RDF.REST, RDF.NIL);
