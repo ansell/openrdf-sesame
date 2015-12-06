@@ -73,9 +73,11 @@ public class RDFCollections {
 	 *        a Java {@link Collection} of {@link Value} objects, which will be
 	 *        converted to an RDF Collection.
 	 * @param consumer
-	 *        the {@link Consumer} function for the Statements that from the RDF
-	 *        Collection will be added. May not be {@code null}.
-	 * @return the Model containing the newly created RDF Collection.
+	 *        the {@link Consumer} function for the Statements of the RDF
+	 *        Collection. May not be {@code null}.
+	 * @param contexts
+	 *        the context(s) in which to add the RDF Collection. This argument is
+	 *        an optional vararg and can be left out.
 	 */
 	public static void asRDFCollection(Iterable<? extends Value> collection, Consumer<Statement> consumer,
 			Resource... contexts)
@@ -99,8 +101,11 @@ public class RDFCollections {
 	 *        {@code null}, in which case a new resource is generated to
 	 *        represent the list head.
 	 * @param consumer
-	 *        the {@link Consumer} function for the Statements that from the RDF
-	 *        Collection will be added. May not be {@code null}.
+	 *        the {@link Consumer} function for the Statements of the RDF
+	 *        Collection. May not be {@code null}.
+	 * @param contexts
+	 *        the context(s) in which to add the RDF Collection. This argument is
+	 *        an optional vararg and can be left out.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 */
@@ -143,6 +148,9 @@ public class RDFCollections {
 	 *        a {@link Collection} of {@link Statement} objects (for example a
 	 *        {@link Model}) to which the RDF Collection statements will be
 	 *        added. May not be {@code null}.
+	 * @param contexts
+	 *        the context(s) in which to add the RDF Collection. This argument is
+	 *        an optional vararg and can be left out.
 	 * @return the input {@link Collection} of {@link Statement}s, with the new
 	 *         Statements forming the RDF {@link Collection} added.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
@@ -173,6 +181,9 @@ public class RDFCollections {
 	 *        a {@link Collection} of {@link Statement} objects (for example a
 	 *        {@link Model}) to which the RDF Collection statements will be
 	 *        added. May not be {@code null}.
+	 * @param contexts
+	 *        the context(s) in which to add the RDF Collection. This argument is
+	 *        an optional vararg and can be left out.
 	 * @return the input {@link Collection} of {@link Statement}s, with the new
 	 *         Statements forming the RDF {@link Collection} added.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
@@ -199,6 +210,9 @@ public class RDFCollections {
 	 *        the Model containing the collection to read.
 	 * @param collection
 	 *        the Java {@link Collection} to add the collection items to.
+	 * @param contexts
+	 *        the context(s) from which to read the RDF Collection. This argument
+	 *        is an optional vararg and can be left out.
 	 * @return the supplied Java {@link Collection}, filled with the items from
 	 *         the RDF Collection (if any).
 	 * @throws ModelException
@@ -227,6 +241,9 @@ public class RDFCollections {
 	 * @param consumer
 	 *        the Java {@link Consumer} function to which the collection items
 	 *        are reported.
+	 * @param contexts
+	 *        the context(s) from which to read the RDF Collection. This argument
+	 *        is an optional vararg and can be left out.
 	 * @throws ModelException
 	 *         if a problem occurs reading the RDF Collection, for example if the
 	 *         Collection is not well-formed.
@@ -256,6 +273,9 @@ public class RDFCollections {
 	 * @param consumer
 	 *        the Java {@link Consumer} function to which the collection items
 	 *        are reported.
+	 * @param contexts
+	 *        the context(s) from which to read the RDF Collection. This argument
+	 *        is an optional vararg and can be left out.
 	 * @throws ModelException
 	 *         if a problem occurs reading the RDF Collection, for example if the
 	 *         Collection is not well-formed.
@@ -312,6 +332,9 @@ public class RDFCollections {
 	 *        {@code null} in which case the method attempts to find a list head.
 	 * @param collection
 	 *        the Java {@link Collection} to add the collection items to.
+	 * @param contexts
+	 *        the context(s) from which to read the RDF Collection. This argument
+	 *        is an optional vararg and can be left out.
 	 * @return the supplied Java {@link Collection}, filled with the items from
 	 *         the RDF Collection (if any).
 	 * @throws ModelException
