@@ -1,3 +1,19 @@
+/* 
+ * Licensed to Aduna under one or more contributor license agreements.  
+ * See the NOTICE.txt file distributed with this work for additional 
+ * information regarding copyright ownership. 
+ *
+ * Aduna licenses this file to you under the terms of the Aduna BSD 
+ * License (the "License"); you may not use this file except in compliance 
+ * with the License. See the LICENSE.txt file distributed with this work 
+ * for the full License.
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+ * implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
 package org.openrdf.model.util;
 
 import java.util.Collection;
@@ -51,18 +67,20 @@ public class RDFCollections {
 	 * Converts the supplied {@link Collection} of {@link Value}s to an
 	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 * Collection</a>. The statements making up the new RDF Collection will be
-	 * added to the supplied {@link Model}.
+	 * will be reported to the supplied {@link Consumer} function.
 	 * 
 	 * @param collection
 	 *        a Java {@link Collection} of {@link Value} objects, which will be
 	 *        converted to an RDF Collection.
-	 * @param m
-	 *        the {@link Model} to which the RDF Collection will be added, and
-	 *        which will be returned as the result. May not be {@code null}.
+	 * @param consumer
+	 *        the {@link Consumer} function for the Statements that from the RDF
+	 *        Collection will be added. May not be {@code null}.
 	 * @return the Model containing the newly created RDF Collection.
 	 */
-	public static Model asRDFCollection(Iterable<? extends Value> collection, Model m, Resource... contexts) {
-		return asRDFCollection(collection, null, m, contexts);
+	public static void asRDFCollection(Iterable<? extends Value> collection, Consumer<Statement> consumer,
+			Resource... contexts)
+	{
+		asRDFCollection(collection, null, consumer, contexts);
 	}
 
 	/**
@@ -70,7 +88,7 @@ public class RDFCollections {
 	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 * Collection</a>, using the supplied {@code listStart} resource as the
 	 * starting resource of the Collection. The statements making up the new RDF
-	 * Collection will be added to the supplied {@link Model}.
+	 * Collection will be reported to the supplied {@link Consumer} function.
 	 * 
 	 * @param collection
 	 *        a Java {@link Collection} of {@link Value} objects, which will be
@@ -80,37 +98,92 @@ public class RDFCollections {
 	 *        is, the starting point of the created RDF Collection. May be
 	 *        {@code null}, in which case a new resource is generated to
 	 *        represent the list head.
-	 * @param m
-	 *        the {@link Model} to which the RDF Collection will be added, and
-	 *        which will be returned as the result. May not be {@code null}.
-	 * @return the Model containing the newly created RDF Collection.
+	 * @param consumer
+	 *        the {@link Consumer} function for the Statements that from the RDF
+	 *        Collection will be added. May not be {@code null}.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 */
-	public static Model asRDFCollection(Iterable<? extends Value> collection, Resource head, Model m,
-			Resource... contexts)
+	public static void asRDFCollection(Iterable<? extends Value> collection, Resource head,
+			Consumer<Statement> consumer, Resource... contexts)
 	{
 		Objects.requireNonNull(collection, "input collection may not be null");
-		Objects.requireNonNull(m, "model may not be null");
+		Objects.requireNonNull(consumer, "model may not be null");
 		final ValueFactory vf = SimpleValueFactory.getInstance();
 
 		Resource current = head != null ? head : vf.createBNode();
-		m.add(current, RDF.TYPE, RDF.LIST, contexts);
+
+		Statements.create(vf, current, RDF.TYPE, RDF.LIST, consumer, contexts);
 
 		Iterator<? extends Value> iter = collection.iterator();
 		while (iter.hasNext()) {
 			Value v = iter.next();
-			m.add(current, RDF.FIRST, v, contexts);
+			Statements.create(vf, current, RDF.FIRST, v, consumer, contexts);
 			if (iter.hasNext()) {
 				Resource next = vf.createBNode();
-				m.add(current, RDF.REST, next, contexts);
+				Statements.create(vf, current, RDF.REST, next, consumer, contexts);
 				current = next;
 			}
 			else {
-				m.add(current, RDF.REST, RDF.NIL, contexts);
+				Statements.create(vf, current, RDF.REST, RDF.NIL, consumer, contexts);
 			}
 		}
-		return m;
+	}
+
+	/**
+	 * Converts the supplied {@link Collection} of {@link Value}s to an
+	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 * Collection</a>. The statements making up the new RDF Collection will be
+	 * added to the supplied statement collection.
+	 * 
+	 * @param collection
+	 *        a Java {@link Collection} of {@link Value} objects, which will be
+	 *        converted to an RDF Collection. May not be {@code null}.
+	 * @param rdfCollection
+	 *        a {@link Collection} of {@link Statement} objects (for example a
+	 *        {@link Model}) to which the RDF Collection statements will be
+	 *        added. May not be {@code null}.
+	 * @return the input {@link Collection} of {@link Statement}s, with the new
+	 *         Statements forming the RDF {@link Collection} added.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static <C extends Collection<Statement>> C asRDFCollection(Iterable<? extends Value> collection,
+			C rdfCollection, Resource... contexts)
+	{
+		return asRDFCollection(collection, null, rdfCollection, contexts);
+	}
+
+	/**
+	 * Converts the supplied {@link Collection} of {@link Value}s to an
+	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 * Collection</a>, using the supplied {@code listStart} resource as the
+	 * starting resource of the Collection. The statements making up the new RDF
+	 * Collection will be added to the supplied statement collection.
+	 * 
+	 * @param collection
+	 *        a Java {@link Collection} of {@link Value} objects, which will be
+	 *        converted to an RDF Collection. May not be {@code null}.
+	 * @param head
+	 *        a {@link Resource} which will be used as the head of the list, that
+	 *        is, the starting point of the created RDF Collection. May be
+	 *        {@code null}, in which case a new resource is generated to
+	 *        represent the list head.
+	 * @param rdfCollection
+	 *        a {@link Collection} of {@link Statement} objects (for example a
+	 *        {@link Model}) to which the RDF Collection statements will be
+	 *        added. May not be {@code null}.
+	 * @return the input {@link Collection} of {@link Statement}s, with the new
+	 *         Statements forming the RDF {@link Collection} added.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static <C extends Collection<Statement>> C asRDFCollection(Iterable<? extends Value> collection,
+			Resource head, C rdfCollection, Resource... contexts)
+	{
+		Objects.requireNonNull(rdfCollection);
+		asRDFCollection(collection, head, st -> rdfCollection.add(st), contexts);
+		return rdfCollection;
 	}
 
 	/**
