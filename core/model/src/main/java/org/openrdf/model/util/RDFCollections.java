@@ -1,11 +1,12 @@
 package org.openrdf.model.util;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -140,6 +141,89 @@ public class RDFCollections {
 	}
 
 	/**
+	 * Reads an RDF Collection from the supplied {@link Model} and sends each
+	 * collection member to the supplied {@link Consumer} function. If the model
+	 * contains more than one RDF Collection, any one Collection is read and
+	 * returned. This method expects the RDF Collection to be well-formed. If the
+	 * collection is not well-formed the results depend on the nature of the
+	 * non-wellformedness: the method may report only part of the collection, or
+	 * may throw a {@link ModelException}.
+	 * 
+	 * @param m
+	 *        the Model containing the collection to read.
+	 * @param consumer
+	 *        the Java {@link Consumer} function to which the collection items
+	 *        are reported.
+	 * @throws ModelException
+	 *         if a problem occurs reading the RDF Collection, for example if the
+	 *         Collection is not well-formed.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static void readCollection(final Model m, Consumer<Value> consumer, Resource... contexts)
+		throws ModelException
+	{
+		readCollection(m, null, consumer, contexts);
+	}
+
+	/**
+	 * Reads an RDF Collection starting with the supplied list head from the
+	 * supplied {@link Model} and sends each collection member to the supplied
+	 * {@link Consumer} function. This method expects the RDF Collection to be
+	 * well-formed. If the collection is not well-formed the results depend on
+	 * the nature of the non-wellformedness: the method may report only part of
+	 * the collection, or may throw a {@link ModelException}.
+	 * 
+	 * @param m
+	 *        the Model containing the collection to read.
+	 * @param head
+	 *        the {@link Resource} that represents the list head, that is the
+	 *        start resource of the RDF Collection to be read. May be
+	 *        {@code null} in which case the method attempts to find a list head.
+	 * @param consumer
+	 *        the Java {@link Consumer} function to which the collection items
+	 *        are reported.
+	 * @throws ModelException
+	 *         if a problem occurs reading the RDF Collection, for example if the
+	 *         Collection is not well-formed.
+	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
+	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 */
+	public static void readCollection(final Model m, Resource head, Consumer<Value> consumer,
+			Resource... contexts)
+				throws ModelException
+	{
+		Objects.requireNonNull(consumer, "consumer may not be null");
+		Objects.requireNonNull(m, "input model may not be null");
+
+		if (head == null) {
+			Optional<Statement> startStatement = m.filter(null, RDF.FIRST, null, contexts).stream().filter(
+					st -> {
+						return !m.contains(null, RDF.REST, st.getSubject(), contexts);
+					}).findAny();
+			if (startStatement.isPresent()) {
+				head = startStatement.get().getSubject();
+			}
+			else {
+				throw new ModelException("could not determine start of collection");
+			}
+		}
+
+		Resource current = head;
+		final Set<Resource> visited = new HashSet<>();
+
+		while (!RDF.NIL.equals(current)) {
+			if (visited.contains(current)) {
+				// cycle detected, RDF Collection is not well-formed
+				throw new ModelException("RDF Collection not well-formed: contains cyclical reference");
+			}
+			Models.object(m.filter(current, RDF.FIRST, null, contexts)).ifPresent(o -> consumer.accept(o));
+			visited.add(current);
+			current = Models.objectResource(m.filter(current, RDF.REST, null, contexts)).orElse(RDF.NIL);
+		}
+	}
+
+	/**
 	 * Reads an RDF Collection starting with the supplied list head from the
 	 * supplied {@link Model} and convert it to a Java {@link Collection} of
 	 * {@link Value}s. This method expects the RDF Collection to be well-formed.
@@ -168,33 +252,8 @@ public class RDFCollections {
 				throws ModelException
 	{
 		Objects.requireNonNull(collection, "collection may not be null");
-		Objects.requireNonNull(m, "input model may not be null");
 
-		if (head == null) {
-			Optional<Statement> startStatement = m.filter(null, RDF.FIRST, null, contexts).stream().filter(
-					st -> {
-						return !m.contains(null, RDF.REST, st.getSubject(), contexts);
-					}).findAny();
-			if (startStatement.isPresent()) {
-				head = startStatement.get().getSubject();
-			}
-			else {
-				throw new ModelException("could not determine start of collection");
-			}
-		}
-
-		Resource current = head;
-		List<Resource> visited = new ArrayList<>();
-
-		while (!RDF.NIL.equals(current)) {
-			if (visited.contains(current)) {
-				// cycle detected, RDF Collection is not well-formed
-				throw new ModelException("RDF Collection not well-formed: contains cyclical reference");
-			}
-			Models.object(m.filter(current, RDF.FIRST, null, contexts)).ifPresent(o -> collection.add(o));
-			visited.add(current);
-			current = Models.objectResource(m.filter(current, RDF.REST, null, contexts)).orElse(RDF.NIL);
-		}
+		readCollection(m, head, v -> collection.add(v), contexts);
 
 		return collection;
 	}
