@@ -78,6 +78,7 @@ public class RDFCollections {
 	 * @param contexts
 	 *        the context(s) in which to add the RDF Collection. This argument is
 	 *        an optional vararg and can be left out.
+	 * @since 4.1.0
 	 */
 	public static void asRDFCollection(Iterable<? extends Value> collection, Consumer<Statement> consumer,
 			Resource... contexts)
@@ -108,6 +109,7 @@ public class RDFCollections {
 	 *        an optional vararg and can be left out.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 * @since 4.1.0
 	 */
 	public static void asRDFCollection(Iterable<? extends Value> collection, Resource head,
 			Consumer<Statement> consumer, Resource... contexts)
@@ -155,6 +157,7 @@ public class RDFCollections {
 	 *         Statements forming the RDF {@link Collection} added.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 * @since 4.1.0
 	 */
 	public static <C extends Collection<Statement>> C asRDFCollection(Iterable<? extends Value> collection,
 			C rdfCollection, Resource... contexts)
@@ -188,6 +191,7 @@ public class RDFCollections {
 	 *         Statements forming the RDF {@link Collection} added.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 * @since 4.1.0
 	 */
 	public static <C extends Collection<Statement>> C asRDFCollection(Iterable<? extends Value> collection,
 			Resource head, C rdfCollection, Resource... contexts)
@@ -249,6 +253,7 @@ public class RDFCollections {
 	 *         Collection is not well-formed.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 * @since 4.1.0
 	 */
 	public static void readCollection(final Model m, Consumer<Value> consumer, Resource... contexts)
 		throws ModelException
@@ -281,6 +286,7 @@ public class RDFCollections {
 	 *         Collection is not well-formed.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 * @since 4.1.0
 	 */
 	public static void readCollection(final Model m, Resource head, Consumer<Value> consumer,
 			Resource... contexts)
@@ -342,6 +348,7 @@ public class RDFCollections {
 	 *         Collection is not well-formed.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
+	 * @since 4.1.0
 	 */
 	public static <C extends Collection<Value>> C readCollection(final Model m, Resource head, C collection,
 			Resource... contexts)
