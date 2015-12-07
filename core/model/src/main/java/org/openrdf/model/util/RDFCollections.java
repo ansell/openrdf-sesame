@@ -20,10 +20,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
+import org.openrdf.OpenRDFException;
+import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -66,29 +69,6 @@ public class RDFCollections {
 	/**
 	 * Converts the supplied {@link Collection} of {@link Value}s to an
 	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
-	 * Collection</a>. The statements making up the new RDF Collection will be
-	 * will be reported to the supplied {@link Consumer} function.
-	 * 
-	 * @param collection
-	 *        a Java {@link Collection} of {@link Value} objects, which will be
-	 *        converted to an RDF Collection.
-	 * @param consumer
-	 *        the {@link Consumer} function for the Statements of the RDF
-	 *        Collection. May not be {@code null}.
-	 * @param contexts
-	 *        the context(s) in which to add the RDF Collection. This argument is
-	 *        an optional vararg and can be left out.
-	 * @since 4.1.0
-	 */
-	public static void asRDFCollection(Iterable<? extends Value> collection, Consumer<Statement> consumer,
-			Resource... contexts)
-	{
-		asRDFCollection(collection, null, consumer, contexts);
-	}
-
-	/**
-	 * Converts the supplied {@link Collection} of {@link Value}s to an
-	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 * Collection</a>, using the supplied {@code listStart} resource as the
 	 * starting resource of the Collection. The statements making up the new RDF
 	 * Collection will be reported to the supplied {@link Consumer} function.
@@ -111,8 +91,8 @@ public class RDFCollections {
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static void asRDFCollection(Iterable<? extends Value> collection, Resource head,
-			Consumer<Statement> consumer, Resource... contexts)
+	public static void asRDF(Iterable<? extends Value> collection, Resource head, Consumer<Statement> consumer,
+			Resource... contexts)
 	{
 		Objects.requireNonNull(collection, "input collection may not be null");
 		Objects.requireNonNull(consumer, "model may not be null");
@@ -135,34 +115,6 @@ public class RDFCollections {
 				Statements.create(vf, current, RDF.REST, RDF.NIL, consumer, contexts);
 			}
 		}
-	}
-
-	/**
-	 * Converts the supplied {@link Collection} of {@link Value}s to an
-	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
-	 * Collection</a>. The statements making up the new RDF Collection will be
-	 * added to the supplied statement collection.
-	 * 
-	 * @param collection
-	 *        a Java {@link Collection} of {@link Value} objects, which will be
-	 *        converted to an RDF Collection. May not be {@code null}.
-	 * @param rdfCollection
-	 *        a {@link Collection} of {@link Statement} objects (for example a
-	 *        {@link Model}) to which the RDF Collection statements will be
-	 *        added. May not be {@code null}.
-	 * @param contexts
-	 *        the context(s) in which to add the RDF Collection. This argument is
-	 *        an optional vararg and can be left out.
-	 * @return the input {@link Collection} of {@link Statement}s, with the new
-	 *         Statements forming the RDF {@link Collection} added.
-	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
-	 *      Schema 1.1 section on Collection vocabulary</a>.
-	 * @since 4.1.0
-	 */
-	public static <C extends Collection<Statement>> C asRDFCollection(Iterable<? extends Value> collection,
-			C rdfCollection, Resource... contexts)
-	{
-		return asRDFCollection(collection, null, rdfCollection, contexts);
 	}
 
 	/**
@@ -193,72 +145,12 @@ public class RDFCollections {
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static <C extends Collection<Statement>> C asRDFCollection(Iterable<? extends Value> collection,
+	public static <C extends Collection<Statement>> C asRDF(Iterable<? extends Value> collection,
 			Resource head, C rdfCollection, Resource... contexts)
 	{
 		Objects.requireNonNull(rdfCollection);
-		asRDFCollection(collection, head, st -> rdfCollection.add(st), contexts);
+		asRDF(collection, head, st -> rdfCollection.add(st), contexts);
 		return rdfCollection;
-	}
-
-	/**
-	 * Reads an RDF Collection from the supplied {@link Model} and converts it to
-	 * a Java {@link Collection} of {@link Value}s. If the model contains more
-	 * than one RDF Collection, any one Collection is read and returned. This
-	 * method expects the RDF Collection to be well-formed. If the collection is
-	 * not well-formed the results depend on the nature of the
-	 * non-wellformedness: the method may return part of the collection, or may
-	 * throw a {@link ModelException}.
-	 * 
-	 * @param m
-	 *        the Model containing the collection to read.
-	 * @param collection
-	 *        the Java {@link Collection} to add the collection items to.
-	 * @param contexts
-	 *        the context(s) from which to read the RDF Collection. This argument
-	 *        is an optional vararg and can be left out.
-	 * @return the supplied Java {@link Collection}, filled with the items from
-	 *         the RDF Collection (if any).
-	 * @throws ModelException
-	 *         if a problem occurs reading the RDF Collection, for example if the
-	 *         Collection is not well-formed.
-	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
-	 *      Schema 1.1 section on Collection vocabulary</a>.
-	 */
-	public static <C extends Collection<Value>> C readCollection(Model m, C collection, Resource... contexts)
-		throws ModelException
-	{
-		return readCollection(m, null, collection, contexts);
-	}
-
-	/**
-	 * Reads an RDF Collection from the supplied {@link Model} and sends each
-	 * collection member to the supplied {@link Consumer} function. If the model
-	 * contains more than one RDF Collection, any one Collection is read and
-	 * returned. This method expects the RDF Collection to be well-formed. If the
-	 * collection is not well-formed the results depend on the nature of the
-	 * non-wellformedness: the method may report only part of the collection, or
-	 * may throw a {@link ModelException}.
-	 * 
-	 * @param m
-	 *        the Model containing the collection to read.
-	 * @param consumer
-	 *        the Java {@link Consumer} function to which the collection items
-	 *        are reported.
-	 * @param contexts
-	 *        the context(s) from which to read the RDF Collection. This argument
-	 *        is an optional vararg and can be left out.
-	 * @throws ModelException
-	 *         if a problem occurs reading the RDF Collection, for example if the
-	 *         Collection is not well-formed.
-	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
-	 *      Schema 1.1 section on Collection vocabulary</a>.
-	 * @since 4.1.0
-	 */
-	public static void readCollection(final Model m, Consumer<Value> consumer, Resource... contexts)
-		throws ModelException
-	{
-		readCollection(m, null, consumer, contexts);
 	}
 
 	/**
@@ -273,8 +165,8 @@ public class RDFCollections {
 	 *        the Model containing the collection to read.
 	 * @param head
 	 *        the {@link Resource} that represents the list head, that is the
-	 *        start resource of the RDF Collection to be read. May be
-	 *        {@code null} in which case the method attempts to find a list head.
+	 *        start resource of the RDF Collection to be read. May not be
+	 *        {@code null}.
 	 * @param consumer
 	 *        the Java {@link Consumer} function to which the collection items
 	 *        are reported.
@@ -288,38 +180,21 @@ public class RDFCollections {
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static void readCollection(final Model m, Resource head, Consumer<Value> consumer,
+	public static void asCollection(final Model m, Resource head, Consumer<Value> consumer,
 			Resource... contexts)
 				throws ModelException
 	{
 		Objects.requireNonNull(consumer, "consumer may not be null");
 		Objects.requireNonNull(m, "input model may not be null");
 
-		if (head == null) {
-			Optional<Statement> startStatement = m.filter(null, RDF.FIRST, null, contexts).stream().filter(
-					st -> {
-						return !m.contains(null, RDF.REST, st.getSubject(), contexts);
-					}).findAny();
-			if (startStatement.isPresent()) {
-				head = startStatement.get().getSubject();
-			}
-			else {
-				throw new ModelException("could not determine start of collection");
-			}
-		}
+		GetStatementOptional statementSupplier = (s, p, o, c) -> m.filter(s, p, o, c).stream().findAny();
+		Function<String, Supplier<ModelException>> exceptionSupplier = Models::modelException;
 
-		Resource current = head;
-		final Set<Resource> visited = new HashSet<>();
-
-		while (!RDF.NIL.equals(current)) {
-			if (visited.contains(current)) {
-				// cycle detected, RDF Collection is not well-formed
-				throw new ModelException("RDF Collection not well-formed: contains cyclical reference");
+		asCollection(statementSupplier, head, st -> {
+			if (RDF.FIRST.equals(st.getPredicate())) {
+				consumer.accept(st.getObject());
 			}
-			Models.object(m.filter(current, RDF.FIRST, null, contexts)).ifPresent(o -> consumer.accept(o));
-			visited.add(current);
-			current = Models.objectResource(m.filter(current, RDF.REST, null, contexts)).orElse(RDF.NIL);
-		}
+		} , exceptionSupplier, contexts);
 	}
 
 	/**
@@ -334,8 +209,8 @@ public class RDFCollections {
 	 *        the Model containing the collection to read.
 	 * @param head
 	 *        the {@link Resource} that represents the list head, that is the
-	 *        start resource of the RDF Collection to be read. May be
-	 *        {@code null} in which case the method attempts to find a list head.
+	 *        start resource of the RDF Collection to be read. May not be
+	 *        {@code null}.
 	 * @param collection
 	 *        the Java {@link Collection} to add the collection items to.
 	 * @param contexts
@@ -350,14 +225,79 @@ public class RDFCollections {
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static <C extends Collection<Value>> C readCollection(final Model m, Resource head, C collection,
+	public static <C extends Collection<Value>> C asCollection(final Model m, Resource head, C collection,
 			Resource... contexts)
 				throws ModelException
 	{
 		Objects.requireNonNull(collection, "collection may not be null");
 
-		readCollection(m, head, v -> collection.add(v), contexts);
+		asCollection(m, head, v -> collection.add(v), contexts);
 
 		return collection;
 	}
+
+	/**
+	 * Reads an RDF Collection starting with the supplied list head from the
+	 * statement supplier and sends all statements that make up the collection to
+	 * the supplied {@link Consumer} function. This method expects the RDF
+	 * Collection to be well-formed. If the collection is not well-formed the
+	 * results depend on the nature of the non-wellformedness: the method may
+	 * report only part of the collection, or may throw an exception.
+	 * 
+	 * @param statementSupplier
+	 *        the source of the statements from which the RDF collection is to be
+	 *        read, specified as a functional interface.
+	 * @param head
+	 *        the {@link Resource} that represents the list head, that is the
+	 *        start resource of the RDF Collection to be read. May not be
+	 *        {@code null}.
+	 * @param collectionConsumer
+	 *        the Java {@link Consumer} function to which the collection
+	 *        statements are reported.
+	 * @param exceptionSupplier
+	 *        a functional interface that produces the exception type this method
+	 *        will throw when an error occurs.
+	 * @param contexts
+	 *        the context(s) from which to read the RDF Collection. This argument
+	 *        is an optional vararg and can be left out.
+	 * @throws E
+	 *         if a problem occurs reading the RDF Collection, for example if the
+	 *         Collection is not well-formed.
+	 * @since 4.1.0
+	 */
+	public static <E extends OpenRDFException> void asCollection(GetStatementOptional statementSupplier,
+			Resource head, Consumer<Statement> collectionConsumer,
+			Function<String, Supplier<E>> exceptionSupplier, Resource... contexts)
+				throws E
+	{
+		OpenRDFUtil.verifyContextNotNull(contexts);
+		Objects.requireNonNull(head, "list head may not be null");
+		Objects.requireNonNull(collectionConsumer, "collection consumer may not be null");
+
+		Resource current = head;
+		final Set<Resource> visited = new HashSet<>();
+		while (!RDF.NIL.equals(current)) {
+			if (visited.contains(current)) {
+				throw exceptionSupplier.apply("list not wellformed: cycle detected").get();
+			}
+
+			statementSupplier.get(current, RDF.TYPE, RDF.LIST, contexts).ifPresent(collectionConsumer);
+
+			collectionConsumer.accept(statementSupplier.get(current, RDF.FIRST, null, contexts).orElseThrow(
+					exceptionSupplier.apply("list not wellformed: rdf:first statement missing.")));
+
+			Statement next = statementSupplier.get(current, RDF.REST, null, contexts).orElseThrow(
+					exceptionSupplier.apply("list not wellformed: rdf:rest statement missing."));
+
+			collectionConsumer.accept(next);
+
+			if (!(next.getObject() instanceof Resource)) {
+				throw exceptionSupplier.apply(
+						"list not wellformed: value of rdf:rest should be one of (IRI, BNode).").get();
+			}
+			visited.add(current);
+			current = (Resource)next.getObject();
+		}
+	}
+
 }

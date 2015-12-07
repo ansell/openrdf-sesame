@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.IRI;
@@ -581,5 +582,19 @@ public class Models {
 			Iterators.addAll(iterable.iterator(), set);
 		}
 		return set;
+	}
+
+	/**
+	 * Creates a {@link Supplier} of {@link ModelException} objects that be
+	 * passed to {@link Optional#orElseThrow(Supplier)} to generate exceptions as
+	 * necessary.
+	 * 
+	 * @param message
+	 *        The message to be used for the exception
+	 * @return A {@link Supplier} that will create {@link ModelException} objects
+	 *         with the given message.
+	 */
+	public static Supplier<ModelException> modelException(String message) {
+		return () -> new ModelException(message);
 	}
 }

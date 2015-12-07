@@ -50,75 +50,51 @@ public class RDFCollectionsTest {
 
 	@Test
 	public void testConversionRoundtrip() {
-		Model m = RDFCollections.asRDFCollection(values, new TreeModel());
-		assertNotNull(m);
-
-		Optional<Statement> stmt = m.filter(null, RDF.FIRST, null).stream().filter(
-				st -> !m.contains(null, RDF.REST, st.getSubject())).findAny();
-
-		assertTrue(stmt.isPresent());
-
-		assertTrue(m.contains(stmt.get().getSubject(), RDF.FIRST, a));
-
-		// test round trip
-
-		List<Value> newList = RDFCollections.readCollection(m, new ArrayList<Value>());
-		assertNotNull(newList);
-		assertTrue(newList.contains(a));
-		assertTrue(newList.contains(b));
-		assertTrue(newList.contains(c));
-	}
-
-	@Test
-	public void testConversionWithHeadNode() {
 		IRI head = vf.createIRI("urn:head");
-		Model m = RDFCollections.asRDFCollection(values, head, new TreeModel());
+		Model m = RDFCollections.asRDF(values, head, new TreeModel());
 		assertNotNull(m);
 		assertTrue(m.contains(head, RDF.FIRST, a));
 		assertFalse(m.contains(null, RDF.REST, head));
 
-		List<Value> newList = RDFCollections.readCollection(m, head, new ArrayList<Value>());
+		List<Value> newList = RDFCollections.asCollection(m, head, new ArrayList<Value>());
 		assertNotNull(newList);
 		assertTrue(newList.contains(a));
 		assertTrue(newList.contains(b));
 		assertTrue(newList.contains(c));
 
-		newList = RDFCollections.readCollection(m, new ArrayList<Value>());
-		assertNotNull(newList);
-		assertTrue(newList.contains(a));
-		assertTrue(newList.contains(b));
-		assertTrue(newList.contains(c));
-
-		// supply incorrect head node = empty result
-		newList = RDFCollections.readCollection(m, vf.createBNode(), new ArrayList<Value>());
-		assertNotNull(newList);
-		assertTrue(newList.isEmpty());
-		
-		
 	}
 
 	public void testNonWellformedCollection() {
-		Model m = RDFCollections.asRDFCollection(values, new TreeModel());
+		Resource head = vf.createBNode();
+		Model m = RDFCollections.asRDF(values, head, new TreeModel());
 		m.remove(null, RDF.REST, RDF.NIL);
 		try {
-			RDFCollections.readCollection(m, new ArrayList<Value>());
+			RDFCollections.asCollection(m, head, new ArrayList<Value>());
 			fail("collection missing terminator should result in error");
 		}
 		catch (ModelException e) {
 			// fall through, expected
 		}
-		
-		Resource head = vf.createIRI("urn:head");
-		
-		m = RDFCollections.asRDFCollection(values, head, new TreeModel());
+
+		m = RDFCollections.asRDF(values, head, new TreeModel());
 		m.add(head, RDF.REST, head);
-		
+
 		try {
-			RDFCollections.readCollection(m, new ArrayList<Value>());
+			RDFCollections.asCollection(m, head, new ArrayList<Value>());
 			fail("collection with cycle should result in error");
 		}
 		catch (ModelException e) {
 			// fall through, expected
 		}
+
+		// supply incorrect head node
+		try {
+			RDFCollections.asCollection(m, vf.createBNode(), new ArrayList<Value>());
+			fail("resource that is not a collection should result in error");
+		}
+		catch (ModelException e) {
+			// fall through, expected
+		}
+
 	}
 }
