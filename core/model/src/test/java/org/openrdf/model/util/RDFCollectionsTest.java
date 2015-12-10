@@ -56,7 +56,7 @@ public class RDFCollectionsTest {
 		assertTrue(m.contains(head, RDF.FIRST, a));
 		assertFalse(m.contains(null, RDF.REST, head));
 
-		List<Value> newList = RDFCollections.asCollection(m, head, new ArrayList<Value>());
+		List<Value> newList = RDFCollections.asValues(m, head, new ArrayList<Value>());
 		assertNotNull(newList);
 		assertTrue(newList.contains(a));
 		assertTrue(newList.contains(b));
@@ -69,7 +69,7 @@ public class RDFCollectionsTest {
 		Model m = RDFCollections.asRDF(values, head, new TreeModel());
 		m.remove(null, RDF.REST, RDF.NIL);
 		try {
-			RDFCollections.asCollection(m, head, new ArrayList<Value>());
+			RDFCollections.asValues(m, head, new ArrayList<Value>());
 			fail("collection missing terminator should result in error");
 		}
 		catch (ModelException e) {
@@ -80,7 +80,7 @@ public class RDFCollectionsTest {
 		m.add(head, RDF.REST, head);
 
 		try {
-			RDFCollections.asCollection(m, head, new ArrayList<Value>());
+			RDFCollections.asValues(m, head, new ArrayList<Value>());
 			fail("collection with cycle should result in error");
 		}
 		catch (ModelException e) {
@@ -89,7 +89,7 @@ public class RDFCollectionsTest {
 
 		// supply incorrect head node
 		try {
-			RDFCollections.asCollection(m, vf.createBNode(), new ArrayList<Value>());
+			RDFCollections.asValues(m, vf.createBNode(), new ArrayList<Value>());
 			fail("resource that is not a collection should result in error");
 		}
 		catch (ModelException e) {

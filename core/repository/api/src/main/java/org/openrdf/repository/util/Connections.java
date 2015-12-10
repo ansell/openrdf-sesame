@@ -76,7 +76,7 @@ public class Connections {
 	{
 		GetStatementOptional statementSupplier = (s, p, o, c) -> getStatement(conn, s, p, o, c);
 		Function<String, Supplier<RepositoryException>> exceptionSupplier = Repositories::repositoryException;
-		RDFCollections.asCollection(statementSupplier, head, collectionConsumer, exceptionSupplier, contexts);
+		RDFCollections.asValues(statementSupplier, head, collectionConsumer, exceptionSupplier, contexts);
 	}
 
 
