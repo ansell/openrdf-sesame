@@ -36,7 +36,7 @@ public abstract class AbstractBindingSet implements BindingSet {
 		if (this == other) {
 			return true;
 		}
-		else if (other instanceof BindingSet) {
+		else if (other != null && other instanceof BindingSet) {
 			BindingSet that = (BindingSet)other;
 
 			int otherSize = 0;
