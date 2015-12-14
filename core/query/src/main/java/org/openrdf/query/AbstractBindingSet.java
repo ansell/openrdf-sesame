@@ -39,7 +39,9 @@ public abstract class AbstractBindingSet implements BindingSet {
 		else if (other != null && other instanceof BindingSet) {
 			BindingSet that = (BindingSet)other;
 
-			int otherSize = 0;
+			if (this.size() != that.size()) {
+				return false;
+			}
 
 			// Compare other's bindings to own
 			for (Binding binding : that) {
@@ -49,13 +51,7 @@ public abstract class AbstractBindingSet implements BindingSet {
 					// Unequal bindings for this name
 					return false;
 				}
-
-				otherSize++;
 			}
-
-			// All bindings have been matched, sets are equal if this binding set
-			// doesn't have any additional bindings.
-			return otherSize == this.size();
 		}
 
 		return false;
