@@ -66,7 +66,7 @@ public abstract class AbstractBindingSet implements BindingSet {
 		int hashCode = 0;
 
 		for (Binding binding : this) {
-			hashCode ^= binding.hashCode();
+			hashCode ^= binding.getName().hashCode() ^ binding.getValue().hashCode();
 		}
 
 		return hashCode;
