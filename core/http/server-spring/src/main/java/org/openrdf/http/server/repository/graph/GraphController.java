@@ -18,6 +18,7 @@ package org.openrdf.http.server.repository.graph;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
+import static org.openrdf.http.protocol.Protocol.BASEURI_PARAM_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,8 +108,8 @@ public class GraphController extends AbstractController {
 			logger.info("DELETE data request finished.");
 		}
 		else {
-			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
-					+ reqMethod);
+			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+					"Method not allowed: " + reqMethod);
 		}
 		return result;
 	}
@@ -148,7 +149,7 @@ public class GraphController extends AbstractController {
 	 */
 	private ModelAndView getExportStatementsResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response)
-		throws ClientHTTPException
+				throws ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -173,7 +174,7 @@ public class GraphController extends AbstractController {
 	 */
 	private ModelAndView getAddDataResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response, boolean replaceCurrent)
-		throws IOException, ClientHTTPException, ServerHTTPException
+				throws IOException, ClientHTTPException, ServerHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -185,30 +186,39 @@ public class GraphController extends AbstractController {
 		}
 
 		ValueFactory vf = repository.getValueFactory();
+		final URI graph = getGraphName(request, vf);
 
-		URI graph = getGraphName(request, vf);
+		URI baseURI = ProtocolUtil.parseURIParam(request, BASEURI_PARAM_NAME, vf);
+		if (baseURI == null) {
+			baseURI = graph != null ? graph : vf.createURI("foo:bar");
+			logger.info("no base URI specified, using '{}'", baseURI);
+		}
 
 		InputStream in = request.getInputStream();
 		try {
 			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
 			synchronized (repositoryCon) {
-				if (repositoryCon.isAutoCommit()) {
+				boolean localTransaction = !repositoryCon.isActive();
+
+				if (localTransaction) {
 					repositoryCon.begin();
 				}
 
 				if (replaceCurrent) {
 					repositoryCon.clear(graph);
 				}
-				repositoryCon.add(in, graph.toString(), rdfFormat, graph);
+				repositoryCon.add(in, baseURI.stringValue(), rdfFormat, graph);
 
-				repositoryCon.commit();
+				if (localTransaction) {
+					repositoryCon.commit();
+				}
 			}
 
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
 		catch (UnsupportedRDFormatException e) {
-			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "No RDF parser available for format "
-					+ rdfFormat.getName());
+			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE,
+					"No RDF parser available for format " + rdfFormat.getName());
 		}
 		catch (RDFParseException e) {
 			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_DATA, e.getMessage());
@@ -225,9 +235,9 @@ public class GraphController extends AbstractController {
 	/**
 	 * Delete data from the graph.
 	 */
-	private ModelAndView getDeleteDataResult(Repository repository,
-			HttpServletRequest request, HttpServletResponse response)
-		throws ClientHTTPException, ServerHTTPException
+	private ModelAndView getDeleteDataResult(Repository repository, HttpServletRequest request,
+			HttpServletResponse response)
+				throws ClientHTTPException, ServerHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -237,11 +247,10 @@ public class GraphController extends AbstractController {
 
 		try {
 			RepositoryConnection repositoryCon = RepositoryInterceptor.getRepositoryConnection(request);
-			synchronized(repositoryCon)
-			{
+			synchronized (repositoryCon) {
 				repositoryCon.clear(graph);
 			}
-			
+
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
 		catch (RepositoryException e) {
