@@ -36,25 +36,28 @@ public abstract class AbstractBindingSet implements BindingSet {
 		if (this == other) {
 			return true;
 		}
-		else if (other != null && other instanceof BindingSet) {
-			BindingSet that = (BindingSet)other;
 
-			if (this.size() != that.size()) {
+		if (other == null || !(other instanceof BindingSet)) {
+			return false;
+		}
+
+		BindingSet that = (BindingSet)other;
+		
+		if (this.size() != that.size()) {
+			return false;
+		}
+
+		// Compare other's bindings to own
+		for (Binding binding : that) {
+			Value ownValue = getValue(binding.getName());
+
+			if (!binding.getValue().equals(ownValue)) {
+				// Unequal bindings for this name
 				return false;
-			}
-
-			// Compare other's bindings to own
-			for (Binding binding : that) {
-				Value ownValue = getValue(binding.getName());
-
-				if (!binding.getValue().equals(ownValue)) {
-					// Unequal bindings for this name
-					return false;
-				}
 			}
 		}
 
-		return false;
+		return true;
 	}
 
 	@Override
