@@ -94,7 +94,7 @@
 
 	<!-- General labels -->
 	<variable name="copyright.label">
-		Copyright © 2015 Eclipse Foundation
+		Copyright © 2015 Eclipse RDF4J Contributors, Aduna, and others
 	</variable>
 	<variable name="true.label">Yes</variable>
 	<variable name="false.label">No</variable>
