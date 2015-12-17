@@ -77,7 +77,7 @@ public class SPARQLResultsXMLParser extends SPARQLXMLParserBase implements Tuple
 	}
 
 	@Override
-	public void parse(InputStream in)
+	public void parseQueryResult(InputStream in)
 		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
 	{
 		try {
@@ -91,5 +91,13 @@ public class SPARQLResultsXMLParser extends SPARQLXMLParserBase implements Tuple
 				throw new TupleQueryResultHandlerException(e);
 			}
 		}
+	}
+
+	@Override
+	@Deprecated
+	public void parse(InputStream in)
+		throws IOException, QueryResultParseException, TupleQueryResultHandlerException
+	{
+		parseQueryResult(in);
 	}
 }
