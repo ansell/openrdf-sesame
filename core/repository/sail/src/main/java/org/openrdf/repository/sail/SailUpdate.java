@@ -88,7 +88,7 @@ public class SailUpdate extends AbstractOperation implements Update {
 					getConnection().begin();
 				}
 
-				executor.executeUpdate(updateExpr, activeDataset, getBindings(), true, getMaxExecutionTime());
+				executor.executeUpdate(updateExpr, activeDataset, getBindings(), includeInferred, getMaxExecutionTime());
 
 				if (localTransaction) {
 					getConnection().commit();

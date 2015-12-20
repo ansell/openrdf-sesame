@@ -59,7 +59,20 @@ public class SPARQLBooleanXMLParser extends AbstractSPARQLXMLParser implements B
 	}
 
 	@Override
-	public synchronized boolean parse(InputStream in)
+	public synchronized void parseQueryResult(InputStream in)
+		throws IOException, QueryResultParseException
+	{
+		try {
+			parseQueryResultInternal(in, true, false);
+		}
+		catch (QueryResultHandlerException e) {
+			throw new QueryResultParseException(e);
+		}
+	}
+
+	@Override
+	@Deprecated
+	public boolean parse(InputStream in)
 		throws IOException, QueryResultParseException
 	{
 		try {
@@ -67,10 +80,7 @@ public class SPARQLBooleanXMLParser extends AbstractSPARQLXMLParser implements B
 		}
 		catch (QueryResultHandlerException e) {
 			throw new QueryResultParseException(e);
+
 		}
 	}
-
-	/*---------------------------------*
-	 * Inner class SPARQLBooleanParser *
-	 *---------------------------------*/
 }
