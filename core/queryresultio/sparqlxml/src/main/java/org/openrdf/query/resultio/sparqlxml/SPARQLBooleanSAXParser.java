@@ -19,9 +19,12 @@ package org.openrdf.query.resultio.sparqlxml;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_FALSE;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TAG;
 import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.BOOLEAN_TRUE;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_SET_TAG;
+import static org.openrdf.query.resultio.sparqlxml.SPARQLResultsXMLConstants.RESULT_TAG;
 
 import java.util.Map;
 
+import org.openrdf.query.resultio.QueryResultParseException;
 import org.xml.sax.SAXException;
 
 import info.aduna.xml.SimpleSAXAdapter;
@@ -43,15 +46,20 @@ class SPARQLBooleanSAXParser extends SimpleSAXAdapter {
 		throws SAXException
 	{
 		if (BOOLEAN_TAG.equals(tagName)) {
-			if (BOOLEAN_TRUE.equals(text)) {
+			if (BOOLEAN_TRUE.equalsIgnoreCase(text)) {
 				value = true;
 			}
-			else if (BOOLEAN_FALSE.equals(text)) {
+			else if (BOOLEAN_FALSE.equalsIgnoreCase(text)) {
 				value = false;
 			}
 			else {
 				throw new SAXException("Illegal value for element " + BOOLEAN_TAG + ": " + text);
 			}
+		}
+		else if (RESULT_SET_TAG.equals(tagName) || RESULT_TAG.equals(tagName)) {
+			QueryResultParseException realException = new QueryResultParseException(
+					"Found tuple results in boolean parser");
+			throw new SAXException(realException);
 		}
 	}
 
