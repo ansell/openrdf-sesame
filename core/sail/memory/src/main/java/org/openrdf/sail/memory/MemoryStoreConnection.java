@@ -67,6 +67,7 @@ public class MemoryStoreConnection extends SailSourceConnection {
 		if (!sail.isWritable()) {
 			throw new SailReadOnlyException("Unable to start transaction: data file is locked or read-only");
 		}
+		sail.cancelSyncTask();
 		super.startTransactionInternal();
 	}
 
@@ -76,6 +77,7 @@ public class MemoryStoreConnection extends SailSourceConnection {
 	{
 		super.commitInternal();
 
+		sail.scheduleSyncTask();
 		sail.notifySailChanged(sailChangedEvent);
 
 		// create a fresh event object.
