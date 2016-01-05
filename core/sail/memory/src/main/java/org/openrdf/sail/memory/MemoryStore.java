@@ -403,7 +403,9 @@ public class MemoryStore extends AbstractNotifyingSail implements FederatedServi
 				}
 
 				if (syncTimerTask != null) {
-					logger.error("syncTimerTask is not null");
+					// sync task from (concurrent) other transaction exists. 
+					// cancel and replace with newly scheduled sync task.
+					syncTimerTask.cancel();
 				}
 
 				syncTimerTask = new TimerTask() {
