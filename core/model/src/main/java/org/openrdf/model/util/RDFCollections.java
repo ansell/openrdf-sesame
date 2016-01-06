@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.OpenRDFUtil;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -49,52 +50,62 @@ import org.openrdf.model.vocabulary.RDF;
  * like this as an RDF Collection:
  * 
  * <pre>
- *   (n1) -rdf:type--> rdf:List
+ *   _:n1 -rdf:type--> rdf:List
  *     |
  *     +---rdf:first--> "A"
  *     |
- *     +---rdf:rest --> (n2) -rdf:first--> "B"
+ *     +---rdf:rest --> _:n2 -rdf:first--> "B"
  *                        |
- *                        +---rdf:rest--> (n3) -rdf:first--> "C"
+ *                        +---rdf:rest--> _:n3 -rdf:first--> "C"
  *                                          |
  *                                          +---rdf:rest--> rdf:nil
  * </pre>
  *
+ * Here, {@code _:n1} is the head node of the list. Note that in this example it
+ * is declared an instance of {@link RDF#LIST}, however this is not required for
+ * the collection to be considered well-formed.
+ * 
  * @author Jeen Broekstra
  * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF Schema
  *      1.1 section on Collection vocabulary</a>.
+ * @since 4.1.0
  */
 public class RDFCollections {
 
 	/**
-	 * Converts the supplied {@link Collection} of {@link Value}s to an
+	 * Converts the supplied {@link Iterable} to an
 	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
-	 * Collection</a>, using the supplied {@code listStart} resource as the
-	 * starting resource of the Collection. The statements making up the new RDF
-	 * Collection will be reported to the supplied {@link Consumer} function.
+	 * Collection</a>, using the supplied {@code head} resource as the starting
+	 * resource of the RDF Collection. Each object in the Iterable that is
+	 * <strong>not</strong> an instance of {@link Value} will be converted to a
+	 * {@link Literal}. The statements making up the new RDF Collection will be
+	 * reported to the supplied {@link Consumer} function.
+	 * 
 	 * @param consumer
 	 *        the {@link Consumer} function for the Statements of the RDF
 	 *        Collection. May not be {@code null}.
-	 * @param collection
-	 *        a Java {@link Collection} of {@link Value} objects, which will be
-	 *        converted to an RDF Collection. May not be {@code null}.
+	 * @param values
+	 *        an {@link Iterable} of objects (such as a Java {@link Collection}
+	 *        ), which will be converted to an RDF Collection. May not be
+	 *        {@code null}. Each object in the Iterable that is
+	 *        <strong>not</strong> an instance of {@link Value} will be
+	 *        converted to a {@link Literal}.
 	 * @param head
-	 *        a {@link Resource} which will be used as the head of the list, that
-	 *        is, the starting point of the created RDF Collection. May be
+	 *        a {@link Resource} which will be used as the head of the list,
+	 *        that is, the starting point of the created RDF Collection. May be
 	 *        {@code null}, in which case a new resource is generated to
 	 *        represent the list head.
 	 * @param contexts
-	 *        the context(s) in which to add the RDF Collection. This argument is
-	 *        an optional vararg and can be left out.
-	 * 
+	 *        the context(s) in which to add the RDF Collection. This argument
+	 *        is an optional vararg and can be left out.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static void asRDF(Consumer<Statement> consumer, Iterable<? extends Value> collection, Resource head,
+	public static void asRDF(Consumer<Statement> consumer, Iterable<?> values, Resource head,
 			Resource... contexts)
 	{
-		Objects.requireNonNull(collection, "input collection may not be null");
+		Objects.requireNonNull(values, "input collection may not be null");
 		Objects.requireNonNull(consumer, "model may not be null");
 		final ValueFactory vf = SimpleValueFactory.getInstance();
 
@@ -102,9 +113,10 @@ public class RDFCollections {
 
 		Statements.create(vf, current, RDF.TYPE, RDF.LIST, consumer, contexts);
 
-		Iterator<? extends Value> iter = collection.iterator();
+		Iterator<?> iter = values.iterator();
 		while (iter.hasNext()) {
-			Value v = iter.next();
+			Object o = iter.next();
+			Value v = o instanceof Value ? (Value)o : Literals.createLiteral(vf, o);
 			Statements.create(vf, current, RDF.FIRST, v, consumer, contexts);
 			if (iter.hasNext()) {
 				Resource next = vf.createBNode();
@@ -118,18 +130,20 @@ public class RDFCollections {
 	}
 
 	/**
-	 * Converts the supplied {@link Collection} of {@link Value}s to an
+	 * Converts the supplied {@link Iterable} to an
 	 * <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 * Collection</a>, using the supplied {@code head} resource as the starting
-	 * resource of the Collection. The statements making up the new RDF
+	 * resource of the RDF Collection. The statements making up the new RDF
 	 * Collection will be added to the supplied statement collection.
 	 * 
-	 * @param collection
-	 *        a Java {@link Collection} of {@link Value} objects, which will be
-	 *        converted to an RDF Collection. May not be {@code null}.
+	 * @param values
+	 *        an {@link Iterable} (such as a Java {@link Collection}), which
+	 *        will be converted to an RDF Collection. May not be {@code null}.
+	 *        Each object in the Iterable that is <strong>not</strong> an
+	 *        instance of {@link Value} will be converted to a {@link Literal}.
 	 * @param head
-	 *        a {@link Resource} which will be used as the head of the list, that
-	 *        is, the starting point of the created RDF Collection. May be
+	 *        a {@link Resource} which will be used as the head of the list,
+	 *        that is, the starting point of the created RDF Collection. May be
 	 *        {@code null}, in which case a new resource is generated to
 	 *        represent the list head.
 	 * @param rdfCollection
@@ -137,19 +151,19 @@ public class RDFCollections {
 	 *        {@link Model}) to which the RDF Collection statements will be
 	 *        added. May not be {@code null}.
 	 * @param contexts
-	 *        the context(s) in which to add the RDF Collection. This argument is
-	 *        an optional vararg and can be left out.
+	 *        the context(s) in which to add the RDF Collection. This argument
+	 *        is an optional vararg and can be left out.
 	 * @return the input {@link Collection} of {@link Statement}s, with the new
 	 *         Statements forming the RDF {@link Collection} added.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static <C extends Collection<Statement>> C asRDF(Iterable<? extends Value> collection,
-			Resource head, C rdfCollection, Resource... contexts)
+	public static <C extends Collection<Statement>> C asRDF(Iterable<?> values, Resource head,
+			C rdfCollection, Resource... contexts)
 	{
 		Objects.requireNonNull(rdfCollection);
-		asRDF(st -> rdfCollection.add(st), collection, head, contexts);
+		asRDF(st -> rdfCollection.add(st), values, head, contexts);
 		return rdfCollection;
 	}
 
@@ -157,9 +171,9 @@ public class RDFCollections {
 	 * Reads an RDF Collection starting with the supplied list head from the
 	 * supplied {@link Model} and sends each collection member to the supplied
 	 * {@link Consumer} function. This method expects the RDF Collection to be
-	 * well-formed. If the collection is not well-formed the results depend on
-	 * the nature of the non-wellformedness: the method may report only part of
-	 * the collection, or may throw a {@link ModelException}.
+	 * well-formed. If the collection is not well-formed the method may report
+	 * only part of the collection, or may throw a {@link ModelException}.
+	 * 
 	 * @param consumer
 	 *        the Java {@link Consumer} function to which the collection items
 	 *        are reported.
@@ -170,18 +184,17 @@ public class RDFCollections {
 	 *        start resource of the RDF Collection to be read. May not be
 	 *        {@code null}.
 	 * @param contexts
-	 *        the context(s) from which to read the RDF Collection. This argument
-	 *        is an optional vararg and can be left out.
+	 *        the context(s) from which to read the RDF Collection. This
+	 *        argument is an optional vararg and can be left out.
 	 * @throws ModelException
-	 *         if a problem occurs reading the RDF Collection, for example if the
-	 *         Collection is not well-formed.
+	 *         if a problem occurs reading the RDF Collection, for example if
+	 *         the Collection is not well-formed.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static void asValues(Consumer<Value> consumer, final Model m, Resource head,
-			Resource... contexts)
-				throws ModelException
+	public static void asValues(Consumer<Value> consumer, final Model m, Resource head, Resource... contexts)
+		throws ModelException
 	{
 		Objects.requireNonNull(consumer, "consumer may not be null");
 		Objects.requireNonNull(m, "input model may not be null");
@@ -199,10 +212,9 @@ public class RDFCollections {
 	/**
 	 * Converts an RDF Collection to a Java {@link Collection} of {@link Value}
 	 * objects. The RDF Collection is given by the supplied {@link Model} and
-	 * {@code head}. This method expects the RDF Collection to be well-formed. If
-	 * the collection is not well-formed the results depend on the nature of the
-	 * non-wellformedness: the method may return part of the collection, or may
-	 * throw a {@link ModelException}.
+	 * {@code head}. This method expects the RDF Collection to be well-formed.
+	 * If the collection is not well-formed the method may return part of the
+	 * collection, or may throw a {@link ModelException}.
 	 * 
 	 * @param m
 	 *        the Model containing the collection to read.
@@ -213,13 +225,13 @@ public class RDFCollections {
 	 * @param collection
 	 *        the Java {@link Collection} to add the collection items to.
 	 * @param contexts
-	 *        the context(s) from which to read the RDF Collection. This argument
-	 *        is an optional vararg and can be left out.
+	 *        the context(s) from which to read the RDF Collection. This
+	 *        argument is an optional vararg and can be left out.
 	 * @return the supplied Java {@link Collection}, filled with the items from
 	 *         the RDF Collection (if any).
 	 * @throws ModelException
-	 *         if a problem occurs reading the RDF Collection, for example if the
-	 *         Collection is not well-formed.
+	 *         if a problem occurs reading the RDF Collection, for example if
+	 *         the Collection is not well-formed.
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
@@ -237,15 +249,14 @@ public class RDFCollections {
 
 	/**
 	 * Reads an RDF Collection starting with the supplied list head from the
-	 * statement supplier and sends all statements that make up the collection to
-	 * the supplied {@link Consumer} function. This method expects the RDF
+	 * statement supplier and sends all statements that make up the collection
+	 * to the supplied {@link Consumer} function. This method expects the RDF
 	 * Collection to be well-formed. If the collection is not well-formed the
-	 * results depend on the nature of the non-wellformedness: the method may
-	 * report only part of the collection, or may throw an exception.
+	 * method may report only part of the collection, or may throw an exception.
 	 * 
 	 * @param statementSupplier
-	 *        the source of the statements from which the RDF collection is to be
-	 *        read, specified as a functional interface.
+	 *        the source of the statements from which the RDF collection is to
+	 *        be read, specified as a functional interface.
 	 * @param head
 	 *        the {@link Resource} that represents the list head, that is the
 	 *        start resource of the RDF Collection to be read. May not be
@@ -254,14 +265,14 @@ public class RDFCollections {
 	 *        the Java {@link Consumer} function to which the collection
 	 *        statements are reported.
 	 * @param exceptionSupplier
-	 *        a functional interface that produces the exception type this method
-	 *        will throw when an error occurs.
+	 *        a functional interface that produces the exception type this
+	 *        method will throw when an error occurs.
 	 * @param contexts
-	 *        the context(s) from which to read the RDF Collection. This argument
-	 *        is an optional vararg and can be left out.
+	 *        the context(s) from which to read the RDF Collection. This
+	 *        argument is an optional vararg and can be left out.
 	 * @throws E
-	 *         if a problem occurs reading the RDF Collection, for example if the
-	 *         Collection is not well-formed.
+	 *         if a problem occurs reading the RDF Collection, for example if it
+	 *         is not well-formed.
 	 * @since 4.1.0
 	 */
 	public static <E extends OpenRDFException> void asValues(GetStatementOptional statementSupplier,
@@ -277,7 +288,7 @@ public class RDFCollections {
 		final Set<Resource> visited = new HashSet<>();
 		while (!RDF.NIL.equals(current)) {
 			if (visited.contains(current)) {
-				throw exceptionSupplier.apply("list not wellformed: cycle detected").get();
+				throw exceptionSupplier.apply("list not well-formed: cycle detected").get();
 			}
 
 			statementSupplier.get(current, RDF.TYPE, RDF.LIST, contexts).ifPresent(collectionConsumer);
@@ -286,13 +297,13 @@ public class RDFCollections {
 					exceptionSupplier.apply("list not wellformed: rdf:first statement missing.")));
 
 			Statement next = statementSupplier.get(current, RDF.REST, null, contexts).orElseThrow(
-					exceptionSupplier.apply("list not wellformed: rdf:rest statement missing."));
+					exceptionSupplier.apply("list not well-formed: rdf:rest statement missing."));
 
 			collectionConsumer.accept(next);
 
 			if (!(next.getObject() instanceof Resource)) {
 				throw exceptionSupplier.apply(
-						"list not wellformed: value of rdf:rest should be one of (IRI, BNode).").get();
+						"list not well-formed: value of rdf:rest should be one of (IRI, BNode).").get();
 			}
 			visited.add(current);
 			current = (Resource)next.getObject();
