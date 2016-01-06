@@ -123,7 +123,9 @@ public class StatementsController extends AbstractController {
 				logger.info("POST transaction to repository");
 				result = getTransactionResultResult(repository, request, response);
 			}
-			else if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType) || request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME)) {
+			else if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType)
+					|| request.getParameterMap().containsKey(Protocol.UPDATE_PARAM_NAME))
+			{
 				logger.info("POST SPARQL update request to repository");
 				result = getSparqlUpdateResult(repository, request, response);
 			}
@@ -141,8 +143,8 @@ public class StatementsController extends AbstractController {
 			result = getDeleteDataResult(repository, request, response);
 		}
 		else {
-			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Method not allowed: "
-					+ reqMethod);
+			throw new ClientHTTPException(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+					"Method not allowed: " + reqMethod);
 		}
 
 		return result;
@@ -150,12 +152,12 @@ public class StatementsController extends AbstractController {
 
 	private ModelAndView getSparqlUpdateResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response)
-		throws ServerHTTPException, ClientHTTPException, HTTPException
+				throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
 		String mimeType = HttpServerUtil.getMIMEType(request.getContentType());
-		
+
 		String sparqlUpdateString;
 		if (Protocol.SPARQL_UPDATE_MIME_TYPE.equals(mimeType)) {
 			// The query should be the entire body
@@ -165,7 +167,8 @@ public class StatementsController extends AbstractController {
 			catch (IOException e) {
 				throw new ClientHTTPException(SC_BAD_REQUEST, "Error reading request message body", e);
 			}
-			if (sparqlUpdateString.isEmpty()) sparqlUpdateString = null;
+			if (sparqlUpdateString.isEmpty())
+				sparqlUpdateString = null;
 		}
 		else {
 			sparqlUpdateString = request.getParameterValues(Protocol.UPDATE_PARAM_NAME)[0];
@@ -196,7 +199,12 @@ public class StatementsController extends AbstractController {
 		String[] defaultGraphURIs = request.getParameterValues(USING_GRAPH_PARAM_NAME);
 		String[] namedGraphURIs = request.getParameterValues(USING_NAMED_GRAPH_PARAM_NAME);
 
-		DatasetImpl dataset = new DatasetImpl();
+		DatasetImpl dataset = null;
+		if (defaultRemoveGraphURIs != null || defaultInsertGraphURIs != null || defaultGraphURIs != null
+				|| namedGraphURIs != null)
+		{
+			dataset = new DatasetImpl();
+		}
 
 		if (defaultRemoveGraphURIs != null) {
 			for (String graphURI : defaultRemoveGraphURIs) {
@@ -205,8 +213,8 @@ public class StatementsController extends AbstractController {
 					dataset.addDefaultRemoveGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
-					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default remove graph: "
-							+ graphURI);
+					throw new ClientHTTPException(SC_BAD_REQUEST,
+							"Illegal URI for default remove graph: " + graphURI);
 				}
 			}
 		}
@@ -218,7 +226,8 @@ public class StatementsController extends AbstractController {
 				dataset.setDefaultInsertGraph(uri);
 			}
 			catch (IllegalArgumentException e) {
-				throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default insert graph: " + graphURI);
+				throw new ClientHTTPException(SC_BAD_REQUEST,
+						"Illegal URI for default insert graph: " + graphURI);
 			}
 		}
 
@@ -229,8 +238,8 @@ public class StatementsController extends AbstractController {
 					dataset.addDefaultGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
-					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for default graph: "
-							+ defaultGraphURI);
+					throw new ClientHTTPException(SC_BAD_REQUEST,
+							"Illegal URI for default graph: " + defaultGraphURI);
 				}
 			}
 		}
@@ -242,7 +251,8 @@ public class StatementsController extends AbstractController {
 					dataset.addNamedGraph(uri);
 				}
 				catch (IllegalArgumentException e) {
-					throw new ClientHTTPException(SC_BAD_REQUEST, "Illegal URI for named graph: " + namedGraphURI);
+					throw new ClientHTTPException(SC_BAD_REQUEST,
+							"Illegal URI for named graph: " + namedGraphURI);
 				}
 			}
 		}
@@ -259,7 +269,8 @@ public class StatementsController extends AbstractController {
 					update.setDataset(dataset);
 				}
 
-				// determine if any variable bindings have been set on this update.
+				// determine if any variable bindings have been set on this
+				// update.
 				@SuppressWarnings("unchecked")
 				Enumeration<String> parameterNames = request.getParameterNames();
 
@@ -283,7 +294,8 @@ public class StatementsController extends AbstractController {
 		}
 		catch (UpdateExecutionException e) {
 			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
-				// custom signal from the backend, throw as HTTPException directly
+				// custom signal from the backend, throw as HTTPException
+				// directly
 				// (see SES-1016).
 				throw (HTTPException)e.getCause();
 			}
@@ -293,7 +305,8 @@ public class StatementsController extends AbstractController {
 		}
 		catch (RepositoryException e) {
 			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
-				// custom signal from the backend, throw as HTTPException directly
+				// custom signal from the backend, throw as HTTPException
+				// directly
 				// (see SES-1016).
 				throw (HTTPException)e.getCause();
 			}
@@ -320,7 +333,7 @@ public class StatementsController extends AbstractController {
 	 */
 	private ModelAndView getExportStatementsResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response)
-		throws ClientHTTPException
+				throws ClientHTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -351,7 +364,7 @@ public class StatementsController extends AbstractController {
 	 */
 	private ModelAndView getTransactionResultResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response)
-		throws IOException, ClientHTTPException, ServerHTTPException, HTTPException
+				throws IOException, ClientHTTPException, ServerHTTPException, HTTPException
 	{
 		InputStream in = request.getInputStream();
 		try {
@@ -386,7 +399,8 @@ public class StatementsController extends AbstractController {
 		}
 		catch (RepositoryException e) {
 			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
-				// custom signal from the backend, throw as HTTPException directly
+				// custom signal from the backend, throw as HTTPException
+				// directly
 				// (see SES-1016).
 				throw (HTTPException)e.getCause();
 			}
@@ -401,7 +415,7 @@ public class StatementsController extends AbstractController {
 	 */
 	private ModelAndView getAddDataResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response, boolean replaceCurrent)
-		throws IOException, ServerHTTPException, ClientHTTPException, HTTPException
+				throws IOException, ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -416,7 +430,8 @@ public class StatementsController extends AbstractController {
 
 		Resource[] contexts = ProtocolUtil.parseContextParam(request, CONTEXT_PARAM_NAME, vf);
 		URI baseURI = ProtocolUtil.parseURIParam(request, BASEURI_PARAM_NAME, vf);
-		final boolean preserveNodeIds = ProtocolUtil.parseBooleanParam(request, Protocol.PRESERVE_BNODE_ID_PARAM_NAME, false);
+		final boolean preserveNodeIds = ProtocolUtil.parseBooleanParam(request,
+				Protocol.PRESERVE_BNODE_ID_PARAM_NAME, false);
 
 		if (baseURI == null) {
 			baseURI = vf.createURI("foo:bar");
@@ -430,11 +445,11 @@ public class StatementsController extends AbstractController {
 				if (!repositoryCon.isActive()) {
 					repositoryCon.begin();
 				}
-				
+
 				if (preserveNodeIds) {
 					repositoryCon.getParserConfig().set(BasicParserSettings.PRESERVE_BNODE_IDS, true);
 				}
-				
+
 				if (replaceCurrent) {
 					repositoryCon.clear(contexts);
 				}
@@ -446,8 +461,8 @@ public class StatementsController extends AbstractController {
 			return new ModelAndView(EmptySuccessView.getInstance());
 		}
 		catch (UnsupportedRDFormatException e) {
-			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE, "No RDF parser available for format "
-					+ rdfFormat.getName());
+			throw new ClientHTTPException(SC_UNSUPPORTED_MEDIA_TYPE,
+					"No RDF parser available for format " + rdfFormat.getName());
 		}
 		catch (RDFParseException e) {
 			ErrorInfo errInfo = new ErrorInfo(ErrorType.MALFORMED_DATA, e.getMessage());
@@ -458,7 +473,8 @@ public class StatementsController extends AbstractController {
 		}
 		catch (RepositoryException e) {
 			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
-				// custom signal from the backend, throw as HTTPException directly
+				// custom signal from the backend, throw as HTTPException
+				// directly
 				// (see SES-1016).
 				throw (HTTPException)e.getCause();
 			}
@@ -473,7 +489,7 @@ public class StatementsController extends AbstractController {
 	 */
 	private ModelAndView getDeleteDataResult(Repository repository, HttpServletRequest request,
 			HttpServletResponse response)
-		throws ServerHTTPException, ClientHTTPException, HTTPException
+				throws ServerHTTPException, ClientHTTPException, HTTPException
 	{
 		ProtocolUtil.logRequestParameters(request);
 
@@ -494,7 +510,8 @@ public class StatementsController extends AbstractController {
 		}
 		catch (RepositoryException e) {
 			if (e.getCause() != null && e.getCause() instanceof HTTPException) {
-				// custom signal from the backend, throw as HTTPException directly
+				// custom signal from the backend, throw as HTTPException
+				// directly
 				// (see SES-1016).
 				throw (HTTPException)e.getCause();
 			}
