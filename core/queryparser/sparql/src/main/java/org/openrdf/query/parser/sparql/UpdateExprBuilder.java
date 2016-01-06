@@ -328,17 +328,16 @@ public class UpdateExprBuilder extends TupleExprBuilder {
 	public Modify visit(ASTModify node, Object data)
 		throws VisitorException
 	{
-
-		ValueConstant with = null;
-		ASTIRI withNode = node.getWithClause();
-		if (withNode != null) {
-			with = (ValueConstant)withNode.jjtAccept(this, data);
-		}
-
-		if (with != null) {
-			graphPattern.setContextVar(mapValueExprToVar(with));
-			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
-		}
+//		ValueConstant with = null;
+//		ASTIRI withNode = node.getWithClause();
+//		if (withNode != null) {
+//			with = (ValueConstant)withNode.jjtAccept(this, data);
+//		}
+//
+//		if (with != null) {
+//			graphPattern.setContextVar(mapValueExprToVar(with));
+//			graphPattern.setStatementPatternScope(Scope.NAMED_CONTEXTS);
+//		}
 
 		ASTGraphPatternGroup whereClause = node.getWhereClause();
 
