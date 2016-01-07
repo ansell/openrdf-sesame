@@ -80,10 +80,6 @@ public class RDFCollections {
 	 * <strong>not</strong> an instance of {@link Value} will be converted to a
 	 * {@link Literal}. The statements making up the new RDF Collection will be
 	 * reported to the supplied {@link Consumer} function.
-	 * 
-	 * @param consumer
-	 *        the {@link Consumer} function for the Statements of the RDF
-	 *        Collection. May not be {@code null}.
 	 * @param values
 	 *        an {@link Iterable} of objects (such as a Java {@link Collection}
 	 *        ), which will be converted to an RDF Collection. May not be
@@ -95,14 +91,18 @@ public class RDFCollections {
 	 *        that is, the starting point of the created RDF Collection. May be
 	 *        {@code null}, in which case a new resource is generated to
 	 *        represent the list head.
+	 * @param consumer
+	 *        the {@link Consumer} function for the Statements of the RDF
+	 *        Collection. May not be {@code null}.
 	 * @param contexts
 	 *        the context(s) in which to add the RDF Collection. This argument
 	 *        is an optional vararg and can be left out.
+	 * 
 	 * @see <a href="http://www.w3.org/TR/rdf-schema/#ch_collectionvocab">RDF
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static void asRDF(Consumer<Statement> consumer, Iterable<?> values, Resource head,
+	public static void consumeRDF(Iterable<?> values, Resource head, Consumer<Statement> consumer,
 			Resource... contexts)
 	{
 		Objects.requireNonNull(values, "input collection may not be null");
@@ -111,20 +111,20 @@ public class RDFCollections {
 
 		Resource current = head != null ? head : vf.createBNode();
 
-		Statements.create(vf, current, RDF.TYPE, RDF.LIST, consumer, contexts);
+		Statements.consume(vf, current, RDF.TYPE, RDF.LIST, consumer, contexts);
 
 		Iterator<?> iter = values.iterator();
 		while (iter.hasNext()) {
 			Object o = iter.next();
 			Value v = o instanceof Value ? (Value)o : Literals.createLiteral(vf, o);
-			Statements.create(vf, current, RDF.FIRST, v, consumer, contexts);
+			Statements.consume(vf, current, RDF.FIRST, v, consumer, contexts);
 			if (iter.hasNext()) {
 				Resource next = vf.createBNode();
-				Statements.create(vf, current, RDF.REST, next, consumer, contexts);
+				Statements.consume(vf, current, RDF.REST, next, consumer, contexts);
 				current = next;
 			}
 			else {
-				Statements.create(vf, current, RDF.REST, RDF.NIL, consumer, contexts);
+				Statements.consume(vf, current, RDF.REST, RDF.NIL, consumer, contexts);
 			}
 		}
 	}
@@ -163,7 +163,7 @@ public class RDFCollections {
 			C rdfCollection, Resource... contexts)
 	{
 		Objects.requireNonNull(rdfCollection);
-		asRDF(st -> rdfCollection.add(st), values, head, contexts);
+		consumeRDF(values, head, st -> rdfCollection.add(st), contexts);
 		return rdfCollection;
 	}
 
@@ -173,19 +173,19 @@ public class RDFCollections {
 	 * {@link Consumer} function. This method expects the RDF Collection to be
 	 * well-formed. If the collection is not well-formed the method may report
 	 * only part of the collection, or may throw a {@link ModelException}.
-	 * 
-	 * @param consumer
-	 *        the Java {@link Consumer} function to which the collection items
-	 *        are reported.
 	 * @param m
 	 *        the Model containing the collection to read.
 	 * @param head
 	 *        the {@link Resource} that represents the list head, that is the
 	 *        start resource of the RDF Collection to be read. May not be
 	 *        {@code null}.
+	 * @param consumer
+	 *        the Java {@link Consumer} function to which the collection items
+	 *        are reported.
 	 * @param contexts
 	 *        the context(s) from which to read the RDF Collection. This
 	 *        argument is an optional vararg and can be left out.
+	 * 
 	 * @throws ModelException
 	 *         if a problem occurs reading the RDF Collection, for example if
 	 *         the Collection is not well-formed.
@@ -193,7 +193,7 @@ public class RDFCollections {
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static void asValues(Consumer<Value> consumer, final Model m, Resource head, Resource... contexts)
+	public static void consumeValues(final Model m, Resource head, Consumer<Value> consumer, Resource... contexts)
 		throws ModelException
 	{
 		Objects.requireNonNull(consumer, "consumer may not be null");
@@ -202,7 +202,7 @@ public class RDFCollections {
 		GetStatementOptional statementSupplier = (s, p, o, c) -> m.filter(s, p, o, c).stream().findAny();
 		Function<String, Supplier<ModelException>> exceptionSupplier = Models::modelException;
 
-		asValues(statementSupplier, head, st -> {
+		consumeValues(statementSupplier, head, st -> {
 			if (RDF.FIRST.equals(st.getPredicate())) {
 				consumer.accept(st.getObject());
 			}
@@ -242,7 +242,7 @@ public class RDFCollections {
 	{
 		Objects.requireNonNull(collection, "collection may not be null");
 
-		asValues(v -> collection.add(v), m, head, contexts);
+		consumeValues(m, head, v -> collection.add(v), contexts);
 
 		return collection;
 	}
@@ -275,7 +275,7 @@ public class RDFCollections {
 	 *         is not well-formed.
 	 * @since 4.1.0
 	 */
-	public static <E extends OpenRDFException> void asValues(GetStatementOptional statementSupplier,
+	public static <E extends OpenRDFException> void consumeValues(GetStatementOptional statementSupplier,
 			Resource head, Consumer<Statement> collectionConsumer,
 			Function<String, Supplier<E>> exceptionSupplier, Resource... contexts)
 				throws E

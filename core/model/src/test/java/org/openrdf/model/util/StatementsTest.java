@@ -44,7 +44,7 @@ public class StatementsTest {
 	@Test
 	public void testInvalidInput() {
 		try {
-			Statements.create(vf, FOAF.AGE, RDF.TYPE, RDF.PROPERTY,
+			Statements.consume(vf, FOAF.AGE, RDF.TYPE, RDF.PROPERTY,
 					st -> fail("should have resulted in Exception"), null);
 		}
 		catch (IllegalArgumentException e) {
@@ -52,7 +52,7 @@ public class StatementsTest {
 		}
 
 		try {
-			Statements.create(vf, null, RDF.TYPE, RDF.PROPERTY, st -> fail("should have resulted in Exception"));
+			Statements.consume(vf, null, RDF.TYPE, RDF.PROPERTY, st -> fail("should have resulted in Exception"));
 		}
 		catch (NullPointerException e) {
 			// fall through.

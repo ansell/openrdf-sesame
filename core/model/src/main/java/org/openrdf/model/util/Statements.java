@@ -35,10 +35,10 @@ import org.openrdf.model.ValueFactory;
 public class Statements {
 
 	/**
-	 * Create one or more {@link Statement} objects with the given subject,
-	 * predicate and object, one for each given context. If no context is
-	 * supplied, only a single statement (without any assigned context) is
-	 * created.
+	 * Creates one or more {@link Statement} objects with the given subject,
+	 * predicate and object, one for each given context, and sends each created
+	 * statement to the supplied {@link Consumer}. If no context is supplied,
+	 * only a single statement (without any assigned context) is created.
 	 * 
 	 * @param vf
 	 *        the {@link ValueFactory} to use for creating statements.
@@ -51,11 +51,11 @@ public class Statements {
 	 * @param consumer
 	 *        the {@link Consumer} function for the produced statements.
 	 * @param contexts
-	 *        the context(s) for which to produce statements. This argument is an
-	 *        optional vararg: leave it out completely to produce a single
+	 *        the context(s) for which to produce statements. This argument is
+	 *        an optional vararg: leave it out completely to produce a single
 	 *        statement without context.
 	 */
-	public static void create(ValueFactory vf, Resource subject, IRI predicate, Value object,
+	public static void consume(ValueFactory vf, Resource subject, IRI predicate, Value object,
 			Consumer<Statement> consumer, Resource... contexts)
 	{
 		OpenRDFUtil.verifyContextNotNull(contexts);
@@ -72,7 +72,7 @@ public class Statements {
 	}
 
 	/**
-	 * Create one or more {@link Statement} objects with the given subject,
+	 * Creates one or more {@link Statement} objects with the given subject,
 	 * predicate and object, one for each given context. If no context is
 	 * supplied, only a single statement (without any assigned context) is
 	 * created.
@@ -91,15 +91,15 @@ public class Statements {
 	 * @return the input collection of Statements, with the newly created
 	 *         Statements added.
 	 * @param contexts
-	 *        the context(s) for which to produce statements. This argument is an
-	 *        optional vararg: leave it out completely to produce a single
+	 *        the context(s) for which to produce statements. This argument is
+	 *        an optional vararg: leave it out completely to produce a single
 	 *        statement without context.
 	 */
 	public static <C extends Collection<Statement>> C create(ValueFactory vf, Resource subject, IRI predicate,
 			Value object, C collection, Resource... contexts)
 	{
 		Objects.requireNonNull(collection);
-		create(vf, subject, predicate, object, st -> collection.add(st), contexts);
+		consume(vf, subject, predicate, object, st -> collection.add(st), contexts);
 		return collection;
 	}
 }
