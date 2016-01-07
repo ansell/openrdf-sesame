@@ -251,9 +251,9 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	 *---------*/
 
 	/**
-	 * Maps the given valueExpr to a Var. If the supplied ValueExpr is a Var, the
-	 * object itself will be returned. If it is a ValueConstant, this method will
-	 * check if an existing variable mapping exists and return that mapped
+	 * Maps the given valueExpr to a Var. If the supplied ValueExpr is a Var,
+	 * the object itself will be returned. If it is a ValueConstant, this method
+	 * will check if an existing variable mapping exists and return that mapped
 	 * variable, otherwise it will create and store a new mapping.
 	 * 
 	 * @param valueExpr
@@ -344,12 +344,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 	}
 
 	/**
-	 * Creates an anonymous Var with a unique, randomly generated, variable name.
+	 * Creates an anonymous Var with a unique, randomly generated, variable
+	 * name.
 	 * 
 	 * @return an anonymous Var with a unique, randomly generated, variable name
 	 */
 	private Var createAnonVar() {
-		// dashes ('-') in the generated UUID are replaced with underscores so the
+		// dashes ('-') in the generated UUID are replaced with underscores so
+		// the
 		// varname
 		// remains compatible with the SPARQL grammar. See SES-2310.
 		final Var var = new Var("_anon_" + UUID.randomUUID().toString().replaceAll("-", "_"));
@@ -499,7 +501,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				GroupElem ge = new GroupElem(alias, operator);
 
 				// FIXME quite often the aggregate in the HAVING clause will be
-				// a duplicate of an aggregate in the projection. We could perhaps
+				// a duplicate of an aggregate in the projection. We could
+				// perhaps
 				// optimize for that, to avoid having to evaluate twice.
 				group.addGroupElement(ge);
 			}
@@ -636,7 +639,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					}
 				}
 
-				// add extension element reference to the projection element and to
+				// add extension element reference to the projection element and
+				// to
 				// the extension
 				ExtensionElem extElem = new ExtensionElem(valueExpr, alias);
 				extension.addElement(extElem);
@@ -663,9 +667,11 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		if (!extension.getElements().isEmpty()) {
 			if (orderClause != null) {
-				// Extensions produced by SELECT expressions should be nested inside
+				// Extensions produced by SELECT expressions should be nested
+				// inside
 				// the ORDER BY clause, to make sure
-				// sorting can work on the newly introduced variable. See SES-892
+				// sorting can work on the newly introduced variable. See
+				// SES-892
 				// and SES-1809.
 				TupleExpr arg = orderClause.getArg();
 				extension.setArg(arg);
@@ -694,20 +700,20 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 						for (Var var : collector.getCollectedVars()) {
 							if (!groupNames.contains(var.getName())) {
-								throw new VisitorException(
-										"variable '" + var.getName() + "' in projection not present in GROUP BY.");
+								throw new VisitorException("variable '" + var.getName()
+										+ "' in projection not present in GROUP BY.");
 
 							}
 						}
 					}
 					else {
 						if (!groupNames.contains(elem.getTargetName())) {
-							throw new VisitorException(
-									"variable '" + elem.getTargetName() + "' in projection not present in GROUP BY.");
+							throw new VisitorException("variable '" + elem.getTargetName()
+									+ "' in projection not present in GROUP BY.");
 						}
 						else if (!groupNames.contains(elem.getSourceName())) {
-							throw new VisitorException(
-									"variable '" + elem.getSourceName() + "' in projection not present in GROUP BY.");
+							throw new VisitorException("variable '" + elem.getSourceName()
+									+ "' in projection not present in GROUP BY.");
 
 						}
 					}
@@ -738,7 +744,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		@Override
 		public void meet(Projection projection) {
-			// stop tree traversal on finding a projection: we do not wish to find
+			// stop tree traversal on finding a projection: we do not wish to
+			// find
 			// the group in a sub-select.
 		}
 
@@ -773,7 +780,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 			group = (Group)tupleExpr;
 		}
 		else {
-			// create a new implicit group. Note that this group will only actually
+			// create a new implicit group. Note that this group will only
+			// actually
 			// be used in the query model if the query has HAVING or ORDER BY
 			// clause
 			group = new Group(tupleExpr);
@@ -846,7 +854,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 		List<StatementPattern> statementPatterns = StatementPatternCollector.process(constructExpr);
 
 		if (constructExpr instanceof Filter) {
-			// sameTerm filters in construct (this can happen when there's a cyclic
+			// sameTerm filters in construct (this can happen when there's a
+			// cyclic
 			// path defined, see SES-1685 and SES-2104)
 
 			// we remove the sameTerm filters by simply replacing all mapped
@@ -879,7 +888,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				// non-anon var in construct clause not present in where clause
 				if (!extElemMap.containsKey(var)) {
 					// assign non-anonymous vars not present in where clause as
-					// extension elements. This is necessary to make external binding
+					// extension elements. This is necessary to make external
+					// binding
 					// assingnment possible (see SES-996)
 					extElemMap.put(var, new ExtensionElem(var, var.getName()));
 				}
@@ -1269,8 +1279,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		String serviceExpressionString = node.getPatternString();
 
-		parentGP.addRequiredTE(new Service(mapValueExprToVar(serviceRef), serviceExpr, serviceExpressionString,
-				node.getPrefixDeclarations(), node.getBaseURI(), node.isSilent()));
+		parentGP.addRequiredTE(new Service(mapValueExprToVar(serviceRef), serviceExpr,
+				serviceExpressionString, node.getPrefixDeclarations(), node.getBaseURI(), node.isSilent()));
 
 		graphPattern = parentGP;
 
@@ -1286,7 +1296,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		super.visit(node, null);
 
-		// remove filter conditions from graph pattern for inclusion as conditions
+		// remove filter conditions from graph pattern for inclusion as
+		// conditions
 		// in the OptionalTE
 		List<ValueExpr> optionalConstraints = graphPattern.removeAllConstraints();
 		TupleExpr optional = graphPattern.buildTupleExpr();
@@ -1516,6 +1527,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				nps.setContextVar(contextVar);
 
 				for (Node child : pathElement.jjtGetChildren()) {
+					if (child instanceof ASTPathMod) {
+						// skip the modifier
+						continue;
+					}
 					nps.addPropertySetElem((PropertySetElem)child.jjtAccept(this, data));
 				}
 
@@ -1548,6 +1563,10 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					SameTerm condition = new SameTerm(objVarReplacement[0], objVarReplacement[1]);
 					pathSequencePattern.addConstraint(condition);
 				}
+				for (ValueExpr object : objectList) {
+					Var objVar = mapValueExprToVar(object);
+					te = handlePathModifiers(scope, subjVar, te, objVar, contextVar, lowerBound, upperBound);
+				}
 				pathSequencePattern.addRequiredTE(te);
 
 			}
@@ -1566,8 +1585,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						Var objVar = mapValueExprToVar(object);
 						if (objVar.equals(subjVar)) { // see SES-1685
 							Var objVarReplacement = createAnonVar();
-							te = handlePathModifiers(scope, startVar, te, objVarReplacement, contextVar, lowerBound,
-									upperBound);
+							te = handlePathModifiers(scope, startVar, te, objVarReplacement, contextVar,
+									lowerBound, upperBound);
 							SameTerm condition = new SameTerm(objVar, objVarReplacement);
 							pathSequencePattern.addConstraint(condition);
 						}
@@ -1579,7 +1598,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					}
 				}
 				else {
-					// not the last element in the path, introduce an anonymous var
+					// not the last element in the path, introduce an anonymous
+					// var
 					// to connect.
 					Var nextVar = createAnonVar();
 
@@ -1587,10 +1607,12 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 					TupleExpr te = graphPattern.buildTupleExpr();
 
-					// replace all object list occurrences with the intermediate var.
+					// replace all object list occurrences with the intermediate
+					// var.
 
 					te = replaceVarOccurrence(te, objectList, nextVar);
-					te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound, upperBound);
+					te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound,
+							upperBound);
 					pathSequencePattern.addRequiredTE(te);
 
 					startVar = nextVar;
@@ -1606,12 +1628,14 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				TupleExpr te;
 
 				if (i == pathLength - 1) {
-					// last element in the path, connect to list of defined objects
+					// last element in the path, connect to list of defined
+					// objects
 					for (ValueExpr object : objectList) {
 						Var objVar = mapValueExprToVar(object);
 						boolean replaced = false;
 
-						// See SES-1685 we introduce a new var and a SameTerm filter
+						// See SES-1685 we introduce a new var and a SameTerm
+						// filter
 						// to avoid problems in cyclic paths
 						if (objVar.equals(subjVar)) {
 							objVar = createAnonVar();
@@ -1647,14 +1671,16 @@ public class TupleExprBuilder extends ASTVisitorBase {
 					}
 				}
 				else {
-					// not the last element in the path, introduce an anonymous var
+					// not the last element in the path, introduce an anonymous
+					// var
 					// to connect.
 					Var nextVar = createAnonVar();
 
 					if (invertSequence && startVar.equals(subjVar)) { // first
-																						// element in
-																						// inverted
-																						// sequence
+																		// element
+																		// in
+																		// inverted
+																		// sequence
 						for (ValueExpr object : objectList) {
 							Var objVar = mapValueExprToVar(object);
 							startVar = objVar;
@@ -1681,7 +1707,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 						}
 
 						te = new StatementPattern(scope, startVar, predVar, nextVar, contextVar);
-						te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound, upperBound);
+						te = handlePathModifiers(scope, startVar, te, nextVar, contextVar, lowerBound,
+								upperBound);
 
 						pathSequencePattern.addRequiredTE(te);
 					}
@@ -1739,7 +1766,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		TupleExpr patternMatch = null;
 
-		// build a regular statement pattern (or a join of several patterns if the
+		// build a regular statement pattern (or a join of several patterns if
+		// the
 		// object list has more than
 		// one item)
 		if (filterCondition != null) {
@@ -1749,16 +1777,16 @@ public class TupleExprBuilder extends ASTVisitorBase {
 							nps.getContextVar());
 				}
 				else {
-					patternMatch = new Join(
-							new StatementPattern(nps.getScope(), subjVar, predVar, (Var)objVar, nps.getContextVar()),
-							patternMatch);
+					patternMatch = new Join(new StatementPattern(nps.getScope(), subjVar, predVar,
+							(Var)objVar, nps.getContextVar()), patternMatch);
 				}
 			}
 		}
 
 		TupleExpr patternMatchInverse = null;
 
-		// build a inverse statement pattern (or a join of several patterns if the
+		// build a inverse statement pattern (or a join of several patterns if
+		// the
 		// object list has more than
 		// one item):
 		if (filterConditionInverse != null) {
@@ -1768,9 +1796,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 							nps.getContextVar());
 				}
 				else {
-					patternMatchInverse = new Join(
-							new StatementPattern(nps.getScope(), (Var)objVar, predVar, subjVar, nps.getContextVar()),
-							patternMatchInverse);
+					patternMatchInverse = new Join(new StatementPattern(nps.getScope(), (Var)objVar, predVar,
+							subjVar, nps.getContextVar()), patternMatchInverse);
 				}
 			}
 		}
@@ -1786,7 +1813,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 				completeMatch = new Filter(patternMatchInverse, filterConditionInverse);
 			}
 			else {
-				completeMatch = new Union(new Filter(patternMatchInverse, filterConditionInverse), completeMatch);
+				completeMatch = new Union(new Filter(patternMatchInverse, filterConditionInverse),
+						completeMatch);
 			}
 		}
 
@@ -2840,7 +2868,8 @@ public class TupleExprBuilder extends ASTVisitorBase {
 
 		// check if alias is not previously used.
 		if (arg.getBindingNames().contains(alias)) {
-			// SES-2314 we need to doublecheck that the reused varname is not just
+			// SES-2314 we need to doublecheck that the reused varname is not
+			// just
 			// for an anonymous var or a constant.
 			VarCollector collector = new VarCollector();
 			arg.visit(collector);

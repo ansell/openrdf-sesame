@@ -49,6 +49,7 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.QueryEvaluationException;
@@ -57,7 +58,9 @@ import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.query.TupleQueryResultHandlerBase;
+import org.openrdf.query.impl.BindingImpl;
 import org.openrdf.query.impl.DatasetImpl;
+import org.openrdf.query.impl.MapBindingSet;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -154,9 +157,10 @@ public abstract class ComplexSPARQLQueryTest {
 
 				assertNotNull(s);
 				assertFalse(bob.equals(s)); // should not be present in default
-														// graph
-				assertFalse(alice.equals(s)); // should not be present in default
-														// graph
+											// graph
+				assertFalse(alice.equals(s)); // should not be present in
+												// default
+												// graph
 			}
 			result.close();
 		}
@@ -191,9 +195,10 @@ public abstract class ComplexSPARQLQueryTest {
 
 				assertNotNull(s);
 				assertFalse(bob.equals(s)); // should not be present in default
-														// graph
-				assertFalse(alice.equals(s)); // should not be present in default
-														// graph
+											// graph
+				assertFalse(alice.equals(s)); // should not be present in
+												// default
+												// graph
 			}
 			result.close();
 		}
@@ -878,7 +883,8 @@ public abstract class ComplexSPARQLQueryTest {
 		queryBuilder.append("{ ?publisher <http://purl.org/dc/elements/1.1/publisher> ?publisher }");
 
 		conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate(
-				new TupleQueryResultHandlerBase() {
+				new TupleQueryResultHandlerBase()
+		{
 
 					public void handleSolution(BindingSet bindingSet) {
 						fail("nobody is self published");
@@ -1028,7 +1034,8 @@ public abstract class ComplexSPARQLQueryTest {
 		loadTestData("/testdata-query/dataset-ses1692.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(" PREFIX : <http://example.org/>\n");
-		query.append(" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
+		query.append(
+				" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
@@ -1065,7 +1072,8 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?p \n");
 		query.append("WHERE { \n");
 		query.append("         ?s ?p ?o . \n");
-		query.append("        FILTER(IF(BOUND(?p), ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>, false)) \n");
+		query.append(
+				"        FILTER(IF(BOUND(?p), ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>, false)) \n");
 		query.append("}");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -1096,7 +1104,8 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?p \n");
 		query.append("WHERE { \n");
 		query.append("         ?s ?p ?o . \n");
-		query.append("        FILTER(IF(!BOUND(?p), false , ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)) \n");
+		query.append(
+				"        FILTER(IF(!BOUND(?p), false , ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)) \n");
 		query.append("}");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -1283,7 +1292,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("          foaf:mbox ?mbox . ");
 		query.append("       FILTER(EXISTS { ");
 		query.append("            FILTER(REGEX(?name, \"Bo\") && REGEX(?mbox, \"bob\")) ");
-		// query.append("            FILTER(REGEX(?mbox, \"bob\")) ");
+		// query.append(" FILTER(REGEX(?mbox, \"bob\")) ");
 		query.append("            } )");
 		query.append(" } ");
 
@@ -1821,7 +1830,8 @@ public abstract class ComplexSPARQLQueryTest {
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append("SELECT ?parent ?child ");
-		query.append("WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . FILTER (?parent = owl:Thing) }");
+		query.append(
+				"WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . FILTER (?parent = owl:Thing) }");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
@@ -1946,7 +1956,7 @@ public abstract class ComplexSPARQLQueryTest {
 			TupleQueryResult result = tq.evaluate();
 			assertNotNull(result);
 			assertTrue(result.hasNext());
-			
+
 			Value x = result.next().getValue("x");
 			assertNotNull(x);
 			assertTrue(x instanceof URI);
@@ -2033,7 +2043,8 @@ public abstract class ComplexSPARQLQueryTest {
 			assertNotNull(r1);
 
 			// there is a small chance that two successive calls to the random
-			// number generator will generate the exact same value, so we check for
+			// number generator will generate the exact same value, so we check
+			// for
 			// three successive calls (still theoretically possible to be
 			// identical, but phenomenally unlikely).
 			assertFalse(r1.equals(r2) && r1.equals(r3));
@@ -2099,6 +2110,53 @@ public abstract class ComplexSPARQLQueryTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+	}
+
+	@Test
+	public void testSES2336NegatedPropertyPathMod()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses2336.trig");
+		String query = "prefix : <http://example.org/> select * where { ?s a :Test ; !:p? ?o . }";
+
+		ValueFactory vf = conn.getValueFactory();
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+
+		try {
+			List<BindingSet> result = QueryResults.asList(tq.evaluate());
+			assertNotNull(result);
+			
+			URI a = vf.createURI(EX_NS, "a");
+			URI b = vf.createURI(EX_NS, "b");
+			URI c = vf.createURI(EX_NS, "c");
+			URI d = vf.createURI(EX_NS, "d");
+			URI e = vf.createURI(EX_NS, "e");
+			URI test = vf.createURI(EX_NS, "Test");
+			
+			assertTrue(containsSolution(result, new BindingImpl("s", a), new BindingImpl("o", a)));
+			assertTrue(containsSolution(result, new BindingImpl("s", a), new BindingImpl("o", test)));
+			assertTrue(containsSolution(result, new BindingImpl("s", a), new BindingImpl("o", c)));
+			assertTrue(containsSolution(result, new BindingImpl("s", d), new BindingImpl("o", d)));
+			assertTrue(containsSolution(result, new BindingImpl("s", d), new BindingImpl("o", e)));
+			assertTrue(containsSolution(result, new BindingImpl("s", d), new BindingImpl("o", test)));
+			
+			assertFalse(containsSolution(result, new BindingImpl("s", a), new BindingImpl("o", b)));
+			
+			
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+	
+	private boolean containsSolution(List<BindingSet> result, Binding... solution) {
+		final MapBindingSet bs = new MapBindingSet();
+		for (Binding b: solution) {
+			bs.addBinding(b);
+		}
+		return result.contains(bs);
 	}
 
 	/* private / protected methods */
