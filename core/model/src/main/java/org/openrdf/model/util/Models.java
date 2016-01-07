@@ -21,14 +21,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.function.Supplier;
 
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.IRI;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.util.iterators.Iterators;
@@ -85,7 +85,8 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Literal> objectLiteral(Model m) {
-		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Literal).map(l -> (Literal)l).findAny();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Literal).map(
+				l -> (Literal)l).findAny();
 	}
 
 	/**
@@ -109,7 +110,8 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<Resource> objectResource(Model m) {
-		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Resource).map(r -> (Resource)r).findAny();
+		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof Resource).map(
+				r -> (Resource)r).findAny();
 	}
 
 	/**
@@ -134,16 +136,17 @@ public class Models {
 	public static Optional<IRI> objectIRI(Model m) {
 		return m.stream().map(st -> st.getObject()).filter(o -> o instanceof IRI).map(r -> (IRI)r).findAny();
 	}
-	
+
 	/**
 	 * Retrieves an object value as a String from the statements in the given
-	 * model. If more than one possible object value exists, any one value is picked
-	 * and returned. 
+	 * model. If more than one possible object value exists, any one value is
+	 * picked and returned.
 	 * 
 	 * @param m
 	 *        the model from which to retrieve an object String value.
-	 * @return an {@link Optional} object String value from the given model, which
-	 *         will be {@link Optional#empty() empty} if no such value exists.
+	 * @return an {@link Optional} object String value from the given model,
+	 *         which will be {@link Optional#empty() empty} if no such value
+	 *         exists.
 	 * @since 4.0
 	 */
 	public static Optional<String> objectString(Model m) {
@@ -216,7 +219,8 @@ public class Models {
 	 * @since 4.0
 	 */
 	public static Optional<BNode> subjectBNode(Model m) {
-		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof BNode).map(s -> (BNode)s).findAny();
+		return m.stream().map(st -> st.getSubject()).filter(s -> s instanceof BNode).map(
+				s -> (BNode)s).findAny();
 	}
 
 	/**
@@ -578,5 +582,19 @@ public class Models {
 			Iterators.addAll(iterable.iterator(), set);
 		}
 		return set;
+	}
+
+	/**
+	 * Creates a {@link Supplier} of {@link ModelException} objects that be
+	 * passed to {@link Optional#orElseThrow(Supplier)} to generate exceptions as
+	 * necessary.
+	 * 
+	 * @param message
+	 *        The message to be used for the exception
+	 * @return A {@link Supplier} that will create {@link ModelException} objects
+	 *         with the given message.
+	 */
+	public static Supplier<ModelException> modelException(String message) {
+		return () -> new ModelException(message);
 	}
 }

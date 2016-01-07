@@ -16,6 +16,7 @@
  */
 package org.openrdf.model.util;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Model;
 import org.openrdf.model.Value;
 
@@ -25,7 +26,7 @@ import org.openrdf.model.Value;
  * 
  * @author Arjohn Kampman
  */
-public class ModelException extends RuntimeException {
+public class ModelException extends OpenRDFException {
 
 	private static final long serialVersionUID = 3886967415616842867L;
 

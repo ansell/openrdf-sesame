@@ -16,8 +16,10 @@
  */
 package org.openrdf.repository.util;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
@@ -88,7 +90,7 @@ public final class Repositories {
 	 */
 	public static void consume(Repository repository, Consumer<RepositoryConnection> processFunction,
 			Consumer<RepositoryException> exceptionHandler)
-		throws RepositoryException, UnknownTransactionStateException
+				throws RepositoryException, UnknownTransactionStateException
 	{
 		try {
 			consume(repository, processFunction);
@@ -188,7 +190,7 @@ public final class Repositories {
 	 */
 	public static <T> T get(Repository repository, Function<RepositoryConnection, T> processFunction,
 			Consumer<RepositoryException> exceptionHandler)
-		throws RepositoryException, UnknownTransactionStateException
+				throws RepositoryException, UnknownTransactionStateException
 	{
 		try {
 			return get(repository, processFunction);
@@ -248,8 +250,8 @@ public final class Repositories {
 	 */
 	public static <T> T tupleQuery(Repository repository, String query,
 			Function<TupleQueryResult, T> processFunction)
-		throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
-		QueryEvaluationException
+				throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
+				QueryEvaluationException
 	{
 		return get(repository, conn -> {
 			TupleQuery preparedQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
@@ -316,8 +318,8 @@ public final class Repositories {
 	 */
 	public static <T> T graphQuery(Repository repository, String query,
 			Function<GraphQueryResult, T> processFunction)
-		throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
-		QueryEvaluationException
+				throws RepositoryException, UnknownTransactionStateException, MalformedQueryException,
+				QueryEvaluationException
 	{
 		return get(repository, conn -> {
 			GraphQuery preparedQuery = conn.prepareGraphQuery(QueryLanguage.SPARQL, query);
@@ -355,6 +357,20 @@ public final class Repositories {
 			GraphQuery preparedQuery = conn.prepareGraphQuery(QueryLanguage.SPARQL, query);
 			preparedQuery.evaluate(handler);
 		});
+	}
+
+	/**
+	 * Creates a {@link Supplier} of {@link RepositoryException} objects that be
+	 * passed to {@link Optional#orElseThrow(Supplier)} to generate exceptions as
+	 * necessary.
+	 * 
+	 * @param message
+	 *        The message to be used for the exception
+	 * @return A {@link Supplier} that will create {@link RepositoryException}
+	 *         objects with the given message.
+	 */
+	public static Supplier<RepositoryException> repositoryException(String message) {
+		return () -> new RepositoryException(message);
 	}
 
 	/**
