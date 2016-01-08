@@ -27,6 +27,7 @@ import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.parser.sparql.ast.ASTDatasetClause;
 import org.openrdf.query.parser.sparql.ast.ASTIRI;
+import org.openrdf.query.parser.sparql.ast.ASTModify;
 import org.openrdf.query.parser.sparql.ast.ASTOperation;
 import org.openrdf.query.parser.sparql.ast.ASTOperationContainer;
 
@@ -67,16 +68,30 @@ public class DatasetDeclProcessor {
 
 					try {
 						IRI uri = SESAME.NIL;
-						
+
 						if (astIri != null) {
 							uri = SimpleValueFactory.getInstance().createIRI(astIri.getValue());
 						}
-						
-						if (dc.isNamed()) {
-							dataset.addNamedGraph(uri);
+
+						boolean withClause = false;
+						if (op instanceof ASTModify) {
+							if (dc.equals(((ASTModify)op).getWithClause())) {
+								withClause = true;
+								dataset.setDefaultInsertGraph(uri);
+								dataset.addDefaultRemoveGraph(uri);
+							}
 						}
-						else {
-							dataset.addDefaultGraph(uri);
+
+						// set graphs to read from if this is not a WITH clause,
+						// or (if it is), it's not overridden by other dataset
+						// clauses.
+						if (!withClause || datasetClauses.size() == 1) {
+							if (dc.isNamed()) {
+								dataset.addNamedGraph(uri);
+							}
+							else {
+								dataset.addDefaultGraph(uri);
+							}
 						}
 					}
 					catch (IllegalArgumentException e) {

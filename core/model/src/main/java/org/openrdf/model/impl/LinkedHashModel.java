@@ -534,6 +534,7 @@ public class LinkedHashModel extends AbstractModel {
 		for (Set<ModelStatement> set : sets) {
 			if (set != null && set.size() < minSize) {
 				minSet = set;
+				minSize = set.size();
 			}
 		}
 		return minSet;

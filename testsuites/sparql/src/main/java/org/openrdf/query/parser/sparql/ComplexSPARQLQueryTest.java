@@ -34,11 +34,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.openrdf.model.BNode;
+import org.openrdf.model.IRI;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
-import org.openrdf.model.IRI;
 import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.DCTERMS;
@@ -48,6 +49,8 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.model.vocabulary.SESAME;
 import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.query.AbstractTupleQueryResultHandler;
+import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.QueryEvaluationException;
@@ -55,7 +58,8 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.QueryResults;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.AbstractTupleQueryResultHandler;
+import org.openrdf.query.impl.MapBindingSet;
+import org.openrdf.query.impl.SimpleBinding;
 import org.openrdf.query.impl.SimpleDataset;
 import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
 import org.openrdf.repository.Repository;
@@ -154,9 +158,10 @@ public abstract class ComplexSPARQLQueryTest {
 
 				assertNotNull(s);
 				assertFalse(bob.equals(s)); // should not be present in default
-														// graph
-				assertFalse(alice.equals(s)); // should not be present in default
-														// graph
+											// graph
+				assertFalse(alice.equals(s)); // should not be present in
+												// default
+												// graph
 			}
 			result.close();
 		}
@@ -191,9 +196,10 @@ public abstract class ComplexSPARQLQueryTest {
 
 				assertNotNull(s);
 				assertFalse(bob.equals(s)); // should not be present in default
-														// graph
-				assertFalse(alice.equals(s)); // should not be present in default
-														// graph
+											// graph
+				assertFalse(alice.equals(s)); // should not be present in
+												// default
+												// graph
 			}
 			result.close();
 		}
@@ -878,7 +884,8 @@ public abstract class ComplexSPARQLQueryTest {
 		queryBuilder.append("{ ?publisher <http://purl.org/dc/elements/1.1/publisher> ?publisher }");
 
 		conn.prepareTupleQuery(QueryLanguage.SPARQL, queryBuilder.toString()).evaluate(
-				new AbstractTupleQueryResultHandler() {
+				new AbstractTupleQueryResultHandler()
+		{
 
 					public void handleSolution(BindingSet bindingSet) {
 						fail("nobody is self published");
@@ -1028,7 +1035,8 @@ public abstract class ComplexSPARQLQueryTest {
 		loadTestData("/testdata-query/dataset-ses1692.trig");
 		StringBuilder query = new StringBuilder();
 		query.append(" PREFIX : <http://example.org/>\n");
-		query.append(" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
+		query.append(
+				" SELECT DISTINCT ?a ?name ?isX WHERE { ?b :p1 ?a . ?a :name ?name. OPTIONAL { ?a a :X . VALUES(?isX) { (:X) } } } ");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
@@ -1065,7 +1073,8 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?p \n");
 		query.append("WHERE { \n");
 		query.append("         ?s ?p ?o . \n");
-		query.append("        FILTER(IF(BOUND(?p), ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>, false)) \n");
+		query.append(
+				"        FILTER(IF(BOUND(?p), ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>, false)) \n");
 		query.append("}");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -1096,7 +1105,8 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("SELECT ?p \n");
 		query.append("WHERE { \n");
 		query.append("         ?s ?p ?o . \n");
-		query.append("        FILTER(IF(!BOUND(?p), false , ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)) \n");
+		query.append(
+				"        FILTER(IF(!BOUND(?p), false , ?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)) \n");
 		query.append("}");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
@@ -1283,7 +1293,7 @@ public abstract class ComplexSPARQLQueryTest {
 		query.append("          foaf:mbox ?mbox . ");
 		query.append("       FILTER(EXISTS { ");
 		query.append("            FILTER(REGEX(?name, \"Bo\") && REGEX(?mbox, \"bob\")) ");
-		// query.append("            FILTER(REGEX(?mbox, \"bob\")) ");
+		// query.append(" FILTER(REGEX(?mbox, \"bob\")) ");
 		query.append("            } )");
 		query.append(" } ");
 
@@ -1821,7 +1831,8 @@ public abstract class ComplexSPARQLQueryTest {
 		StringBuilder query = new StringBuilder();
 		query.append(getNamespaceDeclarations());
 		query.append("SELECT ?parent ?child ");
-		query.append("WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . FILTER (?parent = owl:Thing) }");
+		query.append(
+				"WHERE { ?child a owl:Class . ?child rdfs:subClassOf+ ?parent . FILTER (?parent = owl:Thing) }");
 
 		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query.toString());
 
@@ -2033,7 +2044,8 @@ public abstract class ComplexSPARQLQueryTest {
 			assertNotNull(r1);
 
 			// there is a small chance that two successive calls to the random
-			// number generator will generate the exact same value, so we check for
+			// number generator will generate the exact same value, so we check
+			// for
 			// three successive calls (still theoretically possible to be
 			// identical, but phenomenally unlikely).
 			assertFalse(r1.equals(r2) && r1.equals(r3));
@@ -2099,6 +2111,52 @@ public abstract class ComplexSPARQLQueryTest {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+	}
+
+	@Test
+	public void testSES2336NegatedPropertyPathMod()
+		throws Exception
+	{
+		loadTestData("/testdata-query/dataset-ses2336.trig");
+		String query = "prefix : <http://example.org/> select * where { ?s a :Test ; !:p? ?o . }";
+
+		ValueFactory vf = conn.getValueFactory();
+		TupleQuery tq = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+
+		try {
+			List<BindingSet> result = QueryResults.asList(tq.evaluate());
+			assertNotNull(result);
+
+			IRI a = vf.createIRI(EX_NS, "a");
+			IRI b = vf.createIRI(EX_NS, "b");
+			IRI c = vf.createIRI(EX_NS, "c");
+			IRI d = vf.createIRI(EX_NS, "d");
+			IRI e = vf.createIRI(EX_NS, "e");
+			IRI test = vf.createIRI(EX_NS, "Test");
+
+			assertTrue(containsSolution(result, new SimpleBinding("s", a), new SimpleBinding("o", a)));
+			assertTrue(containsSolution(result, new SimpleBinding("s", a), new SimpleBinding("o", test)));
+			assertTrue(containsSolution(result, new SimpleBinding("s", a), new SimpleBinding("o", c)));
+			assertTrue(containsSolution(result, new SimpleBinding("s", d), new SimpleBinding("o", d)));
+			assertTrue(containsSolution(result, new SimpleBinding("s", d), new SimpleBinding("o", e)));
+			assertTrue(containsSolution(result, new SimpleBinding("s", d), new SimpleBinding("o", test)));
+
+			assertFalse(containsSolution(result, new SimpleBinding("s", a), new SimpleBinding("o", b)));
+
+		}
+		catch (QueryEvaluationException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+
+	}
+
+	private boolean containsSolution(List<BindingSet> result, Binding... solution) {
+		final MapBindingSet bs = new MapBindingSet();
+		for (Binding b : solution) {
+			bs.addBinding(b);
+		}
+		return result.contains(bs);
 	}
 
 	/* private / protected methods */
