@@ -18,15 +18,12 @@ package org.openrdf.query.parser.sparql.manifest;
 
 import java.util.Map;
 
-import junit.framework.Test;
-
 import org.openrdf.model.URI;
-import org.openrdf.query.parser.sparql.manifest.SPARQL11ManifestTest;
-import org.openrdf.query.parser.sparql.manifest.SPARQLUpdateConformanceTest;
 import org.openrdf.repository.Repository;
-import org.openrdf.repository.contextaware.ContextAwareRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.memory.MemoryStore;
+
+import junit.framework.Test;
 
 
 /**
@@ -59,12 +56,12 @@ public class W3CApprovedSPARQL11UpdateTest extends SPARQLUpdateConformanceTest {
 	}
 
 	@Override
-	protected ContextAwareRepository newRepository()
+	protected Repository newRepository()
 		throws Exception
 	{
 		SailRepository repo = new SailRepository(new MemoryStore());
 
-		return new ContextAwareRepository(repo);
+		return repo;
 	}
 
 }

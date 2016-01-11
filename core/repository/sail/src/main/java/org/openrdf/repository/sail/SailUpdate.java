@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openrdf.OpenRDFException;
 import org.openrdf.query.Dataset;
 import org.openrdf.query.UpdateExecutionException;
@@ -28,8 +31,6 @@ import org.openrdf.query.impl.AbstractParserUpdate;
 import org.openrdf.query.parser.ParsedUpdate;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.helpers.SailUpdateExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Jeen Broekstra
@@ -57,7 +58,8 @@ public class SailUpdate extends AbstractParserUpdate {
 		List<UpdateExpr> updateExprs = parsedUpdate.getUpdateExprs();
 		Map<UpdateExpr, Dataset> datasetMapping = parsedUpdate.getDatasetMapping();
 
-		SailUpdateExecutor executor = new SailUpdateExecutor(con.getSailConnection(), con.getValueFactory(), con.getParserConfig());
+		SailUpdateExecutor executor = new SailUpdateExecutor(con.getSailConnection(), con.getValueFactory(),
+				con.getParserConfig());
 
 		for (UpdateExpr updateExpr : updateExprs) {
 
@@ -69,7 +71,8 @@ public class SailUpdate extends AbstractParserUpdate {
 					beginLocalTransaction();
 				}
 
-				executor.executeUpdate(updateExpr, activeDataset, getBindings(), getIncludeInferred(), getMaxExecutionTime());
+				executor.executeUpdate(updateExpr, activeDataset, getBindings(), getIncludeInferred(),
+						getMaxExecutionTime());
 
 				if (localTransaction) {
 					commitLocalTransaction();
@@ -106,5 +109,6 @@ public class SailUpdate extends AbstractParserUpdate {
 		throws RepositoryException
 	{
 		getConnection().commit();
+
 	}
 }

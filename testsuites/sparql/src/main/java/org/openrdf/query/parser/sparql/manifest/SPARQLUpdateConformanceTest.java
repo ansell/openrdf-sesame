@@ -22,9 +22,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,14 +50,16 @@ import org.openrdf.query.impl.DatasetImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.contextaware.ContextAwareConnection;
-import org.openrdf.repository.contextaware.ContextAwareRepository;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
 
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 /**
- * A SPARQL 1.1 Update test, created by reading in a W3C working-group style manifest.  
+ * A SPARQL 1.1 Update test, created by reading in a W3C working-group style
+ * manifest.
  *
  * @author Jeen Broekstra
  */
@@ -79,7 +79,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	 * Variables *
 	 *-----------*/
 
-	protected ContextAwareRepository dataRep;
+	protected Repository dataRep;
 
 	protected Repository expectedResultRepo;
 
@@ -98,7 +98,8 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	 *--------------*/
 
 	public SPARQLUpdateConformanceTest(String testURI, String name, String requestFile, URI defaultGraphURI,
-			Map<String, URI> inputNamedGraphs, URI resultDefaultGraphURI, Map<String, URI> resultNamedGraphs)
+			Map<String, URI> inputNamedGraphs, URI resultDefaultGraphURI,
+			Map<String, URI> resultNamedGraphs)
 	{
 		super(name);
 
@@ -109,21 +110,22 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		this.resultDefaultGraph = resultDefaultGraphURI;
 		this.resultNamedGraphs = resultNamedGraphs;
 
-		if (this.inputNamedGraphs.size() > 0) {
-			DatasetImpl ds = new DatasetImpl();
-			ds.addDefaultGraph(null);
-			ds.addDefaultRemoveGraph(null);
-			ds.setDefaultInsertGraph(null);
+		final DatasetImpl ds = new DatasetImpl();
 
+		// This ensures that the repository operates in 'exclusive
+		// mode': the default graph _only_ consists of the null-context (instead
+		// of the entire repository).
+		ds.addDefaultGraph(null);
+		ds.addDefaultRemoveGraph(null);
+		ds.setDefaultInsertGraph(null);
+
+		if (this.inputNamedGraphs.size() > 0) {
 			for (String ng : inputNamedGraphs.keySet()) {
 				URI namedGraph = new URIImpl(ng);
 				ds.addNamedGraph(namedGraph);
 			}
-			this.dataset = ds;
 		}
-		else {
-			this.dataset = null;
-		}
+		this.dataset = ds;
 	}
 
 	/*---------*
@@ -180,10 +182,10 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 	}
 
-	protected ContextAwareRepository createRepository()
+	protected Repository createRepository()
 		throws Exception
 	{
-		ContextAwareRepository repo = newRepository();
+		Repository repo = newRepository();
 		repo.initialize();
 		RepositoryConnection con = repo.getConnection();
 		try {
@@ -196,7 +198,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 		return repo;
 	}
 
-	protected abstract ContextAwareRepository newRepository()
+	protected abstract Repository newRepository()
 		throws Exception;
 
 	@Override
@@ -213,22 +215,19 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 	protected void runTest()
 		throws Exception
 	{
-		ContextAwareConnection con = dataRep.getConnection();
+		RepositoryConnection con = dataRep.getConnection();
 		RepositoryConnection erCon = expectedResultRepo.getConnection();
 		try {
 			String updateString = readUpdateString();
 
 			con.begin();
-			con.setReadContexts((URI)null);
-			
+
 			Update update = con.prepareUpdate(QueryLanguage.SPARQL, updateString, requestFileURL);
-			if (this.dataset != null) {
-				update.setDataset(this.dataset);
-			}
+			update.setDataset(dataset);
 			update.execute();
 
 			con.commit();
-			
+
 			// check default graph
 			logger.info("checking default graph");
 			compareGraphs(Iterations.asList(con.getStatements(null, null, null, true, (Resource)null)),
@@ -241,8 +240,8 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 						Iterations.asList(erCon.getStatements(null, null, null, true, contextURI)));
 			}
 		}
-		catch(Exception e) {
-			if(con.isActive()) {
+		catch (Exception e) {
+			if (con.isActive()) {
 				con.rollback();
 			}
 			throw e;
@@ -326,10 +325,12 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 		suite.setName(getManifestName(manifestRep, con, manifestFileURL));
 
-		// Extract test case information from the manifest file. Note that we only
+		// Extract test case information from the manifest file. Note that we
+		// only
 		// select those test cases that are mentioned in the list.
 		StringBuilder query = new StringBuilder(512);
-		query.append(" SELECT DISTINCT testURI, testName, result, action, requestFile, defaultGraph, resultDefaultGraph ");
+		query.append(
+				" SELECT DISTINCT testURI, testName, result, action, requestFile, defaultGraph, resultDefaultGraph ");
 		query.append(" FROM {} rdf:first {testURI} rdf:type {mf:UpdateEvaluationTest}; ");
 		if (approvedOnly) {
 			query.append("                          dawgt:approval {dawgt:Approved}; ");
@@ -405,8 +406,8 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 			}
 
 			SPARQLUpdateConformanceTest test = factory.createSPARQLUpdateConformanceTest(testURI.toString(),
-					testName, requestFile.toString(), defaultGraphURI, inputNamedGraphs, resultDefaultGraphURI,
-					resultNamedGraphs);
+					testName, requestFile.toString(), defaultGraphURI, inputNamedGraphs,
+					resultDefaultGraphURI, resultNamedGraphs);
 
 			if (test != null) {
 				suite.addTest(test);
@@ -423,7 +424,7 @@ public abstract class SPARQLUpdateConformanceTest extends TestCase {
 
 	protected static String getManifestName(Repository manifestRep, RepositoryConnection con,
 			String manifestFileURL)
-		throws QueryEvaluationException, RepositoryException, MalformedQueryException
+				throws QueryEvaluationException, RepositoryException, MalformedQueryException
 	{
 		// Try to extract suite name from manifest file
 		TupleQuery manifestNameQuery = con.prepareTupleQuery(QueryLanguage.SERQL,
