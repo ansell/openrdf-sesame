@@ -17,16 +17,12 @@
 package org.openrdf.repository.util;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.openrdf.OpenRDFException;
-import org.openrdf.OpenRDFUtil;
 import org.openrdf.model.IRI;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -34,7 +30,6 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.openrdf.model.util.GetStatementOptional;
 import org.openrdf.model.util.RDFCollections;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
@@ -49,7 +44,8 @@ public class Connections {
 
 	/**
 	 * Retrieve all {@link Statement}s that together form the RDF Collection
-	 * starting with the supplied start resource.
+	 * starting with the supplied start resource and send them to the supplied
+	 * {@link Consumer}.
 	 * 
 	 * @param conn
 	 *        the {@link RepositoryConnection} to use for statement retrieval.
@@ -59,8 +55,8 @@ public class Connections {
 	 *        a {@link Consumer} function to which all retrieved statements will
 	 *        be reported. May not be {@code null}.
 	 * @param contexts
-	 *        the context(s) from which to read the RDF Collection. This argument
-	 *        is an optional vararg and can be left out.
+	 *        the context(s) from which to read the RDF Collection. This
+	 *        argument is an optional vararg and can be left out.
 	 * @throws RepositoryException
 	 *         if an error occurred while reading the collection statements, for
 	 *         example if a cycle is detected in the RDF collection, or some
@@ -70,16 +66,15 @@ public class Connections {
 	 *      Schema 1.1 section on Collection vocabulary</a>.
 	 * @since 4.1.0
 	 */
-	public static void getRDFCollection(RepositoryConnection conn, Resource head,
+	public static void consumeRDFCollection(RepositoryConnection conn, Resource head,
 			Consumer<Statement> collectionConsumer, Resource... contexts)
 				throws RepositoryException
 	{
 		GetStatementOptional statementSupplier = (s, p, o, c) -> getStatement(conn, s, p, o, c);
 		Function<String, Supplier<RepositoryException>> exceptionSupplier = Repositories::repositoryException;
-		RDFCollections.asValues(statementSupplier, head, collectionConsumer, exceptionSupplier, contexts);
+		RDFCollections.consumeValues(statementSupplier, head, collectionConsumer, exceptionSupplier,
+				contexts);
 	}
-
-
 
 	/**
 	 * Retrieve all {@link Statement}s that together form the RDF Collection
@@ -94,8 +89,8 @@ public class Connections {
 	 *        {@link Model}) to which all retrieved statements will be reported.
 	 *        May not be {@code null}.
 	 * @param contexts
-	 *        the context(s) from which to read the RDF Collection. This argument
-	 *        is an optional vararg and can be left out.
+	 *        the context(s) from which to read the RDF Collection. This
+	 *        argument is an optional vararg and can be left out.
 	 * @return the input statement collection, with the statements forming the
 	 *         retrieved RDF Collection added.
 	 * @throws RepositoryException
@@ -112,7 +107,7 @@ public class Connections {
 				throws RepositoryException
 	{
 		Objects.requireNonNull(statementCollection, "statementCollection may not be null");
-		getRDFCollection(conn, head, st -> statementCollection.add(st), contexts);
+		consumeRDFCollection(conn, head, st -> statementCollection.add(st), contexts);
 		return statementCollection;
 	}
 
@@ -132,13 +127,13 @@ public class Connections {
 	 *        the predicate to which the statement should match. May be
 	 *        {@code null}.
 	 * @param object
-	 *        the object to which the statement should match. May be {@code null}
-	 *        .
+	 *        the object to which the statement should match. May be
+	 *        {@code null} .
 	 * @param contexts
 	 *        the context(s) from which to read the Statement. This argument is
 	 *        an optional vararg and can be left out.
-	 * @return an {@link Optional} of {@link Statement}. If no matching Statement
-	 *         was found, {@link Optional#empty()} is returned.
+	 * @return an {@link Optional} of {@link Statement}. If no matching
+	 *         Statement was found, {@link Optional#empty()} is returned.
 	 * @throws RepositoryException
 	 * @since 4.1.0
 	 */
